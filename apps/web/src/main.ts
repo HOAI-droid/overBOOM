@@ -1,5 +1,5 @@
 import { World, DT, DASH_COOLDOWN, NO_INPUT, spawnEnemy, type Command, type InputState } from '@overboom/core';
-import { GEGNER, HELD_BY_ID, INSEL_BY_ID, LEVEL, waffeById } from '@overboom/data';
+import { GEGNER, HELD_BY_ID, INSEL_BY_ID, LEVEL, SYNERGIEN, waffeById } from '@overboom/data';
 import { GameRenderer, type PlayerPose } from '@overboom/render';
 import { Controls, DamageNumbers, Hud, MenuNav, Menus, screenToWorld } from '@overboom/ui';
 import { createWebPlatform } from '@overboom/platform';
@@ -93,6 +93,7 @@ function start() {
   let paused = false;
   let lastBoomHaptic = 0;
   let padStartWas = false;
+  let lastLoadout = -1;
 
   const restart = () => {
     world.reset();
@@ -167,6 +168,8 @@ function start() {
             platform.haptic(150);
           } else hud.banner('Verschmolzen!', e.name, e.rezept ? 'gelb' : 'cyan');
           break;
+        case 'reaction': damage.text(-5000 - (e.x * 37 | 0) - (e.z * 11 | 0), e.x, 1.5, e.z, e.name, 'reaction', e.farbe); break;
+        case 'nuke': damage.text(-6000, e.x, 1.8, e.z, 'MINI-NUKE!', 'kawumm', '#ffd23f'); platform.haptic(120); break;
         case 'kawumm': damage.text(-999 - (e.x * 100 | 0), e.x, 1.3, e.z, 'Kawumm!', 'kawumm'); break;
         case 'death': platform.haptic(200); endTimer = 1.6; break;
       }
@@ -228,6 +231,13 @@ function start() {
       level: p.level, xp: p.xp / LEVEL.xpBedarf(p.level),
       boss: boss && boss.alive ? Math.max(0, boss.hp / boss.maxHp) : -1
     });
+    if (p.loadout !== lastLoadout) {
+      lastLoadout = p.loadout;
+      hud.synergies(SYNERGIEN.map((sy) => {
+        const count = p.synCount[sy.element] ?? 0;
+        return { element: sy.element, count, level: sy.stufen.filter((st) => count >= st.ab).length, farbe: sy.farbe };
+      }));
+    }
     root.classList.toggle('in-menu', menus.open);
     requestAnimationFrame(frame);
   };

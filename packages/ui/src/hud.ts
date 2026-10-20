@@ -38,6 +38,8 @@ export class Hud {
   private bossEl: HTMLDivElement;
   private bossFill: HTMLDivElement;
   readonly pauseButton: HTMLButtonElement;
+  private synEl: HTMLDivElement;
+  private synKey = '';
   private hintTimer = -1;
   private frames = 0;
   private acc = 0;
@@ -56,6 +58,7 @@ export class Hud {
         <div class="ob-hp" role="meter" aria-label="Leben"><div class="ob-hp-fill"></div><span class="ob-hp-txt">60 / 60</span></div>
         <div class="ob-xp"><span class="ob-lvl">Lv 1</span><div class="ob-xp-bar"><div class="ob-xp-fill"></div></div></div>
         <div class="ob-gems">${GEM_SVG}<span>0</span></div>
+        <div class="ob-syn"></div>
       </div>
       <div class="ob-wave"><div class="ob-wave-n">Welle 1</div><div class="ob-wave-t">0:20</div>
         <div class="ob-boss hidden"><span>Baron von Bumm</span><div class="ob-boss-bar"><div class="ob-boss-fill"></div></div></div>
@@ -91,6 +94,7 @@ export class Hud {
     this.bossEl = q('.ob-boss');
     this.bossFill = q('.ob-boss-fill');
     this.pauseButton = q('.ob-pause');
+    this.synEl = q('.ob-syn');
     if (!touch) this.dashButton.classList.add('desktop');
     q('.ob-full').addEventListener('click', () => this.platform.toggleFullscreen());
     this.fps.title = info();
@@ -139,6 +143,14 @@ export class Hud {
   hurt(): void {
     this.hurtEl.getAnimations().forEach((a) => a.cancel());
     this.hurtEl.animate([{ opacity: 0.85 }, { opacity: 0 }], { duration: 450, easing: 'ease-out' });
+  }
+
+  /** Aktive Synergien als kleine Chips (nur neu bauen, wenn sich etwas geändert hat) */
+  synergies(list: readonly { element: string; count: number; level: number; farbe: string }[]): void {
+    const key = list.map((x) => x.element + x.count).join();
+    if (key === this.synKey) return;
+    this.synKey = key;
+    this.synEl.innerHTML = list.filter((x) => x.level > 0).map((x) => `<span style="--c:${x.farbe}" title="${x.element}: ${x.count} Waffen">${x.element} ${'I'.repeat(x.level)}</span>`).join('');
   }
 
   update(dt: number, s: HudState): void {

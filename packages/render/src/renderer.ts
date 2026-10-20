@@ -220,6 +220,9 @@ export class GameRenderer {
         case 'block': fx.block(e.x, e.z); break;
         case 'split': fx.burst(e.x, e.z, ENEMY_DEBRIS.schleimi); break;
         case 'keks': fx.keks(e.x, e.z); break;
+        case 'reaction': fx.reaction(e.x, e.z, e.farbe); kick(0.08); break;
+        case 'nuke': fx.nuke(e.x, e.z); kick(0.45); stop = Math.max(stop, 0.12); this.lastStop = -1; break;
+        case 'storm': fx.storm(e.x, e.z); kick(0.12); break;
         case 'shock': if (e.phase === 'entladen') { fx.shock(this.world.arena); kick(0.15); } break;
         case 'beam': fx.beam(e.x, e.z, e.x2, e.z2, shotColor(e.geschoss)); break;
         case 'cone': fx.cone(e.x, e.z, e.dirX, e.dirZ, e.range, shotColor(e.geschoss), e.geschoss === 'flamme'); break;

@@ -137,6 +137,7 @@ export function spawnEnemy(w: World, type: number, x: number, z: number, elite =
     e.bossPhase = 1; e.summonCd = 0;
     e.wet = e.acid = e.acidT = e.frost = e.confuse = e.chicken = e.cdx = e.cdz = 0;
     e.cloud = false;
+    e.shockT = e.gravT = e.reactT = e.frostT = 0;
     const p = w.nearestPlayer(x, z);
     e.facing = p ? Math.atan2(p.x - x, p.z - z) : 0;
     e.flash = 0; e.age = 0;
@@ -176,6 +177,10 @@ export function stepEnemies(w: World): void {
     }
     e.slow = Math.max(0, e.slow - DT);
     e.wet = Math.max(0, e.wet - DT);
+    e.shockT = Math.max(0, e.shockT - DT);
+    e.gravT = Math.max(0, e.gravT - DT);
+    e.reactT = Math.max(0, e.reactT - DT);
+    e.frostT = Math.max(0, e.frostT - DT);
     if (e.acidT > 0 && (e.acidT -= DT) <= 0) e.acid = 0;
     if ((e.chicken > 0 || e.confuse > 0) && e.state !== EnemyState.Jump) {
       // verwirrt oder verhühnert: läuft ziellos herum, greift nicht an
@@ -203,7 +208,7 @@ export function stepEnemies(w: World): void {
       w.collideCircle(e, e.r, true);
       continue;
     }
-    const slowMul = e.slow > 0 ? 0.55 : 1;
+    const slowMul = e.slow > 0 ? (w.synFx.eisplus ? 0.4 : 0.55) : 1;
 
     const p = w.nearestPlayer(e.x, e.z);
     let dx = 0, dz = 0, d = 99;

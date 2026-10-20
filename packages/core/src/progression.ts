@@ -2,7 +2,7 @@ import type { Player, World } from './sim.ts';
 import type { Offer, WeaponSlot } from './entities.ts';
 import { spezialMask } from './weapons.ts';
 import {
-  AMBOSS, HELD_BY_ID, ITEMS, ITEM_BY_ID, LEVEL, SHOP, SPIELER, STUFEN, UPGRADES, UPGRADE_BY_ID, W, WAFFEN, elemente,
+  AMBOSS, HELD_BY_ID, ITEMS, SYNERGIEN, ITEM_BY_ID, LEVEL, SHOP, SPIELER, STUFEN, UPGRADES, UPGRADE_BY_ID, W, WAFFEN, elemente,
   baseStats, fusionsWaffe, pruefeFusion, rollSeltenheit, waffeById, type Stats
 } from '../../data/src/index.ts';
 
@@ -56,6 +56,11 @@ export function recomputeStats(p: Player): void {
     const n = p.items[id], def = ITEM_BY_ID[id];
     for (const k in def.werte) s[k as keyof Stats] += (def.werte[k as keyof Stats] ?? 0) * n;
   }
+  // Synergie-Boni (Werte)
+  for (const syn of SYNERGIEN) {
+    const n = p.synCount[syn.element] ?? 0;
+    for (const st of syn.stufen) if (n >= st.ab && st.werte) for (const k in st.werte) s[k as keyof Stats] += st.werte[k as keyof Stats] ?? 0;
+  }
   const held = HELD_BY_ID[p.held];
   if (held) for (const k in held.werte) s[k as keyof Stats] += held.werte[k as keyof Stats] ?? 0;
   s.maxHp += (p.level - 1) * LEVEL.hpProLevel;
@@ -67,8 +72,23 @@ export function recomputeStats(p: Player): void {
 }
 
 /** Waffen gleichmäßig um die Figur verteilen (bis 3: Halbkreis hinter der Figur, sonst Vollkreis). */
+/** Elemente aller Waffen zählen und Synergie-Effekte setzen */
+export function computeSynergies(p: Player): void {
+  const count: Record<string, number> = {};
+  for (const s of p.weapons) {
+    const el = s.waffe.fusion ? s.waffe.fusion.elemente : elemente(s.waffe);
+    for (const e of new Set(el)) count[e] = (count[e] ?? 0) + 1;
+  }
+  const fx: Record<string, boolean> = {};
+  for (const syn of SYNERGIEN) for (const st of syn.stufen) if ((count[syn.element] ?? 0) >= st.ab && st.effekt) fx[st.effekt] = true;
+  p.synCount = count;
+  p.syn = fx;
+}
+
 export function layoutWeapons(p: Player): void {
   p.loadout++;
+  computeSynergies(p);
+  recomputeStats(p);
   const n = p.weapons.length;
   const back = Math.PI * 0.25 + Math.PI; // Bildschirm „oben"
   p.weapons.forEach((s, k) => {
@@ -200,6 +220,7 @@ export function runCommand(w: World, p: Player, cmd: Command): boolean {
           if (same < 0) return false;
           p.weapons[same].tier++;
           p.loadout++;
+          computeSynergies(p);
           w.events.push({ type: 'merge', player: p.id, weapon: o.id, tier: p.weapons[same].tier });
         } else {
           addWeapon(p, o.id, o.tier);

@@ -3,7 +3,7 @@ import {
   type Command, type Player, type World, type WeaponSlot
 } from '@overboom/core';
 import {
-  A, AMBOSS, G, GEGNER_BY_ID, HELDEN, HELD_BY_ID, INSELN, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
+  A, AMBOSS, G, GEGNER_BY_ID, SYNERGIEN, HELDEN, HELD_BY_ID, INSELN, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
   elemente, type StatKey
 } from '@overboom/data';
 
@@ -289,6 +289,11 @@ export class Menus {
         <h3 class="ob-h3">Waffen ${p.weapons.length}/${SPIELER.maxWaffen} <small>antippen: verschmelzen / verkaufen</small></h3>
         <div class="ob-slots">${slots}</div>
         ${detail}
+        <h3 class="ob-h3">Synergien <small>Elemente deiner Waffen – Boni ab 2 / 4 / 6</small></h3>
+        <ul class="ob-synlist">${SYNERGIEN.map((sy) => {
+          const n = p.synCount[sy.element] ?? 0;
+          return `<li style="--c:${sy.farbe}"><b>${sy.element} ${n}</b>${sy.stufen.map((st) => `<div class="${n >= st.ab ? 'on' : ''}">${st.ab}: ${st.text}</div>`).join('')}</li>`;
+        }).join('')}</ul>
         <h3 class="ob-h3">Items</h3>
         <div class="ob-items">${items}</div>
         ${stats}

@@ -76,6 +76,14 @@ export interface Enemy {
   cdx: number; cdz: number;
   /** vergiftet von einer Giftwolken-Waffe → hinterlässt eine Pfütze */
   cloud: boolean;
+  /** elektrisch geladen (s) – für Reaktionen */
+  shockT: number;
+  /** im Sog (s) – für Reaktionen */
+  gravT: number;
+  /** Pause zwischen zwei Reaktionen am selben Gegner */
+  reactT: number;
+  /** unterkühlt (s) – Eis-Zustand für Reaktionen */
+  frostT: number;
 }
 
 export interface Projectile {
@@ -137,7 +145,7 @@ export interface Crystal {
   magnet: boolean;
 }
 
-export type BlastSource = 'waffe' | 'fass' | 'kroete' | 'welle' | 'boss' | 'weste' | 'kawumm';
+export type BlastSource = 'waffe' | 'fass' | 'kroete' | 'welle' | 'boss' | 'weste' | 'kawumm' | 'reaktion' | 'nuke';
 
 /** Explosion, die nach `delay` Sekunden zündet (Ketten laufen so sichtbar nacheinander ab). */
 export interface Blast {
@@ -206,7 +214,7 @@ export function makeEnemy(slot: number, def: GegnerDef): Enemy {
     r: def.radius, hp: 0, maxHp: 0, facing: 0, flash: 0, age: 0,
     state: 0, stateT: 0, cd: 0, jx0: 0, jz0: 0, jx1: 0, jz1: 0, doom: -1, strafe: 1,
     elite: false, dmgMul: 1, slow: 0, stun: 0, burnT: 0, burnDps: 0, poisonT: 0, poisonDps: 0, dotClock: 0, lucky: false, bossPhase: 1, summonCd: 0,
-    wet: 0, acid: 0, acidT: 0, frost: 0, confuse: 0, chicken: 0, cdx: 0, cdz: 0, cloud: false
+    wet: 0, acid: 0, acidT: 0, frost: 0, confuse: 0, chicken: 0, cdx: 0, cdz: 0, cloud: false, shockT: 0, gravT: 0, reactT: 0, frostT: 0
   };
 }
 

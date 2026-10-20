@@ -1,5 +1,5 @@
 import { World, Tile, DT, spawnEnemy, type InputState } from '../src/index.ts';
-import { ANTRIEBE, GEGNER, GEGNER_INDEX, HELDEN, INSELN, LADUNGEN, REZEPTE, WAFFEN, WELLEN, fusionsWaffe, waffeById } from '../../data/src/index.ts';
+import { ANTRIEBE, GEGNER, GEGNER_INDEX, HELDEN, INSELN, REAKTIONEN, LADUNG_ELEMENT, SYNERGIEN, LADUNGEN, REZEPTE, WAFFEN, WELLEN, fusionsWaffe, waffeById } from '../../data/src/index.ts';
 import { Tile as T } from '../src/arena.ts';
 
 let fails = 0;
@@ -628,6 +628,88 @@ for (const id of ['koenig_gockel', 'megatoaster', 'morchella', 'baron']) {
   const heu = w.barrels.find((b) => b.kind === 'heu')!;
   w.breakBarrel(heu, 0, 0);
   ok(!!heu && w.hazards.some((h) => h.active && h.kind === 'lava'), 'Heuballen brennen nach dem Anschießen');
+}
+
+/* ------------------------------------------------------------------ */
+/* Phase 5 / Etappe 2: Synergien und Reaktionen                         */
+/* ------------------------------------------------------------------ */
+
+const W2 = await import('../src/weapons.ts');
+function calm(seed = 60, opt = {}) {
+  const w = new World(seed, 1, { god: true, ...opt });
+  for (const warn of w.warnings) warn.active = false;
+  w.spawnAcc = -999;
+  w.waveTime = 1e9;
+  w.players[0].weapons = [];
+  return w;
+}
+function give(w: World, ids: string[]) {
+  const p = w.players[0];
+  p.weapons = [];
+  for (const id of ids) progression.addWeapon(p, id, 1);
+  return p;
+}
+
+// Alle 15 Reaktionen lassen sich auslösen
+{
+  const ladungFor: Record<string, string> = {};
+  for (const [l, el] of Object.entries(LADUNG_ELEMENT)) if (!ladungFor[el]) ladungFor[el] = l;
+  const missing: string[] = [];
+  for (const r of REAKTIONEN) {
+    const w = calm();
+    const p = w.players[0];
+    const e = spawnEnemy(w, GEGNER_INDEX.schrottgolem, p.x + 3, p.z)!;
+    e.hp = e.maxHp = 1e6;
+    w.hash.clear(); for (const q of w.enemies) if (q.alive) w.hash.insert(q.slot, q.x, q.z);
+    W2.debugHit(w, p, e, ladungFor[r.elemente[0]], 10);
+    e.reactT = 0;
+    w.events.length = 0;
+    W2.debugHit(w, p, e, ladungFor[r.elemente[1]], 10);
+    if (!w.events.some((x) => x.type === 'reaction' && x.id === r.id)) missing.push(r.id);
+  }
+  ok(missing.length === 0, `alle ${REAKTIONEN.length} Elementar-Reaktionen auslösbar${missing.length ? ' – fehlt: ' + missing.join(', ') : ''}`);
+}
+// Reaktion mit Wirkung: Kettenschock trifft alle nassen Gegner
+{
+  const w = calm();
+  const p = w.players[0];
+  const es = [0, 1, 2].map((i) => { const e = spawnEnemy(w, GEGNER_INDEX.schrottgolem, p.x + 3 + i, p.z)!; e.hp = e.maxHp = 1000; e.wet = 4; return e; });
+  w.hash.clear(); for (const q of w.enemies) if (q.alive) w.hash.insert(q.slot, q.x, q.z);
+  W2.debugHit(w, p, es[0], 'kettenblitz', 10);
+  ok(es.every((e) => e.hp < 1000 && e.wet === 0), `Kettenschock: alle nassen Gegner getroffen (${es.map((e) => Math.round(1000 - e.hp)).join('/')})`);
+}
+// Synergien zählen Elemente und geben Boni
+{
+  const w = calm();
+  const p = give(w, ['raketenwerfer', 'dynamitbuendel']);
+  ok(p.synCount.Explosiv === 2 && p.stats.explosion >= 15, `Explosiv 2: +${p.stats.explosion} % Radius`);
+  const f = fusionsWaffe({ geschoss: 'teslastab', antrieb: 'raketenwerfer', ladung: 'flammenwerfer' });
+  give(w, [f.id]);
+  ok(Object.keys(p.synCount).length === f.fusion!.elemente.length, `Fusion zählt für alle ihre Elemente (${f.fusion!.elemente.join(', ')})`);
+}
+// Tech 2: Drohne kämpft mit
+{
+  const w = calm();
+  const p = give(w, ['laserpistole', 'kampfdrohne']);
+  for (let i = 0; i < 4; i++) { const e = spawnEnemy(w, 0, p.x + 3, p.z + i)!; e.hp = e.maxHp = 1e6; e.cd = 99; }
+  p.weapons.forEach((s) => (s.cd = 1e9));
+  for (let t = 0; t < 30 * 5; t++) w.step([idle]);
+  const drones = w.projectiles.filter((q) => q.alive && q.antrieb === 'drohne').length;
+  ok(p.syn.drohne && drones === 1 && (w.stats.waffen.drohne ?? 0) > 0, `Tech 2: ${drones} Drohne, ${Math.round(w.stats.waffen.drohne ?? 0)} Schaden`);
+}
+// Stufe 6: Mini-Nuke, Gewitter, Eierregen
+for (const [el, ids, ev] of [
+  ['Explosiv', ['raketenwerfer', 'dynamitbuendel', 'bombenhagel', 'klebebombe', 'granatwerfer', 'minenleger'], 'nuke'],
+  ['Blitz', ['teslastab', 'teslaturm', 'teslastab', 'teslaturm', 'teslastab', 'teslaturm'], 'storm'],
+  ['Gacker', ['huehnerkanone', 'kuekenkorb', 'fauleeier', 'kuckucksuhr', 'huhnifizierer', 'huehnerkanone'], 'zap']
+] as const) {
+  const w = calm();
+  const p = give(w, [...ids]);
+  for (let i = 0; i < 8; i++) { const e = spawnEnemy(w, 0, p.x + 2.5 + (i % 3), p.z - 1 + Math.floor(i / 3))!; e.hp = e.maxHp = 1e6; e.cd = 99; }
+  let n = 0, explosions = 0;
+  for (let t = 0; t < 30 * 15; t++) { w.step([idle]); n += w.events.filter((x) => x.type === ev).length; explosions += w.events.filter((x) => x.type === 'explosion').length; }
+  const lvl = SYNERGIEN.find((s) => s.element === el)!.stufen[2].effekt!;
+  ok(p.syn[lvl] && (el === 'Gacker' ? explosions > 10 : n > 0), `${el} 6 (${lvl}): ${el === 'Gacker' ? explosions + ' Explosionen' : n + '× ' + ev}`);
 }
 
 if (fails) { console.log(`\n${fails} Test(s) fehlgeschlagen`); process.exit(1); } else console.log('\nAlle Tests bestanden');

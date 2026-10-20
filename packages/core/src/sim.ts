@@ -7,7 +7,7 @@ import {
   type Blast, type BlastSource, type Crystal, type Enemy, type Hazard, type Offer, type Projectile, type UpgradeOffer, type Warning, type WeaponSlot
 } from './entities.ts';
 import { spawnBoss, spawnEnemy, stepEnemies, stepWaves } from './enemies.ts';
-import { pull, spawnChickFor, stepProjectiles, stepWeapons } from './weapons.ts';
+import { maintainDrones, pull, rainEgg, spawnChickFor, stepProjectiles, stepWeapons, stormStrike } from './weapons.ts';
 import { addWeapon, gainXp, openShop, recomputeStats, runCommand, type Command } from './progression.ts';
 import { FINALBOSS, GEGNER, GEGNER_INDEX, HELD_BY_ID, INSEL_BY_ID, KAMPF, SPIELER, WELLEN, baseStats, type Insel, type Stats } from '../../data/src/index.ts';
 
@@ -73,6 +73,13 @@ export interface Player {
   /** Uhr für Helden-Macken (Kekse, Küken) und Bodenschaden */
   perkT: number;
   floorT: number;
+  /** Elemente der Waffen (Synergien) und aktive Synergie-Effekte */
+  synCount: Record<string, number>;
+  syn: Record<string, boolean>;
+  /** Zähler/Uhren für Synergien: Mini-Nuke, Gewitter, Eierregen, Drohnen */
+  boomCount: number;
+  stormT: number;
+  eggT: number;
 }
 
 /**
@@ -119,6 +126,9 @@ export type SimEvent =
   | { type: 'shock'; phase: 'laden' | 'entladen' }
   | { type: 'split'; enemy: string; x: number; z: number }
   | { type: 'keks'; player: number; x: number; z: number }
+  | { type: 'reaction'; id: string; name: string; farbe: string; x: number; z: number }
+  | { type: 'nuke'; x: number; z: number }
+  | { type: 'storm'; x: number; z: number }
   | { type: 'victory'; wave: number };
 
 
@@ -181,7 +191,10 @@ export class World {
   endless = false;
   /** Slot des Bosses oder -1 */
   boss = -1;
-  readonly stats = { kills: 0, maxChain: 0, explosions: 0, damage: 0, crystals: 0, waffen: {} as Record<string, number> };
+  readonly stats = { kills: 0, maxChain: 0, explosions: 0, damage: 0, crystals: 0, reactions: 0, waffen: {} as Record<string, number> };
+  /** Synergie-Effekte aller Spieler zusammen (für Wirkungen am Gegner) */
+  synFx: Record<string, boolean> = {};
+  private synKey = -1;
   readonly opt: Required<WorldOptions>;
 
   private chains: ChainSlot[] = [];
@@ -229,7 +242,8 @@ export class World {
     for (const h of this.hazards) h.active = false;
     for (const c of this.chains) { c.group = 0; c.count = 0; c.t = 99; }
     this.restoreBarrels();
-    Object.assign(this.stats, { kills: 0, maxChain: 0, explosions: 0, damage: 0, crystals: 0, waffen: {} });
+    Object.assign(this.stats, { kills: 0, maxChain: 0, explosions: 0, damage: 0, crystals: 0, reactions: 0, waffen: {} });
+    this.synKey = -1;
     this.enemyCount = 0;
     this.nextId = 1;
     this.nextGroup = 1;
@@ -276,7 +290,8 @@ export class World {
       weapons: [],
       level: 1, xp: 0, pendingLevels: 0, upgradeOffers: [], upgrades: [], items: {},
       stats: baseStats(), offers: [], rerolls: 0, ready: false, regenAcc: 0, loadout: 0, stealAcc: 0,
-      held: '', perk: {}, slowT: 0, perkT: 0, floorT: 0
+      held: '', perk: {}, slowT: 0, perkT: 0, floorT: 0,
+      synCount: {}, syn: {}, boomCount: 0, stormT: 0, eggT: 0
     };
     this.players.push(p);
     if (this.opt.held) this.setHero(p, this.opt.held);
@@ -288,6 +303,14 @@ export class World {
 
   step(inputs: readonly InputState[]): void {
     this.events.length = 0;
+    // Synergien aller Spieler zusammenfassen, wenn sich Waffen geändert haben
+    let key = 0;
+    for (const p of this.players) key += p.loadout * (p.id + 1);
+    if (key !== this.synKey) {
+      this.synKey = key;
+      this.synFx = {};
+      for (const p of this.players) Object.assign(this.synFx, p.syn);
+    }
     for (const e of this.enemies) if (e.alive) { e.px = e.x; e.pz = e.z; e.py = e.y; }
     for (const p of this.projectiles) if (p.alive) { p.px = p.x; p.py = p.y; p.pz = p.z; }
     for (const c of this.crystals) if (c.alive) { c.px = c.x; c.pz = c.z; }
@@ -402,6 +425,17 @@ export class World {
       p.perkT = 0;
       spawnChickFor(this, p, p.x, p.z, 4 * (1 + p.stats.schaden / 100) * WELLEN.hpFaktor(this.wave) ** 0.5);
     }
+    // Synergien mit Zeitgeber
+    const scale = (1 + p.stats.schaden / 100) * WELLEN.hpFaktor(this.wave) ** 0.6;
+    if (p.syn.gewitter && (p.stormT += DT) >= 4) { p.stormT = 0; stormStrike(this, p, 18 * scale); }
+    if (p.syn.eierregen && (p.eggT += DT) >= 6) {
+      p.eggT = 0;
+      for (let i = 0; i < 5; i++) {
+        const t = this.nearestEnemy(p.x + (this.rng.next() - 0.5) * 10, p.z + (this.rng.next() - 0.5) * 10, 8);
+        if (t >= 0) rainEgg(this, p, this.enemies[t].x, this.enemies[t].z, 14 * scale, i * 0.15);
+      }
+    }
+    if (this.tick % 15 === 0) maintainDrones(this, p, p.syn.drohne2 ? 2 : p.syn.drohne ? 1 : 0, 6 * scale);
   }
 
   /** Tesla-Platten: 3,5 s Ruhe, 1,1 s Laden (Leuchten), dann Entladung */
@@ -610,6 +644,8 @@ export class World {
   damageEnemy(e: Enemy, dmg: number, crit: boolean, kbx: number, kbz: number, chain = 0, group = 0, src = ''): void {
     if (!e.alive || e.doom >= 0) return;
     if (e.acid > 0) dmg *= 1 + 0.05 * e.acid;
+    if (e.poisonT > 0 && this.synFx.seuche) dmg *= 1.3;
+    if (e.stun > 0 && this.synFx.zersplittern) dmg *= 1.5;
     // Schildträger: Treffer von vorne prallen ab (Richtung = Rückstoß-Richtung)
     const sf = e.def.schildFaktor;
     if (sf && (kbx || kbz) && e.stun <= 0) {
@@ -647,6 +683,15 @@ export class World {
     const big = n > 12 ? Math.ceil(n / 12) : 1;
     for (let i = 0; i < n; i += big) this.spawnCrystal(e.x, e.z, Math.min(big, n - i));
     if (e.cloud && e.poisonT > 0 && e.doom < 0) this.addHazard('gift', e.x, e.z, 1.3, 3, Math.max(4, e.poisonDps), src, false, 1, 0);
+    // Feuer-Synergie: brennende Gegner zünden ihre Nachbarn an
+    if (e.burnT > 0 && this.synFx.brandsprung && e.doom < 0) {
+      for (const o of this.enemies) if (o.alive && o !== e && Math.hypot(o.x - e.x, o.z - e.z) < 2) { o.burnT = 3; o.burnDps = Math.max(o.burnDps, e.burnDps); }
+    }
+    // Gacker-Synergie: Küken schlüpfen
+    if (this.synFx.kueken && e.doom < 0 && this.rng.chance(0.1)) {
+      const p = this.players.find((q) => q.alive && q.syn.kueken);
+      if (p) spawnChickFor(this, p, e.x, e.z, 4 * (1 + p.stats.schaden / 100) * WELLEN.hpFaktor(this.wave) ** 0.5);
+    }
     // Grubert kennt die Verstecke: Extra-Kristall
     if (e.doom < 0 && this.players.some((q) => q.perk.grummelfreund) && this.rng.chance(0.2)) this.spawnCrystal(e.x, e.z, 1);
     // Splitter: zerfällt in kleinere Gegner

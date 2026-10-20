@@ -495,6 +495,37 @@ export class Effects {
     }
   }
 
+  /** Elementar-Reaktion: Ring und Funkenregen in der Reaktionsfarbe */
+  reaction(x: number, z: number, color: string): void {
+    const c = this.tmpColor.set(color).getHex();
+    this.ring(x, z, 1.8, c, 0.35);
+    this.flash(x, z, 2.2, 0.15);
+    const rnd = this.rnd;
+    for (let i = 0; i < 18; i++) {
+      const a = rnd() * Math.PI * 2, s = 2 + rnd() * 3;
+      this.sparks.spawn(x, 0.7, z, Math.cos(a) * s, 1.5 + rnd() * 3, Math.sin(a) * s, 0.45, 0.09, -6, c, 1.5);
+    }
+  }
+
+  /** Mini-Nuke: riesiger Feuerball mit Pilz */
+  nuke(x: number, z: number): void {
+    const rnd = this.rnd;
+    for (let i = 0; i < 30; i++) this.fire.spawn(x + (rnd() - 0.5) * 0.6, 0.6 + i * 0.12, z + (rnd() - 0.5) * 0.6, (rnd() - 0.5) * 1.5, 3 + rnd() * 2, (rnd() - 0.5) * 1.5, 0.9 + rnd() * 0.4, 0.5 + rnd() * 0.4, -1, this.pick(FIRE), 1.5);
+    this.ring(x, z, 6, 0xfff3c4, 0.6);
+    this.light(x, z, 60, 0.6, 0xffd23f);
+    this.flash(x, z, 9, 0.35);
+  }
+
+  /** Gewitterblitz vom Himmel */
+  storm(x: number, z: number): void {
+    const b = this.bolts[this.boltIdx++ % this.bolts.length];
+    b.n = 4;
+    b.pts.set([x + 0.6, 9, z - 0.6, x - 0.4, 6, z + 0.3, x + 0.3, 3, z - 0.2, x, 0.2, z]);
+    b.t = 0.25;
+    this.light(x, z, 25, 0.25, 0xa8f6ff);
+    this.ring(x, z, 1.4, 0x3de8ff, 0.25);
+  }
+
   /** Schildtreffer: „Pling" mit Funken */
   block(x: number, z: number): void {
     const rnd = this.rnd;

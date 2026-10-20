@@ -14,6 +14,7 @@ export class DamageNumbers {
   /** statt Zahl ein Text (z. B. „Ausgewichen!") */
   private label: (string | null)[] = [];
   private cls: string[] = [];
+  private color: string[] = [];
   private next = 0;
   private pt = { x: 0, y: 0 };
   enabled = true;
@@ -39,7 +40,8 @@ export class DamageNumbers {
   }
 
   /** Kurzer Text über der Figur (Level up, Heilung, Ausgewichen) – unabhängig von „Zahlen aus". */
-  text(id: number, x: number, y: number, z: number, str: string, cls: string): void {
+  text(id: number, x: number, y: number, z: number, str: string, cls: string, color = ''): void {
+    this.color[(this.next) % this.cap] = color;
     const i = this.next;
     this.next = (this.next + 1) % this.cap;
     this.id[i] = id;
@@ -79,7 +81,9 @@ export class DamageNumbers {
     if (label) {
       el.textContent = label;
       el.className = 'ob-dmg ' + this.cls[i];
+      el.style.color = this.color[i] ?? '';
     } else {
+      el.style.color = '';
       el.textContent = String(Math.round(this.value[i]));
       el.className = this.crit[i] ? 'ob-dmg crit' : this.value[i] >= 40 ? 'ob-dmg big' : 'ob-dmg';
     }

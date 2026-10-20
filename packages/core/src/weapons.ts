@@ -1,7 +1,7 @@
 import { DT, PLAYER_RADIUS } from './constants.ts';
 import type { World, Player } from './sim.ts';
 import type { Enemy, Projectile, WeaponSlot } from './entities.ts';
-import { AMBOSS, KAMPF, STUFEN, elemente, type Waffe } from '../../data/src/index.ts';
+import { AMBOSS, KAMPF, LADUNG_ELEMENT, STUFEN, elemente, findeReaktion, type Reaktionselement, type Waffe } from '../../data/src/index.ts';
 
 /**
  * Waffen feuern automatisch auf den nächsten Gegner in Reichweite.
@@ -25,6 +25,8 @@ export function spezialMask(w: Waffe): number {
 
 const zapIds = new Int32Array(24);
 const scratch = new Int32Array(256);
+/** eigener Puffer für Reaktionen (die laufen mitten in Flächenangriffen) */
+const scratch2 = new Int32Array(256);
 
 /** Kontext eines Treffers – ein einziges wiederverwendetes Objekt (keine Allokation) */
 interface HitCtx {
@@ -270,10 +272,10 @@ export function spawnChickFor(w: World, p: Player, x: number, z: number, dmg: nu
 function spawnChick(w: World, c: HitCtx, x: number, z: number): void {
   let n = 0;
   for (const pr of w.projectiles) if (pr.alive && pr.antrieb === 'kueken') n++;
-  if (n >= 16) return;
+  if (n >= (w.players[c.player]?.syn.kuekenstark ? 24 : 16)) return;
   const pr = freeProjectile(w);
   if (!pr) return;
-  initChild(pr, c, x, z, 0.1, 0, 0, 3.4, Math.max(1, c.dmg * 0.3));
+  initChild(pr, c, x, z, 0.1, 0, 0, 3.4, Math.max(1, c.dmg * 0.3) * (w.players[c.player]?.syn.kuekenstark ? 2 : 1));
   pr.antrieb = 'kueken'; pr.geschoss = 'kueken'; pr.ladung = 'keine';
   pr.life = 5; pr.r = 0.3; pr.cd = 0.2;
 }
@@ -309,7 +311,13 @@ function impactAt(w: World, c: HitCtx, x: number, z: number, e: Enemy | null, dx
     case 'explosion': {
       const g = w.newGroup();
       const r = KAMPF.explosionsRadius * c.blastMul;
-      w.queueBlast(x, z, r, c.dmg, 0, 0, g, false, 'waffe', c.src);
+      const owner = w.players[c.player];
+      // Explosiv-Synergie 6: jede 10. Explosion ist eine Mini-Nuke
+      if (owner?.syn.mininuke && ++owner.boomCount % 10 === 0) {
+        w.queueBlast(x, z, r * 2.2, c.dmg * 3, 0, 0, g, false, 'nuke', c.src);
+        w.events.push({ type: 'nuke', x, z });
+      } else w.queueBlast(x, z, r, c.dmg, 0, 0, g, false, 'waffe', c.src);
+      if (owner?.syn.feuerpfuetzen && w.rng.chance(0.35)) w.addHazard('lava', x, z, 0.9, 2.5, c.dmg * 0.25, c.src, false, 1, 0);
       if (c.mask & SP.cluster) {
         for (let k = 0; k < 3; k++) {
           const a = k * 2.094 + w.rng.next();
@@ -336,28 +344,37 @@ function hitEnemy(w: World, c: HitCtx, e: Enemy, dx: number, dz: number, primary
   if (!e.alive || e.doom >= 0) return;
   const owner = w.players[c.player];
   const boss = e.def.verhalten === 'boss';
+  const syn = owner?.syn;
+  // Elementar-Reaktion, bevor der neue Status greift
+  const inc = LADUNG_ELEMENT[c.ladung];
+  if (inc && e.reactT <= 0) react(w, c, e, inc);
+  if (!e.alive) return;
   let kb = 1.5;
+  let dmg = c.dmg;
+  if (syn?.flammenwut && e.burnT > 0) dmg *= 1.25;
   switch (c.ladung) {
     case 'rueckstoss': kb = KAMPF.rueckstoss; break;
     case 'frost':
       e.slow = Math.max(e.slow, 2);
-      if (++e.frost >= (owner?.perk.frostprofi ? 2 : 3) && !boss) { e.frost = 0; e.stun = Math.max(e.stun, 1.2); }
+      e.frostT = 3;
+      if (++e.frost >= (owner?.perk.frostprofi || syn?.frost2 ? 2 : 3) && !boss) { e.frost = 0; e.stun = Math.max(e.stun, 1.2); }
       if (c.mask & SP.konfettifrost && !boss) e.confuse = Math.max(e.confuse, 1.2);
       break;
     case 'kleister': e.slow = Math.max(e.slow, 2.5); kb = 3; break;
+    case 'kettenblitz': e.shockT = 1.2; break;
     case 'wasser': e.wet = 4; e.slow = Math.max(e.slow, 0.8); break;
     case 'schall': if (!boss) e.stun = Math.max(e.stun, 0.5); break;
     case 'ranken': if (!boss) e.stun = Math.max(e.stun, 1); break;
     case 'konfetti': if (!boss) e.confuse = Math.max(e.confuse, 1.5); break;
-    case 'brand': e.burnT = 3; e.burnDps = Math.max(e.burnDps, c.dmg * 0.35); break;
+    case 'brand': e.burnT = 3; e.burnDps = Math.max(e.burnDps, c.dmg * 0.35 * (syn?.brandplus ? 1.5 : 1)); break;
     case 'lava':
       e.burnT = 3; e.burnDps = Math.max(e.burnDps, c.dmg * 0.25);
       if (primary) w.addHazard('lava', e.x, e.z, 0.9, 4, c.dmg * 0.5, c.src, false, 1, 0);
       break;
     case 'gift':
       e.poisonT = 4;
-      e.poisonDps = Math.min(c.dmg * 1.5, e.poisonDps + c.dmg * 0.15) * (owner?.perk.giftprofi ? 1.6 : 1);
-      if (c.mask & SP.giftwolke) e.cloud = true;
+      e.poisonDps = Math.min(c.dmg * 1.5, e.poisonDps + c.dmg * 0.15) * (owner?.perk.giftprofi ? 1.6 : 1) * (syn?.giftplus ? 1.5 : 1);
+      if (c.mask & SP.giftwolke || syn?.giftwolke) e.cloud = true;
       break;
     case 'saeure': e.acid = Math.min(10, e.acid + 1); e.acidT = 4; break;
     case 'glueck': e.lucky = true; break;
@@ -372,17 +389,22 @@ function hitEnemy(w: World, c: HitCtx, e: Enemy, dx: number, dz: number, primary
     case 'splitter': if (primary) spawnSplinters(w, c, e.x, e.z, e.id); break;
   }
   if (c.mask & SP.heilkeks && owner && w.rng.chance(0.15)) w.heal(owner, 1);
+  // Natur-Synergie: Ranken fesseln
+  if (syn?.ranken && primary && !boss && w.rng.chance(0.1)) e.stun = Math.max(e.stun, 1);
+  // Chaos-Synergie: zufälliges Element
+  if (syn?.chaostreffer && primary && w.rng.chance(0.08)) chaosStatus(w, e, c.dmg, boss);
   if (c.mask & SP.kueken && primary && w.rng.chance(0.3)) spawnChick(w, c, e.x, e.z);
 
-  w.damageEnemy(e, c.dmg, c.crit && primary, dx * kb, dz * kb, 0, 0, c.src);
+  w.damageEnemy(e, dmg, c.crit && primary, dx * kb, dz * kb, 0, 0, c.src);
   if (owner && owner.stats.lebensraub > 0 && w.rng.next() * 100 < owner.stats.lebensraub) w.heal(owner, 1);
   if (primary) kawumm(w, c, e);
 }
 
 /** Instabile Fusionen: Krit kann einen Bonus-„Kawumm" auslösen – nie schädlich für Spieler. */
 function kawumm(w: World, c: HitCtx, e: Enemy): void {
-  if (!c.crit || c.instabil <= 0) return;
-  if (w.rng.next() >= (c.instabil / 100) * AMBOSS.kawummChance) return;
+  const instabil = w.players[c.player]?.syn.chaosinstabil ? Math.max(40, c.instabil) : c.instabil;
+  if (!c.crit || instabil <= 0) return;
+  if (w.rng.next() >= (instabil / 100) * AMBOSS.kawummChance) return;
   w.queueBlast(e.x, e.z, AMBOSS.kawummRadius * c.blastMul, c.dmg * AMBOSS.kawummSchaden, 0.06, 0, w.newGroup(), false, 'kawumm', c.src);
   w.events.push({ type: 'kawumm', x: e.x, z: e.z });
 }
@@ -396,6 +418,7 @@ export function pull(w: World, x: number, z: number, r: number, crystals: boolea
     const dx = x - e.x, dz = z - e.z, d = Math.hypot(dx, dz);
     if (d > r || d < 0.25) continue;
     e.kbx += (dx / d) * strength; e.kbz += (dz / d) * strength;
+    if (strength > 0) e.gravT = Math.max(e.gravT, 1);
   }
   if (!crystals) return;
   for (const cr of w.crystals) {
@@ -411,15 +434,18 @@ function zap(w: World, c: HitCtx, first: Enemy): void {
   let cur: Enemy | null = first;
   let dmg = c.dmg;
   let n = 0;
-  const jumps = KAMPF.blitzSpruenge * (c.mask & SP.doppelblitz ? 2 : 1);
+  const owner = w.players[c.player];
+  const jumps = KAMPF.blitzSpruenge * (c.mask & SP.doppelblitz ? 2 : 1) + (owner?.syn.blitzplus ? 1 : 0);
+  const falloff = owner?.syn.blitzstark ? 0.95 : KAMPF.blitzAbfall;
   for (let j = 0; j <= jumps && cur; j++) {
     zapIds[n++] = cur.id;
     const cx: number = cur.x, cz: number = cur.z;
     if (j > 0) pts.push(cx, 0.6 + cur.y, cz);
     const reach = KAMPF.blitzReichweite * (cur.wet > 0 ? 2 : 1) * (w.players[c.player]?.perk.blitzprofi ? 2 : 1);
     c.dmg = dmg;
+    cur.shockT = 1.2;
     hitEnemy(w, c, cur, 0, 0, false);
-    dmg *= KAMPF.blitzAbfall;
+    dmg *= falloff;
     let next: Enemy | null = null, bd = reach * reach;
     const m = w.hash.query(cx, cz, reach);
     for (let i = 0; i < m; i++) {
@@ -557,6 +583,7 @@ export function stepProjectiles(w: World): void {
       case 'orbit': stepOrbit(w, pr); break;
       case 'schwarm': stepSwarm(w, pr); break;
       case 'kueken': stepChick(w, pr); break;
+      case 'drohne': stepDrone(w, pr); break;
       default: stepLinear(w, pr);
     }
     if (pr.alive && pr.life <= 0) expire(w, pr);
@@ -832,4 +859,211 @@ function stepHostile(w: World, pr: Projectile): void {
     }
   }
   if (pr.life <= 0) pr.alive = false;
+}
+
+/* ------------------------------------------------------------------ */
+/* Elementar-Reaktionen                                                 */
+/* ------------------------------------------------------------------ */
+
+const ORDER: Reaktionselement[] = ['feuer', 'eis', 'blitz', 'gift', 'nass', 'grav'];
+
+function hasElement(e: Enemy, el: Reaktionselement): boolean {
+  switch (el) {
+    case 'feuer': return e.burnT > 0;
+    case 'eis': return e.frostT > 0;
+    case 'blitz': return e.shockT > 0;
+    case 'gift': return e.poisonT > 0;
+    case 'nass': return e.wet > 0;
+    case 'grav': return e.gravT > 0;
+  }
+}
+
+function around(w: World, x: number, z: number, r: number): number {
+  const n = w.hash.query(x, z, r + 0.5);
+  let m = 0;
+  for (let i = 0; i < n && m < scratch2.length; i++) scratch2[m++] = w.hash.result[i];
+  return m;
+}
+
+/** Löst eine Reaktion aus, wenn der Gegner schon unter einem anderen Element steht. */
+function react(w: World, c: HitCtx, e: Enemy, inc: Reaktionselement): void {
+  let r = null;
+  for (const el of ORDER) {
+    if (el === inc || !hasElement(e, el)) continue;
+    r = findeReaktion(inc, el);
+    if (r) break;
+  }
+  if (!r) return;
+  e.reactT = 0.5;
+  w.stats.reactions++;
+  w.events.push({ type: 'reaction', id: r.id, name: r.name, farbe: r.farbe, x: e.x, z: e.z });
+  const dmg = c.dmg, x = e.x, z = e.z;
+  const each = (rad: number, fn: (o: Enemy) => void) => {
+    const m = around(w, x, z, rad);
+    for (let i = 0; i < m; i++) {
+      const o = w.enemies[scratch2[i]];
+      if (o.alive && o.doom < 0 && Math.hypot(o.x - x, o.z - z) <= rad + o.r) fn(o);
+    }
+  };
+  const stun = (o: Enemy, t: number) => { if (o.def.verhalten !== 'boss') o.stun = Math.max(o.stun, t); };
+  switch (r.id) {
+    case 'dampfexplosion':
+      e.burnT = 0; e.slow = 0; e.frost = 0; e.frostT = 0;
+      w.queueBlast(x, z, 2 * c.blastMul, dmg * 2.5, 0, 0, w.newGroup(), false, 'reaktion', c.src);
+      break;
+    case 'dampfwolke':
+      e.wet = 0;
+      each(2.2, (o) => { stun(o, 1.4); o.burnT = 0; });
+      break;
+    case 'stinkbombe':
+      w.queueBlast(x, z, 1.8 * c.blastMul, dmg * 1.5, 0, 0, w.newGroup(), false, 'reaktion', c.src);
+      each(2.4, (o) => { o.poisonT = 4; o.poisonDps = Math.max(o.poisonDps, e.poisonDps, dmg * 0.3); });
+      break;
+    case 'plasmabrand':
+      w.queueBlast(x, z, 1.6 * c.blastMul, dmg * 2, 0, 0, w.newGroup(), false, 'reaktion', c.src);
+      break;
+    case 'feuerwirbel':
+      w.addHazard('lava', x, z, 1.6, 4, dmg * 0.6, c.src, false, 1, 0);
+      each(2, (o) => { o.burnT = 3; o.burnDps = Math.max(o.burnDps, dmg * 0.4); });
+      break;
+    case 'splitterschock':
+      e.slow = 0; e.frost = 0; e.frostT = 0;
+      spawnSplinters(w, c, x, z, e.id);
+      w.damageEnemy(e, dmg * 2.5, true, 0, 0, 0, 0, c.src);
+      break;
+    case 'kettenschock': {
+      const pts: number[] = [x, 0.8, z];
+      each(5, (o) => {
+        if (o.wet <= 0) return;
+        o.wet = 0;
+        pts.push(o.x, 0.8, o.z, x, 0.8, z);
+        w.damageEnemy(o, dmg * 2, false, 0, 0, 0, 0, c.src);
+      });
+      if (pts.length > 3) w.events.push({ type: 'zap', pts: pts.slice(0, 18) });
+      break;
+    }
+    case 'nervengift':
+      stun(e, 1.8);
+      each(1.5, (o) => stun(o, 1));
+      break;
+    case 'plasmakern': {
+      const save = c.mask;
+      c.mask |= SP.doppelblitz;
+      c.dmg = dmg * 1.5;
+      zap(w, c, e);
+      c.mask = save;
+      break;
+    }
+    case 'schockfrost':
+      e.wet = 0;
+      stun(e, 2.5);
+      each(1.8, (o) => { if (o.wet > 0) { o.wet = 0; stun(o, 2.5); } });
+      break;
+    case 'frostgift':
+      e.poisonDps = Math.min(e.poisonDps * 2, dmg * 3);
+      e.poisonT = Math.max(e.poisonT, 4);
+      break;
+    case 'eisimplosion':
+      each(2.2, (o) => { stun(o, 1.5); o.slow = Math.max(o.slow, 3); });
+      break;
+    case 'sumpf':
+      w.addHazard('gift', x, z, 1.4, 4, dmg * 0.6, c.src, false, 1, 0);
+      break;
+    case 'giftstrudel':
+      each(2.2, (o) => { o.poisonT = 4; o.poisonDps = Math.max(o.poisonDps, dmg * 0.4); });
+      break;
+    case 'strudel':
+      pull(w, x, z, 2.8, true, 10);
+      each(2.8, (o) => { o.slow = Math.max(o.slow, 2); });
+      break;
+  }
+}
+
+/** Chaos-Synergie: zufälliger Status */
+function chaosStatus(w: World, e: Enemy, dmg: number, boss: boolean): void {
+  switch (Math.floor(w.rng.next() * 6)) {
+    case 0: e.burnT = 3; e.burnDps = Math.max(e.burnDps, dmg * 0.35); break;
+    case 1: e.slow = Math.max(e.slow, 2); e.frost++; e.frostT = 3; break;
+    case 2: e.poisonT = 4; e.poisonDps = Math.max(e.poisonDps, dmg * 0.2); break;
+    case 3: e.wet = 4; break;
+    case 4: if (!boss) e.confuse = Math.max(e.confuse, 1.5); break;
+    default: if (!boss) e.chicken = Math.max(e.chicken, 2); break;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Synergie-Helfer: Gewitter, Eierregen, Drohnen                        */
+/* ------------------------------------------------------------------ */
+
+/** Blitz-Synergie 6: ein Gewitterblitz trifft einen zufälligen Gegner in der Nähe */
+export function stormStrike(w: World, p: Player, dmg: number): void {
+  const t = w.nearestEnemy(p.x + (w.rng.next() - 0.5) * 8, p.z + (w.rng.next() - 0.5) * 8, 9);
+  if (t < 0) return;
+  const e = w.enemies[t];
+  ctx.player = p.id; ctx.ladung = 'kettenblitz'; ctx.geschoss = 'blitzkugel'; ctx.src = 'gewitter';
+  ctx.blastMul = 1; ctx.instabil = 0; ctx.mask = 0; ctx.dmg = dmg; ctx.crit = false;
+  w.events.push({ type: 'storm', x: e.x, z: e.z });
+  zap(w, ctx, e);
+}
+
+/** Gacker-Synergie 6: ein explodierendes Ei fällt vom Himmel */
+export function rainEgg(w: World, p: Player, x: number, z: number, dmg: number, delay: number): void {
+  const pr = freeProjectile(w);
+  if (!pr) return;
+  ctx.player = p.id; ctx.ladung = 'explosion'; ctx.geschoss = 'ei'; ctx.src = 'eierregen';
+  ctx.blastMul = Math.max(0.3, 1 + p.stats.explosion / 100); ctx.instabil = 0; ctx.mask = 0; ctx.dmg = dmg; ctx.crit = false;
+  initChild(pr, ctx, x, z, 7, 0, 0, 0, dmg);
+  pr.antrieb = 'regen'; pr.tx = x; pr.tz = z; pr.dur = 0.55; pr.life = 2 + delay; pr.r = 0.9; pr.t = -delay;
+}
+
+/** Tech-Synergie: so viele Drohnen wie die Stufe erlaubt */
+export function maintainDrones(w: World, p: Player, want: number, dmg: number): void {
+  let have = 0;
+  for (const pr of w.projectiles) {
+    if (!pr.alive || pr.hostile || pr.antrieb !== 'drohne' || pr.player !== p.id) continue;
+    if (++have > want || !p.alive) pr.alive = false;
+    else pr.dmg = dmg;
+  }
+  for (let i = have; i < want && p.alive; i++) {
+    const pr = freeProjectile(w);
+    if (!pr) return;
+    ctx.player = p.id; ctx.ladung = 'keine'; ctx.geschoss = 'drohne'; ctx.src = 'drohne';
+    ctx.blastMul = 1; ctx.instabil = 0; ctx.mask = 0; ctx.dmg = dmg; ctx.crit = false;
+    initChild(pr, ctx, p.x, p.z, 1.3, 0, 0, 0, dmg);
+    pr.antrieb = 'drohne'; pr.life = 1e9; pr.slot = -2; pr.ang = i * Math.PI; pr.cd = 0.5 + i * 0.4;
+  }
+}
+
+/** Drohne: kreist über der Figur und schießt (ab Tech 4: Laser) */
+function stepDrone(w: World, pr: Projectile): void {
+  const p = w.players[pr.player];
+  if (!p || !p.alive) { pr.alive = false; return; }
+  pr.ang += 1.8 * DT;
+  pr.x = p.x + Math.cos(pr.ang) * 1.3; pr.z = p.z + Math.sin(pr.ang) * 1.3;
+  pr.y = 1.3 + Math.sin(pr.t * 3) * 0.1;
+  pr.cd -= DT;
+  if (pr.cd > 0 || w.phase !== 'welle') return;
+  const t = w.nearestEnemy(pr.x, pr.z, 7);
+  if (t < 0) { pr.cd = 0.2; return; }
+  pr.cd = 0.9;
+  const e = w.enemies[t];
+  const dx = e.x - pr.x, dz = e.z - pr.z, d = Math.hypot(dx, dz) || 1;
+  pr.vx = dx / d; pr.vz = dz / d;
+  const c = ctxFromShot(pr);
+  if (p.syn.drohnenlaser) {
+    c.ladung = 'plasma'; c.geschoss = 'laser';
+    beam(w, c, pr.x, pr.z, dx / d, dz / d, 7);
+    return;
+  }
+  const shot = freeProjectile(w);
+  if (!shot) return;
+  initChild(shot, c, pr.x, pr.z, 1.1, dx / d, dz / d, 14, pr.dmg);
+  shot.geschoss = 'laser'; shot.life = 0.7;
+}
+
+/** Ein Treffer mit beliebiger Ladung (Tests, Debug) */
+export function debugHit(w: World, p: Player, e: Enemy, ladung: string, dmg: number): void {
+  ctx.player = p.id; ctx.ladung = ladung; ctx.geschoss = 'kugel'; ctx.src = 'debug';
+  ctx.blastMul = 1; ctx.instabil = 0; ctx.mask = 0; ctx.dmg = dmg; ctx.crit = false;
+  hitEnemy(w, ctx, e, 0, 0, true);
 }
