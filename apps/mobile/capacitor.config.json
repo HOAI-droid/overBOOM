@@ -1,0 +1,15 @@
+{
+  "appId": "de.overboom.spiel",
+  "appName": "OVERBOOM",
+  "webDir": "../../dist",
+  "backgroundColor": "#0b0814",
+  "android": {
+    "backgroundColor": "#0b0814",
+    "allowMixedContent": false
+  },
+  "ios": {
+    "backgroundColor": "#0b0814",
+    "contentInset": "never",
+    "scrollEnabled": false
+  }
+}

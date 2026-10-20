@@ -35,8 +35,17 @@ export function isTauri(): boolean {
   return typeof globalThis !== 'undefined' && '__TAURI_INTERNALS__' in globalThis;
 }
 
-/** Passende Plattform wählen: Tauri (Desktop), sonst Web. Capacitor folgt für iOS/Android. */
+/** Läuft das Spiel als Handy-App (Capacitor)? */
+export function isCapacitor(): boolean {
+  const c = (globalThis as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+  return !!c?.isNativePlatform?.();
+}
+
+/** Passende Plattform wählen: Tauri (Desktop), Capacitor (iOS/Android), sonst Web */
 export async function createPlatform(): Promise<Platform> {
+  if (isCapacitor()) {
+    try { return await (await import('./capacitor.ts')).createCapacitorPlatform(); } catch { /* Fallback */ }
+  }
   if (isTauri()) {
     try { return await (await import('./tauri.ts')).createTauriPlatform(); } catch { /* Fallback */ }
   }

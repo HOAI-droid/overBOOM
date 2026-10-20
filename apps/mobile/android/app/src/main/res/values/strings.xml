@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">OVERBOOM</string>
+    <string name="title_activity_main">OVERBOOM</string>
+    <string name="package_name">de.overboom.spiel</string>
+    <string name="custom_url_scheme">de.overboom.spiel</string>
+</resources>

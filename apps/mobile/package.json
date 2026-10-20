@@ -1,0 +1,13 @@
+{
+  "name": "overboom-mobile",
+  "private": true,
+  "description": "OVERBOOM als iOS- und Android-App (Capacitor). Abhängigkeiten liegen im Wurzelverzeichnis.",
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.5.3",
+    "@capacitor/share": "^8.0.3"
+  }
+}

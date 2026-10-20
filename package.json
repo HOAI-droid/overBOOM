@@ -11,12 +11,22 @@
     "tauri": "cd apps/desktop && tauri",
     "dev:desktop": "cd apps/desktop && tauri dev",
     "build:desktop": "cd apps/desktop && tauri build",
+    "cap": "cd apps/mobile && cap",
+    "build:mobile": "npm run build:web && cd apps/mobile && cap sync",
+    "android": "npm run build:mobile && cd apps/mobile && cap open android",
+    "ios": "npm run build:mobile && cd apps/mobile && cap open ios",
     "build:artifact": "npm run build:single && python3 tools/to-artifact.py dist-single/index.html dist-single/overboom.html",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "node --experimental-strip-types --no-warnings packages/core/test/sim.test.ts && node --experimental-strip-types --no-warnings packages/net/test/net.test.ts && node --experimental-strip-types --no-warnings packages/audio/test/audio.test.ts",
     "balance": "node --experimental-strip-types --no-warnings packages/core/test/balance-bot.ts"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.5.3",
+    "@capacitor/share": "^8.0.3",
     "@tauri-apps/api": "^2.12.4",
     "@tauri-apps/plugin-fs": "^2.7.1",
     "qrcode-generator": "^2.0.4",
@@ -24,6 +34,7 @@
     "trystero": "^0.26.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
     "@tauri-apps/cli": "^2.12.3",
     "@types/three": "^0.170.0",
     "typescript": "^5.0.0",

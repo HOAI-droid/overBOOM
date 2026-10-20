@@ -1,0 +1,100 @@
+# Handy-Apps (Capacitor) aus demselben Web-Code bauen.
+# Android: Debug-APK zum direkten Installieren + AAB für Google Play (signiert nur mit Keystore-Secrets).
+# iOS: Simulator-App + unsignierte .ipa (zum Signieren mit eigenem Apple-Konto, z. B. per Xcode/AltStore).
+name: Handy-Apps
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/laughing-ramanujan-oyc23t, main]
+    tags: ['v*']
+    paths:
+      - 'apps/web/**'
+      - 'apps/mobile/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/mobile.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    name: Android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - run: npm ci
+      - run: npm test
+      - run: npm run build:mobile
+      - name: Keystore aus Secrets (optional)
+        env:
+          KS_B64: ${{ secrets.OVERBOOM_KEYSTORE_B64 }}
+        if: env.KS_B64 != ''
+        run: |
+          echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/overboom.jks"
+          echo "OVERBOOM_KEYSTORE=$RUNNER_TEMP/overboom.jks" >> "$GITHUB_ENV"
+      - name: Gradle (APK + AAB)
+        working-directory: apps/mobile/android
+        env:
+          OVERBOOM_KEYSTORE_PASS: ${{ secrets.OVERBOOM_KEYSTORE_PASS }}
+          OVERBOOM_KEY_ALIAS: ${{ secrets.OVERBOOM_KEY_ALIAS }}
+          OVERBOOM_KEY_PASS: ${{ secrets.OVERBOOM_KEY_PASS }}
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug bundleRelease
+          mkdir -p "$GITHUB_WORKSPACE/out"
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/out/OVERBOOM-android-debug.apk"
+          cp app/build/outputs/bundle/release/app-release.aab "$GITHUB_WORKSPACE/out/OVERBOOM-android.aab"
+      - uses: actions/upload-artifact@v5
+        with:
+          name: OVERBOOM-Android
+          path: out/*
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: out/OVERBOOM-android-debug.apk
+
+  ios:
+    name: iOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:mobile
+      - name: Simulator-Build
+        working-directory: apps/mobile/ios/App
+        run: |
+          xcodebuild -project App.xcodeproj -scheme App -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/sim build
+      - name: Geräte-Build (unsigniert)
+        working-directory: apps/mobile/ios/App
+        run: |
+          xcodebuild -project App.xcodeproj -scheme App -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath build/dev \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+          OUT="$GITHUB_WORKSPACE/out"
+          mkdir -p "$OUT/Payload"
+          cp -R build/dev/Build/Products/Release-iphoneos/App.app "$OUT/Payload/"
+          (cd "$OUT" && zip -qry OVERBOOM-ios-unsigniert.ipa Payload && rm -rf Payload)
+          (cd build/sim/Build/Products/Debug-iphonesimulator && zip -qry "$OUT/OVERBOOM-ios-simulator.zip" App.app)
+      - uses: actions/upload-artifact@v5
+        with:
+          name: OVERBOOM-iOS
+          path: out/*
