@@ -36,6 +36,12 @@
   .ob-wave-n { font-size: 11px; color: #c9bfe8; text-transform: uppercase; }
   .ob-wave-t { font-size: 26px; font-weight: 700; color: #f4ecff; }
   .ob-wave-t.urgent { color: var(--yellow); animation: ob-blink 0.5s steps(2) infinite; }
+  .ob-toasts { position: absolute; z-index: 8; right: max(10px, env(safe-area-inset-right)); top: 64px; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; pointer-events: none; }
+  .ob-toast { padding: 6px 10px; border: 3px solid var(--c); background: var(--panel); box-shadow: 0 0 0 2px var(--ink), 0 4px 0 var(--ink); max-width: 260px; }
+  .ob-toast b { display: block; font-size: 10px; color: var(--c); text-transform: uppercase; }
+  .ob-toast span { display: block; font-size: 13px; color: #f4ecff; }
+  .ob-toast.glanz { background: linear-gradient(110deg, #2a1f45 30%, #5a3a8a 45%, #2a1f45 60%); background-size: 300% 100%; animation: ob-holo 1.2s linear infinite; }
+  @keyframes ob-holo { from { background-position: 100% 0; } to { background-position: -100% 0; } }
   .ob-banner { position: absolute; z-index: 7; pointer-events: none; left: 50%; top: 34%; transform: translate(-50%, -50%); opacity: 0; text-align: center; white-space: nowrap; }
   .ob-banner b { display: block; font-size: clamp(28px, 7vw, 52px); font-weight: 700; text-transform: uppercase; color: var(--yellow); text-shadow: 0 4px 0 #c2410c, 0 8px 0 var(--ink); }
   .ob-banner b.cyan { color: var(--cyan); text-shadow: 0 4px 0 #1a6a8a, 0 8px 0 var(--ink); }

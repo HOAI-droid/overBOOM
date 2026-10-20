@@ -6,3 +6,4 @@ export * from './sim.ts';
 export { spawnEnemy } from './enemies.ts';
 export { SHOP_WEAPONS, canMerge, fusionPreview, type FusionPreview, rerollPrice, sellPrice, weaponPrice, itemPrice, type Command } from './progression.ts';
 export { weaponDamage, weaponRate, weaponRange } from './weapons.ts';
+export * from './meta.ts';

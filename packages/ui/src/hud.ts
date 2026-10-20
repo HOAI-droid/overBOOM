@@ -54,7 +54,7 @@ export class Hud {
     this.root.innerHTML = `
       <div class="ob-hurt"></div>
       <div class="ob-left">
-        <div class="ob-title"><b>OVER</b><b class="boom">BOOM</b><span>Prototyp · Phase 5</span></div>
+        <div class="ob-title"><b>OVER</b><b class="boom">BOOM</b><span>Prototyp · Phase 6</span></div>
         <div class="ob-hp" role="meter" aria-label="Leben"><div class="ob-hp-fill"></div><span class="ob-hp-txt">60 / 60</span></div>
         <div class="ob-xp"><span class="ob-lvl">Lv 1</span><div class="ob-xp-bar"><div class="ob-xp-fill"></div></div></div>
         <div class="ob-gems">${GEM_SVG}<span>0</span></div>
@@ -119,6 +119,23 @@ export class Hud {
       { duration: 2000, easing: 'ease-out', fill: 'forwards' }
     );
   }
+
+  /** Kleine Meldung oben rechts (neue Karte, Erfolg …), stapelt sich */
+  toast(title: string, sub: string, color = '#ffd23f', glanz = false): void {
+    let box = this.root.querySelector<HTMLDivElement>('.ob-toasts');
+    if (!box) { box = document.createElement('div'); box.className = 'ob-toasts'; this.root.appendChild(box); }
+    while (box.children.length >= 4) box.firstElementChild!.remove();
+    const el = document.createElement('div');
+    el.className = `ob-toast${glanz ? ' glanz' : ''}`;
+    el.style.setProperty('--c', color);
+    el.innerHTML = `<b></b><span></span>`;
+    el.querySelector('b')!.textContent = title;
+    el.querySelector('span')!.textContent = sub;
+    box.appendChild(el);
+    el.animate([{ opacity: 0, transform: 'translateX(40px)' }, { opacity: 1, transform: 'none', offset: 0.08 }, { opacity: 1, offset: 0.85 }, { opacity: 0 }], { duration: 3600, easing: 'ease-out', fill: 'forwards' })
+      .finished.then(() => el.remove(), () => el.remove());
+  }
+
 
   /** „CHAIN ×N!" – wird bei jeder neuen Kettenlänge größer und poppt erneut. */
   chain(count: number): void {

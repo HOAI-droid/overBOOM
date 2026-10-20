@@ -1,5 +1,5 @@
-import { World, DT, DASH_COOLDOWN, NO_INPUT, spawnEnemy, type Command, type InputState } from '@overboom/core';
-import { GEGNER, HELD_BY_ID, INSEL_BY_ID, LEVEL, SELTENHEIT, SYNERGIEN, waffeById } from '@overboom/data';
+import { World, DT, DASH_COOLDOWN, NO_INPUT, MetaTracker, ladeProfil, spawnEnemy, type Command, type InputState } from '@overboom/core';
+import { BOSS_LORE, ELEMENT_INFO, ERFOLGE, GEGNER, GEGNER_BY_ID, HELD_BY_ID, INSELN, INSEL_BY_ID, INSEL_LORE, KARTE_BY_ID, LEVEL, SELTENHEIT, SYNERGIEN, WELLEN_SPRUECHE, waffeById, waehle } from '@overboom/data';
 import { GameRenderer, type PlayerPose } from '@overboom/render';
 import { Controls, DamageNumbers, Hud, MenuNav, Menus, screenToWorld } from '@overboom/ui';
 import { createWebPlatform } from '@overboom/platform';
@@ -18,7 +18,28 @@ function fail(msg: string) {
   document.body.appendChild(d);
 }
 
-function start() {
+async function start() {
+  // Profil (Kartenalbum, Erfolge, befreite Inseln) laden – alte Rezeptliste übernehmen
+  const profil = ladeProfil(await platform.storage.get('profil'));
+  if (!profil.rezepte.length) {
+    try { for (const id of JSON.parse((await platform.storage.get('rezepte')) ?? '[]')) if (typeof id === 'string') profil.rezepte.push(id); } catch { /* egal */ }
+    for (const id of profil.rezepte) profil.karten['rezept:' + id] ??= 1;
+    profil.stats.rezepte = profil.rezepte.length;
+  }
+  const meta = new MetaTracker(profil);
+  // Debug: ?alles=1 schaltet alle Karten und Inseln frei
+  if (params.get('alles') === '1') meta.allesFrei();
+  let lastSave = 0;
+  const save = (force = false) => {
+    if (!meta.dirty) return;
+    const now = performance.now();
+    if (!force && now - lastSave < 3000) return;
+    lastSave = now;
+    meta.dirty = false;
+    platform.storage.set('profil', JSON.stringify(meta.profil));
+  };
+  addEventListener('pagehide', () => save(true));
+
   const canvas = document.createElement('canvas');
   root.appendChild(canvas);
 
@@ -63,9 +84,8 @@ function start() {
   const damage = new DamageNumbers(root);
   damage.enabled = params.get('zahlen') !== '0';
   const controls = new Controls(root, hud.dashButton);
-  // Entdeckte Rezepte bleiben auf dem Gerät gespeichert (Rezeptbuch)
-  const recipes = new Set<string>();
-  platform.storage.get('rezepte').then((v) => { try { for (const id of JSON.parse(v ?? '[]')) recipes.add(id); } catch { /* kaputt → leer */ } });
+  // Entdeckte Rezepte (Rezeptbuch) kommen aus dem Profil
+  let recipes = new Set(profil.rezepte);
   // Befehle aus Menüs: Ereignisse (Fusion, Merge …) sofort verarbeiten, sonst löscht sie der nächste Tick
   const send = (cmd: Command) => {
     world.events.length = 0;
@@ -74,7 +94,7 @@ function start() {
     world.events.length = 0;
     return ok;
   };
-  const menus = new Menus(root, world, send, touch, () => recipes);
+  const menus = new Menus(root, world, send, touch, () => (recipes.size === meta.profil.rezepte.length ? recipes : (recipes = new Set(meta.profil.rezepte))));
   const nav = new MenuNav(menus.root);
 
   const resize = () => renderer.resize(root.clientWidth, root.clientHeight, devicePixelRatio || 1);
@@ -96,6 +116,9 @@ function start() {
   let lastBoomHaptic = 0;
   let padStartWas = false;
   let lastLoadout = -1;
+  let lastPhase = '';
+  let lastItems: object | null = null;
+  let lastItemCount = -1;
 
   const restart = () => {
     world.reset();
@@ -109,6 +132,8 @@ function start() {
     acc = 0;
     paused = false;
     runs++;
+    meta.neuerRun();
+    save(true);
   };
   const pause = (on: boolean) => {
     if (on === paused) return;
@@ -155,17 +180,21 @@ function start() {
         case 'dodge': damage.text(-e.player - 1, e.x, 1.2, e.z, 'Ausgewichen!', 'dodge'); break;
         case 'heal': damage.text(-e.player - 100, e.x, 1.1, e.z, `+${e.value}`, 'heal'); break;
         case 'levelUp': damage.text(-e.player - 200, e.x, 1.6, e.z, 'Level up!', 'lvl'); platform.haptic(30); break;
-        case 'waveStart':
-          if (e.boss) hud.banner('Baron von Bumm!', '„Ich bin nicht dick, ich bin explosiv gebaut!"', 'rot');
-          else hud.banner(`Welle ${e.wave}`, e.wave === 1 ? 'Auf geht’s!' : e.wave === 20 ? 'Die letzte!' : 'Sie kommen wieder!', 'gelb');
+        case 'waveStart': {
+          const bossId = e.wave >= 20 ? 'baron' : world.insel.boss;
+          if (e.boss) hud.banner(`${GEGNER_BY_ID[bossId]?.name ?? 'Boss'}!`, BOSS_LORE[bossId]?.auftritt ?? '', 'rot');
+          else if (e.wave === 1) hud.banner(world.insel.name, INSEL_LORE[world.insel.id]?.ankunft ?? 'Auf geht’s!', 'gelb');
+          else hud.banner(`Welle ${e.wave}`, e.wave === 20 ? 'Die letzte!' : waehle(WELLEN_SPRUECHE, `${seed}:${runs}:${e.wave}`), 'gelb');
           break;
-        case 'bossPhase': hud.banner('Jetzt wird er sauer!', 'Der Baron ruft Verstärkung', 'rot'); platform.haptic(120); break;
+        }
+        case 'bossPhase': {
+          const bossId = world.wave >= 20 ? 'baron' : world.insel.boss;
+          hud.banner('Jetzt wird’s ernst!', BOSS_LORE[bossId]?.wut ?? '', 'rot'); platform.haptic(120); break;
+        }
         case 'waveClear': hud.banner('Welle geschafft!', 'Alles fliegt in die Luft', 'cyan'); platform.haptic(80); break;
         case 'victory': endTimer = 1.2; break;
         case 'fusion':
-          if (e.rezept && !recipes.has(e.rezept)) {
-            recipes.add(e.rezept);
-            platform.storage.set('rezepte', JSON.stringify([...recipes]));
+          if (e.rezept && !meta.profil.rezepte.includes(e.rezept)) {
             hud.banner('Rezept entdeckt!', e.name, 'gelb');
             platform.haptic(150);
           } else hud.banner('Verschmolzen!', e.name, e.rezept ? 'gelb' : 'cyan');
@@ -179,6 +208,30 @@ function start() {
         case 'death': platform.haptic(200); endTimer = 1.6; break;
       }
     }
+    meta.events(world, world.events);
+    announce();
+  }
+
+  /** Neue Karten, Erfolge und Inseln melden */
+  function announce() {
+    for (const n of meta.neues) {
+      if (n.art === 'karte' || n.art === 'glanz') {
+        const k = KARTE_BY_ID[n.id];
+        if (!k) continue;
+        const farbe = k.elemente[0] ? ELEMENT_INFO[k.elemente[0]].farbe : SELTENHEIT[k.seltenheit - 1].farbe;
+        hud.toast(n.art === 'glanz' ? 'Glanzkarte!' : 'Neue Karte', k.name, farbe, n.art === 'glanz');
+      } else if (n.art === 'erfolg') {
+        const e = ERFOLGE.find((x) => x.id === n.id);
+        if (e) hud.toast('Erfolg', e.name, '#3de8ff', true);
+      } else if (n.art === 'insel') {
+        const i = INSELN.findIndex((x) => x.id === n.id);
+        hud.banner(`${INSELN[i].name} befreit!`, INSEL_LORE[n.id]?.befreit ?? '', 'cyan');
+        if (INSELN[i + 1]) hud.toast('Neue Insel', INSELN[i + 1].name, '#3de8ff');
+        platform.haptic(150);
+      }
+    }
+    meta.neues.length = 0;
+    save();
   }
 
   const frame = (now: number) => {
@@ -218,7 +271,12 @@ function start() {
 
     if (endTimer > 0) {
       endTimer -= dt;
-      if (endTimer <= 0) menus.showEnd(endStats(world.phase === 'sieg'), seed + runs);
+      if (endTimer <= 0) {
+        meta.runEnde(world, world.phase === 'sieg');
+        announce();
+        save(true);
+        menus.showEnd(endStats(world.phase === 'sieg'), seed + runs);
+      }
     }
     if (!paused && menus.current !== 'end') menus.sync();
 
@@ -236,6 +294,13 @@ function start() {
       level: p.level, xp: p.xp / LEVEL.xpBedarf(p.level),
       boss: boss && boss.alive ? Math.max(0, boss.hp / boss.maxHp) : -1
     });
+    if (world.phase !== lastPhase || p.loadout !== lastLoadout || p.items !== lastItems || Object.keys(p.items).length !== lastItemCount) {
+      lastPhase = world.phase;
+      lastItems = p.items;
+      lastItemCount = Object.keys(p.items).length;
+      meta.sync(world);
+      announce();
+    }
     if (p.loadout !== lastLoadout) {
       lastLoadout = p.loadout;
       hud.synergies(SYNERGIEN.map((sy) => {

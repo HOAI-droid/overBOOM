@@ -3,6 +3,7 @@ import { ANTRIEBE, GEGNER, GEGNER_INDEX, HELDEN, INSELN, REAKTIONEN, LADUNG_ELEM
 import { Tile as T } from '../src/arena.ts';
 import * as D from '../../data/src/index.ts';
 import { Rng } from '../src/rng.ts';
+import * as Core from '../src/index.ts';
 
 let fails = 0;
 const ok = (cond: boolean, msg: string) => { console.log((cond ? '✓ ' : '✗ ') + msg); if (!cond) fails++; };
@@ -828,6 +829,47 @@ for (const [el, ids, ev] of [
   // deterministisch
   const roll = () => { const r = new Rng(5); return D.rollAusruestung(() => r.next(), 1, 8, 4); };
   ok(JSON.stringify(roll()) === JSON.stringify(roll()), `Würfeln ist deterministisch (${roll().name})`);
+}
+
+// Phase 6: Karten, Profil, Inseln
+{
+  ok(D.KARTEN.length >= 220 && new Set(D.KARTEN.map((k) => k.id)).size === D.KARTEN.length, `${D.KARTEN.length} Karten, alle IDs eindeutig`);
+  ok(D.KARTEN.every((k) => k.name && k.typzeile && k.faehigkeiten.length >= 1 && k.flavor && k.wert.zahl > 0 && k.seltenheit >= 1 && k.seltenheit <= 5), 'Jede Karte hat Name, Typzeile, Fähigkeit, Flavor, Hauptwert');
+  ok(D.ERFOLGE.every((e) => D.KARTE_BY_ID[e.karte]), `${D.ERFOLGE.length} Erfolge zeigen auf echte Karten`);
+  ok(D.INSELN.every((i) => D.INSEL_LORE[i.id]) && Object.keys(D.BOSS_LORE).every((b) => D.GEGNER_BY_ID[b]), 'Lore für alle Inseln und Bosse');
+  const prof = Core.neuesProfil();
+  ok(Core.inselFrei(prof, 'gackerfeld') && !Core.inselFrei(prof, 'funkenschlund'), 'Nur Gackerfeld ist am Anfang frei');
+  const w = new World(80, 1, { god: true, insel: 'gackerfeld', held: 'bauerbruno' });
+  const meta = new Core.MetaTracker(prof);
+  w.step([idle]);
+  meta.sync(w);
+  ok(prof.karten['held:bauerbruno'] === 1 && prof.stats.runs === 1, 'Held-Karte nach Run-Start');
+  ok(w.players[0].weapons.every((s) => prof.karten['waffe:' + s.waffe.id] === 1), 'Startwaffe hat Karte');
+  ok(prof.erfolge.includes('erster_run') && prof.karten['held:kawummkid'] === 2, 'Erfolg „erster Run" gibt Glanzkarte');
+  for (const warn of w.warnings) warn.active = false; w.spawnAcc = -999;
+  const p = w.players[0];
+  for (let k = 0; k < D.KARTEN_REGELN.gegnerKills; k++) {
+    const e = spawnEnemy(w, GEGNER_INDEX.kampfhuhn, p.x + 6, p.z)!;
+    w.events.length = 0; w.killEnemy(e, 0, 0, false); meta.events(w, w.events);
+  }
+  ok(prof.karten['gegner:kampfhuhn'] === 1 && prof.kills.kampfhuhn === 50, '50 Kampfhühner → Gegnerkarte');
+  const b = spawnEnemy(w, GEGNER_INDEX.koenig_gockel, p.x + 6, p.z)!;
+  w.events.length = 0; w.killEnemy(b, 0, 0, false); meta.events(w, w.events);
+  ok(prof.befreit.includes('gackerfeld') && Core.inselFrei(prof, 'funkenschlund') && !Core.inselFrei(prof, 'rostgrat'), 'Insel-Boss besiegt → Gackerfeld befreit, Funkenschlund frei');
+  ok(prof.karten['gegner:koenig_gockel'] === 1 && meta.neues.some((n) => n.art === 'insel'), 'Boss-Karte und Insel-Meldung');
+  // Rezept-Fusion → Karte
+  w.events.length = 0;
+  w.events.push({ type: 'fusion', player: 0, weapon: 'rezept:huhnageddon', name: 'HUHNAGEDDON', rezept: 'huhnageddon', x: 0, z: 0 });
+  meta.events(w, w.events);
+  ok(prof.karten['rezept:huhnageddon'] === 1 && prof.rezepte.includes('huhnageddon'), 'Rezept entdeckt → Fusionskarte');
+  meta.runEnde(w, true);
+  ok(prof.karten['held:bauerbruno'] === 2 && prof.erobert.includes('gackerfeld') && prof.stats.siege === 1, 'Sieg → Glanz-Heldenkarte, Insel erobert');
+  // Speichern/Laden und Code
+  const back = Core.ladeProfil(JSON.stringify(prof));
+  ok(JSON.stringify(back) === JSON.stringify(prof), 'Profil übersteht Speichern/Laden');
+  const code = Core.profilCode(prof);
+  ok(JSON.stringify(Core.profilAusCode(code)) === JSON.stringify(prof) && Core.profilAusCode('Quatsch') === null, `Export-Code (${code.length} Zeichen) und Import`);
+  ok(Core.ladeProfil('{kaputt').stats.runs === 0 && Core.ladeProfil('{"karten":5}').karten !== null, 'Kaputtes Profil → frisches Profil');
 }
 
 if (fails) { console.log(`\n${fails} Test(s) fehlgeschlagen`); process.exit(1); } else console.log('\nAlle Tests bestanden');

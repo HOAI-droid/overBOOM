@@ -4,7 +4,7 @@ import {
 } from '@overboom/core';
 import {
   A, AMBOSS, EVOLUTION, G, GEGNER_BY_ID, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, evoName, HELDEN, HELD_BY_ID, INSELN, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
-  elemente, type StatKey, PLAETZE, SETS, SET_BY_ID, setBoni, schrottwert, BEUTE, type Ausruestung
+  elemente, type StatKey, SIEG_TEXT, SPRUECHE_TOD, PLAETZE, SETS, SET_BY_ID, setBoni, schrottwert, BEUTE, type Ausruestung
 } from '@overboom/data';
 
 const GEM = '<i class="ob-gem" aria-hidden="true"></i>';
@@ -69,13 +69,6 @@ export interface EndStats {
   mvpDamage: number;
 }
 
-const SPRUECHE_TOD = [
-  'Kawumm! Das war wohl zu viel Kawumm.',
-  'Die Grummelbolde grummeln zufrieden.',
-  'Die Bomben-Kröten quaken ein Siegeslied.',
-  'Der Toastomat toastet auf deinen Untergang.',
-  'Baron von Bumm zwirbelt zufrieden den Schnurrbart.'
-];
 
 /**
  * Alle Menü-Overlays. Liest den Weltzustand, ändert ihn aber nie selbst –
@@ -470,7 +463,7 @@ export class Menus {
     this.show('end', `
       <div class="ob-panel ob-end ${s.victory ? 'win' : ''}">
         <h2>${s.victory ? 'Sieg!' : 'Kawumm!'}</h2>
-        <p class="ob-sub">${s.victory ? 'Baron von Bumm ist geschlagen. Gackerfeld ist frei – vorerst.' : SPRUECHE_TOD[seed % SPRUECHE_TOD.length]}</p>
+        <p class="ob-sub">${s.victory ? SIEG_TEXT : SPRUECHE_TOD[seed % SPRUECHE_TOD.length]}</p>
         <dl class="ob-end-stats">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
         <div class="ob-row ob-center">
           ${s.victory ? '<button type="button" class="ob-btn2" data-act="endless">Endlos weiter</button>' : ''}

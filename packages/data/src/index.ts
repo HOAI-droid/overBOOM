@@ -11,3 +11,5 @@ export * from './synergies.ts';
 export * from './reactions.ts';
 export * from './mods.ts';
 export * from './equipment.ts';
+export * from './lore.ts';
+export * from './cards.ts';
