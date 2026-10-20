@@ -11,7 +11,8 @@ Arena-Roguelite im Stil von Brotato mit 3D-Voxel-Pixel-Grafik (Kamera wie Minecr
 - `packages/core`: reine Simulation. Kein DOM, kein Three.js, kein `Math.random()` (nur `Rng` mit Seed), fester Tick (`DT`). Muss in Node laufen (`npm test`).
 - `packages/render`: liest nur den Zustand aus `core`, verändert ihn nie. Effekte entstehen aus `world.events`.
 - `packages/platform`: einziger Zugriff auf Speicher, Vibration, Vollbild, Wake-Lock usw. Spielcode ruft nie direkt `localStorage`/`navigator` auf.
-- `packages/net`: Transport-Interface für Koop (Host-autoritativ, WebRTC via Trystero + TURN-Fallback). Noch nicht implementiert.
+- `packages/net`: Koop (Host-autoritativ). `Transport`-Interface mit Trystero/WebRTC + TURN, BroadcastChannel (`?netz=lokal`) und Speicher-Transport (Tests). `HostSession`/`ClientSession`, binäre Snapshots (`snapshot.ts`), Inventar-Zustand als JSON (`state.ts`). Muss in Node laufen (`packages/net/test`).
+- `packages/audio`: prozedurale SFX (`synth.ts`, `sounds.ts`), Musik-Sequenzer (`music.ts`), `AudioEngine.events()` vertont `world.events`.
 - Daten (Waffen, Gegner, Items, Karten, Lore) gehören nach `packages/data`, nicht in die Logik.
 - Performance-Pflicht: Instancing, Object-Pools, keine Allokationen pro Frame im Game-Loop.
 
@@ -23,7 +24,7 @@ Arena-Roguelite im Stil von Brotato mit 3D-Voxel-Pixel-Grafik (Kamera wie Minecr
 
 ## Befehle
 - `npm run dev` – Entwicklungsserver (auch im WLAN, zum Testen am Handy)
-- `npm test` – Simulationstests (Node 22+)
+- `npm test` – Simulations-, Netz- und Audio-Tests (Node 22+)
 - `npm run balance` – Balancing-Bot spielt komplette Runs
 - `npm run typecheck`
 - `npm run build:web` / `build:single` / `build:artifact`
@@ -38,5 +39,7 @@ Arena-Roguelite im Stil von Brotato mit 3D-Voxel-Pixel-Grafik (Kamera wie Minecr
 - Phase 4 (Waffen-Fusion, v0.4.0) fertig: Fusions-Amboss im Shop (`ui/src/menus.ts`, Befehl `{ type: 'fuse', slots, geschoss, antrieb, ladung }`), Fusionsregeln + 10 geheime Rezepte + Namensgenerator in `data/src/fusion.ts` (`fusionsWaffe`, `waffeById` – Fusions-IDs `fusion:g+a+l` bzw. `rezept:id`), Instabilität mit Bonus-Kawumm. Alle 19 Antriebe und 22 Ladungen in `core/src/weapons.ts` (Treffer laufen über `impactAt`/`hitEnemy`, Pfützen/Sog als `world.hazards`). Fusionsmodelle in `render/src/models.ts` (`fusionModel`, `REZEPT_MODELLE`). Entdeckte Rezepte speichert `apps/web` über `platform.storage`.
 - Phase 5 (Content-Ausbau, v0.5.0) fertig: 13 Helden (`data/src/heroes.ts`, Perks in `p.perk`), 7 Inseln mit Fraktion/Palette/Bodengefahr (`data/src/islands.ts`, `core/src/arena.ts` Stile), 16 Gegner + 4 Bosse (generischer `stepBoss` mit `angriffe`-Liste), Synergien (`data/src/synergies.ts`, `p.syn`/`world.synFx`), 15 Reaktionen (`data/src/reactions.ts`, `react()` in `core/src/weapons.ts`), Sterne/Evolutionen/Mods (`data/src/mods.ts`, IDs `evo:a|b:<id>`), 159 Items (`items_extra.ts`), Ausrüstung mit 8 Plätzen und 4 Sets (`data/src/equipment.ts`, Befehle `equip`/`unequip`/`scrap`, Beute über `world.lootRng`). Shop-Tabs Shop/Amboss/Ausrüstung.
 - Phase 6 (Welt & Karten, v0.6.0) fertig: Lore in `data/lore.ts`; Sammelkarten + Erfolge in `data/cards.ts` (`KARTEN`, IDs `art:ref`); Meta-Profil in `core/src/meta.ts` (`MetaTracker`: `events`/`sync`/`runEnde`, `inselFrei`, Export-Code) – die App speichert es über `platform.storage` ('profil'); Weltkarte `render/src/worldMap.ts` (über `renderer.renderMap`, Beschriftungen per `menus.updateMapLabels`); Kartenalbum `ui/src/album.ts` + Artworks `render/src/cardArt.ts` (eigener WebGL-Kontext, UI kennt nur `KartenKunst`); PNG-Export `ui/src/cardImage.ts` → `platform.saveImage`. 40 Rezepte, neue Rezept-Wirkungen (`SP.minibumm` … `SP.donner`) in `rezeptTreffer`.
-- Nächster Schritt: **Phase 7 – Multiplayer** (Lobby, Raumcode, Host-Sim, Prediction/Interpolation, Revive).
+- Phase 7 (Multiplayer) fertig: Koop-Regeln im Kern (`downed`/`reviveT`, `KOOP` in balance.ts, `w.koop()`), Netz-Paket (s. o.), App-Ablauf Titel → Lobby → Spiel in `apps/web/src/main.ts` (`modus` solo/host/client, `useWorld`), Lobby/Titel in `ui/src/lobby.ts`, Namensschilder `ui/src/nametags.ts`. Client ruft nie `world.step`, sondern `client.input()` (Vorhersage) und `client.update()` (Snapshots).
+- Phase 8 (Feinschliff, v0.8.0) fertig: Audio, Einstellungen (`ui/src/settings.ts`, `FX` in render/effects.ts), Overkill/OVERBOOM (`p.overkill`/`p.boomT`, `OVERKILL`), Gefahrenstufen (`data/src/danger.ts`, `w.gw`), Helden-Freischaltung (`HELD_FREI`), IndexedDB in `platform/web.ts`, PWA (`apps/web/public/sw.js`), Debug-Menü F1 (`ui/src/debug.ts`), automatische Qualitätsstufe.
+- Nächster Schritt: **Phase 9 – App-Builds** (Capacitor iOS/Android, Tauri Desktop).
 - Nach jeder Phase: Tests + Typecheck grün, kurze Änderungsliste, bekannte Probleme, nächster Schritt.

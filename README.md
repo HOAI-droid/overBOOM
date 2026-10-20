@@ -2,6 +2,33 @@
 
 3D-Voxel-Arena-Roguelite mit Waffen-Fusion. Läuft im Browser (Handy + PC), später als App (Capacitor) und Desktop (Tauri) aus demselben Code.
 
+## Stand: Phase 7 + 8 – Koop & Feinschliff (v0.8.0)
+
+### Koop (1–4 Spieler, jeder am eigenen Gerät)
+- **Titelbildschirm**: Solo spielen, Raum erstellen oder mit Code beitreten. Einladungslink `?raum=CODE` tritt direkt bei.
+- **Lobby** mit 6-stelligem Raumcode, QR-Code, „Link teilen", Spielerliste mit Verbindungsart (direkt / über Relay) und Ping, Heldenwahl für jeden, Insel und Gefahrenstufe vom Host. Start, sobald alle bereit sind.
+- **Host-autoritativ**: Das Gerät des Hosts simuliert für alle mit 30 Hz (auch kurz im Hintergrund über einen Worker-Takt). Clients schicken nur Eingaben und Shop-Befehle.
+- **Netzcode** (`packages/net`): binäre, quantisierte Snapshots (~1,5 KB, 15 Hz) mit den Ereignissen dazwischen – Effekte entstehen bei jedem lokal. Inventar/Shop als JSON nur bei Änderung. Eigene Figur wird vorhergesagt und abgeglichen, alles andere 100 ms verzögert interpoliert.
+- **Koop-Regeln**: gemeinsame Welle, eigener Shop (weiter, wenn alle bereit sind), Gegnerleben/-anzahl/Boss skalieren mit Spielerzahl, **Niederschlagen + Revive-Ring** (2,5 s danebenstehen), am Wellenende stehen alle wieder auf.
+- Namensschilder, Pfeile zu Mitspielern außerhalb des Bildes, leichter Koop-Kamerazoom, Wiederverbinden innerhalb von 30 s, sauberer Abbruch mit Hinweis.
+- **Transport**: WebRTC über Trystero (Signaling über Nostr), STUN eingebaut, **TURN** konfigurierbar (siehe unten). Zum Testen ohne Netz: `?netz=lokal` (Koop zwischen Browser-Tabs).
+
+### Feinschliff und Meta-Progression
+- **Audio** (`packages/audio`): 45 prozedurale Soundeffekte (jsfxr-artig, keine Dateien) – jede Waffe klingt nach Geschoss/Gruppe (Gacker, Kazoo, Raketen, Blitze …), Ketten-Explosionen steigen in der Tonhöhe, Kristalle spielen eine Tonleiter; 4 Chiptune-Loops (Menü, Kampf, Boss, Shop); Stereo nach Position.
+- **Overkill-Leiste & OVERBOOM-Modus**: füllt sich durch Kills und Ketten; auslösen (E/Q, Gamepad Y, Touch-Knopf) → 5 s doppelte Feuerrate, jeder Treffer explodiert, Bildschirm färbt sich.
+- **Gefahrenstufen 0–10** mit aufsteigenden Modifikatoren (bis „OVERBOOM": alle Gegner explodieren beim Tod). Ein Sieg schaltet die nächste Stufe frei.
+- **9 Helden** werden über Erfolge freigeschaltet; 20 Erfolge insgesamt.
+- **Einstellungen**: Lautstärken, Qualität (automatisch nach Bildrate oder fest), Bildschirm-Wackeln, Lichtblitze, Partikeldichte, Schadenszahlen, Vibration, **Farbenblind-Modus** (gemusterte Gefahrenzonen) – gespeichert.
+- **PWA**: installierbar (Manifest, Icons), Service Worker → solo offline spielbar. Spielstand in **IndexedDB** (alter Stand wird übernommen) plus Export-Code.
+- **Debug-Menü**: F1 oder 5-Finger-Tipp (Kristalle, Welle überspringen, Gott-Modus, Waffen/Gegner spawnen).
+- UI-Animationen (Panels ploppen schräg herein, Knöpfe federn; „reduzierte Bewegung" wird respektiert), Tipps und Sprüche.
+
+### Koop über das Internet: TURN einrichten
+Direkte Verbindungen klappen in vielen WLANs. In Mobilfunk- oder Firmennetzen braucht es einen TURN-Relay. Beim Build als Umgebungsvariablen setzen (z. B. Cloudflare Realtime TURN oder eigener coturn):
+```bash
+VITE_TURN_URLS="turn:turn.example.com:3478,turns:turn.example.com:5349" VITE_TURN_USER="name" VITE_TURN_PASS="geheim" npm run build:web
+```
+
 ## Stand: Phase 6 – Welt & Karten (v0.6.0)
 - **Weltkarte Krawummia**: schwebende Voxel-Inseln über einem Wolkenmeer, jede mit eigener Deko (Scheune, Tesla-Türme, Fabrik, Riesenpilze, Vulkan, Eiskristalle, Bummburg). Ablauf: Held wählen → Insel auf der Karte wählen → los.
 - **Insel-Freischaltung**: Am Anfang ist nur Gackerfeld offen. Wer den Insel-Boss (Welle 10) besiegt, befreit die Insel (Flagge) und schaltet die nächste frei; ein Sieg auf Welle 20 erobert sie (Krone).
@@ -56,33 +83,27 @@
 ```bash
 npm install
 npm run dev            # Entwicklungsserver (auch im WLAN erreichbar → Handy testen)
-npm test               # Simulationstests (Node 22+)
+npm test               # Simulations-, Netz- und Audio-Tests (Node 22+)
+npm run balance        # Balancing-Bot spielt komplette Runs
 npm run typecheck
 npm run build:web      # statischer Build in dist/
 npm run build:single   # alles in einer HTML-Datei
 ```
 
-URL-Parameter: `?res=360` (Auflösung), `?seed=42` (Arena), `?shadows=0` (Schatten aus), `?shake=0` (Screen-Shake aus, 0–2), `?zahlen=0` (Schadenszahlen aus).
-Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` (Startkristalle), `?waffen=huehnerkanone,huehnerkanone,huehnerkanone` (Startwaffen, überspringt die Wahl), `?held=pyromane&insel=lavakessel` (Schnellstart), `?galerie=1` (alle Gegner zum Anschauen), `?beute=6` (Ausrüstung in den Beutel), `?alles=1` (alle Karten und Inseln freischalten).
+URL-Parameter: `?res=360` (Auflösung), `?seed=42` (Arena), `?shadows=0` (Schatten aus), `?shake=0` (Screen-Shake aus, 0–2), `?zahlen=0` (Schadenszahlen aus), `?raum=CODE` (Koop-Raum beitreten), `?netz=lokal` (Koop zwischen Browser-Tabs statt WebRTC).
+Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` (Startkristalle), `?waffen=huehnerkanone,huehnerkanone,huehnerkanone` (Startwaffen, überspringt die Wahl), `?held=pyromane&insel=lavakessel` (Schnellstart), `?galerie=1` (alle Gegner zum Anschauen), `?beute=6` (Ausrüstung in den Beutel), `?alles=1` (alle Karten, Inseln und Gefahrenstufen freischalten), `?test=1` (Zustand für automatische Browser-Tests lesbar).
 
 ## Bekannte Probleme
+- **Koop über echtes WebRTC ist noch nicht zwischen zwei Geräten getestet** – in der Entwicklungsumgebung sind die öffentlichen Nostr-Relays gesperrt. Getestet sind Netzcode (Node-Tests) und Koop zwischen Browser-Tabs (`?netz=lokal`). Ohne TURN-Relay klappt Koop nicht in jedem Netz.
+- Keine Host-Migration: Verlässt der Host das Spiel, endet es für alle (mit Hinweis).
+- Ein Host-Tab im Hintergrund läuft über den Worker-Takt weiter, Browser können ihn aber nach einer Weile drosseln. Am besten bleibt der Host im Vordergrund.
+- Snapshots haben noch keine Delta-Kompression; bei sehr vielen Geschossen werden sie größer (gemessen ~1,5 KB, im Extremfall bis ~20 KB).
 - Gegner laufen direkt auf den Spieler zu (noch kein Flow-Field); an Säulen rutschen sie seitlich ab.
-- Simulations-Ereignisse sind kleine Objekte pro Tick (wenig, aber nicht null GC); Gegner, Geschosse und Partikel sind gepoolt.
-- Hit-Stop hält die lokale Simulation an – im Koop (Phase 7) muss er rein visuell werden.
-- Noch kein Audio (Phase 8), keine Overkill-Leiste, kein Debug-Menü (nur URL-Parameter).
-- Phase-5-Inhalte sind grob balanciert; der Balancing-Bot kauft noch keine Mods/Ausrüstung und evolviert nicht.
-- Helden sind alle von Anfang an frei (Freischaltung über Erfolge folgt mit der Meta-Progression in Phase 8).
-- Speicherung noch über localStorage statt IndexedDB; Gefahrenstufen 0–10 fehlen noch (Phase 8).
-- Das Kartenalbum nutzt einen zweiten kleinen WebGL-Kontext für die Artworks; auf sehr alten Geräten ungetestet.
-- Rezepte ohne eigenes Modell nutzen das zusammengesteckte Fusionsmodell mit Krone; die 30 neuen Rezepte sind grob balanciert.
-- Die Weltkarte kennt noch keine Zwischeninseln oder Zufallsereignisse.
-- Balancing grob: Mit Bot-Spieler starke Streuung (Tod zwischen Welle 2 und 12, gute Runs gewinnen); Raketenwerfer als Start ist am stärksten. Muss mit echten Spielern nachjustiert werden (`data/src/balance.ts`).
-- Fusions-Vorschau am Trainings-Dummy (10 s testen) fehlt noch; die Vorschau zeigt nur Werte.
-- Fusionen aus Fusionen sind bewusst nicht möglich (nur Mergen).
-- Neue Antriebe/Ladungen sind funktional, aber noch grob balanciert; Sammelkarten für Rezepte kommen mit Phase 6.
-- Einstellungen (Shake, Zahlen) nur per URL, noch nicht im Menü gespeichert.
+- Balancing grob: Der Balancing-Bot stirbt oft früh, gute Runs gewinnen. Er nutzt weder Mods, Ausrüstung, Evolutionen noch den OVERBOOM-Modus. Koop- und Gefahren-Werte (`KOOP`, `data/src/danger.ts`) sind Schätzungen.
+- Fusions-Vorschau am Trainings-Dummy (10 s testen) fehlt noch; Fusionen aus Fusionen sind bewusst nicht möglich.
+- Musik ist bewusst schlicht (prozedurale Loops); Soundeffekte sind synthetisch.
 - Auf echten Handys noch nicht gemessen (nur Headless-Chromium mit Software-Rendering getestet).
 
-## Nächster Schritt: Phase 7 – Multiplayer
-Lobby mit Raumcode, Host-Simulation, Prediction/Interpolation, Wiederbeleben (Revive) – siehe `docs/OVERBOOM_Prompt.md`.
+## Nächster Schritt: Phase 9 – App-Builds
+Capacitor-Build für iOS/Android und Tauri-Build für Desktop aus demselben Code, Plattform-Implementierungen (Speicher, Haptik, Teilen) ergänzen. Danach Phase 10: Tests auf echten Geräten, Netz-Latenz/Paketverlust.
 Vollständige Planung: `docs/OVERBOOM_Prompt.md`, Waffendaten: `docs/Waffenkatalog.md`.
