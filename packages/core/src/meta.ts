@@ -1,5 +1,5 @@
 import type { SimEvent, World } from './sim.ts';
-import { ERFOLGE, GEGNER_BY_ID, INSELN, KARTE_BY_ID, KARTEN_REGELN, SETS, setBoni, type MetaStat } from '../../data/src/index.ts';
+import { ERFOLGE, GEGNER_BY_ID, HELDEN, HELD_FREI, INSELN, KARTE_BY_ID, KARTEN_REGELN, SETS, setBoni, type MetaStat } from '../../data/src/index.ts';
 
 /**
  * Meta-Progression zwischen den Runs: Kartenalbum, Erfolge, befreite Inseln.
@@ -88,6 +88,16 @@ export function inselFrei(p: Profil, id: string): boolean {
   return p.befreit.includes(INSELN[i - 1].id);
 }
 
+/** Ist der Held spielbar? (manche werden über Erfolge freigeschaltet) */
+export function heldFrei(p: Profil, id: string): boolean {
+  const r = HELD_FREI[id];
+  return !r || (p.stats[r.stat] ?? 0) >= r.ziel || p.karten[`held:${id}`] !== undefined;
+}
+
+export function heldenFrei(p: Profil): string[] {
+  return HELDEN.filter((h) => heldFrei(p, h.id)).map((h) => h.id);
+}
+
 /** Basis-ID einer Waffe (Evolutionen zählen für die Grundwaffe) */
 function basisWaffe(id: string): string {
   return id.startsWith('evo:') ? id.slice(6) : id;
@@ -109,6 +119,11 @@ export class MetaTracker {
   constructor(profil: Profil, spieler = 0) {
     this.profil = profil;
     this.spieler = spieler;
+  }
+
+  /** lokaler Spieler (Koop-Client hat einen anderen Platz) */
+  setSpieler(i: number): void {
+    this.spieler = i;
   }
 
   /** neuer Run (nach reset) */

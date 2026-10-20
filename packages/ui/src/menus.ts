@@ -6,12 +6,17 @@ import {
   A, AMBOSS, EVOLUTION, G, GEGNER_BY_ID, INSEL_BY_ID, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, evoName, HELDEN, HELD_BY_ID, INSELN, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
   elemente, type StatKey, INSEL_LORE, WELT, SIEG_TEXT, SPRUECHE_TOD, PLAETZE, SETS, SET_BY_ID, setBoni, schrottwert, BEUTE, type Ausruestung
 } from '@overboom/data';
+import { lobbyHtml, titelHtml, type CoopAktion, type CoopAnsicht } from './lobby.ts';
 import { ALBUM_TABS, albumGrid, albumZaehler, erfolgeHtml, karteGross, kartenListe, type AlbumTab, type KartenKunst } from './album.ts';
-import { KARTEN, KARTE_BY_ID, WELT as WELT_INFO, type Karte } from '@overboom/data';
+import { HELD_FREI, KARTEN, KARTE_BY_ID, WELT as WELT_INFO, type Karte } from '@overboom/data';
 
 const GEM = '<i class="ob-gem" aria-hidden="true"></i>';
 const LOCK_ON = '<svg viewBox="0 0 8 9" width="16" height="18" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M2 0h4v1h1v3h1v5h-8v-5h1v-3h1zM2 1v3h4v-3zM3 5v2h2v-2z"/></svg>';
 const LOCK_OFF = '<svg viewBox="0 0 8 9" width="16" height="18" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M4 0h3v1h1v2h-1v-2h-3v3h4v6h-8v-5h3v-4zM3 5v2h2v-2z"/></svg>';
+
+function heldHinweis(id: string): string {
+  return HELD_FREI[id] ? `Freischalten: ${HELD_FREI[id].text}` : '';
+}
 
 const fmt = (v: number) => (Math.round(v * 10) / 10).toLocaleString('de-DE');
 const signed = (v: number) => (v > 0 ? '+' : v < 0 ? '−' : '±') + fmt(Math.abs(v));
@@ -78,7 +83,20 @@ export interface EndStats {
  */
 export class Menus {
   readonly root: HTMLDivElement;
-  private mode: 'none' | 'start' | 'shop' | 'end' | 'pause' | 'album' = 'none';
+  private mode: 'none' | 'start' | 'shop' | 'end' | 'pause' | 'album' | 'titel' | 'lobby' = 'none';
+  /** Bildschirm außerhalb des Runs: Titel, Solo-Startwahl, Koop-Lobby oder im Spiel */
+  screen: 'titel' | 'solo' | 'lobby' | 'spiel' = 'titel';
+  /** Koop: Lobby-Inhalt und Aktionen (setzt die App) */
+  coop: CoopAnsicht | null = null;
+  onCoop: (a: CoopAktion | { t: 'lobby' }) => void = () => {};
+  /** läuft gerade ein Koop-Run? (Pause/Ende sehen anders aus) */
+  koop: 'host' | 'client' | null = null;
+  /** eigener Spieler-Index */
+  me = 0;
+  name = '';
+  codeVorgabe = '';
+  /** freigeschaltete Helden (Meta-Progression) */
+  heldenFrei: () => string[] = () => HELDEN.map((h) => h.id);
   private detail = -1;
   private showStats = false;
   private tab: 'shop' | 'amboss' | 'ausruestung' = 'shop';
@@ -110,7 +128,10 @@ export class Menus {
   onRestart: () => void = () => {};
   onResume: () => void = () => {};
 
-  constructor(parent: HTMLElement, private world: World, private send: (cmd: Command) => boolean, private touch: boolean, private recipes: () => ReadonlySet<string> = () => new Set()) {
+  world: World;
+
+  constructor(parent: HTMLElement, world: World, private send: (cmd: Command) => boolean, private touch: boolean, private recipes: () => ReadonlySet<string> = () => new Set()) {
+    this.world = world;
     this.root = document.createElement('div');
     this.root.className = 'ob-menu hidden';
     parent.appendChild(this.root);
@@ -133,7 +154,7 @@ export class Menus {
   get open(): boolean { return this.mode !== 'none'; }
   get current(): string { return this.mode; }
 
-  private get p(): Player { return this.world.players[0]; }
+  private get p(): Player { return this.world.players[this.me] ?? this.world.players[0]; }
 
   hide(): void {
     this.mode = 'none';
@@ -160,6 +181,15 @@ export class Menus {
   sync(): void {
     const w = this.world, p = this.p;
     if (this.mode === 'pause' || this.mode === 'end' || this.mode === 'album') return;
+    if (this.screen === 'titel') {
+      if (this.mode !== 'titel') this.show('titel', titelHtml(this.name, this.codeVorgabe, this.albumButton()), '[data-act="tsolo"]');
+      return;
+    }
+    if (this.screen === 'lobby' && this.coop) {
+      const key = JSON.stringify(this.coop);
+      if (this.mode !== 'lobby' || key !== this.lastKey) { this.lastKey = key; this.show('lobby', lobbyHtml(this.coop)); }
+      return;
+    }
     if (w.phase === 'wahl') {
       if (this.mode !== 'start') this.renderStart();
       return;
@@ -200,6 +230,7 @@ export class Menus {
     if (!this.startHeld) {
       const cards = HELDEN.map((h, i) => {
         const wf = h.startWaffe === 'zufall' ? null : W[h.startWaffe];
+        if (!this.heldenFrei().includes(h.id)) return `<button type="button" class="ob-card ob-hero ob-locked" disabled data-focus="held${i}"><span class="ob-kind">Gesperrt</span><span class="ob-name">???</span><span class="ob-part">${heldHinweis(h.id)}</span></button>`;
         return `<button type="button" class="ob-card ob-hero" style="--rc:${h.farbe}" data-act="held" data-id="${h.id}" data-focus="held${i}">
           <span class="ob-kind">${h.titel}</span>
           <span class="ob-name">${h.name}</span>
@@ -543,26 +574,31 @@ export class Menus {
         <p class="ob-sub">${s.victory ? SIEG_TEXT : SPRUECHE_TOD[seed % SPRUECHE_TOD.length]}</p>
         <dl class="ob-end-stats">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
         <div class="ob-row ob-center">
-          ${s.victory ? '<button type="button" class="ob-btn2" data-act="endless">Endlos weiter</button>' : ''}
-          <button type="button" class="ob-go" data-act="restart">Nochmal!</button>
+          ${this.koop === 'client' ? '<p class="ob-hint2">Der Host entscheidet, wie es weitergeht …</p><button type="button" class="ob-btn2" data-act="lverlassen">Raum verlassen</button>'
+            : this.koop === 'host' ? `${s.victory ? '<button type="button" class="ob-btn2" data-act="endless">Endlos weiter</button>' : ''}<button type="button" class="ob-go" data-act="lzurueck">Zurück in die Lobby</button>`
+            : `${s.victory ? '<button type="button" class="ob-btn2" data-act="endless">Endlos weiter</button>' : ''}<button type="button" class="ob-go" data-act="restart">Nochmal!</button>`}
           ${this.albumButton()}
         </div>
         ${this.touch ? '' : '<p class="ob-keys">Pfeiltasten + Enter · Gamepad: Steuerkreuz + A</p>'}
-      </div>`, '[data-act="restart"]');
+      </div>`, '[data-act="restart"], [data-act="lzurueck"]');
   }
 
   showPause(): void {
     this.show('pause', `
       <div class="ob-panel ob-end">
         <h2>Pause</h2>
-        <p class="ob-sub">Kurz durchatmen. Die Grummelbolde warten (grummelnd).</p>
+        <p class="ob-sub">${this.koop ? 'Achtung: Im Koop läuft das Spiel weiter!' : 'Kurz durchatmen. Die Grummelbolde warten (grummelnd).'}</p>
         <div class="ob-row ob-center">
           <button type="button" class="ob-go" data-act="resume">Weiter</button>
-          <button type="button" class="ob-btn2" data-act="restart">Neu starten</button>
+          ${this.koop ? '<button type="button" class="ob-btn2" data-act="lverlassen">Raum verlassen</button>' : '<button type="button" class="ob-btn2" data-act="restart">Neu starten</button>'}
           ${this.albumButton()}
         </div>
         ${this.touch ? '' : '<p class="ob-keys">Esc / P: Pause · WASD: laufen · Leertaste: Dash</p>'}
       </div>`);
+  }
+
+  private readName(): string {
+    return (this.root.querySelector<HTMLInputElement>('[data-name]')?.value ?? '').trim().slice(0, 16);
   }
 
   /* ---------------- Kartenalbum ---------------- */
@@ -641,6 +677,8 @@ export class Menus {
 
   /** Zurück-Taste (Esc / Gamepad B) */
   back(): boolean {
+    if (this.mode === 'start' && !this.startHeld && this.screen === 'solo') { this.screen = 'titel'; this.mode = 'none'; this.sync(); return true; }
+    if (this.mode === 'lobby') { this.onCoop({ t: 'verlassen' }); return true; }
     if (this.mode === 'album') {
       if (this.albumKarte) { this.albumKarte = ''; this.renderAlbum(); } else this.closeAlbum();
       return true;
@@ -672,6 +710,22 @@ export class Menus {
       case 'sell': this.send({ type: 'sell', slot: i }); this.detail = -1; break;
       case 'stats': this.showStats = !this.showStats; break;
       case 'album': this.openAlbum(); return;
+      case 'tsolo': this.screen = 'solo'; this.mode = 'none'; break;
+      case 'terstellen': this.name = this.readName(); this.onCoop({ t: 'erstellen', name: this.name }); return;
+      case 'tbeitreten': {
+        this.name = this.readName();
+        const code = this.root.querySelector<HTMLInputElement>('[data-code]')?.value ?? '';
+        this.codeVorgabe = code;
+        this.onCoop({ t: 'beitreten', code, name: this.name });
+        return;
+      }
+      case 'lheld': this.onCoop({ t: 'held', id: el.dataset.id! }); return;
+      case 'linsel': this.onCoop({ t: 'insel', id: el.dataset.id! }); return;
+      case 'lbereit': { const ich = this.coop?.spieler.find((x) => x.slot === this.coop?.slot); this.onCoop({ t: 'bereit', on: !ich?.bereit }); return; }
+      case 'lstart': this.onCoop({ t: 'start' }); return;
+      case 'lteilen': this.onCoop({ t: 'teilen' }); return;
+      case 'lverlassen': this.onCoop({ t: 'verlassen' }); return;
+      case 'lzurueck': this.onCoop({ t: 'lobby' }); return;
       case 'albumzu': this.closeAlbum(); return;
       case 'atab': this.albumTab = el.dataset.tab as AlbumTab; this.albumScroll = 0; this.importFehler = false; this.renderAlbum(); return;
       case 'karte': this.albumScroll = this.root.scrollTop; this.albumKarte = el.dataset.id!; this.renderAlbum(); return;

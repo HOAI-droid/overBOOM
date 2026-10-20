@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { Player, SimEvent, World } from '@overboom/core';
 import { buildArenaView, paletteOf, type ArenaView } from './arenaView.ts';
-import { HELD_BY_ID } from '@overboom/data';
+import { HELD_BY_ID, KOOP } from '@overboom/data';
 import type { Arena } from '@overboom/core';
 import { HeroView } from './heroView.ts';
 import { Effects } from './effects.ts';
@@ -60,10 +60,18 @@ export class GameRenderer {
   private heroPos: { x: number; z: number; visible: boolean }[] = [];
   private opt: Required<RenderOptions>;
   private map: WorldMapView | null = null;
+  /** eigener Spieler (Kamera folgt ihm) */
+  local = 0;
+  /** Koop-Zoom: 1 = normal, größer = weiter weg */
+  private zoom = 1;
+  private zoomTarget = 1;
   private mapShown = false;
   private ndc = { x: 0, y: 0 };
 
-  constructor(canvas: HTMLCanvasElement, private world: World, opt: RenderOptions = {}) {
+  private world: World;
+
+  constructor(canvas: HTMLCanvasElement, world: World, opt: RenderOptions = {}) {
+    this.world = world;
     this.opt = { internalShort: opt.internalShort ?? 270, viewShort: opt.viewShort ?? 11.5, shadows: opt.shadows ?? true, shake: opt.shake ?? 1 };
     this.effects = new Effects(this.rnd);
     this.combat = new CombatView(world, this.effects);
@@ -144,6 +152,17 @@ export class GameRenderer {
     this.renderer.setClearColor(pal.nebel);
   }
 
+  /** Andere Welt anzeigen (Koop-Start, Spiegelwelt) */
+  setWorld(w: World): void {
+    if (w === this.world) return;
+    this.world = w;
+    this.combat.setWorld(w);
+    for (const h of this.heroes) if (h) this.scene.remove(h.root);
+    this.heroes = [];
+    this.heroKeys = [];
+    this.rebuildArena();
+  }
+
   /** Insel gewechselt: Arena neu aufbauen */
   private rebuildArena(): void {
     this.scene.remove(this.arena.group);
@@ -169,10 +188,14 @@ export class GameRenderer {
     const aspect = width / height, s = this.opt.internalShort;
     if (aspect >= 1) { this.ih = s; this.iw = Math.round(s * aspect); }
     else { this.iw = s; this.ih = Math.round(s / aspect); }
-    this.wpp = this.opt.viewShort / s;
     this.rt.setSize(this.iw + 2, this.ih + 2);
     this.post.mat.uniforms.uInner.value.set(this.iw, this.ih);
     this.post.mat.uniforms.uFull.value.set(this.iw + 2, this.ih + 2);
+    this.applyFrustum();
+  }
+
+  private applyFrustum(): void {
+    this.wpp = (this.opt.viewShort * this.zoom) / this.opt.internalShort;
     const hw = ((this.iw + 2) / 2) * this.wpp, hh = ((this.ih + 2) / 2) * this.wpp;
     Object.assign(this.camera, { left: -hw, right: hw, top: hh, bottom: -hh, near: 0.1, far: 200 });
     this.camera.updateProjectionMatrix();
@@ -285,6 +308,8 @@ export class GameRenderer {
     if (this.mapShown) { this.mapShown = false; this.applyPalette(); }
     let focus: { x: number; z: number; vx: number; vz: number } | null = null;
     if (this.world.arena !== this.arenaSrc) this.rebuildArena();
+    let far = 0;
+    const me = players[this.local] ?? players[0];
     for (const p of players) {
       if (!this.heroes[p.id] || this.heroKeys[p.id] !== p.held) this.addHero(p);
       const a = prev[p.id] ?? p;
@@ -293,12 +318,27 @@ export class GameRenderer {
       while (df > Math.PI) df -= Math.PI * 2;
       while (df < -Math.PI) df += Math.PI * 2;
       const hero = this.heroes[p.id];
+      hero.downed = p.downed;
+      hero.revive = p.reviveT / KOOP.reviveZeit;
       hero.update(x, z, a.facing + df * alpha, Math.hypot(p.vx, p.vz), p.stride, p.dashTime > 0, time, dt);
-      // Nach Treffer blinken, tot = weg
-      const visible = p.alive && !(p.invuln > 0 && p.dashTime <= 0 && Math.floor(time * 24) % 2 === 0);
+      // Nach Treffer blinken, tot = weg (niedergeschlagen bleibt sichtbar)
+      const visible = p.downed || (p.alive && !(p.invuln > 0 && p.dashTime <= 0 && Math.floor(time * 24) % 2 === 0));
       hero.root.visible = visible;
-      this.heroPos[p.id] = { x, z, visible: p.alive };
-      if (!focus) focus = { x, z, vx: p.alive ? p.vx : 0, vz: p.alive ? p.vz : 0 };
+      const hp = this.heroPos[p.id] ?? (this.heroPos[p.id] = { x, z, visible: p.alive });
+      hp.x = x; hp.z = z; hp.visible = p.alive;
+      if (p === me) focus = { x, z, vx: p.alive ? p.vx : 0, vz: p.alive ? p.vz : 0 };
+    }
+    // Koop: Kamera zoomt etwas heraus, damit Mitspieler im Bild bleiben (gedeckelt)
+    if (me && players.length > 1) {
+      for (const p of players) if (p !== me && (p.alive || p.downed)) far = Math.max(far, Math.hypot(p.x - me.x, p.z - me.z));
+      const want = far > 7.5 ? (far > 10 ? 1.4 : 1.2) : 1;
+      // Hysterese, damit der Zoom nicht flackert
+      if (want > this.zoomTarget || far < (this.zoomTarget > 1.2 ? 9 : 6.5)) this.zoomTarget = want;
+    } else this.zoomTarget = 1;
+    if (Math.abs(this.zoom - this.zoomTarget) > 0.001) {
+      this.zoom += (this.zoomTarget - this.zoom) * Math.min(1, dt * 3);
+      if (Math.abs(this.zoom - this.zoomTarget) < 0.01) this.zoom = this.zoomTarget;
+      this.applyFrustum();
     }
 
     // Kamera folgt mit Vorausblick in Laufrichtung

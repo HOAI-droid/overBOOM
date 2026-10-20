@@ -50,6 +50,17 @@ export function createWebPlatform(): Platform {
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 2000);
     },
+    async shareLink(title, url) {
+      try {
+        if (matchMedia('(pointer: coarse)').matches && navigator.share) { await navigator.share({ title, url }); return 'geteilt'; }
+      } catch { /* abgebrochen → kopieren */ }
+      try { await navigator.clipboard.writeText(url); return 'kopiert'; } catch { return 'fehler'; }
+    },
+    randomId() {
+      const a = new Uint32Array(3);
+      crypto.getRandomValues(a);
+      return [...a].map((n) => n.toString(36)).join('');
+    },
     async copyText(text) {
       try { await navigator.clipboard.writeText(text); return true; } catch { return false; }
     },

@@ -269,3 +269,20 @@ export const ERFOLGE: Erfolg[] = [
   { id: 'kristalle5000', name: 'Kristallkönig', text: 'Sammle insgesamt 5.000 Kristalle.', stat: 'kristalle', ziel: 5000, karte: 'item:kristallkrone' },
   { id: 'set1', name: 'Gut angezogen', text: 'Trage ein komplettes Ausrüstungs-Set.', stat: 'sets', ziel: 1, karte: 'item:kochtopfhelm' }
 ];
+
+/* ------------------------------------------------------------------ */
+/* Helden-Freischaltung (Meta-Progression)                              */
+/* ------------------------------------------------------------------ */
+
+/** Helden ohne Eintrag sind von Anfang an spielbar */
+export const HELD_FREI: Record<string, { stat: MetaStat; ziel: number; text: string }> = {
+  omagranate: { stat: 'siege', ziel: 1, text: 'Gewinne einen Run.' },
+  gluecksspilz: { stat: 'rezepte', ziel: 3, text: 'Entdecke 3 geheime Rezepte.' },
+  blitzbettina: { stat: 'befreit', ziel: 2, text: 'Befreie 2 Inseln.' },
+  frostfritz: { stat: 'befreit', ziel: 5, text: 'Befreie 5 Inseln.' },
+  giftgerda: { stat: 'reaktionen', ziel: 100, text: 'Löse 100 Elementar-Reaktionen aus.' },
+  panzerpaule: { stat: 'bestWelle', ziel: 10, text: 'Erreiche Welle 10.' },
+  sprintina: { stat: 'runs', ziel: 5, text: 'Spiele 5 Runs.' },
+  fusionski: { stat: 'fusionen', ziel: 5, text: 'Verschmelze 5 Waffen am Amboss.' },
+  grubert: { stat: 'kills', ziel: 2000, text: 'Besiege insgesamt 2.000 Gegner.' }
+};

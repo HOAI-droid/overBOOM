@@ -66,8 +66,27 @@ export class HeroView {
     this.squash = Math.max(this.squash, amount);
   }
 
+  /** Koop: niedergeschlagen (liegt, Ring zeigt den Wiederbelebungs-Radius) */
+  downed = false;
+  /** 0–1 Fortschritt des Wiederbelebens */
+  revive = 0;
+
   update(x: number, z: number, facing: number, speed: number, stride: number, dashing: boolean, time: number, dt: number): void {
     this.root.position.set(x, 0, z);
+    if (this.downed) {
+      // liegt auf dem Rücken und zappelt ein wenig
+      this.model.rotation.set(-Math.PI / 2 + Math.sin(time * 6) * 0.05, facing, 0, 'YXZ');
+      this.model.position.y = 0.15;
+      this.legL.rotation.x = Math.sin(time * 8) * 0.3;
+      this.legR.rotation.x = -Math.sin(time * 8) * 0.3;
+      const rm = this.ring.material as THREE.MeshBasicMaterial;
+      const pulse = 1 + Math.sin(time * 5) * 0.06;
+      this.ring.scale.setScalar(3 * pulse);
+      rm.opacity = 0.35 + this.revive * 0.6;
+      return;
+    }
+    this.model.position.y = 0;
+    this.ring.scale.setScalar(1);
     this.model.rotation.y = facing;
     const moving = Math.min(1, speed / 4);
     const phase = stride * 3.4;
@@ -83,7 +102,7 @@ export class HeroView {
 
     const targetLean = dashing ? 0.55 : moving * 0.12;
     this.lean += (targetLean - this.lean) * Math.min(1, dt * 14);
-    this.model.rotation.x = 0;
+    this.model.rotation.set(0, facing, 0, 'XYZ');
     this.body.rotation.x = this.lean * 0.6;
     this.squash *= Math.pow(0.0005, dt);
     const s = this.squash;

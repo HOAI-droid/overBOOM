@@ -96,6 +96,17 @@ export class CombatView {
       this.puddles.lava.group, this.puddles.gift.group, this.puddles.sog.group);
   }
 
+  /** Andere Welt anzeigen (Koop: Spiegelwelt des Clients, neuer Run des Hosts) */
+  setWorld(w: World): void {
+    this.world = w;
+    for (const list of this.weapons) for (const v of list ?? []) {
+      this.group.remove(v.root);
+      v.root.traverse((o) => { if (o instanceof THREE.Mesh) o.geometry.dispose(); });
+    }
+    this.weapons = [];
+    this.loadouts = [];
+  }
+
   /** Rückstoß der Waffe nach einem Schuss */
   kick(player: number, slot: number): void {
     const v = this.weapons[player]?.[slot];
