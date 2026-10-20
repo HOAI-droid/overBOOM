@@ -2,6 +2,17 @@
 
 3D-Voxel-Arena-Roguelite mit Waffen-Fusion. Läuft im Browser (Handy + PC), später als App (Capacitor) und Desktop (Tauri) aus demselben Code.
 
+## Stand: Phase 6 – Welt & Karten (v0.6.0)
+- **Weltkarte Krawummia**: schwebende Voxel-Inseln über einem Wolkenmeer, jede mit eigener Deko (Scheune, Tesla-Türme, Fabrik, Riesenpilze, Vulkan, Eiskristalle, Bummburg). Ablauf: Held wählen → Insel auf der Karte wählen → los.
+- **Insel-Freischaltung**: Am Anfang ist nur Gackerfeld offen. Wer den Insel-Boss (Welle 10) besiegt, befreit die Insel (Flagge) und schaltet die nächste frei; ein Sieg auf Welle 20 erobert sie (Krone).
+- **Kartenalbum** (Set „Das Große Kawumm", 292 Karten): alle Helden, Waffen, 40 Rezepte, Gegner, Bosse und Items. Jede Karte mit Name, Element-Symbolen, Hauptwert (Wucht/HP/Preis), live gerendertem und drehendem Voxel-Artwork, Typzeile, Fähigkeiten, Flavor-Text mit Zitat, Seltenheit und Kartennummer.
+- **Freischalten nur durchs Spielen**: Waffe benutzt, Held gespielt, Item gekauft, 50 Gegner besiegt, Boss besiegt, Rezept entdeckt. Gesperrte Karten zeigen eine Silhouette und wie man sie bekommt.
+- **Glanzkarten** mit holografischem Schimmer (folgt dem Zeiger): z. B. Waffe auf 5 Sterne, Sieg mit dem Helden, 500 Gegner einer Art – und über **18 Erfolge**.
+- **Karten als Bild** speichern bzw. am Handy teilen (PNG mit Rahmen).
+- **Rezeptbuch** im Album: 40 geheime Rezepte (30 neu), unentdeckte mit Hinweis. Neue Rezept-Wirkungen: Mini-Bumm, Feuerspur, Frostnova, Goldregen, Donnerschlag.
+- **Lore** (`data/lore.ts`): Weltgeschichte, Ankunfts- und Befreiungstexte je Insel, Boss-Auftritte, Wellen- und Todessprüche, Karten-Zitate.
+- **Spielstand**: Profil wird auf dem Gerät gespeichert; Export/Import als Code (Album → Erfolge). Meldungen für neue Karten, Glanzkarten, Erfolge und Inseln.
+
 ## Stand: Phase 5 – Content-Ausbau (v0.5.0)
 - **13 Helden** mit Startwaffe, Werten und Macke (z. B. Pyromane bekommt nur Explosiv/Feuer, Glückspilz startet mit Zufallswaffe, Oma Kawumm verteilt Heil-Kekse, Turmbauer darf 2 Türme). Start: Held wählen → Insel wählen.
 - **7 Inseln** mit eigener Gegner-Fraktion, Farbpalette, Bodengefahr (Eis rutscht, Gift, Tesla-Platten, Lava, brennendes Heu …) und Boss auf Welle 10; Welle 20 immer Baron von Bumm.
@@ -52,7 +63,7 @@ npm run build:single   # alles in einer HTML-Datei
 ```
 
 URL-Parameter: `?res=360` (Auflösung), `?seed=42` (Arena), `?shadows=0` (Schatten aus), `?shake=0` (Screen-Shake aus, 0–2), `?zahlen=0` (Schadenszahlen aus).
-Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` (Startkristalle), `?waffen=huehnerkanone,huehnerkanone,huehnerkanone` (Startwaffen, überspringt die Wahl), `?held=pyromane&insel=lavakessel` (Schnellstart), `?galerie=1` (alle Gegner zum Anschauen), `?beute=6` (Ausrüstung in den Beutel).
+Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` (Startkristalle), `?waffen=huehnerkanone,huehnerkanone,huehnerkanone` (Startwaffen, überspringt die Wahl), `?held=pyromane&insel=lavakessel` (Schnellstart), `?galerie=1` (alle Gegner zum Anschauen), `?beute=6` (Ausrüstung in den Beutel), `?alles=1` (alle Karten und Inseln freischalten).
 
 ## Bekannte Probleme
 - Gegner laufen direkt auf den Spieler zu (noch kein Flow-Field); an Säulen rutschen sie seitlich ab.
@@ -60,8 +71,11 @@ Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` 
 - Hit-Stop hält die lokale Simulation an – im Koop (Phase 7) muss er rein visuell werden.
 - Noch kein Audio (Phase 8), keine Overkill-Leiste, kein Debug-Menü (nur URL-Parameter).
 - Phase-5-Inhalte sind grob balanciert; der Balancing-Bot kauft noch keine Mods/Ausrüstung und evolviert nicht.
-- Helden und Inseln sind alle von Anfang an frei (Freischaltungen und Weltkarte kommen mit Phase 6).
-- Erst 10 der geplanten ~40 geheimen Rezepte.
+- Helden sind alle von Anfang an frei (Freischaltung über Erfolge folgt mit der Meta-Progression in Phase 8).
+- Speicherung noch über localStorage statt IndexedDB; Gefahrenstufen 0–10 fehlen noch (Phase 8).
+- Das Kartenalbum nutzt einen zweiten kleinen WebGL-Kontext für die Artworks; auf sehr alten Geräten ungetestet.
+- Rezepte ohne eigenes Modell nutzen das zusammengesteckte Fusionsmodell mit Krone; die 30 neuen Rezepte sind grob balanciert.
+- Die Weltkarte kennt noch keine Zwischeninseln oder Zufallsereignisse.
 - Balancing grob: Mit Bot-Spieler starke Streuung (Tod zwischen Welle 2 und 12, gute Runs gewinnen); Raketenwerfer als Start ist am stärksten. Muss mit echten Spielern nachjustiert werden (`data/src/balance.ts`).
 - Fusions-Vorschau am Trainings-Dummy (10 s testen) fehlt noch; die Vorschau zeigt nur Werte.
 - Fusionen aus Fusionen sind bewusst nicht möglich (nur Mergen).
@@ -69,6 +83,6 @@ Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` 
 - Einstellungen (Shake, Zahlen) nur per URL, noch nicht im Menü gespeichert.
 - Auf echten Handys noch nicht gemessen (nur Headless-Chromium mit Software-Rendering getestet).
 
-## Nächster Schritt: Phase 6 – Welt & Karten
-Weltkarte mit Inseln, Freischaltungen, Sammelkarten, weitere geheime Rezepte – siehe `docs/OVERBOOM_Prompt.md`.
+## Nächster Schritt: Phase 7 – Multiplayer
+Lobby mit Raumcode, Host-Simulation, Prediction/Interpolation, Wiederbeleben (Revive) – siehe `docs/OVERBOOM_Prompt.md`.
 Vollständige Planung: `docs/OVERBOOM_Prompt.md`, Waffendaten: `docs/Waffenkatalog.md`.
