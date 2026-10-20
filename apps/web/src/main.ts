@@ -294,6 +294,11 @@ async function start() {
     if (on) menus.showPause(); else menus.hide();
   };
   menus.onRestart = restart;
+  // Beenden aus Shop, Level-Up oder Pause (solo): Run verwerfen, zurück zum Titel
+  menus.onZumTitel = () => {
+    restart();
+    menus.screen = 'titel';
+  };
   menus.onResume = () => { paused = false; };
   // Zurück: Esc, Gamepad-B (Menü) und System-Zurück der Xbox-Hülle – kommen B und
   // BackRequested gleichzeitig an, zählt nur der erste Druck

@@ -88,7 +88,11 @@ export interface EndStats {
  */
 export class Menus {
   readonly root: HTMLDivElement;
-  private mode: 'none' | 'start' | 'shop' | 'end' | 'pause' | 'album' | 'titel' | 'lobby' | 'einst' | 'recht' | 'koophinweis' = 'none';
+  private mode: 'none' | 'start' | 'shop' | 'end' | 'pause' | 'album' | 'titel' | 'lobby' | 'einst' | 'recht' | 'koophinweis' | 'abbruch' = 'none';
+  /** wohin „Weiterspielen“ im Beenden-Dialog zurückführt */
+  private abbruchZurueck: 'shop' | 'pause' = 'shop';
+  /** Run abbrechen (solo) bzw. Raum verlassen (Koop) – setzt die App */
+  onZumTitel: () => void = () => {};
   /** Koop-Hinweis: was nach „Verstanden“ passiert; von wo „Datenschutz & Lizenzen“ geöffnet wurde */
   private koopWeiter: (() => void) | null = null;
   private rechtZurueck: 'einst' | 'koophinweis' = 'einst';
@@ -211,7 +215,7 @@ export class Menus {
   /** Wird jedes Frame aufgerufen; baut nur neu, wenn sich der Zustand geändert hat. */
   sync(): void {
     const w = this.world, p = this.p;
-    if (this.mode === 'pause' || this.mode === 'end' || this.mode === 'album' || this.mode === 'einst' || this.mode === 'recht' || this.mode === 'koophinweis') return;
+    if (this.mode === 'pause' || this.mode === 'end' || this.mode === 'album' || this.mode === 'einst' || this.mode === 'recht' || this.mode === 'koophinweis' || this.mode === 'abbruch') return;
     if (this.screen === 'titel') {
       if (this.mode !== 'titel') this.show('titel', titelHtml(this.name, this.codeVorgabe, this.albumButton(),
         '<button type="button" class="ob-btn2" data-act="einst" data-focus="einst">Einstellungen</button>'
@@ -281,7 +285,8 @@ export class Menus {
           <div class="ob-shop-head"><h2 class="ob-h">Wähle deinen Kawumm-Jäger</h2>${this.albumButton()}</div>
           <p class="ob-sub">Jeder Held hat eine Startwaffe und eine Macke. Waffen feuern von selbst – du läufst, weichst aus und kaufst nach jeder Welle nach.</p>
           <div class="ob-cards">${cards}</div>
-        </div>`, '.ob-hero:not([disabled])');
+          <div class="ob-row ob-center">${this.beendenKnopf()}</div>
+        </div>`, '.ob-up');
       return;
     }
     this.renderMap();
@@ -439,6 +444,7 @@ export class Menus {
         <div class="ob-row ob-actions">
           ${this.tab === 'shop' ? `<button type="button" class="ob-btn2" data-act="reroll" data-focus="reroll" ${p.crystals >= reroll ? '' : 'disabled'}>Neu würfeln ${GEM}${reroll}</button>` : ''}
           <button type="button" class="ob-btn2" data-act="stats" data-focus="stats">${this.showStats ? 'Werte ausblenden' : 'Werte'}</button>
+          ${this.beendenKnopf()}
           <button type="button" class="ob-go" data-act="ready" data-focus="ready">Welle ${w.wave + 1}${WELLEN.bossWellen.includes(w.wave + 1) ? ' · Boss!' : ''} ▶</button>
         </div>
         <h3 class="ob-h3">Waffen ${p.weapons.length}/${SPIELER.maxWaffen} <small>antippen: verschmelzen / verkaufen / Mods / Evolution${p.modInv.length ? ` · ${p.modInv.length} Mod(s) im Rucksack` : ''}</small></h3>
@@ -627,7 +633,8 @@ export class Menus {
         <p class="ob-tipp">Tipp: ${TIPPS[Math.floor(Date.now() / 1000) % TIPPS.length]}</p>
         <div class="ob-row ob-center">
           <button type="button" class="ob-go" data-act="resume">Weiter</button>
-          ${this.koop ? '<button type="button" class="ob-btn2" data-act="lverlassen">Raum verlassen</button>' : '<button type="button" class="ob-btn2" data-act="restart">Neu starten</button>'}
+          ${this.koop ? '' : '<button type="button" class="ob-btn2" data-act="restart">Neu starten</button>'}
+          ${this.beendenKnopf()}
           <button type="button" class="ob-btn2" data-act="einst">Einstellungen</button>
           ${this.albumButton()}
         </div>
@@ -639,6 +646,32 @@ export class Menus {
   private tastenHinweis(tastatur: string, controller: string): string {
     if (this.controller) return `<p class="ob-keys ob-padkeys">${controller}</p>`;
     return this.touch ? '' : `<p class="ob-keys">${tastatur}</p>`;
+  }
+
+  /** „Beenden“: solo zurück zum Titel, im Koop Raum verlassen (immer mit Rückfrage) */
+  private beendenKnopf(): string {
+    return `<button type="button" class="ob-btn2 ob-beenden" data-act="beenden" data-focus="beenden">${this.koop ? 'Raum verlassen' : 'Beenden'}</button>`;
+  }
+
+  private zeigeAbbruch(): void {
+    this.abbruchZurueck = this.mode === 'pause' ? 'pause' : 'shop';
+    const text = this.koop === 'host' ? 'Du bist Host – wenn du gehst, endet das Spiel für alle Mitspieler.'
+      : this.koop === 'client' ? 'Deine Mitspieler spielen ohne dich weiter.'
+      : 'Der laufende Run endet. Freigeschaltete Karten, Helden und Erfolge bleiben erhalten.';
+    this.show('abbruch', `
+      <div class="ob-panel ob-end">
+        <h2>${this.koop ? 'Raum verlassen?' : 'Run beenden?'}</h2>
+        <p class="ob-sub">${text}</p>
+        <div class="ob-row ob-center">
+          <button type="button" class="ob-btn2" data-act="abbruchja" data-focus="abbruchja">${this.koop ? 'Ja, verlassen' : 'Ja, zum Titel'}</button>
+          <button type="button" class="ob-go" data-act="abbruchnein" data-focus="abbruchnein">Weiterspielen</button>
+        </div>
+      </div>`, '[data-act="abbruchnein"]');
+  }
+
+  private abbruchZurueckGehen(): void {
+    if (this.abbruchZurueck === 'pause') this.showPause();
+    else { this.mode = 'none'; this.lastKey = ''; this.sync(); }
   }
 
   private readName(): string {
@@ -757,6 +790,7 @@ export class Menus {
 
   /** Zurück-Taste (Esc / Gamepad B) */
   back(): boolean {
+    if (this.mode === 'abbruch') { this.abbruchZurueckGehen(); return true; }
     if (this.mode === 'recht') { this.schliesseRechtliches(); return true; }
     if (this.mode === 'koophinweis') { this.koopAbbrechen(); return true; }
     if (this.mode === 'einst') { this.closeEinstellungen(); return true; }
@@ -803,6 +837,9 @@ export class Menus {
       case 'album': this.openAlbum(); return;
       case 'einst': this.openEinstellungen(); return;
       case 'recht': this.zeigeRechtliches('einst'); return;
+      case 'beenden': this.zeigeAbbruch(); return;
+      case 'abbruchnein': this.abbruchZurueckGehen(); return;
+      case 'abbruchja': this.mode = 'none'; this.hide(); if (this.koop) this.onCoop({ t: 'verlassen' }); else this.onZumTitel(); return;
       case 'rechtzu': this.schliesseRechtliches(); return;
       case 'khok': { const f = this.koopWeiter; this.koopWeiter = null; this.mode = 'none'; this.sync(); f?.(); return; }
       case 'khmehr': this.zeigeRechtliches('koophinweis'); return;

@@ -992,4 +992,23 @@ for (const [el, ids, ev] of [
   ok(p.boomT === 0, 'Modus endet nach 5 s');
 }
 
+// v0.11: Kristalle bleiben im Spielfeld – auch bei vielen Druckwellen auf einmal
+{
+  const w = new World(77, 1);
+  const idle = { mx: 0, mz: 0, dash: false };
+  const n = w.arena.size;
+  // Kristalle direkt am Rand, mit riesigem Schwung nach außen
+  for (let i = 0; i < 40; i++) {
+    w.spawnCrystal(1.5 + (i % 4) * 0.2, 2 + i * 0.5, 1);
+    const c = w.crystals.find((k) => k.alive && k.age === 0 && k.vx !== -60)!;
+    c.vx = -60; c.vz = (i % 2 ? 1 : -1) * 60;
+  }
+  let draussen = 0;
+  for (let t = 0; t < 60; t++) {
+    w.step([idle]);
+    for (const c of w.crystals) if (c.alive && (c.x < 1 || c.z < 1 || c.x > n - 2 || c.z > n - 2)) draussen++;
+  }
+  ok(draussen === 0, `Kristalle bleiben im Spielfeld (${draussen} Ausreißer)`);
+}
+
 if (fails) { console.log(`\n${fails} Test(s) fehlgeschlagen`); process.exit(1); } else console.log('\nAlle Tests bestanden');

@@ -65,13 +65,14 @@ export class Writer {
 }
 
 export class Reader {
-  private buf: ArrayBuffer;
+  private bytes: Uint8Array;
   private view: DataView;
   pos = 0;
 
-  constructor(buf: ArrayBuffer) {
-    this.buf = buf;
-    this.view = new DataView(buf);
+  /** nimmt ArrayBuffer oder einen Ausschnitt (Uint8Array) – Trystero liefert Letzteres */
+  constructor(buf: ArrayBuffer | ArrayBufferView) {
+    this.bytes = buf instanceof ArrayBuffer ? new Uint8Array(buf) : new Uint8Array(buf.buffer as ArrayBuffer, buf.byteOffset, buf.byteLength);
+    this.view = new DataView(this.bytes.buffer as ArrayBuffer, this.bytes.byteOffset, this.bytes.byteLength);
   }
 
   get(kind: Kind, scale = 1): number {
@@ -91,12 +92,12 @@ export class Reader {
 
   text(): string {
     const n = this.get('u32');
-    const s = new TextDecoder().decode(new Uint8Array(this.buf, this.pos, n));
+    const s = new TextDecoder().decode(this.bytes.subarray(this.pos, this.pos + n));
     this.pos += n;
     return s;
   }
 
-  get done(): boolean { return this.pos >= this.buf.byteLength; }
+  get done(): boolean { return this.pos >= this.bytes.byteLength; }
 }
 
 /** Spalte einer Entity-Tabelle: Typ, Skalierung, Lesen/Schreiben am Objekt */

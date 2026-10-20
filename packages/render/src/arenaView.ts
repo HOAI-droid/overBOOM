@@ -154,7 +154,15 @@ export function buildArenaView(a: Arena): ArenaView {
     }
   }
   const cg = buildVoxels(cliff.list(), 1, { jitter: 0.12, seed: 4 });
-  if (cg.solid) group.add(new THREE.Mesh(cg.solid, solidMaterial));
+  if (cg.solid) {
+    // Die zufällig verschobenen Ecken (jitter) dürfen nicht durch den Boden stechen –
+    // sonst flackern braune Dreiecke über dem Rasen am Spielfeldrand
+    const pos = cg.solid.getAttribute('position') as THREE.BufferAttribute;
+    for (let i = 0; i < pos.count; i++) if (pos.getY(i) > -0.03) pos.setY(i, -0.03);
+    pos.needsUpdate = true;
+    cg.solid.computeBoundingSphere();
+    group.add(new THREE.Mesh(cg.solid, solidMaterial));
+  }
 
   // Mauern, Säulen (Steinquader 0,5) und Kisten (Bretter 0,25)
   const walls = new VoxBuilder();

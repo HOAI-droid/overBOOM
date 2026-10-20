@@ -33,9 +33,9 @@ export const WELLEN = {
   /** neue Gegner pro Sekunde */
   spawnRate: (w: number) => 1.1 + 0.42 * (w - 1) + 0.025 * spaet(w, 10) ** 2,
   /** HP-Multiplikator der Gegner (ab Welle 9 steiler – frühe Wellen bleiben wie gehabt) */
-  hpFaktor: (w: number) => 1 + 0.25 * (w - 1) + 0.03 * (w - 1) * (w - 1) + 0.16 * spaet(w, 8) ** 2,
+  hpFaktor: (w: number) => 1 + 0.25 * (w - 1) + 0.03 * (w - 1) * (w - 1) + 0.13 * spaet(w, 8) ** 2,
   /** Schadens-Multiplikator der Gegner (ab Welle 9 steiler) */
-  schadenFaktor: (w: number) => 1 + 0.12 * (w - 1) + 0.07 * spaet(w, 8) ** 2,
+  schadenFaktor: (w: number) => 1 + 0.12 * (w - 1) + 0.055 * spaet(w, 8) ** 2,
   /** Wellen pro Run; danach Sieg (optional Endlos) */
   anzahl: 20,
   bossWellen: [10, 20] as readonly number[],
@@ -51,8 +51,8 @@ export const WELLEN = {
 };
 
 export const KAMPF = {
-  /** Grundschaden aller Waffen (v0.10: etwas schwächer) */
-  waffenSchaden: 0.95,
+  /** Grundschaden aller Waffen (Stellschraube fürs Balancing) */
+  waffenSchaden: 1,
   kritChance: 0.1,
   kritFaktor: 2,
   /** Explosionsschaden am Rand relativ zur Mitte */
@@ -74,7 +74,7 @@ export const KAMPF = {
 
 /** Waffen-Stufen I–V: Merge von 2 gleichen Waffen gleicher Stufe → nächste Stufe */
 export const STUFEN = {
-  schaden: [1, 1.45, 2.05, 2.9, 4],
+  schaden: [1, 1.5, 2.15, 3.05, 4.2],
   feuerrate: [1, 1.1, 1.2, 1.32, 1.45],
   preis: [1, 2, 3.8, 7, 12]
 };

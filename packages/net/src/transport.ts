@@ -109,8 +109,9 @@ export class MemoryHub {
         if (!sender) continue;
         for (const t of room.values()) {
           if (t.selfId === p.from || (p.to && p.to !== t.selfId)) continue;
-          // Binärdaten werden wie über das Netz kopiert
-          const msg = p.msg.t === 'snap' ? { t: 'snap' as const, data: p.msg.data.slice(0) } : JSON.parse(JSON.stringify(p.msg)) as Msg;
+          // wie über Trystero: JSON-Nachrichten laufen durch JSON, Binärdaten kommen als
+          // Uint8Array-Ausschnitt eines größeren Puffers an (nicht als ArrayBuffer!)
+          const msg = p.msg.t === 'snap' ? { t: 'snap' as const, data: alsTrysteroBytes(p.msg.data) as unknown as ArrayBuffer } : JSON.parse(JSON.stringify(p.msg)) as Msg;
           t.onMessage?.(msg, p.from);
         }
         void code;
@@ -119,6 +120,13 @@ export class MemoryHub {
     }
     return n;
   }
+}
+
+/** Binärdaten so verpacken, wie Trystero sie zustellt: Uint8Array mit Versatz in einem größeren Puffer */
+function alsTrysteroBytes(data: ArrayBuffer): Uint8Array {
+  const gross = new Uint8Array(data.byteLength + 13);
+  gross.set(new Uint8Array(data), 7);
+  return gross.subarray(7, 7 + data.byteLength);
 }
 
 export class MemoryTransport implements Transport {

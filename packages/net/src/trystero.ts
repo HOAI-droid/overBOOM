@@ -38,7 +38,12 @@ export class TrysteroTransport implements Transport {
     this.json = this.room.makeAction<DataPayload>('m', { kind: 'message' });
     this.bin = this.room.makeAction<ArrayBuffer>('b', { kind: 'message' });
     this.json.onMessage = (data, ctx) => this.onMessage?.(data as unknown as Msg, ctx.peerId);
-    this.bin.onMessage = (data, ctx) => this.onMessage?.({ t: 'snap', data }, ctx.peerId);
+    // Trystero liefert Binärdaten als Uint8Array (Ausschnitt) – in einen eigenen ArrayBuffer kopieren
+    this.bin.onMessage = (data, ctx) => {
+      const d = data as ArrayBuffer | ArrayBufferView;
+      const buf = d instanceof ArrayBuffer ? d : (d.buffer as ArrayBuffer).slice(d.byteOffset, d.byteOffset + d.byteLength);
+      this.onMessage?.({ t: 'snap', data: buf }, ctx.peerId);
+    };
     this.room.onPeerJoin = (id) => this.onPeerJoin?.(id);
     this.room.onPeerLeave = (id) => this.onPeerLeave?.(id);
   }

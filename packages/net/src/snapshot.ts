@@ -130,8 +130,34 @@ export class Snapshot {
 
 const writer = new Writer();
 
+/**
+ * Höchstgröße eines Snapshots. Trystero verschickt Nachrichten bis 16 KB direkt; größere
+ * brauchen einen eigenen Handshake (langsam, Rückstau bei 15 Hz). Darum bleiben wir darunter.
+ */
+export const SNAPSHOT_MAX = 15800;
+
+/** Kürzungsstufen, falls ein Snapshot zu groß wird: weniger eigene Geschosse/Kristalle, dann ohne Deko-Ereignisse */
+const KUERZUNG = [
+  { schuesse: Infinity, kristalle: Infinity, deko: true },
+  { schuesse: 160, kristalle: 120, deko: true },
+  { schuesse: 80, kristalle: 60, deko: false },
+  { schuesse: 30, kristalle: 30, deko: false },
+  { schuesse: 0, kristalle: 0, deko: false }
+];
+/** rein kosmetische Ereignisse (häufig, für den Spielablauf unwichtig) */
+const DEKO = new Set(['hit', 'fire', 'pickup', 'enemyShot']);
+
 /** Host: Snapshot bauen. `acks[i]` = letzte verarbeitete Eingabe von Spieler i. */
 export function encodeSnapshot(w: World, events: readonly SimEvent[], acks: readonly number[]): ArrayBuffer {
+  let buf = new ArrayBuffer(0);
+  for (const k of KUERZUNG) {
+    buf = encodeMit(w, k.deko ? events : events.filter((e) => !DEKO.has(e.type)), acks, k.schuesse, k.kristalle);
+    if (buf.byteLength <= SNAPSHOT_MAX) break;
+  }
+  return buf;
+}
+
+function encodeMit(w: World, events: readonly SimEvent[], acks: readonly number[], maxSchuesse: number, maxKristalle: number): ArrayBuffer {
   const out = writer.reset();
   out.put('u8', 1); // Format
   out.put('u32', w.tick);
@@ -167,8 +193,10 @@ export function encodeSnapshot(w: World, events: readonly SimEvent[], acks: read
     out.put('u8', b);
   }
   writeTable(out, ENEMY_FIELDS, w.enemies, (e) => e.alive);
-  writeTable(out, SHOT_FIELDS, w.projectiles, (p) => p.alive);
-  writeTable(out, GEM_FIELDS, w.crystals, (c) => c.alive);
+  // feindliche Geschosse immer (Gefahr!), eigene nur bis zur Obergrenze
+  let eigene = 0, kristalle = 0;
+  writeTable(out, SHOT_FIELDS, w.projectiles, (p) => p.alive && (p.hostile || eigene++ < maxSchuesse));
+  writeTable(out, GEM_FIELDS, w.crystals, (c) => c.alive && kristalle++ < maxKristalle);
   writeTable(out, HAZARD_FIELDS, w.hazards, (h) => h.active);
   writeTable(out, WARN_FIELDS, w.warnings, (x) => x.active);
   out.text(events.length ? JSON.stringify(events) : '');
@@ -176,20 +204,21 @@ export function encodeSnapshot(w: World, events: readonly SimEvent[], acks: read
 }
 
 /** Tabelle schreiben; erste Spalte ist immer der Slot (= Index in der Liste) */
+const auswahl: number[] = [];
 function writeTable<T>(out: Writer, fields: Field<T>[], list: readonly T[], include: (e: T) => boolean): void {
-  let n = 0;
-  for (const e of list) if (include(e)) n++;
-  out.put('u16', n);
-  for (let i = 0; i < list.length; i++) {
+  // Filter genau einmal je Eintrag aufrufen (er darf mitzählen, z. B. für Obergrenzen)
+  auswahl.length = 0;
+  for (let i = 0; i < list.length; i++) if (include(list[i])) auswahl.push(i);
+  out.put('u16', auswahl.length);
+  for (const i of auswahl) {
     const e = list[i];
-    if (!include(e)) continue;
     out.put('u16', i);
     for (let c = 1; c < fields.length; c++) { const fl = fields[c]; out.put(fl.k, fl.get(e), fl.s ?? 1); }
   }
 }
 
 /** Client: Snapshot lesen (in ein wiederverwendbares Objekt) */
-export function decodeSnapshot(buf: ArrayBuffer, s: Snapshot = new Snapshot()): Snapshot {
+export function decodeSnapshot(buf: ArrayBuffer | ArrayBufferView, s: Snapshot = new Snapshot()): Snapshot {
   const r = new Reader(buf);
   r.get('u8');
   s.tick = r.get('u32');

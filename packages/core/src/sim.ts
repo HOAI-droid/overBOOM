@@ -1049,9 +1049,16 @@ export class World {
       } else {
         c.vx *= drag; c.vz *= drag;
       }
+      // Tempo begrenzen: Druckwellen addieren sich, sonst „tunneln“ Kristalle durch den Rand
+      const v = Math.hypot(c.vx, c.vz), vmax = c.magnet ? 14 : 9;
+      if (v > vmax) { c.vx *= vmax / v; c.vz *= vmax / v; }
       c.x += c.vx * DT;
       c.z += c.vz * DT;
       if (!c.magnet) this.collideCircle(c, 0.12, false);
+      // nie außerhalb des Spielfelds: am Rand sanft abprallen
+      const lo = 1.15, hi = this.arena.size - 2.15;
+      if (c.x < lo) { c.x = lo; c.vx = Math.abs(c.vx) * 0.4; } else if (c.x > hi) { c.x = hi; c.vx = -Math.abs(c.vx) * 0.4; }
+      if (c.z < lo) { c.z = lo; c.vz = Math.abs(c.vz) * 0.4; } else if (c.z > hi) { c.z = hi; c.vz = -Math.abs(c.vz) * 0.4; }
     }
   }
 

@@ -5,7 +5,7 @@
  */
 export * from './transport.ts';
 export * from './session.ts';
-export { encodeSnapshot, decodeSnapshot, applySnapshot, Snapshot } from './snapshot.ts';
+export { encodeSnapshot, decodeSnapshot, applySnapshot, Snapshot, SNAPSHOT_MAX } from './snapshot.ts';
 export { worldState, applyWorldState, type WorldState, type PlayerState } from './state.ts';
 
 /** WebRTC-Transport erst bei Bedarf laden (hält den Solo-Start schlank) */

@@ -9,7 +9,7 @@ OVERBOOM ist ein actiongeladenes Arena-Roguelite in knalliger 3D-Voxel-Pixel-Opt
   <img src="docs/werbung/kampf2.png" width="300" alt="Kettenexplosionen">
 </p>
 
-## Downloads (Version 0.10.0)
+## Downloads (Version 0.10.1)
 
 **Sofort im Browser spielen:** <https://hoai-droid.github.io/overboom/> – am Handy über *Teilen → Zum Home-Bildschirm* (iPhone) bzw. *App installieren* (Android) wie eine App im Vollbild, solo auch offline.
 
@@ -98,6 +98,13 @@ Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` 
 Phase 10: Tests auf echten Geräten (Handy, Xbox, Koop über Mobilfunk), Signaturen und Store-Einträge.
 
 ## Versionsgeschichte
+
+### Version 0.10.1 – Koop repariert
+- Koop-Synchronisierung: Trystero liefert Binärdaten als `Uint8Array`-Ausschnitt; der Snapshot-Decoder erwartete einen `ArrayBuffer` und brach ab. `Reader` nimmt jetzt beides, der Test-Transport bildet das Trystero-Verhalten nach. Snapshots bleiben unter 16 KB (`SNAPSHOT_MAX`, gestufte Kürzung unwichtiger Teile).
+- „Beenden“ / „Raum verlassen“ in Shop, Level-Up und Pause (mit Rückfrage).
+- Kristalle: Tempo begrenzt und im Spielfeld gehalten (Test).
+- Klippen am Rand stechen nicht mehr durch den Boden (kein Flackern).
+- Balancing-Mittelweg: frühe Wellen wie 0.9, späte etwas milder als 0.10.0, Waffen-Grundschaden wieder 100 %.
 
 ### Version 0.10.0 – Musik, schärfere Grafik und mehr Herausforderung
 - **Prozedurale Musik** (`packages/audio`):

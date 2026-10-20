@@ -1,5 +1,5 @@
-import { NO_INPUT, DT, type SimEvent } from '../../core/src/index.ts';
-import { MemoryHub, HostSession, ClientSession, encodeSnapshot, decodeSnapshot, normalizeRoomCode, makeRoomCode, type LobbySpieler } from '../src/index.ts';
+import { NO_INPUT, DT, World, type SimEvent } from '../../core/src/index.ts';
+import { MemoryHub, HostSession, ClientSession, encodeSnapshot, decodeSnapshot, SNAPSHOT_MAX, normalizeRoomCode, makeRoomCode, type LobbySpieler } from '../src/index.ts';
 
 let fails = 0;
 function ok(cond: boolean, msg: string): void {
@@ -66,6 +66,28 @@ const hostEnemies = w.enemies.filter((e) => e.alive).length, clientEnemies = cw.
 ok(Math.abs(hostEnemies - clientEnemies) <= Math.max(4, hostEnemies * 0.4), `Gegner sichtbar: Host ${hostEnemies}, Client ${clientEnemies} (100 ms verzögert)`);
 ok(maxErr < 1.2, `Vorhersage der eigenen Figur: max. Abweichung ${maxErr.toFixed(2)} m`);
 ok(maxBytes > 0 && maxBytes < 16000, `Snapshot-Größe ${maxBytes} Byte`);
+
+// Extremfall: sehr viele Geschosse, Kristalle und Ereignisse → Snapshot bleibt unter 16 KB
+{
+  const w = new World(5, 2);
+  let feind = 0;
+  for (let i = 0; i < Math.min(400, w.projectiles.length); i++) {
+    const pr = w.projectiles[i];
+    pr.alive = true; pr.x = 5 + (i % 20); pr.z = 5 + Math.floor(i / 20); pr.hostile = i % 10 === 0;
+    if (pr.hostile) feind++;
+  }
+  for (let i = 0; i < Math.min(300, w.crystals.length); i++) { const c = w.crystals[i]; c.alive = true; c.x = 3 + (i % 30); c.z = 3 + Math.floor(i / 30); }
+  const evs = Array.from({ length: 400 }, (_, i) => ({ type: 'hit', x: i % 30, z: 4, dmg: 12.5, crit: false } as unknown as SimEvent));
+  evs.push({ type: 'explosion', x: 5, z: 5, r: 2, chain: 3 } as unknown as SimEvent);
+  const buf = encodeSnapshot(w, evs, [0, 0]);
+  const snap = decodeSnapshot(new Uint8Array(buf));
+  let feindDa = 0;
+  const fi = snap.shots.fields.findIndex((f) => f.name === 'flags');
+  for (let i = 0; i < snap.shots.n; i++) if (snap.shots.cols[fi][i] & 1) feindDa++;
+  ok(buf.byteLength <= SNAPSHOT_MAX, `Extremfall: Snapshot ${buf.byteLength} Byte ≤ ${SNAPSHOT_MAX} (passt in eine Trystero-Nachricht)`);
+  ok(feindDa === feind, `Extremfall: alle ${feind} feindlichen Geschosse bleiben drin (${feindDa})`);
+  ok(snap.events.some((e) => e.type === 'explosion'), 'Extremfall: wichtige Ereignisse (Explosion) bleiben drin');
+}
 const other = cw.players[0], hostSelf = w.players[0];
 ok(Math.hypot(other.x - hostSelf.x, other.z - hostSelf.z) < 0.5, 'Mitspieler (Host) wird interpoliert angezeigt');
 
