@@ -39,7 +39,7 @@
       "webviewInstallMode": { "type": "downloadBootstrapper", "silent": true },
       "nsis": { "languages": ["German", "English"], "displayLanguageSelector": false, "installMode": "currentUser" }
     },
-    "macOS": { "minimumSystemVersion": "11.0" },
+    "macOS": { "minimumSystemVersion": "11.0", "signingIdentity": "-", "dmg": { "windowSize": { "width": 600, "height": 380 } } },
     "linux": { "deb": { "section": "games" } }
   }
 }
