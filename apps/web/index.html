@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0b0814">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>OVERBOOM Prototyp</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root { --cyan: #3de8ff; --orange: #ff7a1a; --yellow: #ffd23f; --ink: #07040e; --panel: rgba(26, 18, 48, 0.88); }
+  html, body { margin: 0; height: 100%; background: #0b0814; overflow: hidden; overscroll-behavior: none; }
+  body { font-family: 'Silkscreen', monospace; color: #f4ecff; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  #game { position: fixed; inset: 0; touch-action: none; }
+  #game canvas { display: block; width: 100%; height: 100%; }
+  .ob-hud { position: absolute; inset: 0; pointer-events: none; }
+  .ob-hud button { pointer-events: auto; font-family: inherit; }
+  .ob-title { position: absolute; left: max(14px, env(safe-area-inset-left)); top: max(12px, env(safe-area-inset-top)); display: flex; align-items: baseline; gap: 2px; text-shadow: 0 3px 0 var(--ink); }
+  .ob-title b { font-size: 22px; font-weight: 700; color: #f4ecff; }
+  .ob-title b.boom { color: var(--yellow); text-shadow: 0 3px 0 #c2410c, 0 6px 0 var(--ink); }
+  .ob-title span { margin-left: 10px; font-size: 10px; color: #c9bfe8; text-transform: uppercase; }
+  .ob-top-right { position: absolute; right: max(14px, env(safe-area-inset-right)); top: max(12px, env(safe-area-inset-top)); display: flex; align-items: center; gap: 10px; }
+  .ob-fps { font-size: 10px; color: #c9bfe8; text-shadow: 0 2px 0 var(--ink); }
+  .ob-btn { width: 44px; height: 44px; border: 3px solid var(--ink); background: var(--panel); color: #f4ecff; font-size: 18px; box-shadow: 0 0 0 3px #3b2b66; cursor: pointer; }
+  .ob-hint { position: absolute; left: 50%; top: max(64px, calc(env(safe-area-inset-top) + 52px)); transform: translateX(-50%); padding: 8px 14px; max-width: 80vw; box-sizing: border-box; text-align: center; line-height: 1.5; background: var(--panel); border: 3px solid #3b2b66; box-shadow: 0 0 0 3px var(--ink); font-size: 11px; text-transform: uppercase; transition: opacity 0.6s; }
+  .ob-hint b { color: var(--yellow); font-weight: 400; }
+  .ob-hint.gone { opacity: 0; }
+  .ob-dash { position: absolute; right: max(28px, env(safe-area-inset-right)); bottom: max(28px, env(safe-area-inset-bottom)); width: 96px; height: 96px; border-radius: 50%; border: none; padding: 0; cursor: pointer; color: #a8f6ff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 10px; text-transform: uppercase; background: radial-gradient(circle, rgba(26,18,48,0.9) 0 58%, transparent 59%), conic-gradient(var(--cyan) calc(var(--cd, 100) * 1%), #2a1f45 0); box-shadow: 0 0 0 3px var(--ink); touch-action: none; }
+  .ob-dash.ready { box-shadow: 0 0 0 3px var(--ink), 0 0 18px 2px rgba(61,232,255,0.55); }
+  .ob-dash.down { transform: scale(0.92); }
+  .ob-dash.desktop { width: 72px; height: 72px; opacity: 0.85; }
+  .ob-stick { position: absolute; left: 0; top: 0; width: 132px; height: 132px; margin: -66px 0 0 -66px; border-radius: 50%; border: 4px solid rgba(244,236,255,0.35); background: rgba(11,8,20,0.3); box-sizing: border-box; opacity: 0; pointer-events: none; transition: opacity 0.12s; }
+  .ob-stick.on { opacity: 1; }
+  .ob-knob { position: absolute; left: 50%; top: 50%; width: 58px; height: 58px; border-radius: 50%; background: rgba(61,232,255,0.35); border: 4px solid var(--cyan); box-sizing: border-box; transform: translate(-50%, -50%); }
+  .ob-error { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 24px; text-align: center; font-size: 14px; line-height: 1.5; }
+  @media (orientation: portrait) and (max-width: 600px) { .ob-title span { display: none; } }
+</style>
+</head>
+<body>
+  <div id="game"></div>
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

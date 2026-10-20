@@ -1,0 +1,10 @@
+{
+  "name": "OVERBOOM",
+  "short_name": "OVERBOOM",
+  "start_url": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0b0814",
+  "theme_color": "#0b0814",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
