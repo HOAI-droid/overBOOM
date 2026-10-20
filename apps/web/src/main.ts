@@ -1,13 +1,14 @@
+import './fonts.css';
 import { World, DT, DASH_COOLDOWN, NO_INPUT, MetaTracker, heldenFrei, inselFrei, ladeProfil, profilAusCode, profilCode, spawnEnemy, type Command, type InputState, type SimEvent } from '@overboom/core';
 import { GEGNER_INDEX, BOSS_LORE, ELEMENT_INFO, ERFOLGE, GEGNER, GEGNER_BY_ID, HELD_BY_ID, INSELN, INSEL_BY_ID, INSEL_LORE, KARTE_BY_ID, LEVEL, SELTENHEIT, SYNERGIEN, WELLEN_SPRUECHE, waffeById, waehle } from '@overboom/data';
 import { CardArt, FX, GameRenderer, type PlayerPose } from '@overboom/render';
 import { AudioEngine } from '@overboom/audio';
 import { Controls, DamageNumbers, DebugMenu, Hud, MenuNav, Menus, NameTags, karteAlsBild, ladeEinstellungen, screenToWorld, type CoopAktion, type CoopAnsicht, type Einstellungen } from '@overboom/ui';
 import { ClientSession, HostSession, LocalTransport, createTrysteroTransport, makeRoomCode, normalizeRoomCode, type LobbySpieler, type Transport } from '@overboom/net';
-import { createWebPlatform } from '@overboom/platform';
+import { createPlatform, type Platform } from '@overboom/platform';
 
 const root = document.getElementById('game')!;
-const platform = createWebPlatform();
+let platform: Platform;
 const params = new URLSearchParams(location.search);
 const num = (key: string, def: number) => (params.has(key) && Number.isFinite(Number(params.get(key))) ? Number(params.get(key)) : def);
 const internalShort = Math.max(144, Math.min(720, num('res', 270)));
@@ -30,6 +31,7 @@ function turnConfig() {
 }
 
 async function start() {
+  platform = await createPlatform();
   // Profil (Kartenalbum, Erfolge, befreite Inseln) laden – alte Rezeptliste übernehmen
   const profil = ladeProfil(await platform.storage.get('profil'));
   if (!profil.rezepte.length) {
@@ -162,7 +164,9 @@ async function start() {
   };
   menus.exportBild = (k, glanz) => {
     const art = (kunst ??= new CardArt(96)).thumb(k, false);
-    karteAlsBild(k, art, glanz).then((blob) => platform.saveImage(blob, `overboom-${String(k.nr).padStart(3, '0')}-${k.ref}.png`)).catch(() => hud.toast('Fehler', 'Bild konnte nicht erstellt werden', '#ff3d6a'));
+    karteAlsBild(k, art, glanz).then((blob) => platform.saveImage(blob, `overboom-${String(k.nr).padStart(3, '0')}-${k.ref}.png`))
+      .then((ort) => { if (ort) hud.toast('Karte gespeichert', ort, '#3de8ff'); })
+      .catch(() => hud.toast('Fehler', 'Bild konnte nicht erstellt werden', '#ff3d6a'));
   };
   const nav = new MenuNav(menus.root);
 

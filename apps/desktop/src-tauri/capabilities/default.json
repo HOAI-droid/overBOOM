@@ -1,0 +1,15 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Rechte des Spielfensters: Vollbild umschalten, Kartenbilder in den Downloads-Ordner speichern",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-set-fullscreen",
+    "core:window:allow-is-fullscreen",
+    "fs:allow-download-write",
+    "fs:allow-download-meta",
+    "fs:allow-mkdir",
+    { "identifier": "fs:scope", "allow": [{ "path": "$DOWNLOAD/OVERBOOM" }, { "path": "$DOWNLOAD/OVERBOOM/**" }] }
+  ]
+}
