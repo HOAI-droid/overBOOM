@@ -10,6 +10,7 @@ import { gefahrWahl } from './gefahr.ts';
 import { STANDARD, einstellungenHtml, type Einstellungen } from './settings.ts';
 import { lobbyHtml, titelHtml, type CoopAktion, type CoopAnsicht } from './lobby.ts';
 import { ALBUM_TABS, albumGrid, albumZaehler, erfolgeHtml, karteGross, kartenListe, type AlbumTab, type KartenKunst } from './album.ts';
+import { PAD_HINWEIS } from './glyphs.ts';
 import { TIPPS, GEFAHREN, MAX_GEFAHR, HELD_FREI, KARTEN, KARTE_BY_ID, WELT as WELT_INFO, type Karte } from '@overboom/data';
 
 const GEM = '<i class="ob-gem" aria-hidden="true"></i>';
@@ -139,6 +140,10 @@ export class Menus {
   private lastEnd: [EndStats, number] | null = null;
   onRestart: () => void = () => {};
   onResume: () => void = () => {};
+  /** nur Controller (Xbox): Controller-Symbole statt Tastatur-Hinweisen */
+  controller = false;
+  /** App beenden (nur auf Plattformen, die das erlauben – sonst null) */
+  onBeenden: (() => void) | null = null;
 
   world: World;
 
@@ -204,7 +209,10 @@ export class Menus {
     const w = this.world, p = this.p;
     if (this.mode === 'pause' || this.mode === 'end' || this.mode === 'album' || this.mode === 'einst') return;
     if (this.screen === 'titel') {
-      if (this.mode !== 'titel') this.show('titel', titelHtml(this.name, this.codeVorgabe, this.albumButton(), '<button type="button" class="ob-btn2" data-act="einst" data-focus="einst">Einstellungen</button>', TIPPS[Math.floor(Date.now() / 1000) % TIPPS.length]), '[data-act="tsolo"]');
+      if (this.mode !== 'titel') this.show('titel', titelHtml(this.name, this.codeVorgabe, this.albumButton(),
+        '<button type="button" class="ob-btn2" data-act="einst" data-focus="einst">Einstellungen</button>'
+        + (this.onBeenden ? '<button type="button" class="ob-btn2" data-act="tbeenden" data-focus="tbeenden">Beenden</button>' : ''),
+        TIPPS[Math.floor(Date.now() / 1000) % TIPPS.length], this.controller ? PAD_HINWEIS.menue : ''), '[data-act="tsolo"]');
       return;
     }
     if (this.screen === 'lobby' && this.coop) {
@@ -269,7 +277,7 @@ export class Menus {
           <div class="ob-shop-head"><h2 class="ob-h">Wähle deinen Kawumm-Jäger</h2>${this.albumButton()}</div>
           <p class="ob-sub">Jeder Held hat eine Startwaffe und eine Macke. Waffen feuern von selbst – du läufst, weichst aus und kaufst nach jeder Welle nach.</p>
           <div class="ob-cards">${cards}</div>
-        </div>`);
+        </div>`, '.ob-hero:not([disabled])');
       return;
     }
     this.renderMap();
@@ -334,7 +342,7 @@ export class Menus {
           <h2 class="ob-h ob-gold">Level ${p.level - p.pendingLevels + 1}!</h2>
           <p class="ob-sub">Wähle eine Verbesserung${p.pendingLevels > 1 ? ` · noch ${p.pendingLevels}` : ''}</p>
           <div class="ob-cards">${cards}</div>
-        </div>`);
+        </div>`, '.ob-hero:not([disabled])');
       return;
     }
 
@@ -603,7 +611,7 @@ export class Menus {
             : `${s.victory ? '<button type="button" class="ob-btn2" data-act="endless">Endlos weiter</button>' : ''}<button type="button" class="ob-go" data-act="restart">Nochmal!</button>`}
           ${this.albumButton()}
         </div>
-        ${this.touch ? '' : '<p class="ob-keys">Pfeiltasten + Enter · Gamepad: Steuerkreuz + A</p>'}
+        ${this.tastenHinweis('Pfeiltasten + Enter · Gamepad: Steuerkreuz + A', PAD_HINWEIS.menue)}
       </div>`, '[data-act="restart"], [data-act="lzurueck"]');
   }
 
@@ -619,8 +627,14 @@ export class Menus {
           <button type="button" class="ob-btn2" data-act="einst">Einstellungen</button>
           ${this.albumButton()}
         </div>
-        ${this.touch ? '' : '<p class="ob-keys">Esc / P: Pause · WASD: laufen · Leertaste: Dash</p>'}
+        ${this.tastenHinweis('Esc / P: Pause · WASD: laufen · Leertaste: Dash', PAD_HINWEIS.spiel)}
       </div>`);
+  }
+
+  /** Hinweiszeile passend zur Eingabe (Tastatur, Controller, Touch = keine) */
+  private tastenHinweis(tastatur: string, controller: string): string {
+    if (this.controller) return `<p class="ob-keys ob-padkeys">${controller}</p>`;
+    return this.touch ? '' : `<p class="ob-keys">${tastatur}</p>`;
   }
 
   private readName(): string {
@@ -770,6 +784,7 @@ export class Menus {
         return;
       }
       case 'tsolo': this.screen = 'solo'; this.mode = 'none'; break;
+      case 'tbeenden': this.onBeenden?.(); return;
       case 'terstellen': this.name = this.readName(); this.onCoop({ t: 'erstellen', name: this.name }); return;
       case 'tbeitreten': {
         this.name = this.readName();
@@ -826,9 +841,17 @@ export class Menus {
   }
 }
 
+/** alles, was die Menü-Navigation anspringen darf */
+const NAV_ZIELE = 'button:not([disabled]), input:not([disabled]):not([type="hidden"]), textarea:not([disabled])';
+const istText = (el: Element | null): el is HTMLInputElement | HTMLTextAreaElement =>
+  !!el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && (el as HTMLInputElement).type !== 'range'));
+const istRegler = (el: Element | null): el is HTMLInputElement => !!el && el.tagName === 'INPUT' && (el as HTMLInputElement).type === 'range';
+
 /**
- * Menü-Steuerung mit Gamepad und Pfeiltasten: Fokus springt räumlich zum nächsten Knopf
+ * Menü-Steuerung mit Gamepad und Pfeiltasten: Fokus springt räumlich zum nächsten Element
  * in der gedrückten Richtung, A/Enter löst aus, B/Esc geht zurück.
+ * Regler: links/rechts verstellt den Wert. Textfelder: Navigation springt nur hin
+ * (schreibgeschützt, damit keine Bildschirmtastatur aufpoppt), A öffnet die Eingabe.
  */
 export class MenuNav {
   private repeat = 0;
@@ -836,12 +859,25 @@ export class MenuNav {
   private aWas = true;
   private bWas = true;
   onBack: () => void = () => {};
+  /** Textfelder erst mit A öffnen (Konsole: sonst poppt beim Durchblättern die Bildschirmtastatur auf) */
+  textSperre = false;
 
   constructor(private root: HTMLElement) {
     addEventListener('keydown', (e) => {
       if (this.root.classList.contains('hidden')) return;
-      const dir = { ArrowUp: 'u', ArrowDown: 'd', ArrowLeft: 'l', ArrowRight: 'r' }[e.code];
-      if (dir) { this.move(dir); e.preventDefault(); }
+      // Pfeiltasten und (bei manchen Konsolen-Browsern) Gamepad-Tasten als Tastendruck
+      const dir = ({ ArrowUp: 'u', ArrowDown: 'd', ArrowLeft: 'l', ArrowRight: 'r' } as Record<string, string>)[e.code]
+        ?? ({ GamepadDPadUp: 'u', GamepadDPadDown: 'd', GamepadDPadLeft: 'l', GamepadDPadRight: 'r' } as Record<string, string>)[e.key];
+      const cur = document.activeElement;
+      // im offenen Textfeld bewegen links/rechts den Cursor
+      if (dir && istText(cur) && !cur.readOnly && (dir === 'l' || dir === 'r')) return;
+      if (dir) { this.move(dir); e.preventDefault(); return; }
+      if ((e.code === 'Enter' || e.key === 'GamepadA') && istText(cur) && cur.readOnly) { this.bearbeiten(cur); e.preventDefault(); }
+    });
+    // Textfeld verlassen → wieder schreibgeschützt (bis zum nächsten A)
+    this.root.addEventListener('focusout', (e) => {
+      const el = e.target as Element;
+      if (istText(el) && el.dataset.navLock === '1') el.readOnly = true;
     });
   }
 
@@ -862,18 +898,49 @@ export class MenuNav {
     }
     if (dir) {
       if (dir !== this.held) { this.held = dir; this.repeat = 0.35; this.move(dir); }
-      else if ((this.repeat -= dt) <= 0) { this.repeat = 0.12; this.move(dir); }
+      else if ((this.repeat -= dt) <= 0) { this.repeat = istRegler(document.activeElement) ? 0.06 : 0.12; this.move(dir); }
     } else this.held = '';
-    if (a && !this.aWas) (document.activeElement as HTMLElement | null)?.closest?.('.ob-menu') && (document.activeElement as HTMLElement).click();
+    if (a && !this.aWas) this.druecken();
     if (b && !this.bWas) this.onBack();
     this.aWas = a; this.bWas = b;
   }
 
+  /** A gedrückt: Knopf auslösen bzw. Textfeld zur Eingabe öffnen */
+  private druecken(): void {
+    const cur = document.activeElement as HTMLElement | null;
+    if (!cur || !this.root.contains(cur)) return;
+    if (istText(cur)) { this.bearbeiten(cur); return; }
+    if (cur.tagName === 'BUTTON') cur.click();
+  }
+
+  private bearbeiten(el: HTMLInputElement | HTMLTextAreaElement): void {
+    delete el.dataset.navLock;
+    el.readOnly = false;
+    // neu fokussieren, damit die Bildschirmtastatur erscheint
+    el.blur();
+    el.focus();
+    const n = el.value.length;
+    try { el.setSelectionRange(n, n); } catch { /* nicht jedes Feld kann das */ }
+  }
+
+  private fokus(el: HTMLElement): void {
+    if (istText(el) && this.textSperre) { el.dataset.navLock = '1'; el.readOnly = true; }
+    el.focus({ preventScroll: true });
+    el.scrollIntoView({ block: 'nearest' });
+  }
+
   private move(dir: string): void {
-    const list = [...this.root.querySelectorAll<HTMLElement>('button:not([disabled])')];
+    const list = [...this.root.querySelectorAll<HTMLElement>(NAV_ZIELE)].filter((el) => el.offsetParent !== null);
     if (!list.length) return;
     const cur = document.activeElement as HTMLElement | null;
-    if (!cur || !list.includes(cur)) { list[0].focus(); return; }
+    if (!cur || !list.includes(cur)) { this.fokus(list[0]); return; }
+    // Regler: links/rechts verstellt den Wert
+    if (istRegler(cur) && (dir === 'l' || dir === 'r')) {
+      const step = Number(cur.step) || 1, min = Number(cur.min || 0), max = Number(cur.max || 100);
+      const v = Math.max(min, Math.min(max, Math.round((Number(cur.value) + (dir === 'r' ? step : -step)) / step) * step));
+      if (v !== Number(cur.value)) { cur.value = String(+v.toFixed(4)); cur.dispatchEvent(new Event('input', { bubbles: true })); }
+      return;
+    }
     const r = cur.getBoundingClientRect();
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     let best: HTMLElement | null = null, bs = Infinity;
@@ -887,8 +954,6 @@ export class MenuNav {
       const score = main + side * 2;
       if (score < bs) { bs = score; best = el; }
     }
-    if (best) { best.focus(); best.scrollIntoView({ block: 'nearest' }); }
+    if (best) this.fokus(best);
   }
 }
-
-

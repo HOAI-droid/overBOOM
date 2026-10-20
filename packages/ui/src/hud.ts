@@ -1,3 +1,4 @@
+import { PAD_HINWEIS, pad } from './glyphs.ts';
 import type { Platform } from '@overboom/platform';
 
 export interface HudState {
@@ -55,12 +56,13 @@ export class Hud {
 
   constructor(parent: HTMLElement, private platform: Platform, info: () => string) {
     const touch = platform.isTouchDevice();
+    const controller = !!platform.nurController;
     this.root = document.createElement('div');
     this.root.className = 'ob-hud';
     this.root.innerHTML = `
       <div class="ob-hurt"></div>
       <div class="ob-left">
-        <div class="ob-title"><b>OVER</b><b class="boom">BOOM</b><span>v0.8 · Koop</span></div>
+        <div class="ob-title"><b>OVER</b><b class="boom">BOOM</b><span>v0.9 · Koop</span></div>
         <div class="ob-hp" role="meter" aria-label="Leben"><div class="ob-hp-fill"></div><span class="ob-hp-txt">60 / 60</span></div>
         <div class="ob-xp"><span class="ob-lvl">Lv 1</span><div class="ob-xp-bar"><div class="ob-xp-fill"></div></div></div>
         <div class="ob-ok" role="meter" aria-label="Overkill"><span>Overkill</span><div class="ob-ok-bar"><div class="ob-ok-fill"></div></div></div>
@@ -77,9 +79,9 @@ export class Hud {
       </div>
       <div class="ob-banner" aria-live="polite"></div>
       <div class="ob-chain"></div>
-      <div class="ob-hint">${touch ? 'Linker Daumen: laufen · Waffen feuern von selbst · Rechts: <b>Dash</b>' : '<b>WASD</b>: laufen · Waffen feuern von selbst · <b>Leertaste</b>: Dash'}</div>
+      <div class="ob-hint">${controller ? PAD_HINWEIS.spiel : touch ? 'Linker Daumen: laufen · Waffen feuern von selbst · Rechts: <b>Dash</b>' : '<b>WASD</b>: laufen · Waffen feuern von selbst · <b>Leertaste</b>: Dash'}</div>
       <div class="ob-boomtint"></div>
-      <button type="button" class="ob-boombtn" aria-label="OVERBOOM auslösen">OVER<b>BOOM</b><small>${touch ? 'antippen' : 'E / Q'}</small></button>
+      <button type="button" class="ob-boombtn" aria-label="OVERBOOM auslösen">OVER<b>BOOM</b><small>${controller ? pad('Y') : touch ? 'antippen' : 'E / Q'}</small></button>
       <button type="button" class="ob-dash" aria-label="Dash">
         <svg viewBox="0 0 8 8" width="30" height="30" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M4 0h3v1h-1v1h-1v1h3v1h-1v1h-1v1h-1v1h-1v1h-2v-1h1v-1h1v-1h-3v-1h1v-1h1v-1h1z"></path></svg>
         <span>Dash</span>

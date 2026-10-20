@@ -1,6 +1,6 @@
 # CLAUDE.md – OVERBOOM
 
-Arena-Roguelite im Stil von Brotato mit 3D-Voxel-Pixel-Grafik (Kamera wie Minecraft Dungeons), Waffen-Fusion und Koop für 1–4 Spieler. Läuft im Browser, später als App (Capacitor) und Desktop (Tauri) aus demselben Code.
+Arena-Roguelite im Stil von Brotato mit 3D-Voxel-Pixel-Grafik (Kamera wie Minecraft Dungeons), Waffen-Fusion und Koop für 1–4 Spieler. Läuft im Browser und als App (Tauri: Windows/Mac/Linux, Capacitor: iOS/Android, UWP+WebView2: Xbox) aus demselben Code.
 
 **Die vollständige Spezifikation steht in `docs/OVERBOOM_Prompt.md` – vor größeren Änderungen lesen.** Waffendaten: `packages/data/src/weapons.ts` (lesbar: `docs/Waffenkatalog.md`).
 
@@ -28,6 +28,7 @@ Arena-Roguelite im Stil von Brotato mit 3D-Voxel-Pixel-Grafik (Kamera wie Minecr
 - `npm run balance` – Balancing-Bot spielt komplette Runs
 - `npm run typecheck`
 - `npm run build:web` / `build:single` / `build:artifact`
+- `npm run build:desktop` (Tauri), `build:mobile` (Capacitor sync), `build:xbox` (Web-Build → apps/xbox)
 
 ## Stand
 - Phase 1 (Fundament) fertig: Bewegung, Dash, Kollision, Arena, Held-Animation, Touch/Tastatur/Gamepad.
@@ -41,5 +42,6 @@ Arena-Roguelite im Stil von Brotato mit 3D-Voxel-Pixel-Grafik (Kamera wie Minecr
 - Phase 6 (Welt & Karten, v0.6.0) fertig: Lore in `data/lore.ts`; Sammelkarten + Erfolge in `data/cards.ts` (`KARTEN`, IDs `art:ref`); Meta-Profil in `core/src/meta.ts` (`MetaTracker`: `events`/`sync`/`runEnde`, `inselFrei`, Export-Code) – die App speichert es über `platform.storage` ('profil'); Weltkarte `render/src/worldMap.ts` (über `renderer.renderMap`, Beschriftungen per `menus.updateMapLabels`); Kartenalbum `ui/src/album.ts` + Artworks `render/src/cardArt.ts` (eigener WebGL-Kontext, UI kennt nur `KartenKunst`); PNG-Export `ui/src/cardImage.ts` → `platform.saveImage`. 40 Rezepte, neue Rezept-Wirkungen (`SP.minibumm` … `SP.donner`) in `rezeptTreffer`.
 - Phase 7 (Multiplayer) fertig: Koop-Regeln im Kern (`downed`/`reviveT`, `KOOP` in balance.ts, `w.koop()`), Netz-Paket (s. o.), App-Ablauf Titel → Lobby → Spiel in `apps/web/src/main.ts` (`modus` solo/host/client, `useWorld`), Lobby/Titel in `ui/src/lobby.ts`, Namensschilder `ui/src/nametags.ts`. Client ruft nie `world.step`, sondern `client.input()` (Vorhersage) und `client.update()` (Snapshots).
 - Phase 8 (Feinschliff, v0.8.0) fertig: Audio, Einstellungen (`ui/src/settings.ts`, `FX` in render/effects.ts), Overkill/OVERBOOM (`p.overkill`/`p.boomT`, `OVERKILL`), Gefahrenstufen (`data/src/danger.ts`, `w.gw`), Helden-Freischaltung (`HELD_FREI`), IndexedDB in `platform/web.ts`, PWA (`apps/web/public/sw.js`), Debug-Menü F1 (`ui/src/debug.ts`), automatische Qualitätsstufe.
-- Nächster Schritt: **Phase 9 – App-Builds** (Capacitor iOS/Android, Tauri Desktop).
+- Phase 9 (Apps, v0.9.0) fertig: Tauri 2 in `apps/desktop` (Windows/Mac/Linux, `desktop.yml`), Capacitor 8 in `apps/mobile` (Android/iOS, `mobile.yml`, Plugins müssen in apps/mobile/package.json stehen), Xbox als UWP-Hülle mit WebView2 in `apps/xbox` (`xbox.yml`, Doku `docs/xbox.md`). Plattformen in `packages/platform` (`tauri.ts`, `capacitor.ts`, `xbox.ts`), optionale Felder `nurController`/`beenden`/`onZurueck`/`onSpeicherKnapp`. Controller-Symbole `ui/src/glyphs.ts`, `MenuNav` kann Textfelder (`textSperre`) und Regler. Schrift lokal in `apps/web/src/fonts`.
+- Nächster Schritt: Phase 10 – Store-Veröffentlichung (Signaturen, Store-Einträge) bzw. Feedback von echten Geräten.
 - Nach jeder Phase: Tests + Typecheck grün, kurze Änderungsliste, bekannte Probleme, nächster Schritt.

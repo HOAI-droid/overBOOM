@@ -1,10 +1,11 @@
 /**
  * Plattform-Schicht. Der Spielcode spricht NUR mit diesem Interface –
  * nie direkt mit localStorage, navigator, Capacitor- oder Tauri-APIs.
- * Später kommen capacitor.ts (iOS/Android) und tauri.ts (Desktop) dazu.
+ * Umsetzungen: web.ts (Browser/PWA), tauri.ts (Desktop), capacitor.ts (iOS/Android),
+ * xbox.ts (Xbox-App: UWP-Hülle mit WebView2).
  */
 export interface Platform {
-  readonly name: 'web' | 'capacitor' | 'tauri';
+  readonly name: 'web' | 'capacitor' | 'tauri' | 'xbox';
   storage: {
     get(key: string): Promise<string | null>;
     set(key: string, value: string): Promise<void>;
@@ -25,6 +26,14 @@ export interface Platform {
   randomId(): string;
   /** Text in die Zwischenablage */
   copyText(text: string): Promise<boolean>;
+  /** nur Controller, kein Zeiger/Touch (Konsole) – Menüs zeigen Controller-Symbole */
+  readonly nurController?: boolean;
+  /** App beenden (nur wo erlaubt, z. B. Xbox über das Titelmenü) */
+  beenden?(): void;
+  /** System-Zurück (Xbox: B-Taste/BackRequested der Hülle) */
+  onZurueck?(cb: () => void): void;
+  /** Hülle meldet knappen Arbeitsspeicher → Qualität senken */
+  onSpeicherKnapp?(cb: () => void): void;
 }
 
 export { createWebPlatform } from './web.ts';
@@ -41,8 +50,18 @@ export function isCapacitor(): boolean {
   return !!c?.isNativePlatform?.();
 }
 
-/** Passende Plattform wählen: Tauri (Desktop), Capacitor (iOS/Android), sonst Web */
+/** Läuft das Spiel in der Xbox-Hülle (oder zum Testen mit ?plattform=xbox)? */
+export function isXbox(): boolean {
+  const g = globalThis as { __OVERBOOM_XBOX__?: boolean; location?: { search?: string } };
+  if (g.__OVERBOOM_XBOX__) return true;
+  try { return new URLSearchParams(g.location?.search ?? '').get('plattform') === 'xbox'; } catch { return false; }
+}
+
+/** Passende Plattform wählen: Xbox, Capacitor (iOS/Android), Tauri (Desktop), sonst Web */
 export async function createPlatform(): Promise<Platform> {
+  if (isXbox()) {
+    try { return (await import('./xbox.ts')).createXboxPlatform(); } catch { /* Fallback */ }
+  }
   if (isCapacitor()) {
     try { return await (await import('./capacitor.ts')).createCapacitorPlatform(); } catch { /* Fallback */ }
   }

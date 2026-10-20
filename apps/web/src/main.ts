@@ -143,6 +143,10 @@ async function start() {
   };
   const menus = new Menus(root, world, send, touch, () => (recipes.size === meta.profil.rezepte.length ? recipes : (recipes = new Set(meta.profil.rezepte))));
   menus.profil = () => meta.profil;
+  // Konsole (Xbox): Controller-Symbole, Beenden im Titelmenü
+  menus.controller = !!platform.nurController;
+  if (platform.beenden) menus.onBeenden = () => platform.beenden!();
+  document.documentElement.classList.add(`ob-${platform.name}`);
   menus.heldenFrei = () => heldenFrei(meta.profil);
   menus.name = spielerName;
   menus.codeVorgabe = normalizeRoomCode(params.get('raum') ?? '');
@@ -169,6 +173,7 @@ async function start() {
       .catch(() => hud.toast('Fehler', 'Bild konnte nicht erstellt werden', '#ff3d6a'));
   };
   const nav = new MenuNav(menus.root);
+  nav.textSperre = !!platform.nurController;
 
   platform.registerOffline();
 
@@ -192,8 +197,12 @@ async function start() {
   /* ---------------- Einstellungen anwenden ---------------- */
   const QUALI = { hoch: { res: 270, schatten: true, partikel: 1 }, mittel: { res: 216, schatten: true, partikel: 0.7 }, niedrig: { res: 180, schatten: false, partikel: 0.5 } };
   /** bei „Automatisch": aktuelle Stufe (wird nach gemessener Bildrate angepasst) */
-  let autoStufe: keyof typeof QUALI = params.has('res') ? 'hoch' : 'hoch';
-  const qualiStufe = () => (einst.qualitaet === 'auto' ? autoStufe : einst.qualitaet);
+  // Xbox: konservativ (App-Speicherlimit ~1 GB) – startet und bleibt höchstens auf „mittel"
+  const autoMax: keyof typeof QUALI = platform.name === 'xbox' ? 'mittel' : 'hoch';
+  let autoStufe: keyof typeof QUALI = autoMax;
+  /** meldet die Hülle knappen Speicher, gilt bis zum Neustart „niedrig" */
+  let speicherKnapp = false;
+  const qualiStufe = () => (speicherKnapp ? 'niedrig' : einst.qualitaet === 'auto' ? autoStufe : einst.qualitaet);
   const applyEinstellungen = (speichern: boolean) => {
     audio.setLautstaerke({ gesamt: einst.gesamt, effekte: einst.effekte, musik: einst.musik });
     renderer.setShake(einst.shake);
@@ -236,7 +245,7 @@ async function start() {
   let runs = 0;
   let paused = false;
   let lastBoomHaptic = 0;
-  let padStartWas = false;
+  let padBWas = false, padStartWas = false;
   let lastLoadout = -1;
   let lastPhase = '';
   let lastItems: object | null = null;
@@ -283,12 +292,28 @@ async function start() {
   };
   menus.onRestart = restart;
   menus.onResume = () => { paused = false; };
-  nav.onBack = () => { if (!menus.back() && paused) pause(false); };
+  // Zurück: Esc, Gamepad-B (Menü) und System-Zurück der Xbox-Hülle – kommen B und
+  // BackRequested gleichzeitig an, zählt nur der erste Druck
+  let zurueckT = -1e9;
+  const zurueck = () => {
+    const t = performance.now();
+    if (t - zurueckT < 300) return;
+    zurueckT = t;
+    if (!menus.back()) pause(!paused);
+  };
+  nav.onBack = zurueck;
+  platform.onZurueck?.(zurueck);
+  platform.onSpeicherKnapp?.(() => {
+    if (speicherKnapp) return;
+    speicherKnapp = true;
+    applyEinstellungen(false);
+    hud.toast('Speicher knapp', 'Grafik auf „niedrig" gestellt', '#ffd23f');
+  });
   hud.pauseButton.addEventListener('click', () => pause(!paused));
   addEventListener('keydown', (e) => {
     if (e.code === 'Escape' || e.code === 'KeyP') {
       if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
-      if (!menus.back()) pause(!paused);
+      zurueck();
     }
   });
   // Tab im Hintergrund → automatisch pausieren (nur solo – im Koop läuft die Welt weiter)
@@ -566,6 +591,10 @@ async function start() {
     const startBtn = !!pads.find((p) => p)?.buttons[9]?.pressed;
     if (startBtn && !padStartWas) pause(!paused);
     padStartWas = startBtn;
+    // Konsole: B im Spiel = Zurück (Pause); in Menüs übernimmt das MenuNav
+    const bBtn = !!pads.find((p) => p)?.buttons[1]?.pressed;
+    if (platform.nurController && bBtn && !padBWas && !menus.open && !paused) zurueck();
+    padBWas = bBtn;
 
     const inMenu = menus.open || paused;
     if (si.dash && !inMenu) dashQueued = true;
@@ -672,7 +701,7 @@ async function start() {
         const stufen = ['niedrig', 'mittel', 'hoch'] as const;
         const i = stufen.indexOf(autoStufe);
         if (fps < 40 && i > 0) { autoStufe = stufen[i - 1]; applyEinstellungen(false); qualiPause = 6; }
-        else if (fps > 57 && i < 2) { autoStufe = stufen[i + 1]; applyEinstellungen(false); qualiPause = 20; }
+        else if (fps > 57 && i < stufen.indexOf(autoMax)) { autoStufe = stufen[i + 1]; applyEinstellungen(false); qualiPause = 20; }
       }
     }
     // Musik je nach Lage

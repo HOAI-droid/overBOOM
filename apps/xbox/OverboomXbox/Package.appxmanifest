@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Als normale App registriert (nicht als Game): Spiele-Modus und WebView2 vertragen sich auf der Xbox nicht. -->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  IgnorableNamespaces="uap mp">
+
+  <!-- Publisher muss zum Signatur-Zertifikat passen (CI: selbstsigniertes "CN=OVERBOOM Test") -->
+  <Identity Name="OVERBOOM.Spiel" Publisher="CN=OVERBOOM Test" Version="0.9.0.0" />
+
+  <mp:PhoneIdentity PhoneProductId="6f1d7c2e-3b5a-4c8e-9d0f-2a7b4e6c1d39" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+
+  <Properties>
+    <DisplayName>OVERBOOM</DisplayName>
+    <PublisherDisplayName>OVERBOOM</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+
+  <Applications>
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="OverboomXbox.App">
+      <uap:VisualElements
+        DisplayName="OVERBOOM"
+        Description="Arena-Chaos mit Waffen-Fusion für 1–4 Spieler"
+        BackgroundColor="#0B0814"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" ShortName="OVERBOOM" />
+        <uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#0B0814" />
+        <uap:InitialRotationPreference>
+          <uap:Rotation Preference="landscape" />
+        </uap:InitialRotationPreference>
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <!-- Koop über das Internet (WebRTC) und im Heimnetz -->
+    <Capability Name="internetClient" />
+    <Capability Name="privateNetworkClientServer" />
+    <!-- Sammelkarten als Bild speichern (Bilder\OVERBOOM) -->
+    <uap:Capability Name="picturesLibrary" />
+  </Capabilities>
+</Package>

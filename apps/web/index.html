@@ -360,6 +360,21 @@
   .ob-error { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 24px; text-align: center; font-size: 14px; line-height: 1.5; }
   @media (orientation: portrait) and (max-width: 600px) { .ob-title, .ob-fps { display: none; } .ob-hint { bottom: 140px; } .ob-wave { left: auto; right: max(14px, env(safe-area-inset-right)); top: calc(max(12px, env(safe-area-inset-top)) + 54px); transform: none; text-align: right; } .ob-boss { width: 46vw; } }
   @media (max-height: 420px) { .ob-title { display: none; } .ob-hp { width: 132px; } .ob-wave-t { font-size: 20px; } .ob-hint { bottom: 10px; max-width: 50vw; } }
+
+  /* Controller-Symbole (Xbox-Layout) */
+  .ob-pad { display: inline-flex; align-items: center; justify-content: center; min-width: 1.6em; height: 1.6em; padding: 0 0.25em; margin: 0 0.1em; border-radius: 50%; font-style: normal; font-weight: 700; font-size: 0.95em; line-height: 1; color: #0b0814; vertical-align: middle; box-sizing: border-box; }
+  .ob-pad-a { background: #5ad15a; } .ob-pad-b { background: #ff4b4b; } .ob-pad-x { background: #3d9bff; } .ob-pad-y { background: #ffd23f; }
+  .ob-pad-sch { border-radius: 4px; background: #c9bfe8; } .ob-pad-rund, .ob-pad-stick { background: #c9bfe8; } .ob-pad-kreuz { border-radius: 3px; background: #c9bfe8; }
+  .ob-padkeys { text-transform: none; font-size: 10px; color: #c9bfe8; line-height: 2; }
+  .ob-hint .ob-pad, .ob-boombtn .ob-pad { font-size: 10px; }
+  /* Xbox: kein Zeiger, TV-sichere Ränder (5 %), Fokus immer deutlich sichtbar */
+  .ob-xbox, .ob-xbox * { cursor: none !important; }
+  .ob-xbox .ob-hud { inset: 5vh 5vw; }
+  .ob-xbox .ob-menu { padding: 5vh 5vw; }
+  .ob-xbox .ob-full, .ob-xbox .ob-pause { display: none; }
+  .ob-xbox .ob-menu :is(button, input, textarea):focus { outline: 3px solid var(--yellow); outline-offset: 2px; }
+  .ob-xbox .ob-menu input[type="range"]:focus { outline-offset: 4px; }
+  .ob-xbox .ob-menu :is(input, textarea)[readonly]:focus { border-color: var(--yellow); }
 </style>
 </head>
 <body>

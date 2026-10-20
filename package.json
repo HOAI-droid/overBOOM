@@ -1,7 +1,7 @@
 {
   "name": "overboom",
   "private": true,
-  "version": "0.8.0",
+  "version": "0.9.0",
   "type": "module",
   "description": "OVERBOOM – 3D-Voxel-Arena-Roguelite mit Waffen-Fusion (Browser, später App)",
   "scripts": {
@@ -15,6 +15,7 @@
     "build:mobile": "npm run build:web && cd apps/mobile && cap sync",
     "android": "npm run build:mobile && cd apps/mobile && cap open android",
     "ios": "npm run build:mobile && cd apps/mobile && cap open ios",
+    "build:xbox": "npm run build:web && node tools/xbox-web.mjs",
     "build:artifact": "npm run build:single && python3 tools/to-artifact.py dist-single/index.html dist-single/overboom.html",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "node --experimental-strip-types --no-warnings packages/core/test/sim.test.ts && node --experimental-strip-types --no-warnings packages/net/test/net.test.ts && node --experimental-strip-types --no-warnings packages/audio/test/audio.test.ts",

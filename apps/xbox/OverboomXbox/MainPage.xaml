@@ -1,0 +1,13 @@
+<Page
+    x:Class="OverboomXbox.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    Background="#0B0814">
+    <Grid Background="#0B0814">
+        <!-- Das komplette Spiel läuft im WebView2 (lokaler Web-Build unter https://overboom.local/) -->
+        <controls:WebView2 x:Name="Web" UseSystemFocusVisuals="False" />
+        <TextBlock x:Name="Fehler" Visibility="Collapsed" Foreground="#FFD23F" FontSize="20"
+                   TextWrapping="Wrap" Margin="96,54" VerticalAlignment="Center" HorizontalAlignment="Center" />
+    </Grid>
+</Page>

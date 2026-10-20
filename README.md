@@ -1,6 +1,26 @@
 # OVERBOOM
 
-3D-Voxel-Arena-Roguelite mit Waffen-Fusion. Läuft im Browser (Handy + PC), später als App (Capacitor) und Desktop (Tauri) aus demselben Code.
+3D-Voxel-Arena-Roguelite mit Waffen-Fusion. Läuft im Browser (Handy + PC) und als App auf Windows, Mac, Linux, iOS, Android und Xbox – alles aus demselben Code.
+
+## Stand: Phase 9 – Apps für alle Plattformen (v0.9.0)
+
+Alle Apps bauen sich per GitHub Actions; die Dateien liegen als Artefakt am jeweiligen Lauf (*Actions* → Workflow → neuester Lauf → *Artifacts*).
+
+| Plattform | Technik | Workflow | Ergebnis |
+|---|---|---|---|
+| Windows | Tauri 2 (`apps/desktop`) | `desktop.yml` | Installer `.exe` (NSIS) + `.msi` |
+| Mac | Tauri 2 | `desktop.yml` | Universal-`.dmg` (Apple Silicon + Intel), ad-hoc signiert |
+| Linux | Tauri 2 | `desktop.yml` | `.AppImage`, `.deb`, `.rpm` |
+| Android | Capacitor 8 (`apps/mobile`) | `mobile.yml` | Debug-`.apk` zum direkten Installieren, `.aab` für Google Play |
+| iOS | Capacitor 8 | `mobile.yml` | Simulator-App + unsignierte `.ipa` (signieren mit eigenem Apple-Konto) |
+| Xbox Series X\|S | UWP + WebView2 (`apps/xbox`) | `xbox.yml` | `.msix` + Dependencies + Testzertifikat (Dev Mode) – Anleitung: [docs/xbox.md](docs/xbox.md) |
+
+- **Plattform-Schicht** (`packages/platform`): `createPlatform()` wählt Xbox → Capacitor → Tauri → Web. Speichern, Vibration, Teilen und Bild-Export laufen je Plattform nativ (Tauri: Downloads\OVERBOOM, Handy: Teilen-Menü, Xbox: Bilder\OVERBOOM).
+- **Handy**: nur Querformat, echtes Vollbild, Bildschirm bleibt an, Pixel-Bombe als Icon und Splash. Schrift liegt lokal (offline).
+- **Xbox**: komplette Menüsteuerung per Controller (Steuerkreuz/Stick + A/B, sichtbarer Fokus, Regler mit ◀ ▶, Textfelder mit A), Controller-Symbole statt Tastatur-Hinweisen, B = Zurück, Beenden im Titelmenü, TV-sichere Ränder, Qualität konservativ, Speicher-Wächter. Im Browser testbar mit `?plattform=xbox`.
+- **Signieren**: Android-Release über Umgebungsvariablen/Secrets `OVERBOOM_KEYSTORE(_B64)`, `OVERBOOM_KEYSTORE_PASS`, `OVERBOOM_KEY_ALIAS`, `OVERBOOM_KEY_PASS` (Keystore nie einchecken). Windows/Mac sind unsigniert (SmartScreen: „Weitere Informationen" → „Trotzdem ausführen"; Mac: Rechtsklick → Öffnen).
+- Befehle: `npm run dev:desktop`, `npm run build:desktop`, `npm run build:mobile` (Web-Build + `cap sync`), `npm run android` / `npm run ios` (öffnet Android Studio/Xcode), `npm run build:xbox` (Web-Build → `apps/xbox/OverboomXbox/Web`).
+- Werbegrafik (Hochformat 1080×1920): `docs/werbung/`.
 
 ## Stand: Phase 7 + 8 – Koop & Feinschliff (v0.8.0)
 

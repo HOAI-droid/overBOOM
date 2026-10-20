@@ -1,0 +1,97 @@
+# Xbox-App (UWP + WebView2) als MSIX zum Sideloaden im Developer Mode.
+# Signiert mit einem selbstsignierten Testzertifikat (CN=OVERBOOM Test) – nur für den Dev Mode gedacht.
+# Artefakt: MSIX + Dependencies (x64) + .cer. Installation: docs/xbox.md
+name: Xbox-App
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/laughing-ramanujan-oyc23t, main]
+    tags: ['v*']
+    paths:
+      - 'apps/web/**'
+      - 'apps/xbox/**'
+      - 'packages/**'
+      - 'tools/xbox-web.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/xbox.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  xbox:
+    name: Xbox (MSIX x64)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build:xbox
+      - uses: microsoft/setup-msbuild@v2
+
+      - name: Windows-SDK wählen
+        shell: pwsh
+        run: |
+          $uap = "${env:ProgramFiles(x86)}\Windows Kits\10\Platforms\UAP"
+          Get-ChildItem $uap | ForEach-Object { $_.Name }
+          $sdk = (Get-ChildItem $uap | Where-Object Name -match '^10\.' | Sort-Object { [version]$_.Name } | Select-Object -Last 1).Name
+          echo "Verwende SDK $sdk"
+          echo "UAP_SDK=$sdk" >> $env:GITHUB_ENV
+
+      - name: Testzertifikat erzeugen
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force out | Out-Null
+          $cert = New-SelfSignedCertificate -Type Custom -Subject "CN=OVERBOOM Test" `
+            -KeyUsage DigitalSignature -FriendlyName "OVERBOOM Test" `
+            -CertStoreLocation "Cert:\CurrentUser\My" `
+            -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+          $pw = ConvertTo-SecureString -String "overboom" -Force -AsPlainText
+          Export-PfxCertificate -Cert $cert -FilePath apps/xbox/OverboomXbox/OverboomXbox_Test.pfx -Password $pw | Out-Null
+          Export-Certificate -Cert $cert -FilePath out/OVERBOOM-Test.cer | Out-Null
+          echo "CERT_THUMB=$($cert.Thumbprint)" >> $env:GITHUB_ENV
+
+      - name: MSIX bauen (msbuild)
+        shell: pwsh
+        run: |
+          msbuild apps/xbox/OverboomXbox.sln /restore /m /v:minimal `
+            /p:Configuration=Release /p:Platform=x64 `
+            /p:TargetPlatformVersion=$env:UAP_SDK `
+            /p:AppxBundle=Never /p:UapAppxPackageBuildMode=SideloadOnly `
+            /p:AppxPackageDir=$env:GITHUB_WORKSPACE\out\pakete\ `
+            /p:AppxPackageSigningEnabled=true `
+            /p:PackageCertificateKeyFile=OverboomXbox_Test.pfx `
+            /p:PackageCertificatePassword=overboom `
+            /p:PackageCertificateThumbprint=$env:CERT_THUMB
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Get-ChildItem -Recurse out | Select-Object FullName, Length | Format-Table -AutoSize
+
+      - name: Artefakt zusammenstellen
+        shell: pwsh
+        run: |
+          $pkg = Get-ChildItem -Recurse out/pakete -Include *.msix, *.appx | Where-Object { $_.FullName -notmatch '\\Dependencies\\' } | Select-Object -First 1
+          if (-not $pkg) { throw "Kein MSIX gefunden" }
+          New-Item -ItemType Directory -Force out/OVERBOOM-Xbox/Dependencies | Out-Null
+          Copy-Item $pkg.FullName out/OVERBOOM-Xbox/OVERBOOM-Xbox.msix
+          $deps = Join-Path $pkg.Directory.FullName "Dependencies\x64"
+          if (Test-Path $deps) { Copy-Item "$deps\*" out/OVERBOOM-Xbox/Dependencies/ }
+          Copy-Item out/OVERBOOM-Test.cer out/OVERBOOM-Xbox/
+          Copy-Item docs/xbox.md out/OVERBOOM-Xbox/ANLEITUNG.md
+          Get-ChildItem -Recurse out/OVERBOOM-Xbox | Select-Object FullName, Length | Format-Table -AutoSize
+          Compress-Archive -Path out/OVERBOOM-Xbox/* -DestinationPath out/OVERBOOM-Xbox.zip
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: OVERBOOM-Xbox
+          path: out/OVERBOOM-Xbox/*
+
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: out/OVERBOOM-Xbox.zip

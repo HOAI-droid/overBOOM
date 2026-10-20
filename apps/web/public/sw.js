@@ -1,6 +1,6 @@
 /* OVERBOOM – Service Worker: macht das Spiel installierbar und solo offline spielbar.
  * Seiten: erst Netz (Updates), sonst Cache. Dateien: erst Cache, sonst Netz (und merken). */
-const CACHE = 'overboom-0.8.0';
+const CACHE = 'overboom-0.9.0';
 const KERN = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {

@@ -1,0 +1,11 @@
+# Build-Ausgaben und der kopierte Web-Build (kommt aus dist/)
+OverboomXbox/bin/
+OverboomXbox/obj/
+OverboomXbox/Web/
+OverboomXbox/AppPackages/
+OverboomXbox/BundleArtifacts/
+.vs/
+*.user
+# Zertifikate nie einchecken
+*.pfx
+*.cer
