@@ -163,6 +163,16 @@
   .ob-nametag.down .n { animation: ob-blink 0.6s steps(2) infinite; }
   .ob-nametag .ob-pfeil { display: none; width: 0; height: 0; border: 7px solid transparent; border-left: 12px solid var(--c); transform: rotate(var(--a)); margin-bottom: 2px; }
   .ob-nametag.off .ob-pfeil { display: block; }
+  /* Einstellungen */
+  .ob-setgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+  .ob-set { display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto; gap: 4px 10px; align-items: center; padding: 8px 10px; min-height: 44px; border: 2px solid #3b2b66; background: #1c1434; color: #f4ecff; font-size: 12px; text-align: left; box-sizing: border-box; }
+  .ob-set span { display: flex; flex-direction: column; gap: 2px; }
+  .ob-set small { font-size: 9px; color: #8a80a8; }
+  .ob-set input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--yellow); height: 24px; }
+  .ob-set b { color: var(--yellow); font-size: 12px; grid-row: 1; grid-column: 2; }
+  .ob-toggle b { color: #8a80a8; }
+  .ob-toggle.on { border-color: var(--yellow); }
+  .ob-toggle.on b { color: var(--yellow); }
   .ob-menu.hidden { display: none; }
   .on-map .ob-hud { display: none; }
   .ob-menu.ob-mapmode { background: transparent; padding: 0; overflow: hidden; }

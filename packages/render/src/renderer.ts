@@ -181,7 +181,10 @@ export class GameRenderer {
     return this.rngState / 4294967296;
   };
 
+  private dpr = 1;
+
   resize(width: number, height: number, dpr: number): void {
+    this.dpr = dpr;
     this.renderer.setPixelRatio(Math.min(2, dpr));
     this.renderer.setSize(width, height, false);
     this.cssW = width; this.cssH = height;
@@ -202,6 +205,25 @@ export class GameRenderer {
   }
 
   get internalSize() { return { w: this.iw, h: this.ih }; }
+
+  /** Einstellungen live ändern */
+  setShake(v: number): void { this.opt.shake = Math.max(0, Math.min(2, v)); }
+  setShadows(on: boolean): void {
+    if (this.opt.shadows === on) return;
+    this.opt.shadows = on;
+    this.renderer.shadowMap.enabled = on;
+    this.sun.castShadow = on;
+    // Materialien müssen neu übersetzt werden
+    this.scene.traverse((o) => { const m = (o as THREE.Mesh).material as THREE.Material | undefined; if (m) m.needsUpdate = true; });
+  }
+  /** Render-Auflösung (kurze Bildseite in Pixeln) */
+  setResolution(short: number): void {
+    const s = Math.max(144, Math.min(720, Math.round(short)));
+    if (s === this.opt.internalShort) return;
+    this.opt.internalShort = s;
+    this.resize(this.cssW, this.cssH, this.dpr);
+  }
+  get resolution(): number { return this.opt.internalShort; }
 
   /**
    * Erzeugt Effekte aus den Simulations-Ereignissen eines Ticks.

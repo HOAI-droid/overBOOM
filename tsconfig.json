@@ -16,7 +16,8 @@
       "@overboom/render": ["packages/render/src/index.ts"],
       "@overboom/ui": ["packages/ui/src/index.ts"],
       "@overboom/net": ["packages/net/src/index.ts"],
-      "@overboom/platform": ["packages/platform/src/index.ts"]
+      "@overboom/platform": ["packages/platform/src/index.ts"],
+      "@overboom/audio": ["packages/audio/src/index.ts"]
     }
   },
   "include": ["packages/*/src/**/*.ts", "apps/web/src/**/*.ts"]

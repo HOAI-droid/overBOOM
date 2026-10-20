@@ -6,6 +6,7 @@ import {
   A, AMBOSS, EVOLUTION, G, GEGNER_BY_ID, INSEL_BY_ID, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, evoName, HELDEN, HELD_BY_ID, INSELN, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
   elemente, type StatKey, INSEL_LORE, WELT, SIEG_TEXT, SPRUECHE_TOD, PLAETZE, SETS, SET_BY_ID, setBoni, schrottwert, BEUTE, type Ausruestung
 } from '@overboom/data';
+import { STANDARD, einstellungenHtml, type Einstellungen } from './settings.ts';
 import { lobbyHtml, titelHtml, type CoopAktion, type CoopAnsicht } from './lobby.ts';
 import { ALBUM_TABS, albumGrid, albumZaehler, erfolgeHtml, karteGross, kartenListe, type AlbumTab, type KartenKunst } from './album.ts';
 import { HELD_FREI, KARTEN, KARTE_BY_ID, WELT as WELT_INFO, type Karte } from '@overboom/data';
@@ -83,7 +84,14 @@ export interface EndStats {
  */
 export class Menus {
   readonly root: HTMLDivElement;
-  private mode: 'none' | 'start' | 'shop' | 'end' | 'pause' | 'album' | 'titel' | 'lobby' = 'none';
+  private mode: 'none' | 'start' | 'shop' | 'end' | 'pause' | 'album' | 'titel' | 'lobby' | 'einst' = 'none';
+  /** Einstellungen (setzt die App) und Rückmeldung bei Änderung */
+  einstellungen: Einstellungen = { ...STANDARD };
+  onEinstellungen: (e: Einstellungen) => void = () => {};
+  qualiInfo: () => string = () => '';
+  /** Ton bei Klicks (setzt die App) */
+  klick: (art: 'klick' | 'kauf' | 'nein') => void = () => {};
+  private einstBack: 'titel' | 'pause' = 'titel';
   /** Bildschirm außerhalb des Runs: Titel, Solo-Startwahl, Koop-Lobby oder im Spiel */
   screen: 'titel' | 'solo' | 'lobby' | 'spiel' = 'titel';
   /** Koop: Lobby-Inhalt und Aktionen (setzt die App) */
@@ -136,6 +144,16 @@ export class Menus {
     this.root.className = 'ob-menu hidden';
     parent.appendChild(this.root);
     this.root.addEventListener('click', (e) => this.onClick(e));
+    this.root.addEventListener('input', (e) => {
+      const el = e.target as HTMLInputElement;
+      const key = el.dataset?.set as keyof Einstellungen | undefined;
+      if (!key) return;
+      const v = Number(el.value);
+      this.einstellungen = { ...this.einstellungen, [key]: v };
+      const label = el.parentElement?.querySelector('b');
+      if (label) label.textContent = `${Math.round(v * 100)} %`;
+      this.onEinstellungen(this.einstellungen);
+    });
     // Glanzkarten kippen mit dem Zeiger (holografischer Schimmer)
     this.root.addEventListener('pointermove', (e) => {
       const card = (e.target as HTMLElement).closest<HTMLElement>('.ob-bigcard');
@@ -180,9 +198,9 @@ export class Menus {
   /** Wird jedes Frame aufgerufen; baut nur neu, wenn sich der Zustand geändert hat. */
   sync(): void {
     const w = this.world, p = this.p;
-    if (this.mode === 'pause' || this.mode === 'end' || this.mode === 'album') return;
+    if (this.mode === 'pause' || this.mode === 'end' || this.mode === 'album' || this.mode === 'einst') return;
     if (this.screen === 'titel') {
-      if (this.mode !== 'titel') this.show('titel', titelHtml(this.name, this.codeVorgabe, this.albumButton()), '[data-act="tsolo"]');
+      if (this.mode !== 'titel') this.show('titel', titelHtml(this.name, this.codeVorgabe, this.albumButton(), '<button type="button" class="ob-btn2" data-act="einst" data-focus="einst">Einstellungen</button>'), '[data-act="tsolo"]');
       return;
     }
     if (this.screen === 'lobby' && this.coop) {
@@ -591,6 +609,7 @@ export class Menus {
         <div class="ob-row ob-center">
           <button type="button" class="ob-go" data-act="resume">Weiter</button>
           ${this.koop ? '<button type="button" class="ob-btn2" data-act="lverlassen">Raum verlassen</button>' : '<button type="button" class="ob-btn2" data-act="restart">Neu starten</button>'}
+          <button type="button" class="ob-btn2" data-act="einst">Einstellungen</button>
           ${this.albumButton()}
         </div>
         ${this.touch ? '' : '<p class="ob-keys">Esc / P: Pause · WASD: laufen · Leertaste: Dash</p>'}
@@ -675,8 +694,23 @@ export class Menus {
     this.renderAlbum();
   }
 
+  private openEinstellungen(): void {
+    this.einstBack = this.mode === 'pause' ? 'pause' : 'titel';
+    this.renderEinstellungen();
+  }
+
+  private renderEinstellungen(): void {
+    this.show('einst', einstellungenHtml(this.einstellungen, this.qualiInfo()), '[data-act="setzu"]');
+  }
+
+  private closeEinstellungen(): void {
+    if (this.einstBack === 'pause') this.showPause();
+    else { this.mode = 'none'; this.sync(); }
+  }
+
   /** Zurück-Taste (Esc / Gamepad B) */
   back(): boolean {
+    if (this.mode === 'einst') { this.closeEinstellungen(); return true; }
     if (this.mode === 'start' && !this.startHeld && this.screen === 'solo') { this.screen = 'titel'; this.mode = 'none'; this.sync(); return true; }
     if (this.mode === 'lobby') { this.onCoop({ t: 'verlassen' }); return true; }
     if (this.mode === 'album') {
@@ -692,6 +726,7 @@ export class Menus {
   private onClick(e: MouseEvent): void {
     const el = (e.target as HTMLElement).closest<HTMLElement>('[data-act]');
     if (!el || (el as HTMLButtonElement).disabled) return;
+    this.klick(el.dataset.act === 'buy' ? 'kauf' : 'klick');
     const i = Number(el.dataset.i ?? -1);
     switch (el.dataset.act) {
       case 'held': this.startHeld = el.dataset.id!; this.mode = 'none'; break;
@@ -710,6 +745,16 @@ export class Menus {
       case 'sell': this.send({ type: 'sell', slot: i }); this.detail = -1; break;
       case 'stats': this.showStats = !this.showStats; break;
       case 'album': this.openAlbum(); return;
+      case 'einst': this.openEinstellungen(); return;
+      case 'setzu': this.closeEinstellungen(); return;
+      case 'setq': this.einstellungen = { ...this.einstellungen, qualitaet: el.dataset.q as Einstellungen['qualitaet'] }; this.onEinstellungen(this.einstellungen); this.renderEinstellungen(); return;
+      case 'settoggle': {
+        const k = el.dataset.key as 'zahlen' | 'vibration' | 'farbenblind';
+        this.einstellungen = { ...this.einstellungen, [k]: !this.einstellungen[k] };
+        this.onEinstellungen(this.einstellungen);
+        this.renderEinstellungen();
+        return;
+      }
       case 'tsolo': this.screen = 'solo'; this.mode = 'none'; break;
       case 'terstellen': this.name = this.readName(); this.onCoop({ t: 'erstellen', name: this.name }); return;
       case 'tbeitreten': {

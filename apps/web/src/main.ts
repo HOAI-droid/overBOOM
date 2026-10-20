@@ -1,7 +1,8 @@
 import { World, DT, DASH_COOLDOWN, NO_INPUT, MetaTracker, heldenFrei, inselFrei, ladeProfil, profilAusCode, profilCode, spawnEnemy, type Command, type InputState, type SimEvent } from '@overboom/core';
 import { BOSS_LORE, ELEMENT_INFO, ERFOLGE, GEGNER, GEGNER_BY_ID, HELD_BY_ID, INSELN, INSEL_BY_ID, INSEL_LORE, KARTE_BY_ID, LEVEL, SELTENHEIT, SYNERGIEN, WELLEN_SPRUECHE, waffeById, waehle } from '@overboom/data';
-import { CardArt, GameRenderer, type PlayerPose } from '@overboom/render';
-import { Controls, DamageNumbers, Hud, MenuNav, Menus, NameTags, karteAlsBild, screenToWorld, type CoopAktion, type CoopAnsicht } from '@overboom/ui';
+import { CardArt, FX, GameRenderer, type PlayerPose } from '@overboom/render';
+import { AudioEngine } from '@overboom/audio';
+import { Controls, DamageNumbers, Hud, MenuNav, Menus, NameTags, karteAlsBild, ladeEinstellungen, screenToWorld, type CoopAktion, type CoopAnsicht, type Einstellungen } from '@overboom/ui';
 import { ClientSession, HostSession, LocalTransport, createTrysteroTransport, makeRoomCode, normalizeRoomCode, type LobbySpieler, type Transport } from '@overboom/net';
 import { createWebPlatform } from '@overboom/platform';
 
@@ -50,6 +51,13 @@ async function start() {
   };
   addEventListener('pagehide', () => save(true));
 
+  // Einstellungen (URL-Parameter überschreiben sie für Tests)
+  const einst: Einstellungen = ladeEinstellungen(await platform.storage.get('einstellungen'));
+  if (params.has('shake')) einst.shake = Math.max(0, Math.min(2, num('shake', 1)));
+  if (params.get('zahlen') === '0') einst.zahlen = false;
+  const audio = new AudioEngine();
+  const haptic = (ms: number) => { if (einst.vibration) platform.haptic(ms); };
+
   // Koop-Kennung (zum Wiederverbinden) und Name
   let token = (await platform.storage.get('koop-token')) ?? '';
   if (!token) { token = platform.randomId(); platform.storage.set('koop-token', token); }
@@ -91,7 +99,7 @@ async function start() {
   const debugStart = giveDebug();
   let renderer: GameRenderer;
   try {
-    renderer = new GameRenderer(canvas, world, { internalShort, shadows: params.get('shadows') !== '0', shake: Math.max(0, Math.min(2, num('shake', 1))) });
+    renderer = new GameRenderer(canvas, world, { internalShort, shadows: params.get('shadows') !== '0', shake: einst.shake });
   } catch (e) {
     fail('WebGL konnte nicht gestartet werden. Bitte einen aktuellen Browser verwenden.');
     throw e;
@@ -100,7 +108,7 @@ async function start() {
   const touch = platform.isTouchDevice();
   const hud = new Hud(root, platform, () => `Seed ${seed}`);
   const damage = new DamageNumbers(root);
-  damage.enabled = params.get('zahlen') !== '0';
+  damage.enabled = einst.zahlen;
   const tags = new NameTags(root);
   const controls = new Controls(root, hud.dashButton);
 
@@ -158,10 +166,39 @@ async function start() {
   };
   const nav = new MenuNav(menus.root);
 
+  /* ---------------- Einstellungen anwenden ---------------- */
+  const QUALI = { hoch: { res: 270, schatten: true, partikel: 1 }, mittel: { res: 216, schatten: true, partikel: 0.7 }, niedrig: { res: 180, schatten: false, partikel: 0.5 } };
+  /** bei „Automatisch": aktuelle Stufe (wird nach gemessener Bildrate angepasst) */
+  let autoStufe: keyof typeof QUALI = params.has('res') ? 'hoch' : 'hoch';
+  const qualiStufe = () => (einst.qualitaet === 'auto' ? autoStufe : einst.qualitaet);
+  const applyEinstellungen = (speichern: boolean) => {
+    audio.setLautstaerke({ gesamt: einst.gesamt, effekte: einst.effekte, musik: einst.musik });
+    renderer.setShake(einst.shake);
+    const q = QUALI[qualiStufe()];
+    FX.blitze = einst.blitze;
+    FX.dichte = Math.min(einst.partikel, q.partikel);
+    FX.farbenblind = einst.farbenblind;
+    hud.blitze = einst.blitze;
+    damage.enabled = einst.zahlen;
+    if (!params.has('res')) renderer.setResolution(q.res);
+    if (params.get('shadows') !== '0') renderer.setShadows(q.schatten);
+    menus.einstellungen = { ...einst };
+    if (speichern) platform.storage.set('einstellungen', JSON.stringify(einst));
+  };
+  menus.onEinstellungen = (e) => { Object.assign(einst, e); applyEinstellungen(true); };
+  menus.qualiInfo = () => `${renderer.internalSize.w}×${renderer.internalSize.h}${einst.qualitaet === 'auto' ? ` · gerade: ${qualiStufe()}` : ''}`;
+  menus.klick = (art) => { audio.unlock(); audio.play(art); };
+  // Ton erst nach der ersten Berührung/Taste (iOS)
+  const unlock = () => audio.unlock();
+  addEventListener('pointerdown', unlock);
+  addEventListener('keydown', unlock);
+  addEventListener('touchend', unlock);
+
   const resize = () => renderer.resize(root.clientWidth, root.clientHeight, devicePixelRatio || 1);
   addEventListener('resize', resize);
   addEventListener('orientationchange', () => setTimeout(resize, 150));
   resize();
+  applyEinstellungen(false);
 
   const poses = () => world.players.map((p) => ({ x: p.x, z: p.z, facing: p.facing }));
   let prev: PlayerPose[] = poses();
@@ -229,7 +266,10 @@ async function start() {
     }
   });
   // Tab im Hintergrund → automatisch pausieren (nur solo – im Koop läuft die Welt weiter)
-  document.addEventListener('visibilitychange', () => { if (document.hidden && modus === 'solo') pause(true); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && modus === 'solo') pause(true);
+    audio.suspend(document.hidden);
+  });
 
   root.addEventListener('pointerdown', () => platform.keepAwake(true), { once: true });
 
@@ -381,17 +421,17 @@ async function start() {
     if (modus === 'solo') freeze = Math.max(freeze, stop);
     for (const e of events) {
       switch (e.type) {
-        case 'dash': if (e.player === me) platform.haptic(12); break;
-        case 'bump': if (e.player === me) platform.haptic(25); break;
+        case 'dash': if (e.player === me) haptic(12); break;
+        case 'bump': if (e.player === me) haptic(25); break;
         case 'hit': damage.add(e.id, e.x, e.y, e.z, e.dmg, e.crit); break;
         case 'explosion':
-          if (now - lastBoomHaptic > 120) { platform.haptic(e.r > 2 ? 30 : 15); lastBoomHaptic = now; }
+          if (now - lastBoomHaptic > 120) { haptic(e.r > 2 ? 30 : 15); lastBoomHaptic = now; }
           break;
         case 'chain': hud.chain(e.count); break;
-        case 'hurt': if (e.player === me) { hud.hurt(); platform.haptic(60); } break;
+        case 'hurt': if (e.player === me) { hud.hurt(); haptic(60); } break;
         case 'dodge': damage.text(-e.player - 1, e.x, 1.2, e.z, 'Ausgewichen!', 'dodge'); break;
         case 'heal': damage.text(-e.player - 100, e.x, 1.1, e.z, `+${e.value}`, 'heal'); break;
-        case 'levelUp': damage.text(-e.player - 200, e.x, 1.6, e.z, 'Level up!', 'lvl'); if (e.player === me) platform.haptic(30); break;
+        case 'levelUp': damage.text(-e.player - 200, e.x, 1.6, e.z, 'Level up!', 'lvl'); if (e.player === me) haptic(30); break;
         case 'waveStart': {
           const bossId = e.wave >= 20 ? 'baron' : world.insel.boss;
           if (e.boss) hud.banner(`${GEGNER_BY_ID[bossId]?.name ?? 'Boss'}!`, BOSS_LORE[bossId]?.auftritt ?? '', 'rot');
@@ -401,34 +441,36 @@ async function start() {
         }
         case 'bossPhase': {
           const bossId = world.wave >= 20 ? 'baron' : world.insel.boss;
-          hud.banner('Jetzt wird’s ernst!', BOSS_LORE[bossId]?.wut ?? '', 'rot'); platform.haptic(120); break;
+          hud.banner('Jetzt wird’s ernst!', BOSS_LORE[bossId]?.wut ?? '', 'rot'); haptic(120); break;
         }
-        case 'waveClear': hud.banner('Welle geschafft!', 'Alles fliegt in die Luft', 'cyan'); platform.haptic(80); break;
+        case 'waveClear': hud.banner('Welle geschafft!', 'Alles fliegt in die Luft', 'cyan'); haptic(80); break;
         case 'victory': endTimer = 1.2; break;
         case 'fusion':
           if (e.player !== me) break;
           if (e.rezept && !meta.profil.rezepte.includes(e.rezept)) {
             hud.banner('Rezept entdeckt!', e.name, 'gelb');
-            platform.haptic(150);
+            haptic(150);
           } else hud.banner('Verschmolzen!', e.name, e.rezept ? 'gelb' : 'cyan');
           break;
         case 'reaction': damage.text(-5000 - (e.x * 37 | 0) - (e.z * 11 | 0), e.x, 1.5, e.z, e.name, 'reaction', e.farbe); break;
         case 'star': if (e.player === me) { damage.text(-7000 - e.slot, e.x, 1.9, e.z, `${'★'.repeat(e.stars)} ${e.weapon}`, 'lvl'); if (e.stars === 5) hud.banner('5 Sterne!', `${e.weapon} kann im Shop evolvieren`, 'gelb'); } break;
-        case 'evolve': if (e.player === me) { hud.banner('Evolution!', e.weapon, 'gelb'); platform.haptic(120); } break;
-        case 'loot': if (e.player === me) { damage.text(-8000 - (e.seltenheit), e.x, 1.6, e.z, `Beute: ${e.name}`, 'lvl', SELTENHEIT[e.seltenheit - 1].farbe); platform.haptic(40); } break;
-        case 'nuke': damage.text(-6000, e.x, 1.8, e.z, 'MINI-NUKE!', 'kawumm', '#ffd23f'); platform.haptic(120); break;
+        case 'evolve': if (e.player === me) { hud.banner('Evolution!', e.weapon, 'gelb'); haptic(120); } break;
+        case 'loot': if (e.player === me) { damage.text(-8000 - (e.seltenheit), e.x, 1.6, e.z, `Beute: ${e.name}`, 'lvl', SELTENHEIT[e.seltenheit - 1].farbe); haptic(40); } break;
+        case 'nuke': damage.text(-6000, e.x, 1.8, e.z, 'MINI-NUKE!', 'kawumm', '#ffd23f'); haptic(120); break;
         case 'kawumm': damage.text(-999 - (e.x * 100 | 0), e.x, 1.3, e.z, 'Kawumm!', 'kawumm'); break;
         case 'downed':
-          if (e.player === me) { hud.banner('Am Boden!', 'Ein Mitspieler kann dich wiederbeleben', 'rot'); platform.haptic(200); }
+          if (e.player === me) { hud.banner('Am Boden!', 'Ein Mitspieler kann dich wiederbeleben', 'rot'); haptic(200); }
           else hud.toast('Hilfe!', `${world.players[e.player]?.name ?? 'Jemand'} ist am Boden`, '#ff3d6a');
           break;
         case 'revive':
           if (e.player === me) hud.banner('Wieder da!', e.by >= 0 ? `${world.players[e.by]?.name ?? ''} hat dich gerettet` : '', 'cyan');
           else if (e.by === me) hud.toast('Gerettet!', world.players[e.player]?.name ?? '', '#7dff5a');
           break;
-        case 'death': platform.haptic(200); endTimer = 1.6; break;
+        case 'death': haptic(200); endTimer = 1.6; break;
       }
     }
+    const self = world.players[me];
+    if (self) audio.events(events, me, self.x, self.z);
     meta.events(world, events);
     announce();
   }
@@ -448,7 +490,7 @@ async function start() {
         const i = INSELN.findIndex((x) => x.id === n.id);
         hud.banner(`${INSELN[i].name} befreit!`, INSEL_LORE[n.id]?.befreit ?? '', 'cyan');
         if (INSELN[i + 1]) hud.toast('Neue Insel', INSELN[i + 1].name, '#3de8ff');
-        platform.haptic(150);
+        haptic(150);
       }
     }
     meta.neues.length = 0;
@@ -585,6 +627,13 @@ async function start() {
         return { element: sy.element, count, level: sy.stufen.filter((st) => count >= st.ab).length, farbe: sy.farbe };
       }));
     }
+    // Musik je nach Lage
+    audio.update(dt);
+    const scr = menus.screen;
+    audio.music(scr === 'titel' || scr === 'lobby' || world.phase === 'wahl' ? 'menu'
+      : world.phase === 'shop' ? 'shop'
+      : world.phase === 'welle' ? (world.boss >= 0 ? 'boss' : 'kampf')
+      : world.phase === 'pause' ? 'kampf' : 'menu');
     root.classList.toggle('in-menu', menus.open);
     root.classList.toggle('on-map', !!mapState);
     root.classList.toggle('on-title', menus.screen === 'titel' || menus.screen === 'lobby');

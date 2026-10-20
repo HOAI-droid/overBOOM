@@ -3,8 +3,8 @@ import { EnemyState, type World } from '@overboom/core';
 import { ELITE, GEGNER, SELTENHEIT, W } from '@overboom/data';
 import { VoxelInstances } from './instanced.ts';
 import { voxelObject } from './voxel.ts';
-import { PROJECTILE_IDS, rezeptModell, baron, bombenpinguin, funkenkobold, kampfhuhn, koenigGockel, kultist, lavaklops, megatoaster, minenbot, morchella, pilzling, schleimi, schneemann, schrottgolem, teslaritter, vogelscheuche, chicken, crown, disc, fusionModel, gem, grummel, kroete, projectileModel, spawnMarker, targetRing, toastomat, turret, weaponModel } from './models.ts';
-import type { Effects } from './effects.ts';
+import { discMuster, PROJECTILE_IDS, rezeptModell, baron, bombenpinguin, funkenkobold, kampfhuhn, koenigGockel, kultist, lavaklops, megatoaster, minenbot, morchella, pilzling, schleimi, schneemann, schrottgolem, teslaritter, vogelscheuche, chicken, crown, disc, fusionModel, gem, grummel, kroete, projectileModel, spawnMarker, targetRing, toastomat, turret, weaponModel } from './models.ts';
+import { FX, type Effects } from './effects.ts';
 
 export const ENEMY_MODELS: Record<string, { vox: () => ReturnType<typeof grummel>; size: number; top: number; cap: number }> = {
   grummelbold: { vox: grummel, size: 0.11, top: 1.1, cap: 200 },
@@ -60,6 +60,8 @@ export class CombatView {
   private turrets: VoxelInstances;
   private chickens: VoxelInstances;
   private puddles: Record<string, VoxelInstances>;
+  /** Farbenblind-Modus: gemusterte Pfützen */
+  private puddlesCb: Record<string, VoxelInstances>;
   private weapons: WeaponVis[][] = [];
   private loadouts: number[] = [];
   private m = new THREE.Matrix4();
@@ -92,6 +94,12 @@ export class CombatView {
       gift: new VoxelInstances(disc('#3dbb3a', '#7dff5a'), 1 / 8, 48, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] }),
       sog: new VoxelInstances(targetRing().map((v) => [v[0], v[1], v[2], '#b05dff', 1] as typeof v), 1 / 9, 48, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] })
     };
+    this.puddlesCb = {
+      lava: new VoxelInstances(discMuster('#ff7a1a', '#141018', 'streifen'), 1 / 8, 48, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] }),
+      gift: new VoxelInstances(discMuster('#3d6aff', '#ffffff', 'punkte'), 1 / 8, 48, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] }),
+      sog: new VoxelInstances(discMuster('#b05dff', '#ffffff', 'ring'), 1 / 9, 48, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] })
+    };
+    this.group.add(this.puddlesCb.lava.group, this.puddlesCb.gift.group, this.puddlesCb.sog.group);
     this.group.add(this.gems.group, this.markers.group, this.crowns.group, this.rings.group, this.turrets.group, this.chickens.group,
       this.puddles.lava.group, this.puddles.gift.group, this.puddles.sog.group);
   }
@@ -259,15 +267,16 @@ export class CombatView {
     this.turrets.end();
 
     // Pfützen und Sog
-    for (const k in this.puddles) this.puddles[k].begin();
+    for (const k in this.puddles) { this.puddles[k].begin(); this.puddlesCb[k].begin(); }
+    const pud = FX.farbenblind ? this.puddlesCb : this.puddles;
     for (const h of w.hazards) {
       if (!h.active) continue;
       const grow = Math.min(1, (h.max - h.t) / 0.2), fade = Math.min(1, h.t / 0.5);
       const r = h.r * grow * (h.kind === 'sog' ? 0.6 + 0.4 * Math.abs(Math.sin(time * 6)) : fade);
-      this.puddles[h.kind].push(this.matrix(h.x, 0.02, h.z, h.kind === 'sog' ? -time * 5 : 0, 0, 0, r, 1, r));
+      pud[h.kind].push(this.matrix(h.x, 0.02, h.z, h.kind === 'sog' ? -time * 5 : 0, 0, 0, r, 1, r));
       if (h.kind !== 'sog' && this.fx.chance(dt * 6)) this.fx.puddle(h.x, h.z, h.r, h.kind === 'lava');
     }
-    for (const k in this.puddles) this.puddles[k].end();
+    for (const k in this.puddles) { this.puddles[k].end(); this.puddlesCb[k].end(); }
 
     // Kristalle
     this.gems.begin();

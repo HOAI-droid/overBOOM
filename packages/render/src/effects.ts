@@ -18,6 +18,9 @@ export interface PoolOptions {
   floor?: boolean;
 }
 
+/** Einstellungen (Barrierefreiheit/Qualität): Partikeldichte 0,25–1, Blitz-Intensität 0–1 */
+export const FX = { dichte: 1, blitze: 1, farbenblind: false };
+
 /** Partikel-Pool mit Instancing und Farbe pro Partikel – keine Allokationen pro Frame. */
 export class ParticlePool {
   readonly mesh: THREE.InstancedMesh;
@@ -49,7 +52,11 @@ export class ParticlePool {
     this.mesh.setMatrixAt(i, this.dummy.matrix);
   }
 
+  private skip = 0;
+
   spawn(x: number, y: number, z: number, vx: number, vy: number, vz: number, life: number, size: number, gravity = -9, color: THREE.ColorRepresentation = 0xffffff, drag = 0): void {
+    // weniger Partikel bei geringer Dichte (gleichmäßig ausgedünnt)
+    if (FX.dichte < 1) { this.skip += 1 - FX.dichte; if (this.skip >= 1) { this.skip -= 1; return; } }
     const i = this.free.pop();
     if (i === undefined) return;
     const p = this.parts[i];
@@ -610,7 +617,7 @@ export class Effects {
       if (l.t <= 0) { l.light.intensity = 0; continue; }
       l.t -= dt;
       const k = Math.max(0, l.t / l.max);
-      l.light.intensity = l.power * k * k;
+      l.light.intensity = l.power * k * k * (0.35 + 0.65 * FX.blitze);
     }
     for (const f of this.flashes) {
       if (f.t <= 0) continue;
@@ -618,7 +625,7 @@ export class Effects {
       if (f.t <= 0) { f.sprite.visible = false; continue; }
       const k = f.t / f.max;
       f.sprite.scale.set(f.size * (1.2 - 0.4 * k), f.size * (1.2 - 0.4 * k), 1);
-      (f.sprite.material as THREE.SpriteMaterial).opacity = k * 0.55;
+      (f.sprite.material as THREE.SpriteMaterial).opacity = k * 0.55 * FX.blitze;
     }
     for (const b of this.beams) {
       if (b.t <= 0) continue;

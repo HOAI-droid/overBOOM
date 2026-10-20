@@ -510,6 +510,18 @@ export function disc(color: string, edge: string): Vox[] {
   return b.list();
 }
 
+/** Farbenblind-Modus: Pfütze mit klarem Muster (Streifen bzw. Punkte) und hellem Rand */
+export function discMuster(color: string, mark: string, muster: 'streifen' | 'punkte' | 'ring'): Vox[] {
+  const b = new VoxBuilder();
+  for (let x = -8; x <= 8; x++) for (let z = -8; z <= 8; z++) {
+    const d = Math.hypot(x, z);
+    if (d > 8.2) continue;
+    const m = muster === 'streifen' ? ((x + z) & 3) < 2 : muster === 'punkte' ? (x & 3) === 0 && (z & 3) === 0 : Math.round(d) % 3 === 0;
+    b.v(x, 0, z, d > 7 ? '#ffffff' : m ? mark : color, 1);
+  }
+  return b.list();
+}
+
 /* ------------------------------------------------------------------ */
 /* Phase 5: Fraktionen und Bosse                                         */
 /* ------------------------------------------------------------------ */

@@ -157,9 +157,12 @@ export class Hud {
     );
   }
 
+  /** Intensität von Bildschirm-Blitzen (Einstellung „Lichtblitze") */
+  blitze = 1;
+
   hurt(): void {
     this.hurtEl.getAnimations().forEach((a) => a.cancel());
-    this.hurtEl.animate([{ opacity: 0.85 }, { opacity: 0 }], { duration: 450, easing: 'ease-out' });
+    this.hurtEl.animate([{ opacity: 0.25 + 0.6 * this.blitze }, { opacity: 0 }], { duration: 450, easing: 'ease-out' });
   }
 
   /** Aktive Synergien als kleine Chips (nur neu bauen, wenn sich etwas geändert hat) */

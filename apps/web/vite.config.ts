@@ -15,7 +15,8 @@ export default defineConfig({
       '@overboom/render': r('../../packages/render/src/index.ts'),
       '@overboom/ui': r('../../packages/ui/src/index.ts'),
       '@overboom/net': r('../../packages/net/src/index.ts'),
-      '@overboom/platform': r('../../packages/platform/src/index.ts')
+      '@overboom/platform': r('../../packages/platform/src/index.ts'),
+      '@overboom/audio': r('../../packages/audio/src/index.ts')
     }
   },
   plugins: single ? [viteSingleFile()] : [],
