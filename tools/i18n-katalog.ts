@@ -6,9 +6,10 @@
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { datenTexte, GESCHOSSE, ANTRIEBE, LADUNGEN, WAFFEN, ELEMENT_INFO } from '../packages/data/src/index.ts';
 
-export const ROOT = new URL('..', import.meta.url).pathname;
+export const ROOT = fileURLToPath(new URL('..', import.meta.url));
 export const I18N = join(ROOT, 'packages/data/src/i18n');
 export const SPRACHEN = ['en', 'es', 'fr'] as const;
 
