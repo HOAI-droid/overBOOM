@@ -1,42 +1,16 @@
 /**
- * Netzwerk-Schicht (Phase 5). Das Spiel kennt nur dieses Interface;
- * die erste Implementierung nutzt Trystero (WebRTC, Signaling über Nostr)
- * mit konfigurierbarem TURN-Fallback. Später austauschbar gegen einen eigenen Relay.
+ * Netzwerk-Schicht für Koop (1–4 Spieler, Host-autoritativ).
+ * Das Spiel kennt nur `Transport`, `HostSession` und `ClientSession`; der Transport ist
+ * austauschbar (Trystero/WebRTC, BroadcastChannel für mehrere Tabs, Speicher für Tests).
  */
-import type { InputState } from '@overboom/core';
+export * from './transport.ts';
+export * from './session.ts';
+export { encodeSnapshot, decodeSnapshot, applySnapshot, Snapshot } from './snapshot.ts';
+export { worldState, applyWorldState, type WorldState, type PlayerState } from './state.ts';
 
-export interface PeerInfo {
-  id: string;
-  name: string;
-  /** 'direct' = Peer-to-Peer, 'relay' = über TURN */
-  route: 'direct' | 'relay' | 'unknown';
-  pingMs: number;
+/** WebRTC-Transport erst bei Bedarf laden (hält den Solo-Start schlank) */
+export async function createTrysteroTransport(roomCode: string, cfg: import('./trystero.ts').NetConfig): Promise<import('./transport.ts').Transport> {
+  const { TrysteroTransport } = await import('./trystero.ts');
+  return new TrysteroTransport(roomCode, cfg);
 }
-
-export interface Transport {
-  readonly roomCode: string;
-  readonly isHost: boolean;
-  peers(): PeerInfo[];
-  /** Client → Host: Eingabe des lokalen Spielers */
-  sendInput(tick: number, input: InputState): void;
-  /** Host → Clients: kompakter Binär-Snapshot */
-  broadcastSnapshot(data: ArrayBuffer): void;
-  onInput(cb: (peerId: string, tick: number, input: InputState) => void): void;
-  onSnapshot(cb: (data: ArrayBuffer) => void): void;
-  onPeersChanged(cb: (peers: PeerInfo[]) => void): void;
-  leave(): Promise<void>;
-}
-
-export interface NetConfig {
-  appId: string;
-  /** z. B. Cloudflare-TURN-Zugangsdaten; ohne TURN klappt Koop nicht in jedem Netz */
-  turn?: { urls: string | string[]; username?: string; credential?: string }[];
-}
-
-/** Raumcode: 6 Zeichen ohne verwechselbare Buchstaben (kein 0/O, 1/I). */
-export function makeRoomCode(rand: () => number): string {
-  const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let s = '';
-  for (let i = 0; i < 6; i++) s += abc[Math.floor(rand() * abc.length)];
-  return s;
-}
+export type { NetConfig } from './trystero.ts';

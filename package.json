@@ -10,11 +10,13 @@
     "build:single": "SINGLE=1 vite build --config apps/web/vite.config.ts",
     "build:artifact": "npm run build:single && python3 tools/to-artifact.py dist-single/index.html dist-single/overboom.html",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "node --experimental-strip-types --no-warnings packages/core/test/sim.test.ts",
+    "test": "node --experimental-strip-types --no-warnings packages/core/test/sim.test.ts && node --experimental-strip-types --no-warnings packages/net/test/net.test.ts",
     "balance": "node --experimental-strip-types --no-warnings packages/core/test/balance-bot.ts"
   },
   "dependencies": {
-    "three": "^0.170.0"
+    "qrcode-generator": "^2.0.4",
+    "three": "^0.170.0",
+    "trystero": "^0.26.0"
   },
   "devDependencies": {
     "@types/three": "^0.170.0",

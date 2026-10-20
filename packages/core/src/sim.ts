@@ -20,6 +20,8 @@ export interface InputState {
   mz: number;
   /** true nur im Tick, in dem Dash ausgelöst wird */
   dash: boolean;
+  /** OVERBOOM-Modus auslösen (wenn die Overkill-Leiste voll ist) */
+  boom?: boolean;
 }
 
 export const NO_INPUT: InputState = { mx: 0, mz: 0, dash: false };
@@ -548,6 +550,17 @@ export class World {
   /* ---------------------------------------------------------------- */
   /* Spieler                                                            */
   /* ---------------------------------------------------------------- */
+
+  /**
+   * Koop-Client: nur die eigene Bewegung vorhersagen (Laufen, Dash, Kollision) –
+   * ohne Bodenschaden und ohne Ereignisse außer Dash/Schritt (Effekte lokal).
+   */
+  predictPlayer(p: Player, inp: InputState): void {
+    const phase = this.phase;
+    this.phase = 'pause';
+    this.stepPlayer(p, inp);
+    this.phase = phase;
+  }
 
   private stepPlayer(p: Player, inp: InputState): void {
     let mx = inp.mx, mz = inp.mz;
