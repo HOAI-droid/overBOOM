@@ -1,5 +1,6 @@
 import type { Platform } from './index.ts';
 import { createWebPlatform } from './web.ts';
+import { t } from '../../data/src/i18n.ts';
 
 /**
  * Handy-App (Capacitor, iOS/Android): Speicher bleibt IndexedDB in der App-WebView,
@@ -30,7 +31,7 @@ export async function createCapacitorPlatform(): Promise<Platform> {
           r.readAsDataURL(blob);
         });
         const f = await Filesystem.writeFile({ path: filename, data, directory: Directory.Cache });
-        await Share.share({ title: 'OVERBOOM-Karte', files: [f.uri] });
+        await Share.share({ title: t('OVERBOOM-Karte'), files: [f.uri] });
       } catch { /* abgebrochen */ }
     },
     async shareLink(title, url) {

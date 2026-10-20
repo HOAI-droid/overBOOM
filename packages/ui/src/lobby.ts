@@ -1,4 +1,4 @@
-import { HELDEN, HELD_BY_ID, INSELN, INSEL_BY_ID, KOOP, W } from '@overboom/data';
+import { HELDEN, HELD_BY_ID, INSELN, INSEL_BY_ID, KOOP, W, t } from '@overboom/data';
 import type { LobbySpieler } from '@overboom/net';
 import qrcode from 'qrcode-generator';
 import { gefahrWahl } from './gefahr.ts';
@@ -53,19 +53,19 @@ export function titelHtml(name: string, code: string, albumBtn: string, extra = 
   return `
     <div class="ob-panel ob-titel">
       <h1 class="ob-logo"><b>OVER</b><b class="boom">BOOM</b></h1>
-      <p class="ob-sub">Arena-Chaos mit Waffen-Fusion · 1–4 Spieler</p>
+      <p class="ob-sub">${t('Arena-Chaos mit Waffen-Fusion · 1–4 Spieler')}</p>
       <div class="ob-titel-row">
-        <button type="button" class="ob-go ob-big" data-act="tsolo" data-focus="tsolo">Solo spielen</button>
+        <button type="button" class="ob-go ob-big" data-act="tsolo" data-focus="tsolo">${t('Solo spielen')}</button>
       </div>
-      <h3 class="ob-h3">Koop <small>bis zu 4 Spieler, jeder am eigenen Gerät</small></h3>
-      <label class="ob-field"><span>Dein Name</span><input type="text" maxlength="16" data-name value="${esc(name)}" autocomplete="nickname"></label>
+      <h3 class="ob-h3">${t('Koop')} <small>${t('bis zu 4 Spieler, jeder am eigenen Gerät')}</small></h3>
+      <label class="ob-field"><span>${t('Dein Name')}</span><input type="text" maxlength="16" data-name value="${esc(name)}" autocomplete="nickname"></label>
       <div class="ob-titel-row">
-        <button type="button" class="ob-btn2" data-act="terstellen" data-focus="terstellen">Raum erstellen</button>
-        <input class="ob-codein" type="text" maxlength="7" placeholder="CODE" data-code value="${esc(code)}" autocapitalize="characters" autocomplete="off" aria-label="Raumcode">
-        <button type="button" class="ob-btn2" data-act="tbeitreten" data-focus="tbeitreten">Beitreten</button>
+        <button type="button" class="ob-btn2" data-act="terstellen" data-focus="terstellen">${t('Raum erstellen')}</button>
+        <input class="ob-codein" type="text" maxlength="7" placeholder="${t('CODE')}" data-code value="${esc(code)}" autocapitalize="characters" autocomplete="off" aria-label="${t('Raumcode')}">
+        <button type="button" class="ob-btn2" data-act="tbeitreten" data-focus="tbeitreten">${t('Beitreten')}</button>
       </div>
       <div class="ob-titel-row">${albumBtn}${extra}</div>
-      ${tipp ? `<p class="ob-tipp">Tipp: ${esc(tipp)}</p>` : ''}
+      ${tipp ? `<p class="ob-tipp">${t('Tipp: {tipp}', { tipp: esc(tipp) })}</p>` : ''}
       ${hinweis ? `<p class="ob-keys ob-padkeys">${hinweis}</p>` : ''}
     </div>`;
 }
@@ -76,19 +76,19 @@ export function lobbyHtml(c: CoopAnsicht): string {
   const host = c.rolle === 'host';
   const rows = Array.from({ length: KOOP.maxSpieler }, (_, i) => {
     const s = c.spieler[i];
-    if (!s) return `<li class="leer"><i style="--c:${FARBEN[i]}"></i><span>frei</span></li>`;
-    const route = s.slot === 0 ? 'Host' : !s.verbunden ? 'getrennt …' : s.route === 'relay' ? `über Relay · ${s.ping} ms` : s.route === 'direct' ? `direkt · ${s.ping} ms` : s.route === 'local' ? 'lokal' : 'verbinde …';
+    if (!s) return `<li class="leer"><i style="--c:${FARBEN[i]}"></i><span>${t('frei')}</span></li>`;
+    const route = s.slot === 0 ? t('Host') : !s.verbunden ? t('getrennt …') : s.route === 'relay' ? t('über Relay · {ms} ms', { ms: s.ping }) : s.route === 'direct' ? t('direkt · {ms} ms', { ms: s.ping }) : s.route === 'local' ? t('lokal') : t('verbinde …');
     const held = HELD_BY_ID[s.held];
     return `<li class="${s.slot === c.slot ? 'ich' : ''}"><i style="--c:${FARBEN[i]}"></i>
       <b>${esc(s.name)}</b><span>${held ? held.name : '–'}</span>
       <small class="${s.route === 'relay' ? 'relay' : ''}">${route}</small>
-      <em class="${s.bereit ? 'ok' : ''}">${s.bereit ? 'bereit' : 'wählt …'}</em></li>`;
+      <em class="${s.bereit ? 'ok' : ''}">${s.bereit ? t('bereit') : t('wählt …')}</em></li>`;
   }).join('');
   const helden = HELDEN.map((h, i) => {
     const frei = c.heldenFrei.includes(h.id);
     const wf = h.startWaffe === 'zufall' ? null : W[h.startWaffe];
-    return `<button type="button" class="ob-lheld ${ich?.held === h.id ? 'on' : ''}" style="--rc:${h.farbe}" data-act="lheld" data-id="${h.id}" data-focus="lheld${i}" ${frei ? '' : 'disabled title="Noch nicht freigeschaltet"'}>
-      <b>${frei ? h.name : '???'}</b><small>${frei ? (wf ? wf.name : 'Zufallswaffe') : 'gesperrt'}</small></button>`;
+    return `<button type="button" class="ob-lheld ${ich?.held === h.id ? 'on' : ''}" style="--rc:${h.farbe}" data-act="lheld" data-id="${h.id}" data-focus="lheld${i}" ${frei ? '' : `disabled title="${t('Noch nicht freigeschaltet')}"`}>
+      <b>${frei ? h.name : '???'}</b><small>${frei ? (wf ? wf.name : t('Zufallswaffe')) : t('gesperrt')}</small></button>`;
   }).join('');
   const inseln = INSELN.map((i, k) => {
     const frei = c.inselnFrei.includes(i.id);
@@ -100,29 +100,29 @@ export function lobbyHtml(c: CoopAnsicht): string {
   return `
     <div class="ob-panel ob-wide ob-lobby">
       <div class="ob-shop-head">
-        <div><h2 class="ob-h">Koop-Lobby</h2><small class="ob-sub">${host ? 'Du bist Host – dein Gerät rechnet für alle.' : 'Der Host startet, sobald alle bereit sind.'}</small></div>
-        <button type="button" class="ob-btn2" data-act="lverlassen" data-focus="lverlassen">Verlassen</button>
+        <div><h2 class="ob-h">${t('Koop-Lobby')}</h2><small class="ob-sub">${host ? t('Du bist Host – dein Gerät rechnet für alle.') : t('Der Host startet, sobald alle bereit sind.')}</small></div>
+        <button type="button" class="ob-btn2" data-act="lverlassen" data-focus="lverlassen">${t('Verlassen')}</button>
       </div>
       <div class="ob-lobby-top">
         <div class="ob-raum">
-          <small>Raumcode</small>
+          <small>${t('Raumcode')}</small>
           <div class="ob-code-big">${esc(c.code)}</div>
-          <button type="button" class="ob-btn2" data-act="lteilen" data-focus="lteilen">Link teilen</button>
+          <button type="button" class="ob-btn2" data-act="lteilen" data-focus="lteilen">${t('Link teilen')}</button>
         </div>
-        <div class="ob-qr" aria-label="QR-Code zum Beitreten">${c.link ? qrSvg(c.link) : ''}</div>
+        <div class="ob-qr" aria-label="${t('QR-Code zum Beitreten')}">${c.link ? qrSvg(c.link) : ''}</div>
         <ul class="ob-lspieler">${rows}</ul>
       </div>
       ${c.status ? `<p class="${c.fehler ? 'ob-warn' : 'ob-hint2'}">${esc(c.status)}</p>` : ''}
       ${c.slot >= 0 ? `
-      <h3 class="ob-h3">Dein Held</h3>
+      <h3 class="ob-h3">${t('Dein Held')}</h3>
       <div class="ob-lhelden">${helden}</div>
-      <h3 class="ob-h3">Insel <small>${host ? 'wählt der Host' : insel ? insel.name : ''}</small></h3>
+      <h3 class="ob-h3">${t('Insel')} <small>${host ? t('wählt der Host') : insel ? insel.name : ''}</small></h3>
       <div class="ob-lhelden">${inseln}</div>
       ${gefahrWahl(c.gefahr, c.gefahrFrei, host)}
       <div class="ob-row ob-actions">
         ${host
-          ? `<button type="button" class="ob-go" data-act="lstart" data-focus="lstart" ${alleBereit ? '' : 'disabled'}>${c.spieler.length < 2 ? 'Warte auf Mitspieler …' : alleBereit ? 'Los geht’s ▶' : 'Warte, bis alle bereit sind …'}</button>`
-          : `<button type="button" class="ob-go" data-act="lbereit" data-focus="lbereit">${ich?.bereit ? 'Doch nicht bereit' : 'Bereit!'}</button>`}
+          ? `<button type="button" class="ob-go" data-act="lstart" data-focus="lstart" ${alleBereit ? '' : 'disabled'}>${c.spieler.length < 2 ? t('Warte auf Mitspieler …') : alleBereit ? t('Los geht’s') + ' ▶' : t('Warte, bis alle bereit sind …')}</button>`
+          : `<button type="button" class="ob-go" data-act="lbereit" data-focus="lbereit">${ich?.bereit ? t('Doch nicht bereit') : t('Bereit!')}</button>`}
       </div>` : ''}
     </div>`;
 }

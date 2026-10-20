@@ -2,7 +2,7 @@ import { World, DT, NO_INPUT, type Command, type InputState, type SimEvent } fro
 import { decodeSnapshot, encodeSnapshot, applySnapshot, Snapshot } from './snapshot.ts';
 import { applyWorldState, worldState } from './state.ts';
 import { PROTO, RECONNECT_MS, type LobbySpieler, type Msg, type Route, type Transport } from './transport.ts';
-import { KOOP } from '../../data/src/index.ts';
+import { KOOP, t, tx } from '../../data/src/index.ts';
 
 /** Snapshot nur jeden 2. Tick (15 Hz) – Ereignisse dazwischen werden gesammelt */
 export const SNAP_EVERY = 2;
@@ -99,17 +99,17 @@ export class HostSession {
     const i = this.slots.findIndex((s) => s.peer === from);
     switch (m.t) {
       case 'hello': {
-        if (m.proto !== PROTO) { this.t.send({ t: 'reject', grund: 'Andere Spielversion – bitte beide Seiten neu laden.' }, from); return; }
+        if (m.proto !== PROTO) { this.t.send({ t: 'reject', grund: tx('Andere Spielversion – bitte beide Seiten neu laden.') }, from); return; }
         // Wiederverbinden: gleicher Token bekommt seinen Platz zurück
         let slot = this.slots.findIndex((s, k) => k > 0 && s.token === m.token);
         if (slot < 0) {
-          if (this.laeuft) { this.t.send({ t: 'reject', grund: 'Das Spiel läuft schon.' }, from); return; }
-          if (this.slots.length >= KOOP.maxSpieler) { this.t.send({ t: 'reject', grund: 'Der Raum ist voll (4 Spieler).' }, from); return; }
+          if (this.laeuft) { this.t.send({ t: 'reject', grund: tx('Das Spiel läuft schon.') }, from); return; }
+          if (this.slots.length >= KOOP.maxSpieler) { this.t.send({ t: 'reject', grund: tx('Der Raum ist voll (4 Spieler).') }, from); return; }
           this.slots.push(this.newSlot(m.token, m.name.slice(0, 16) || 'Gast', from));
           slot = this.slots.length - 1;
         } else {
           const s = this.slots[slot];
-          if (s.weg) this.hooks.info?.(`${s.name} ist wieder da`);
+          if (s.weg) this.hooks.info?.(t('{name} ist wieder da', { name: s.name }));
           s.peer = from; s.weg = 0; s.name = m.name.slice(0, 16) || s.name;
         }
         this.t.send({ t: 'welcome', slot }, from);
@@ -151,7 +151,7 @@ export class HostSession {
     s.peer = null;
     s.weg = this.now();
     s.input.mx = s.input.mz = 0;
-    this.hooks.info?.(`${s.name} hat die Verbindung verloren – wartet 30 s`);
+    this.hooks.info?.(t('{name} hat die Verbindung verloren – wartet 30 s', { name: s.name }));
     this.broadcastLobby();
   }
 
@@ -214,7 +214,7 @@ export class HostSession {
         const p = w.players[i];
         if (p.alive || p.downed) {
           p.alive = false; p.downed = false;
-          this.hooks.info?.(`${s.name} ist raus`);
+          this.hooks.info?.(t('{name} ist raus', { name: s.name }));
           if (!w.players.some((q) => q.alive || q.downed) && w.phase !== 'sieg') w.phase = 'ende';
         }
         if (w.phase === 'shop') p.ready = true;
@@ -242,7 +242,7 @@ export class HostSession {
     this.t.send({ t: 'state', st });
   }
 
-  async leave(grund = 'Der Host hat das Spiel beendet.'): Promise<void> {
+  async leave(grund = tx('Der Host hat das Spiel beendet.')): Promise<void> {
     this.t.send({ t: 'bye', grund });
     await this.t.leave();
   }
@@ -291,7 +291,7 @@ export class ClientSession {
     for (let i = 0; i < 8; i++) this.snaps.push(new Snapshot());
     t.onMessage = (m, from) => this.receive(m, from);
     t.onPeerJoin = () => { if (this.slot < 0) this.hello(); };
-    t.onPeerLeave = (id) => { if (id === this.hostId) this.hooks.bye?.('Verbindung zum Host verloren.'); };
+    t.onPeerLeave = (id) => { if (id === this.hostId) this.hooks.bye?.(tx('Verbindung zum Host verloren.')); };
   }
 
   /** beim Host melden (wiederholt, bis er antwortet) */

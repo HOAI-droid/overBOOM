@@ -9,3 +9,4 @@ export type { CoopAnsicht, CoopAktion } from './lobby.ts';
 export { STANDARD, ladeEinstellungen, type Einstellungen } from './settings.ts';
 export { DebugMenu, type DebugAktion } from './debug.ts';
 export { pad, PAD_HINWEIS, type PadTaste } from './glyphs.ts';
+export { sprachwahl } from './sprachwahl.ts';

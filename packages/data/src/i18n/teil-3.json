@@ -1,0 +1,1802 @@
+[
+ {
+  "de": "Ein Grummelbold, der die Seiten gewechselt hat. Kennt alle Kristallverstecke: Gegner lassen öfter Extra-Kristalle fallen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Grmpf. Ich bin jetzt einer von den Guten. Grmpf.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "+15 % Explosionsradius",
+  "quelle": "daten"
+ },
+ {
+  "de": "Explosionen hinterlassen manchmal Feuerpfützen",
+  "quelle": "daten"
+ },
+ {
+  "de": "Jede 10. Explosion ist eine Mini-Nuke",
+  "quelle": "daten"
+ },
+ {
+  "de": "Brand macht 50 % mehr Schaden",
+  "quelle": "daten"
+ },
+ {
+  "de": "Brennende Gegner zünden beim Tod ihre Nachbarn an",
+  "quelle": "daten"
+ },
+ {
+  "de": "+25 % Schaden gegen Brennende",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kettenblitze springen 1× mehr",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kettenblitze verlieren kaum Kraft",
+  "quelle": "daten"
+ },
+ {
+  "de": "Alle 4 s schlägt ein Gewitterblitz ein",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gift wirkt 50 % stärker",
+  "quelle": "daten"
+ },
+ {
+  "de": "Vergiftete hinterlassen beim Tod Giftwolken",
+  "quelle": "daten"
+ },
+ {
+  "de": "Vergiftete nehmen 30 % mehr Schaden",
+  "quelle": "daten"
+ },
+ {
+  "de": "Frost verlangsamt stärker",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gegner frieren schon nach 2 Frost-Treffern ein",
+  "quelle": "daten"
+ },
+ {
+  "de": "Eingefrorene nehmen 50 % mehr Schaden",
+  "quelle": "daten"
+ },
+ {
+  "de": "+1 Kampfdrohne begleitet dich",
+  "quelle": "daten"
+ },
+ {
+  "de": "Drohnen schießen Laser",
+  "quelle": "daten"
+ },
+ {
+  "de": "+1 weitere Drohne",
+  "quelle": "daten"
+ },
+ {
+  "de": "+3 Regeneration",
+  "quelle": "daten"
+ },
+ {
+  "de": "Treffer fesseln Gegner manchmal mit Ranken",
+  "quelle": "daten"
+ },
+ {
+  "de": "+15 Max. Leben, +3 % Lebensraub",
+  "quelle": "daten"
+ },
+ {
+  "de": "Besiegte Gegner lassen manchmal ein Küken schlüpfen",
+  "quelle": "daten"
+ },
+ {
+  "de": "Küken picken doppelt so hart",
+  "quelle": "daten"
+ },
+ {
+  "de": "Alle 6 s regnet es explodierende Eier",
+  "quelle": "daten"
+ },
+ {
+  "de": "+15 Glück",
+  "quelle": "daten"
+ },
+ {
+  "de": "Treffer lösen manchmal zufällige Elemente aus",
+  "quelle": "daten"
+ },
+ {
+  "de": "Alle Waffen werden instabil (Bonus-Kawumm bei Krit)",
+  "quelle": "daten"
+ },
+ {
+  "de": "Dampfexplosion!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Feuer trifft Eis: Es knallt in einer heißen Dampfwolke.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Dampfwolke!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Feuer trifft Nässe: Zischender Dampf, Gegner sehen nichts und stolpern.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Stinkbombe!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Feuer trifft Gift: Eine grüne Explosion verteilt das Gift ringsum.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Plasmabrand!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Feuer trifft Blitz: Ein Plasmaball platzt.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Feuerwirbel!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Feuer im Sog: Eine Lavaspirale zündet alles in der Nähe an.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Splitterschock!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Blitz trifft Eis: Der Gegner zerspringt in Eissplitter.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kettenschock!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Blitz trifft Nässe: Alle nassen Gegner in der Nähe kriegen eine gewischt.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Nervengift!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Blitz trifft Gift: Gegner zucken und stehen still.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Plasmakern!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Blitz im Sog: Ein Mega-Kettenblitz springt von Gegner zu Gegner.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Schockfrost!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Eis trifft Nässe: Alles in der Nähe gefriert sofort.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Frostgift!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Eis trifft Gift: Gefrorenes Gift wirkt doppelt.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Eisimplosion!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Eis im Sog: Alles im Wirbel friert ein.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Giftsumpf!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gift trifft Nässe: Ein blubbernder Giftsumpf entsteht.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Giftstrudel!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gift im Sog: Alle im Wirbel werden vergiftet.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Strudel!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Nässe im Sog: Ein Wasserstrudel zieht alles zusammen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Doppelschuss",
+  "quelle": "daten"
+ },
+ {
+  "de": "Feuert doppelt so viele Geschosse (Strahlen/Schläge: +60 % Schaden).",
+  "quelle": "daten"
+ },
+ {
+  "de": "Zielsuch-Chip",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gerade Geschosse lenken aufs Ziel.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gerade Geschosse prallen 2× ab und suchen sich ein neues Ziel.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Nachbrenner",
+  "quelle": "daten"
+ },
+ {
+  "de": "Geschosse fliegen 40 % schneller und treffen 15 % härter.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Clusterbombe",
+  "quelle": "daten"
+ },
+ {
+  "de": "Treffer zerfallen in 4 Splitter.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Brandmunition",
+  "quelle": "daten"
+ },
+ {
+  "de": "Treffer setzen Gegner in Brand.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kettenblitz-Spule",
+  "quelle": "daten"
+ },
+ {
+  "de": "15 % Chance, dass ein Treffer einen Kettenblitz auslöst.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gravitations-Kern",
+  "quelle": "daten"
+ },
+ {
+  "de": "Treffer ziehen Gegner in der Nähe zusammen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Frostkern",
+  "quelle": "daten"
+ },
+ {
+  "de": "Treffer verlangsamen und unterkühlen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Giftspitze",
+  "quelle": "daten"
+ },
+ {
+  "de": "Treffer vergiften (stapelt sich).",
+  "quelle": "daten"
+ },
+ {
+  "de": "Vampirzahn",
+  "quelle": "daten"
+ },
+ {
+  "de": "Glücksbringer",
+  "quelle": "daten"
+ },
+ {
+  "de": "Getroffene Gegner lassen öfter doppelt Kristalle fallen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Feuert in Salven zu dritt.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Riesig, langsamer, verheerend: 2,4× Schaden und +50 % Explosionsradius.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Helm",
+  "quelle": "daten"
+ },
+ {
+  "de": "Stiefel",
+  "quelle": "daten"
+ },
+ {
+  "de": "Handschuhe",
+  "quelle": "daten"
+ },
+ {
+  "de": "Amulett",
+  "quelle": "daten"
+ },
+ {
+  "de": "Ring",
+  "quelle": "daten"
+ },
+ {
+  "de": "Rucksack",
+  "quelle": "daten"
+ },
+ {
+  "de": "Grummel-Garnitur",
+  "quelle": "daten"
+ },
+ {
+  "de": "Grummels Kochtopf",
+  "quelle": "daten"
+ },
+ {
+  "de": "Grummel-Weste",
+  "quelle": "daten"
+ },
+ {
+  "de": "Grummel-Latschen",
+  "quelle": "daten"
+ },
+ {
+  "de": "+10 Max. Leben",
+  "quelle": "daten"
+ },
+ {
+  "de": "+4 Rüstung, +10 % Schaden",
+  "quelle": "daten"
+ },
+ {
+  "de": "Barons Gala-Garderobe",
+  "quelle": "daten"
+ },
+ {
+  "de": "Barons Zylinder",
+  "quelle": "daten"
+ },
+ {
+  "de": "Monokel an der Kette",
+  "quelle": "daten"
+ },
+ {
+  "de": "Samthandschuhe",
+  "quelle": "daten"
+ },
+ {
+  "de": "Barons Siegelring",
+  "quelle": "daten"
+ },
+ {
+  "de": "+20 % Explosionsradius",
+  "quelle": "daten"
+ },
+ {
+  "de": "+10 % Krit, +20 % Schaden",
+  "quelle": "daten"
+ },
+ {
+  "de": "Funkenkluft",
+  "quelle": "daten"
+ },
+ {
+  "de": "Isolierhandschuhe",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gummi-Galoschen",
+  "quelle": "daten"
+ },
+ {
+  "de": "Batterie-Rucksack",
+  "quelle": "daten"
+ },
+ {
+  "de": "+12 % Feuerrate",
+  "quelle": "daten"
+ },
+ {
+  "de": "+10 % Feuerrate, +6 % Krit",
+  "quelle": "daten"
+ },
+ {
+  "de": "Omas Strickset",
+  "quelle": "daten"
+ },
+ {
+  "de": "Pudelmütze",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kratzpulli",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fäustlinge",
+  "quelle": "daten"
+ },
+ {
+  "de": "Omas Ehering",
+  "quelle": "daten"
+ },
+ {
+  "de": "+20 Max. Leben, +4 Regeneration, +3 % Lebensraub",
+  "quelle": "daten"
+ },
+ {
+  "de": "Krawummia",
+  "quelle": "daten"
+ },
+ {
+  "de": "Eine Welt in Brocken",
+  "quelle": "daten"
+ },
+ {
+  "de": "Es war einmal eine ganz normale, runde Welt. Dann kam Baron von Bumm.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Er baute die größte Bombe aller Zeiten und nannte sie „Das Große Kawumm\". Er wollte nur mal gucken, was passiert.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Seitdem schwebt Krawummia in Brocken durch den Himmel – und auf jedem Brocken hat sich eine andere Bande breitgemacht.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Du bist ein Kawumm-Jäger. Befreie Insel für Insel und stell den Baron in seiner Bummburg. Mit noch mehr Kawumm.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Das Große Kawumm",
+  "quelle": "daten"
+ },
+ {
+  "de": "GK",
+  "quelle": "daten"
+ },
+ {
+  "de": "Es riecht nach Heu und Verschwörung.",
+  "quelle": "daten"
+ },
+ {
+  "de": "König Gockel ist gestürzt. Die Hühner legen wieder ganz normale Eier. Meistens.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Befreie Gackerfeld, um hierher zu fliegen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Die Haare stehen dir zu Berge. Allen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Die Tesla-Türme summen jetzt friedlich. Man kann hier sogar Toast machen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Befreie Funkenschlund, um hierher zu fliegen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Hier quietscht alles. Auch die Gegner.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Der Megatoaster ist nur noch ein Mega-Brotkrümel. Die Blechbrut sucht sich ein Hobby.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Befreie Rostgrat, um hierher zu fliegen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Nicht anfassen. Nicht einatmen. Nicht essen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Morchella ist verwelkt. Der Sumpf riecht nur noch halb so schlimm.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Befreie Pilzmoor, um hierher zu fliegen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Der Boden ist Lava. Diesmal wirklich.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Der Vulkan blubbert jetzt gemütlich vor sich hin. Wie ein Fondue.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Befreie Lavakessel, um hierher zu fliegen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Rutschig. Kalt. Pinguine mit Bomben. Viel Glück.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Das Eis taut. Die Schneemänner nehmen es sportlich.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Befreie Frostfass, um die Bummburg zu stürmen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Hier wohnt der Baron. Klingeln zwecklos.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Die Bummburg wackelt. Nur noch der Baron selbst steht im Weg.",
+  "quelle": "daten"
+ },
+ {
+  "de": "„KIKERIKIII! Auf die Knie, Federlose!\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Der König plustert sich auf!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Die Krone kullert davon. Ein Huhn hebt sie auf und guckt verlegen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "„BROT. WIRD. GETOASTET.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Alle Schlitze glühen!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Es riecht nach verbranntem Toast. Und nach Sieg.",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Sporen, meine Kinder! Wachset!\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Morchella verstreut ihre Sporen!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Morchella zerfällt zu einem sehr, sehr großen Pilzgericht.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Der Baron ruft Verstärkung",
+  "quelle": "daten"
+ },
+ {
+  "de": "Baron von Bumm fliegt im hohen Bogen davon. „Das war noch nicht das letzte KAWUMM!\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Nur echtes Kawumm",
+  "quelle": "daten"
+ },
+ {
+  "de": "Im Shop gibt es nur Waffen mit Explosiv- oder Feuer-Element.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Turmbau zu Bummel",
+  "quelle": "daten"
+ },
+ {
+  "de": "Zwei Türme gleichzeitig, Türme treffen 50 % härter.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Schwein gehabt",
+  "quelle": "daten"
+ },
+ {
+  "de": "Zufällige Startwaffe, der erste Reroll pro Shop ist gratis.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Keksdose",
+  "quelle": "daten"
+ },
+ {
+  "de": "Alle 8 Sekunden ein Keks: +2 Leben.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Hühnerflüsterer",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gacker-Waffen +40 % Schaden, alle 6 Sekunden schlüpft ein Küken.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Hochspannung",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kettenblitze springen doppelt so weit.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kalte Schulter",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gegner frieren schon nach 2 Frost-Treffern ein.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Hexenküche",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gift wirkt 60 % stärker.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Handfest",
+  "quelle": "daten"
+ },
+ {
+  "de": "Nahkampf-Waffen +50 % Schaden.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Windhose",
+  "quelle": "daten"
+ },
+ {
+  "de": "Dash lädt 40 % schneller und schubst Gegner weg.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Amboss-Abo",
+  "quelle": "daten"
+ },
+ {
+  "de": "Schmiedelohn gratis, Fusionen +25 % Schaden.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Alte Kumpels",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gegner lassen öfter einen Extra-Kristall fallen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Hinterher!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Läuft stur auf dich zu.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Letzter Hüpfer",
+  "quelle": "daten"
+ },
+ {
+  "de": "Springt dich an und explodiert – auch, wenn man sie erwischt.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Aus der Ferne",
+  "quelle": "daten"
+ },
+ {
+  "de": "Hält Abstand und schießt.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Anlauf",
+  "quelle": "daten"
+ },
+ {
+  "de": "Nimmt Anlauf und stürmt geradeaus los.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Pflaster drauf",
+  "quelle": "daten"
+ },
+ {
+  "de": "Heilt Gegner in der Nähe.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Schildwall",
+  "quelle": "daten"
+ },
+ {
+  "de": "Blockt Treffer von vorn größtenteils ab.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Vorsicht, Stufe",
+  "quelle": "daten"
+ },
+ {
+  "de": "Legt Minen auf den Boden.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Schleimspur",
+  "quelle": "daten"
+ },
+ {
+  "de": "Hinterlässt eine gefährliche Spur.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Herbeirufen",
+  "quelle": "daten"
+ },
+ {
+  "de": "Ruft weitere Gegner herbei.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Bauchrutscher",
+  "quelle": "daten"
+ },
+ {
+  "de": "Rutscht in hohem Tempo auf dich zu.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Endgegner",
+  "quelle": "daten"
+ },
+ {
+  "de": "Wechselt zwischen mehreren Angriffen. Wird ab halber Energie wütend.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Dreifach",
+  "quelle": "daten"
+ },
+ {
+  "de": "3 Geschosse pro Schuss.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Cluster",
+  "quelle": "daten"
+ },
+ {
+  "de": "Explosionen zerfallen in 3 Mini-Explosionen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Doppelblitz",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kettenblitze springen doppelt so oft.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Implosion",
+  "quelle": "daten"
+ },
+ {
+  "de": "Der Sog explodiert am Ende.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Heilkeks",
+  "quelle": "daten"
+ },
+ {
+  "de": "Treffer können dich heilen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Großer Schwarm",
+  "quelle": "daten"
+ },
+ {
+  "de": "6 statt 3 Begleiter.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Konfettifrost",
+  "quelle": "daten"
+ },
+ {
+  "de": "Frost verwirrt zusätzlich.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Großer Orbit",
+  "quelle": "daten"
+ },
+ {
+  "de": "6 Kreisel auf größerem Radius.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Giftwolke",
+  "quelle": "daten"
+ },
+ {
+  "de": "Vergiftete Gegner hinterlassen Giftpfützen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kükenschlupf",
+  "quelle": "daten"
+ },
+ {
+  "de": "Treffer lassen Küken schlüpfen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Riesig",
+  "quelle": "daten"
+ },
+ {
+  "de": "Größer, langsamer, verheerend.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Mini-Bumm",
+  "quelle": "daten"
+ },
+ {
+  "de": "Treffer lösen manchmal eine Mini-Explosion aus.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Feuerspur",
+  "quelle": "daten"
+ },
+ {
+  "de": "Treffer hinterlassen manchmal Lavapfützen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Frostnova",
+  "quelle": "daten"
+ },
+ {
+  "de": "Treffer frieren manchmal alles ringsum ein.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Goldregen",
+  "quelle": "daten"
+ },
+ {
+  "de": "Getroffene Gegner spucken manchmal einen Kristall aus.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Donnerschlag",
+  "quelle": "daten"
+ },
+ {
+  "de": "Treffer rufen manchmal einen Blitzschlag.",
+  "quelle": "daten"
+ },
+ {
+  "de": "HP",
+  "quelle": "daten"
+ },
+ {
+  "de": "Held — Der Neuling",
+  "quelle": "daten"
+ },
+ {
+  "de": "Startwaffe",
+  "quelle": "daten"
+ },
+ {
+  "de": "Talente",
+  "quelle": "daten"
+ },
+ {
+  "de": "+5 Max. Leben, +5 % Schaden, +3 % Lauftempo, +5 Glück",
+  "quelle": "daten"
+ },
+ {
+  "de": "Spiele einen Run mit Kawumm-Kid.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gewinne einen Run mit Kawumm-Kid.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Held — Brandstifter mit Diplom",
+  "quelle": "daten"
+ },
+ {
+  "de": "+100 % Explosionsradius, −2 Rüstung",
+  "quelle": "daten"
+ },
+ {
+  "de": "Spiele einen Run mit Der Pyromane.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gewinne einen Run mit Der Pyromane.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Held — Schraubt an allem",
+  "quelle": "daten"
+ },
+ {
+  "de": "+10 % Reichweite, −5 Max. Leben",
+  "quelle": "daten"
+ },
+ {
+  "de": "Spiele einen Run mit Die Ingenieurin.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gewinne einen Run mit Die Ingenieurin.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Held — Hat immer Schwein",
+  "quelle": "daten"
+ },
+ {
+  "de": "zufällig",
+  "quelle": "daten"
+ },
+ {
+  "de": "+40 Glück, +5 Ernte",
+  "quelle": "daten"
+ },
+ {
+  "de": "Spiele einen Run mit Der Glückspilz.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gewinne einen Run mit Der Glückspilz.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Held — Strickt Splittergranaten",
+  "quelle": "daten"
+ },
+ {
+  "de": "+3 Regeneration, −8 % Lauftempo, +5 Max. Leben",
+  "quelle": "daten"
+ },
+ {
+  "de": "Spiele einen Run mit Oma Granate.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gewinne einen Run mit Oma Granate.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Held — Der Hühnerflüsterer",
+  "quelle": "daten"
+ },
+ {
+  "de": "+8 Max. Leben, +5 Ernte",
+  "quelle": "daten"
+ },
+ {
+  "de": "Spiele einen Run mit Bauer Bruno.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gewinne einen Run mit Bauer Bruno.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Held — Steht unter Strom",
+  "quelle": "daten"
+ },
+ {
+  "de": "+15 % Feuerrate, −10 Max. Leben",
+  "quelle": "daten"
+ },
+ {
+  "de": "Spiele einen Run mit Blitz-Bettina.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gewinne einen Run mit Blitz-Bettina.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Held — Hat immer kalte Füße",
+  "quelle": "daten"
+ },
+ {
+  "de": "+3 Rüstung, −3 % Lauftempo",
+  "quelle": "daten"
+ },
+ {
+  "de": "Spiele einen Run mit Frost-Fritz.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gewinne einen Run mit Frost-Fritz.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Held — Kocht nicht für Gäste",
+  "quelle": "daten"
+ },
+ {
+  "de": "+10 % Reichweite, +2 % Lebensraub",
+  "quelle": "daten"
+ },
+ {
+  "de": "Spiele einen Run mit Giftmischerin Gerda.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gewinne einen Run mit Giftmischerin Gerda.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Held — Läuft durch Wände (meistens)",
+  "quelle": "daten"
+ },
+ {
+  "de": "+30 Max. Leben, +5 Rüstung, −18 % Lauftempo",
+  "quelle": "daten"
+ },
+ {
+  "de": "Spiele einen Run mit Panzer-Paule.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gewinne einen Run mit Panzer-Paule.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Held — Schneller als ihr Schatten",
+  "quelle": "daten"
+ },
+ {
+  "de": "+25 % Lauftempo, +8 % Ausweichen, −20 Max. Leben",
+  "quelle": "daten"
+ },
+ {
+  "de": "Spiele einen Run mit Sprintina Flitz.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gewinne einen Run mit Sprintina Flitz.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Held — Erfinder des Ambosses",
+  "quelle": "daten"
+ },
+ {
+  "de": "−5 % Schaden, +10 Glück",
+  "quelle": "daten"
+ },
+ {
+  "de": "Spiele einen Run mit Prof. Fusionski.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gewinne einen Run mit Prof. Fusionski.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Held — Ex-Grummelbold",
+  "quelle": "daten"
+ },
+ {
+  "de": "+10 Ernte, +10 Glück, −5 Max. Leben",
+  "quelle": "daten"
+ },
+ {
+  "de": "Spiele einen Run mit Grubert der Bekehrte.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gewinne einen Run mit Grubert der Bekehrte.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Wucht",
+  "quelle": "daten"
+ },
+ {
+  "de": "Waffe — Feuerwaffen",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Klein, aber oho. Vor allem oho.\" – Kawumm-Kid",
+  "quelle": "daten"
+ },
+ {
+  "de": "Benutze die Waffe in einem Run.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Bringe die Waffe auf 5 Sterne.",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Abzug ziehen, nicht nachdenken.\" – Akademie-Leitfaden, Seite 1",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Peng ist das kleine Kawumm.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Waffe — Explosiv",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Warum zielen, wenn man die Rakete fragen kann?\" – Der Pyromane",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Ohrenschützer? Wozu?\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Ohne Kawumm ist alles doof.\" – Der Pyromane",
+  "quelle": "daten"
+ },
+ {
+  "de": "Waffe — Elementar",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Bitte nicht anfassen. Ehrlich.\" – Blitz-Bettina",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Die Natur ist wunderschön. Und wütend.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Bleib cool.\" – Frost-Fritz",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Nur eine Prise. Oder zwanzig.\" – Giftmischerin Gerda",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Element ist, was knallt, brennt oder blitzt.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Waffe — Nahkampf",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Reichweite wird überschätzt.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Holz? Nein. Gegner? Ja.\" – Panzer-Paule",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Nähe schafft Vertrauen. Und Beulen.\" – Panzer-Paule",
+  "quelle": "daten"
+ },
+ {
+  "de": "„In meiner Küche wird nicht gegrummelt!\" – Oma Granate",
+  "quelle": "daten"
+ },
+ {
+  "de": "Waffe — Energie",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Strom kostet nichts, wenn man ihn klaut.\" – Prof. Fusionski",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Pew pew. Aber in laut.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "„TÖÖÖÖRÖÖÖ!\" – unbekannter Musiker",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Ups. Wo ist der Shop hin?\" – Prof. Fusionski",
+  "quelle": "daten"
+ },
+ {
+  "de": "Waffe — Drohnen & Türme",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Lass die Maschinen arbeiten.\" – Die Ingenieurin",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Ich baue, also bin ich.\" – Die Ingenieurin",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Mein Turm, meine Regeln.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Bitte zurücktreten. Weiter. NOCH weiter.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Waffe — Beschwörung",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Viele kleine Helfer sind auch eine Armee.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Wer hat die alle eingeladen?\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Die hören auf mich. Meistens.\" – Grubert der Bekehrte",
+  "quelle": "daten"
+ },
+ {
+  "de": "Waffe — Werfer",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Was fliegt, das trifft. Irgendwann.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Kommt immer zurück. Wie schlechte Witze.\" – Sprintina Flitz",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Ausholen, zielen, lachen.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Waffe — Exotisch",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Kein Huhn wurde verletzt. Nur sehr viele Gegner.\" – Bauer Bruno",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Konfetti ist auch eine Waffe.\" – Der Glückspilz",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Das war so nicht im Handbuch.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Musik, die Gegner in die Flucht schlägt. Und Freunde.\" – Grubert",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Fragen Sie nicht, wie es funktioniert. Es funktioniert.\" – Prof. Fusionski",
+  "quelle": "daten"
+ },
+ {
+  "de": "Waffe — Support",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Auch Helfer helfen beim Kawumm.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Erst heilen, dann knallen.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Kuckuck! … KAWUMM!\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Ein Keks gegen jeden Kummer.\" – Oma Granate",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Exotisch",
+  "quelle": "daten"
+ },
+ {
+  "de": "Zutaten",
+  "quelle": "daten"
+ },
+ {
+  "de": "Hühnerkanone + Hühnerkanone + Hühnerkanone",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Ich hab doch nur drei Hühner zusammengesteckt!\" – Bauer Bruno",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Dreimal dasselbe Federvieh …",
+  "quelle": "daten"
+ },
+ {
+  "de": "Bringe die Rezept-Waffe auf Stufe V.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Explosiv",
+  "quelle": "daten"
+ },
+ {
+  "de": "Raketenwerfer + Dynamitbündel + Bombenhagel",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Endlich. ENDLICH!\" – Der Pyromane",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Alles, was im Explosiv-Regal knallt.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Exotisch · Elementar · Drohnen & Türme",
+  "quelle": "daten"
+ },
+ {
+  "de": "Teleport-Toaster + Tesla-Stab + Toaster-Turm",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Frühstück ist die wichtigste Mahlzeit des Tages.\" – Megatoaster",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Drei Toaster-Sachen und ein bisschen Strom.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Energie · Werfer",
+  "quelle": "daten"
+ },
+ {
+  "de": "Schwarzes-Loch-Werfer + Magnetkanone + Bowlingkugel",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Alles muss raus. Vor allem rein.\" – Prof. Fusionski",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Was anzieht, was zieht und was rollt.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Support · Nahkampf",
+  "quelle": "daten"
+ },
+ {
+  "de": "Omas Keksdose + Bratpfanne + Pflasterkanone",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Das Rezept nehme ich mit ins Grab.\" – Oma Granate",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Was Oma in der Küche hat – und im Erste-Hilfe-Kasten.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Beschwörung · Elementar · Energie",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entenarmee + Flammenwerfer + Kampf-Kazoo",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Quiek!\" – eine Gummiente, kurz vor dem Ende",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Enten, Feuer und Musik.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Elementar · Exotisch",
+  "quelle": "daten"
+ },
+ {
+  "de": "Eiszapfenwerfer + Partykanone + Sternschnuppenstab",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Schön kalt, schön bunt.\" – Frost-Fritz",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Eis, Party und ein Wunsch an die Sterne.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Nahkampf · Support · Drohnen & Türme",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kettensäge + Schildblasen + Rasenmäher-Bot",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Einmal rundherum, bitte.\" – Panzer-Paule",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Was sägt, was kreist und was mäht.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Beschwörung · Elementar",
+  "quelle": "daten"
+ },
+ {
+  "de": "Bienenstock + Giftbläser + Pilzbeutel",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Bsssss.\" – Ihre Majestät",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Summen, Blubbern und Sporen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Exotisch · Beschwörung",
+  "quelle": "daten"
+ },
+ {
+  "de": "Huhnifizierer + Hühnerkanone + Kükenkorb",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Gack? GACK!\" – ehemaliger Grummelbold",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Alles, was gackert, piepst oder Hühner macht.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Feuerwaffen · Elementar · Nahkampf",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kartoffelkanone + Flammenwerfer + Bratpfanne",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Mit Mayo oder mit Kawumm?\" – Oma Granate",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Kartoffeln, Feuer und eine Pfanne.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Support · Elementar · Exotisch",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kriegstrommel + Tesla-Stab + Dudelsack des Grauens",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Das ist kein Lärm, das ist Hochspannungsmusik.\" – Blitz-Bettina",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Trommel, Dudelsack – und ein Stab unter Strom.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Werfer · Elementar",
+  "quelle": "daten"
+ },
+ {
+  "de": "Schneeballschleuder + Wasserbombe + Eiszapfenwerfer",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Wer zuerst friert, hat verloren.\" – Frost-Fritz",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Schnee, Wasser und Eis – alles, was kalt ist und fliegt.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Support · Feuerwaffen · Beschwörung",
+  "quelle": "daten"
+ },
+ {
+  "de": "Glücksmünzen + Kartoffelkanone + Grummel-Pfeife",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Geld stinkt nicht. Grummelbolde schon.\" – Grubert",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Münzen, Kartoffeln und eine Grummel-Pfeife.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Werfer · Exotisch · Explosiv",
+  "quelle": "daten"
+ },
+ {
+  "de": "Bowlingkugel + Partykanone + Dynamitbündel",
+  "quelle": "daten"
+ },
+ {
+  "de": "„STRIIIKE! Und … weg.\" – Panzer-Paule",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Kugel, Party und Dynamit.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Drohnen & Türme · Exotisch",
+  "quelle": "daten"
+ },
+ {
+  "de": "Toaster-Turm + Sternschnuppenstab + Teleport-Toaster",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Ich wollte doch nur Frühstück.\" – Megatoaster",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Zwei Toaster und eine Sternschnuppe.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Drohnen & Türme · Feuerwaffen",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kampfdrohne + Geschützturm + Minigun",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Staffel, Formation Kawumm!\" – Die Ingenieurin",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Drohne, Turm und eine Menge Munition.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Energie · Exotisch",
+  "quelle": "daten"
+ },
+ {
+  "de": "Laserpistole + Partykanone + Kampf-Kazoo",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Und jetzt alle: TÖÖÖRÖÖÖ!\" – Der Glückspilz",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Laser, Party und ein Kazoo.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Beschwörung · Explosiv · Werfer",
+  "quelle": "daten"
+ },
+ {
+  "de": "Schleimzucht + Klebebombe + Bananarang",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Blubb.\" – ein Schleimi, sehr beeindruckt",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Alles, was klebt und schleimt.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Elementar · Explosiv",
+  "quelle": "daten"
+ },
+ {
+  "de": "Lavaschleuder + Bombenhagel + Flammenwerfer",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Das ist kein Ausbruch, das ist ein Gruß.\" – Der Pyromane",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Lava, Bomben und Flammen – der Lavakessel zum Mitnehmen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Werfer · Beschwörung · Elementar",
+  "quelle": "daten"
+ },
+ {
+  "de": "Faule Eier + Kükenkorb + Giftbläser",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Riecht wie Bauer Brunos Socken.\" – Giftmischerin Gerda",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Eier, Küken und ein Giftbläser.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Support · Drohnen & Türme",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kuckucksuhr + Orbitalschlag + Tesla-Turm",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Kuckuck! Es ist … Gewitterzeit.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Eine Uhr, ein Satellit und ein Turm unter Strom.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Energie · Explosiv",
+  "quelle": "daten"
+ },
+ {
+  "de": "Magnetkanone + Plasmaspirale + Minenleger",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Alles hängt zusammen. Vor allem die Gegner.\" – Prof. Fusionski",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Magnet, Spirale und Minen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Nahkampf",
+  "quelle": "daten"
+ },
+ {
+  "de": "Wurfaxt + Kettensäge + Baseballschläger",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Holz vor der Hütte? Nicht mehr lange.\" – Panzer-Paule",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Axt, Säge und Schläger.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Support",
+  "quelle": "daten"
+ },
+ {
+  "de": "Pflasterkanone + Omas Keksdose + Schildblasen",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Erst verarzten, dann verkloppen.\" – Oma Granate",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Pflaster, Kekse und Blasen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Support · Werfer · Elementar",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kuckucksuhr + Schneeballschleuder + Wasserwerfer",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Bitte nicht auftauen.\" – Frost-Fritz",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Kuckuck, Schnee und Wasser.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Werfer · Exotisch · Feuerwaffen",
+  "quelle": "daten"
+ },
+ {
+  "de": "Wurfsterne + Sternschnuppenstab + Präzisionsgewehr",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Wünsch dir was. Zum Beispiel weniger Gegner.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Sterne, Sternschnuppen und ein sehr genaues Gewehr.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Beschwörung · Exotisch",
+  "quelle": "daten"
+ },
+ {
+  "de": "Pilzbeutel + Partykanone + Dudelsack des Grauens",
+  "quelle": "daten"
+ }
+]

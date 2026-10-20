@@ -4,8 +4,7 @@ import {
 } from '@overboom/core';
 import {
   A, AMBOSS, EVOLUTION, G, GEGNER_BY_ID, INSEL_BY_ID, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, evoName, HELDEN, HELD_BY_ID, INSELN, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
-  elemente, type StatKey, INSEL_LORE, WELT, SIEG_TEXT, SPRUECHE_TOD, PLAETZE, SETS, SET_BY_ID, setBoni, schrottwert, BEUTE, type Ausruestung
-} from '@overboom/data';
+  elemente, t, type StatKey, INSEL_LORE, WELT, SIEG_TEXT, SPRUECHE_TOD, PLAETZE, SETS, SET_BY_ID, setBoni, schrottwert, BEUTE, type Ausruestung, zahl, ausruestungsName } from '@overboom/data';
 import { gefahrWahl } from './gefahr.ts';
 import { STANDARD, einstellungenHtml, type Einstellungen } from './settings.ts';
 import { lobbyHtml, titelHtml, type CoopAktion, type CoopAnsicht } from './lobby.ts';
@@ -19,10 +18,10 @@ const LOCK_ON = '<svg viewBox="0 0 8 9" width="16" height="18" shape-rendering="
 const LOCK_OFF = '<svg viewBox="0 0 8 9" width="16" height="18" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M4 0h3v1h1v2h-1v-2h-3v3h4v6h-8v-5h3v-4zM3 5v2h2v-2z"/></svg>';
 
 function heldHinweis(id: string): string {
-  return HELD_FREI[id] ? `Freischalten: ${HELD_FREI[id].text}` : '';
+  return HELD_FREI[id] ? t('Freischalten: {text}', { text: HELD_FREI[id].text }) : '';
 }
 
-const fmt = (v: number) => (Math.round(v * 10) / 10).toLocaleString('de-DE');
+const fmt = (v: number) => zahl(Math.round(v * 10) / 10);
 const signed = (v: number) => (v > 0 ? '+' : v < 0 ? '−' : '±') + fmt(Math.abs(v));
 
 function statLine(k: StatKey, v: number): string {
@@ -39,24 +38,35 @@ function rarity(tier: number): string {
 function weaponLines(p: Player, w: Waffe, tier: number, real?: WeaponSlot): string {
   const slot = real ?? ({ waffe: w, tier, stars: 0, kills: 0, mods: [], modMask: 0, mask: 0 } as unknown as WeaponSlot);
   const el = w.fusion ? w.fusion.elemente : elemente(w);
-  const fu = w.fusion ? `<li class="ob-part"><b>Geschoss:</b> ${G[w.geschoss].name}</li>` : '';
+  const fu = w.fusion ? `<li class="ob-part"><b>${t('Geschoss:')}</b> ${G[w.geschoss].name}</li>` : '';
   return `<ul class="ob-lines">
-    <li>Schaden <b>${fmt(weaponDamage(p, slot))}</b></li>
-    <li>Feuerrate <b>${fmt(weaponRate(p, slot))}/s</b></li>
-    <li>Reichweite <b>${fmt(weaponRange(p, slot))} m</b></li>
+    <li>${t('Schaden')} <b>${fmt(weaponDamage(p, slot))}</b></li>
+    <li>${t('Feuerrate')} <b>${fmt(weaponRate(p, slot))}/s</b></li>
+    <li>${t('Reichweite')} <b>${fmt(weaponRange(p, slot))} m</b></li>
     ${fu}<li class="ob-part"><b>${A[w.antrieb].name}:</b> ${A[w.antrieb].text}</li>
     <li class="ob-part"><b>${L[w.ladung].name}:</b> ${L[w.ladung].text}</li>
-  </ul>${w.fusion ? instabilBar(w.fusion.instabil) : ''}${el.length ? `<div class="ob-tags">${el.map((e) => `<span>${e}</span>`).join('')}</div>` : ''}`;
+  </ul>${w.fusion ? instabilBar(w.fusion.instabil) : ''}${el.length ? `<div class="ob-tags">${el.map((e) => `<span>${t(e)}</span>`).join('')}</div>` : ''}`;
 }
 
-const ART_NAME: Record<string, string> = { helm: 'Helm', ruestung: 'Rüstung', stiefel: 'Stiefel', handschuhe: 'Handschuhe', amulett: 'Amulett', ring: 'Ring', rucksack: 'Rucksack' };
-function artName(a: Ausruestung): string { return ART_NAME[a.art] ?? a.art; }
+/** Anzeigename der Ausrüstungsart (t() erst zur Laufzeit, weil die Sprache beim Import noch nicht steht) */
+function artName(a: Ausruestung): string {
+  switch (a.art) {
+    case 'helm': return t('Helm');
+    case 'ruestung': return t('Rüstung');
+    case 'stiefel': return t('Stiefel');
+    case 'handschuhe': return t('Handschuhe');
+    case 'amulett': return t('Amulett');
+    case 'ring': return t('Ring');
+    case 'rucksack': return t('Rucksack');
+    default: return a.art;
+  }
+}
 function gearLines(a: Ausruestung): string {
   return `<ul class="ob-lines">${(Object.keys(a.werte) as StatKey[]).map((k) => statLine(k, a.werte[k]!)).join('')}</ul>`;
 }
 
 function instabilBar(v: number): string {
-  return `<div class="ob-instabil" title="Bei Krit kann es spontan Kawumm machen"><span>Instabil ${v} %</span><i style="width:${v}%"></i></div>`;
+  return `<div class="ob-instabil" title="${t('Bei Krit kann es spontan Kawumm machen')}"><span>${t('Instabil {n} %', { n: v })}</span><i style="width:${v}%"></i></div>`;
 }
 
 function weaponTitle(w: Waffe, tier: number): string {
@@ -93,6 +103,8 @@ export class Menus {
   private abbruchZurueck: 'shop' | 'pause' = 'shop';
   /** Run abbrechen (solo) bzw. Raum verlassen (Koop) – setzt die App */
   onZumTitel: () => void = () => {};
+  /** Sprache gewechselt (die App speichert und lädt neu) */
+  onSprache: (sprache: string) => void = () => {};
   /** Koop-Hinweis: was nach „Verstanden“ passiert; von wo „Datenschutz & Lizenzen“ geöffnet wurde */
   private koopWeiter: (() => void) | null = null;
   private rechtZurueck: 'einst' | 'koophinweis' = 'einst';
@@ -218,8 +230,8 @@ export class Menus {
     if (this.mode === 'pause' || this.mode === 'end' || this.mode === 'album' || this.mode === 'einst' || this.mode === 'recht' || this.mode === 'koophinweis' || this.mode === 'abbruch') return;
     if (this.screen === 'titel') {
       if (this.mode !== 'titel') this.show('titel', titelHtml(this.name, this.codeVorgabe, this.albumButton(),
-        '<button type="button" class="ob-btn2" data-act="einst" data-focus="einst">Einstellungen</button>'
-        + (this.onBeenden ? '<button type="button" class="ob-btn2" data-act="tbeenden" data-focus="tbeenden">Beenden</button>' : ''),
+        '<button type="button" class="ob-btn2" data-act="einst" data-focus="einst">' + t('Einstellungen') + '</button>'
+        + (this.onBeenden ? '<button type="button" class="ob-btn2" data-act="tbeenden" data-focus="tbeenden">' + t('Beenden') + '</button>' : ''),
         TIPPS[Math.floor(Date.now() / 1000) % TIPPS.length], this.controller ? PAD_HINWEIS.menue : ''), '[data-act="tsolo"]');
       return;
     }
@@ -268,12 +280,12 @@ export class Menus {
     if (!this.startHeld) {
       const cards = HELDEN.map((h, i) => {
         const wf = h.startWaffe === 'zufall' ? null : W[h.startWaffe];
-        if (!this.heldenFrei().includes(h.id)) return `<button type="button" class="ob-card ob-hero ob-locked" disabled data-focus="held${i}"><span class="ob-kind">Gesperrt</span><span class="ob-name">???</span><span class="ob-part">${heldHinweis(h.id)}</span></button>`;
+        if (!this.heldenFrei().includes(h.id)) return `<button type="button" class="ob-card ob-hero ob-locked" disabled data-focus="held${i}"><span class="ob-kind">${t('Gesperrt')}</span><span class="ob-name">???</span><span class="ob-part">${heldHinweis(h.id)}</span></button>`;
         return `<button type="button" class="ob-card ob-hero" style="--rc:${h.farbe}" data-act="held" data-id="${h.id}" data-focus="held${i}">
           <span class="ob-kind">${h.titel}</span>
           <span class="ob-name">${h.name}</span>
           <ul class="ob-lines">
-            <li>Startwaffe <b>${wf ? wf.name : 'zufällig'}</b></li>
+            <li>${t('Startwaffe')} <b>${wf ? wf.name : t('zufällig')}</b></li>
             ${(Object.keys(h.werte) as StatKey[]).map((k) => statLine(k, h.werte[k]!)).join('')}
           </ul>
           <span class="ob-part">${h.text}</span>
@@ -282,8 +294,8 @@ export class Menus {
       }).join('');
       this.show('start', `
         <div class="ob-panel ob-wide">
-          <div class="ob-shop-head"><h2 class="ob-h">Wähle deinen Kawumm-Jäger</h2>${this.albumButton()}</div>
-          <p class="ob-sub">Jeder Held hat eine Startwaffe und eine Macke. Waffen feuern von selbst – du läufst, weichst aus und kaufst nach jeder Welle nach.</p>
+          <div class="ob-shop-head"><h2 class="ob-h">${t('Wähle deinen Kawumm-Jäger')}</h2>${this.albumButton()}</div>
+          <p class="ob-sub">${t('Jeder Held hat eine Startwaffe und eine Macke. Waffen feuern von selbst – du läufst, weichst aus und kaufst nach jeder Welle nach.')}</p>
           <div class="ob-cards">${cards}</div>
           <div class="ob-row ob-center">${this.beendenKnopf()}</div>
         </div>`, '.ob-up');
@@ -308,14 +320,14 @@ export class Menus {
     const i = INSEL_BY_ID[this.mapSel];
     const frei = inselFrei(pr, i.id), bef = pr.befreit.includes(i.id), ero = pr.erobert.includes(i.id);
     const lore = INSEL_LORE[i.id];
-    const status = !frei ? `<span class="ob-warn">${lore?.gesperrt ?? 'Noch gesperrt.'}</span>`
-      : ero ? '<span class="ob-hint2">Erobert ♛ – hier wurde der Baron besiegt.</span>'
-      : bef ? `<span class="ob-hint2">Befreit ⚑ – ${lore?.befreit ?? ''}</span>` : '<span class="ob-hint2">Noch nicht befreit: Besiege den Boss auf Welle 10.</span>';
+    const status = !frei ? `<span class="ob-warn">${lore?.gesperrt ?? t('Noch gesperrt.')}</span>`
+      : ero ? `<span class="ob-hint2">${t('Erobert ♛ – hier wurde der Baron besiegt.')}</span>`
+      : bef ? `<span class="ob-hint2">${t('Befreit ⚑ – {text}', { text: lore?.befreit ?? '' })}</span>` : `<span class="ob-hint2">${t('Noch nicht befreit: Besiege den Boss auf Welle 10.')}</span>`;
     this.show('start', `
       <div class="ob-map">
         <div class="ob-map-head">
           <button type="button" class="ob-btn2" data-act="heldzurueck" data-focus="back">◀ ${h.name}</button>
-          <div><h2 class="ob-h">${WELT.name}</h2><small>${WELT.untertitel} · ${pr.befreit.length}/${INSELN.length} befreit</small></div>
+          <div><h2 class="ob-h">${WELT.name}</h2><small>${WELT.untertitel} · ${t('{n}/{max} befreit', { n: pr.befreit.length, max: INSELN.length })}</small></div>
           ${this.albumButton()}
         </div>
         <div class="ob-map-labels">${labels}</div>
@@ -323,10 +335,10 @@ export class Menus {
           <span class="ob-kind">${i.fraktion}</span>
           <span class="ob-name">${i.name}</span>
           <p class="ob-part">${i.text}</p>
-          <p class="ob-part"><b>Gefahr:</b> ${i.gefahrText} · <b>Boss:</b> ${GEGNER_BY_ID[i.boss].name} · Welle 20: Baron von Bumm</p>
+          <p class="ob-part"><b>${t('Gefahr:')}</b> ${i.gefahrText} · <b>${t('Boss:')}</b> ${GEGNER_BY_ID[i.boss].name} · ${t('Welle 20: Baron von Bumm')}</p>
           ${status}
           ${gefahrWahl(this.gefahr, pr.gefahrFrei, true)}
-          <div class="ob-row"><button type="button" class="ob-go" data-act="go" data-focus="go" ${frei ? '' : 'disabled'}>Los geht’s ▶</button></div>
+          <div class="ob-row"><button type="button" class="ob-go" data-act="go" data-focus="go" ${frei ? '' : 'disabled'}>${t('Los geht’s')} ▶</button></div>
         </div>
       </div>`, '[data-act="go"]:not([disabled])');
     this.root.classList.add('ob-mapmode');
@@ -348,39 +360,39 @@ export class Menus {
       }).join('');
       this.show('shop', `
         <div class="ob-panel ob-wide">
-          <h2 class="ob-h ob-gold">Level ${p.level - p.pendingLevels + 1}!</h2>
-          <p class="ob-sub">Wähle eine Verbesserung${p.pendingLevels > 1 ? ` · noch ${p.pendingLevels}` : ''}</p>
+          <h2 class="ob-h ob-gold">${t('Level {n}!', { n: p.level - p.pendingLevels + 1 })}</h2>
+          <p class="ob-sub">${t('Wähle eine Verbesserung')}${p.pendingLevels > 1 ? ` · ${t('noch {n}', { n: p.pendingLevels })}` : ''}</p>
           <div class="ob-cards">${cards}</div>
         </div>`, '.ob-hero:not([disabled])');
       return;
     }
 
     const offers = p.offers.map((o, i) => {
-      if (o.sold) return `<div class="ob-card ob-sold" ${rarity(o.tier)}><span class="ob-name">Verkauft</span></div>`;
+      if (o.sold) return `<div class="ob-card ob-sold" ${rarity(o.tier)}><span class="ob-name">${t('Verkauft')}</span></div>`;
       const afford = p.crystals >= o.price;
       let body: string, kind: string, title: string;
       if (o.kind === 'waffe') {
-        kind = `Waffe · ${W[o.id].gruppe}`;
+        kind = `${t('Waffe')} · ${t(W[o.id].gruppe)}`;
         title = weaponTitle(W[o.id], o.tier);
         body = weaponLines(p, W[o.id], o.tier);
-        if (p.weapons.length >= SPIELER.maxWaffen && !p.weapons.some((s) => s.waffe.id === o.id && s.tier === o.tier && s.tier < 5)) body += '<span class="ob-warn">Kein Platz mehr</span>';
-        else if (p.weapons.some((s) => s.waffe.id === o.id && s.tier === o.tier)) body += '<span class="ob-hint2">Gleiche Waffe da – verschmelzbar!</span>';
+        if (p.weapons.length >= SPIELER.maxWaffen && !p.weapons.some((s) => s.waffe.id === o.id && s.tier === o.tier && s.tier < 5)) body += `<span class="ob-warn">${t('Kein Platz mehr')}</span>`;
+        else if (p.weapons.some((s) => s.waffe.id === o.id && s.tier === o.tier)) body += `<span class="ob-hint2">${t('Gleiche Waffe da – verschmelzbar!')}</span>`;
       } else if (o.kind === 'mod') {
         const m = MOD_BY_ID[o.id];
-        kind = `Mod · ${SELTENHEIT[m.seltenheit - 1].name}`;
+        kind = `${t('Mod')} · ${SELTENHEIT[m.seltenheit - 1].name}`;
         title = m.name;
-        body = `<ul class="ob-lines"><li class="ob-part">${m.text}</li></ul><span class="ob-flavor">Einbau in Waffen ab Stufe II (Waffe antippen).</span>`;
+        body = `<ul class="ob-lines"><li class="ob-part">${m.text}</li></ul><span class="ob-flavor">${t('Einbau in Waffen ab Stufe II (Waffe antippen).')}</span>`;
       } else if (o.kind === 'ausruestung' && o.equip) {
         const a = o.equip;
         kind = `${artName(a)} · ${SELTENHEIT[a.seltenheit - 1].name}`;
-        title = a.name;
+        title = ausruestungsName(a);
         body = gearLines(a);
-        if (p.beute.length >= BEUTE.maxBeute) body += '<span class="ob-warn">Beutel voll</span>';
+        if (p.beute.length >= BEUTE.maxBeute) body += `<span class="ob-warn">${t('Beutel voll')}</span>`;
       } else {
         const it = ITEM_BY_ID[o.id];
-        kind = `Item · ${SELTENHEIT[it.seltenheit - 1].name}${p.items[o.id] ? ` · hast ${p.items[o.id]}` : ''}`;
+        kind = `${t('Item')} · ${SELTENHEIT[it.seltenheit - 1].name}${p.items[o.id] ? ` · ${t('hast {n}', { n: p.items[o.id] })}` : ''}`;
         title = it.name;
-        body = `<ul class="ob-lines">${(Object.keys(it.werte) as StatKey[]).map((k) => statLine(k, it.werte[k]!)).join('')}${it.spezial ? '<li class="ob-part">Explodiert, wenn du getroffen wirst</li>' : ''}</ul><span class="ob-flavor">${it.text}</span>`;
+        body = `<ul class="ob-lines">${(Object.keys(it.werte) as StatKey[]).map((k) => statLine(k, it.werte[k]!)).join('')}${it.spezial ? `<li class="ob-part">${t('Explodiert, wenn du getroffen wirst')}</li>` : ''}</ul><span class="ob-flavor">${it.text}</span>`;
       }
       return `<div class="ob-card ${o.locked ? 'locked' : ''}" ${rarity(o.tier)}>
         <span class="ob-kind">${kind}</span>
@@ -388,7 +400,7 @@ export class Menus {
         ${body}
         <div class="ob-buy">
           <button type="button" class="ob-price" data-act="buy" data-i="${i}" data-focus="buy${i}" ${afford ? '' : 'disabled'}>${GEM}${o.price}</button>
-          <button type="button" class="ob-lock ${o.locked ? 'on' : ''}" data-act="lock" data-i="${i}" data-focus="lock${i}" aria-label="${o.locked ? 'Entsperren' : 'Sperren'}" title="Sperren: bleibt beim Reroll und in der nächsten Runde">${o.locked ? LOCK_ON : LOCK_OFF}</button>
+          <button type="button" class="ob-lock ${o.locked ? 'on' : ''}" data-act="lock" data-i="${i}" data-focus="lock${i}" aria-label="${o.locked ? t('Entsperren') : t('Sperren')}" title="${t('Sperren: bleibt beim Reroll und in der nächsten Runde')}">${o.locked ? LOCK_ON : LOCK_OFF}</button>
         </div>
       </div>`;
     }).join('');
@@ -399,7 +411,7 @@ export class Menus {
       const m = canMerge(p, i);
       return `<button type="button" class="ob-slot ${this.detail === i ? 'sel' : ''}" ${rarity(s.tier)} data-act="slot" data-i="${i}" data-focus="slot${i}">
         <span>${s.waffe.name}</span><b>${TIER_ZAHL[s.tier - 1]}</b>${m ? '<em>⇧</em>' : ''}${s.waffe.fusion ? '<i class="ob-fz">⚒</i>' : ''}
-        <small class="ob-stars ${s.stars >= 5 && !s.waffe.evo ? 'ready' : ''}">${'★'.repeat(s.stars)}${'☆'.repeat(5 - s.stars)}${s.mods.length ? ` · ${s.mods.length} Mod` : ''}</small>
+        <small class="ob-stars ${s.stars >= 5 && !s.waffe.evo ? 'ready' : ''}">${'★'.repeat(s.stars)}${'☆'.repeat(5 - s.stars)}${s.mods.length ? ` · ${t('{n} Mod', { n: s.mods.length })}` : ''}</small>
       </button>`;
     }).join('');
 
@@ -410,17 +422,17 @@ export class Menus {
       detail = `<div class="ob-detail" ${rarity(ds.tier)}>
         <div class="ob-name">${weaponTitle(ds.waffe, ds.tier)}</div>
         ${weaponLines(p, ds.waffe, ds.tier, ds)}
-        <p class="ob-flavor">${ds.waffe.text}${dmg ? ` · bisher ${fmt(dmg)} Schaden` : ''}</p>
+        <p class="ob-flavor">${ds.waffe.text}${dmg ? ` · ${t('bisher {n} Schaden', { n: fmt(dmg) })}` : ''}</p>
         ${this.detailExtras(ds)}
         <div class="ob-row">
-          <button type="button" class="ob-btn2" data-act="merge" data-i="${this.detail}" data-focus="merge" ${canMerge(p, this.detail) ? '' : 'disabled'}>Verschmelzen ⇧</button>
-          <button type="button" class="ob-btn2" data-act="sell" data-i="${this.detail}" data-focus="sell" ${p.weapons.length > 1 ? '' : 'disabled'}>Verkaufen +${sellPrice(ds, w.wave + 1)}</button>
-          <button type="button" class="ob-btn2" data-act="close" data-focus="close">Schließen</button>
+          <button type="button" class="ob-btn2" data-act="merge" data-i="${this.detail}" data-focus="merge" ${canMerge(p, this.detail) ? '' : 'disabled'}>${t('Verschmelzen')} ⇧</button>
+          <button type="button" class="ob-btn2" data-act="sell" data-i="${this.detail}" data-focus="sell" ${p.weapons.length > 1 ? '' : 'disabled'}>${t('Verkaufen +{preis}', { preis: sellPrice(ds, w.wave + 1) })}</button>
+          <button type="button" class="ob-btn2" data-act="close" data-focus="close">${t('Schließen')}</button>
         </div>
       </div>`;
     }
 
-    const items = Object.entries(p.items).map(([id, n]) => `<span class="ob-chip" ${rarity(ITEM_BY_ID[id].seltenheit)} title="${ITEM_BY_ID[id].text}">${ITEM_BY_ID[id].name}${n > 1 ? ` ×${n}` : ''}</span>`).join('') || '<span class="ob-none">noch keine</span>';
+    const items = Object.entries(p.items).map(([id, n]) => `<span class="ob-chip" ${rarity(ITEM_BY_ID[id].seltenheit)} title="${ITEM_BY_ID[id].text}">${ITEM_BY_ID[id].name}${n > 1 ? ` ×${n}` : ''}</span>`).join('') || `<span class="ob-none">${t('noch keine')}</span>`;
 
     const stats = this.showStats ? `<ul class="ob-stats">${STAT_KEYS.map((k) => {
       const v = k === 'maxHp' ? p.maxHp : p.stats[k];
@@ -433,29 +445,29 @@ export class Menus {
       <div class="ob-panel ob-wide ob-shop">
         <div class="ob-shop-head">
           <div class="ob-tabs">
-            <button type="button" class="ob-tab ${this.tab === 'shop' ? 'on' : ''}" data-act="tab" data-tab="shop" data-focus="tabshop">Shop</button>
-            <button type="button" class="ob-tab ${this.tab === 'amboss' ? 'on' : ''}" data-act="tab" data-tab="amboss" data-focus="tabamboss">⚒ Amboss</button>
-            <button type="button" class="ob-tab ${this.tab === 'ausruestung' ? 'on' : ''}" data-act="tab" data-tab="ausruestung" data-focus="tabgear">Ausrüstung${p.beute.length ? ` <em class="ob-badge">${p.beute.length}</em>` : ''}</button>
-            <small>Welle ${w.wave} geschafft</small>
+            <button type="button" class="ob-tab ${this.tab === 'shop' ? 'on' : ''}" data-act="tab" data-tab="shop" data-focus="tabshop">${t('Shop')}</button>
+            <button type="button" class="ob-tab ${this.tab === 'amboss' ? 'on' : ''}" data-act="tab" data-tab="amboss" data-focus="tabamboss">⚒ ${t('Amboss')}</button>
+            <button type="button" class="ob-tab ${this.tab === 'ausruestung' ? 'on' : ''}" data-act="tab" data-tab="ausruestung" data-focus="tabgear">${t('Ausrüstung')}${p.beute.length ? ` <em class="ob-badge">${p.beute.length}</em>` : ''}</button>
+            <small>${t('Welle {n} geschafft', { n: w.wave })}</small>
           </div>
           <div class="ob-wallet">${GEM}<b>${p.crystals}</b></div>
         </div>
         ${this.tab === 'shop' ? `<div class="ob-cards">${offers}</div>` : this.tab === 'amboss' ? this.renderAnvil() : this.renderGear()}
         <div class="ob-row ob-actions">
-          ${this.tab === 'shop' ? `<button type="button" class="ob-btn2" data-act="reroll" data-focus="reroll" ${p.crystals >= reroll ? '' : 'disabled'}>Neu würfeln ${GEM}${reroll}</button>` : ''}
-          <button type="button" class="ob-btn2" data-act="stats" data-focus="stats">${this.showStats ? 'Werte ausblenden' : 'Werte'}</button>
+          ${this.tab === 'shop' ? `<button type="button" class="ob-btn2" data-act="reroll" data-focus="reroll" ${p.crystals >= reroll ? '' : 'disabled'}>${t('Neu würfeln')} ${GEM}${reroll}</button>` : ''}
+          <button type="button" class="ob-btn2" data-act="stats" data-focus="stats">${this.showStats ? t('Werte ausblenden') : t('Werte')}</button>
           ${this.beendenKnopf()}
-          <button type="button" class="ob-go" data-act="ready" data-focus="ready">Welle ${w.wave + 1}${WELLEN.bossWellen.includes(w.wave + 1) ? ' · Boss!' : ''} ▶</button>
+          <button type="button" class="ob-go" data-act="ready" data-focus="ready">${t('Welle {n}', { n: w.wave + 1 })}${WELLEN.bossWellen.includes(w.wave + 1) ? ` · ${t('Boss!')}` : ''} ▶</button>
         </div>
-        <h3 class="ob-h3">Waffen ${p.weapons.length}/${SPIELER.maxWaffen} <small>antippen: verschmelzen / verkaufen / Mods / Evolution${p.modInv.length ? ` · ${p.modInv.length} Mod(s) im Rucksack` : ''}</small></h3>
+        <h3 class="ob-h3">${t('Waffen {n}/{max}', { n: p.weapons.length, max: SPIELER.maxWaffen })} <small>${t('antippen: verschmelzen / verkaufen / Mods / Evolution')}${p.modInv.length ? ` · ${t('{n} Mod(s) im Rucksack', { n: p.modInv.length })}` : ''}</small></h3>
         <div class="ob-slots">${slots}</div>
         ${detail}
-        <h3 class="ob-h3">Synergien <small>Elemente deiner Waffen – Boni ab 2 / 4 / 6</small></h3>
+        <h3 class="ob-h3">${t('Synergien')} <small>${t('Elemente deiner Waffen – Boni ab 2 / 4 / 6')}</small></h3>
         <ul class="ob-synlist">${SYNERGIEN.map((sy) => {
           const n = p.synCount[sy.element] ?? 0;
-          return `<li style="--c:${sy.farbe}"><b>${sy.element} ${n}</b>${sy.stufen.map((st) => `<div class="${n >= st.ab ? 'on' : ''}">${st.ab}: ${st.text}</div>`).join('')}</li>`;
+          return `<li style="--c:${sy.farbe}"><b>${t(sy.element)} ${n}</b>${sy.stufen.map((st) => `<div class="${n >= st.ab ? 'on' : ''}">${st.ab}: ${st.text}</div>`).join('')}</li>`;
         }).join('')}</ul>
-        <h3 class="ob-h3">Items</h3>
+        <h3 class="ob-h3">${t('Items')}</h3>
         <div class="ob-items">${items}</div>
         ${stats}
       </div>`, this.detail >= 0 ? '[data-act="merge"]:not([disabled]), [data-act="sell"]:not([disabled])' : '[data-act="buy"]:not([disabled]), [data-act="ready"]');
@@ -465,19 +477,19 @@ export class Menus {
   private detailExtras(s: WeaponSlot): string {
     const p = this.p, i = this.detail;
     const next = s.stars < 5 ? STERNE.kills[s.stars] : 0;
-    let html = `<p class="ob-part"><b>Sterne ${'★'.repeat(s.stars)}${'☆'.repeat(5 - s.stars)}</b> ${s.stars < 5 ? `${s.kills}/${next} Kills bis zum nächsten Stern` : s.waffe.evo ? 'evolviert' : 'bereit zur Evolution!'} · je Stern +${Math.round(STERNE.schadenProStern * 100)} % Schaden</p>`;
+    let html = `<p class="ob-part"><b>${t('Sterne')} ${'★'.repeat(s.stars)}${'☆'.repeat(5 - s.stars)}</b> ${s.stars < 5 ? t('{n}/{max} Kills bis zum nächsten Stern', { n: s.kills, max: next }) : s.waffe.evo ? t('evolviert') : t('bereit zur Evolution!')} · ${t('je Stern +{n} % Schaden', { n: Math.round(STERNE.schadenProStern * 100) })}</p>`;
     if (s.stars >= 5 && !s.waffe.evo) {
       html += `<div class="ob-evo">${(['a', 'b'] as const).map((v) => `
         <button type="button" class="ob-card" ${rarity(5)} data-act="evolve" data-i="${i}" data-v="${v}" data-focus="evo${v}">
-          <span class="ob-kind">Evolution ${v === 'a' ? 'A · Mehr' : 'B · Größer'}</span>
+          <span class="ob-kind">${v === 'a' ? t('Evolution A · Mehr') : t('Evolution B · Größer')}</span>
           <span class="ob-name">${evoName(s.waffe, v)}</span>
           <span class="ob-part">${EVOLUTION[v].text}</span>
         </button>`).join('')}</div>`;
     }
     const slots = MOD_SLOTS[s.tier - 1];
-    html += `<p class="ob-part"><b>Mods ${s.mods.length}/${slots}</b> ${s.mods.map((m) => MOD_BY_ID[m].name).join(', ') || (slots ? 'noch keine' : 'erst ab Stufe II')}</p>`;
+    html += `<p class="ob-part"><b>${t('Mods {n}/{max}', { n: s.mods.length, max: slots })}</b> ${s.mods.map((m) => MOD_BY_ID[m].name).join(', ') || (slots ? t('noch keine') : t('erst ab Stufe II'))}</p>`;
     if (p.modInv.length && s.mods.length < slots) {
-      html += `<div class="ob-row">${p.modInv.map((m, k) => `<button type="button" class="ob-btn2" data-act="install" data-i="${i}" data-k="${k}" data-focus="mod${k}" ${s.mods.includes(m) ? 'disabled' : ''}>Einbauen: ${MOD_BY_ID[m].name}</button>`).join('')}</div>`;
+      html += `<div class="ob-row">${p.modInv.map((m, k) => `<button type="button" class="ob-btn2" data-act="install" data-i="${i}" data-k="${k}" data-focus="mod${k}" ${s.mods.includes(m) ? 'disabled' : ''}>${t('Einbauen: {name}', { name: MOD_BY_ID[m].name })}</button>`).join('')}</div>`;
     }
     return html;
   }
@@ -488,39 +500,39 @@ export class Menus {
     const w = this.world, p = this.p;
     const slots = PLAETZE.map((pl) => {
       const a = p.ausruestung[pl.id];
-      if (!a) return `<div class="ob-gear empty"><small>${pl.name}</small><span>leer</span></div>`;
+      if (!a) return `<div class="ob-gear empty"><small>${pl.name}</small><span>${t('leer')}</span></div>`;
       return `<div class="ob-gear" ${rarity(a.seltenheit)}>
-        <small>${pl.name}${a.set ? ' · Set' : ''}</small><b>${a.name}</b>${gearLines(a)}
-        <button type="button" class="ob-btn2" data-act="unequip" data-platz="${pl.id}" data-focus="un${pl.id}" ${p.beute.length < BEUTE.maxBeute ? '' : 'disabled'}>Ablegen</button>
+        <small>${pl.name}${a.set ? ` · ${t('Set')}` : ''}</small><b>${ausruestungsName(a)}</b>${gearLines(a)}
+        <button type="button" class="ob-btn2" data-act="unequip" data-platz="${pl.id}" data-focus="un${pl.id}" ${p.beute.length < BEUTE.maxBeute ? '' : 'disabled'}>${t('Ablegen')}</button>
       </div>`;
     }).join('');
     const aktiv = setBoni(Object.values(p.ausruestung));
     const sets = SETS.map((set) => {
       const n = aktiv.find((x) => x.set.id === set.id)?.anzahl ?? 0;
       return `<li class="${n ? 'some' : ''}"><b>${set.name} ${n}/${set.teile.length}</b>
-        <span class="ob-setparts">${set.teile.map((t) => t.name).join(' · ')}</span>
+        <span class="ob-setparts">${set.teile.map((x) => x.name).join(' · ')}</span>
         ${set.boni.map((b) => `<div class="${n >= b.ab ? 'on' : ''}">${b.ab}: ${b.text}</div>`).join('')}</li>`;
     }).join('');
     const beute = p.beute.map((a, k) => {
       const plaetze = PLAETZE.filter((x) => x.art === a.art);
       const anlegen = plaetze.length > 1
         ? plaetze.map((pl, j) => `<button type="button" class="ob-btn2" data-act="equip" data-i="${k}" data-platz="${pl.id}" data-focus="eq${k}${j}">→ ${pl.name} ${j + 1}</button>`).join('')
-        : `<button type="button" class="ob-btn2" data-act="equip" data-i="${k}" data-focus="eq${k}">Anlegen</button>`;
+        : `<button type="button" class="ob-btn2" data-act="equip" data-i="${k}" data-focus="eq${k}">${t('Anlegen')}</button>`;
       const alt = plaetze.map((pl) => p.ausruestung[pl.id]).find((x) => x);
       return `<div class="ob-card" ${rarity(a.seltenheit)}>
         <span class="ob-kind">${artName(a)} · ${SELTENHEIT[a.seltenheit - 1].name}${a.set ? ` · ${SET_BY_ID[a.set].name}` : ''}</span>
-        <span class="ob-name">${a.name}</span>
+        <span class="ob-name">${ausruestungsName(a)}</span>
         ${gearLines(a)}
-        ${alt ? `<span class="ob-flavor">Statt: ${alt.name}</span>` : ''}
-        <div class="ob-row">${anlegen}<button type="button" class="ob-btn2" data-act="scrap" data-i="${k}" data-focus="sc${k}">Schrott +${schrottwert(a, w.wave)}</button></div>
+        ${alt ? `<span class="ob-flavor">${t('Statt: {name}', { name: alt.name })}</span>` : ''}
+        <div class="ob-row">${anlegen}<button type="button" class="ob-btn2" data-act="scrap" data-i="${k}" data-focus="sc${k}">${t('Schrott +{n}', { n: schrottwert(a, w.wave) })}</button></div>
       </div>`;
     }).join('');
     return `<div class="ob-gearview">
-      <h3 class="ob-h3">Angelegt <small>8 Plätze – Werte zählen sofort</small></h3>
+      <h3 class="ob-h3">${t('Angelegt')} <small>${t('8 Plätze – Werte zählen sofort')}</small></h3>
       <div class="ob-gearslots">${slots}</div>
-      <h3 class="ob-h3">Beutel ${p.beute.length}/${BEUTE.maxBeute} <small>Beute von Elite-Gegnern und Bossen, oder aus dem Shop</small></h3>
-      ${beute ? `<div class="ob-cards">${beute}</div>` : '<p class="ob-none">Noch nichts gefunden. Elite-Gegner und Bosse lassen Ausrüstung fallen.</p>'}
-      <h3 class="ob-h3">Sets</h3>
+      <h3 class="ob-h3">${t('Beutel {n}/{max}', { n: p.beute.length, max: BEUTE.maxBeute })} <small>${t('Beute von Elite-Gegnern und Bossen, oder aus dem Shop')}</small></h3>
+      ${beute ? `<div class="ob-cards">${beute}</div>` : `<p class="ob-none">${t('Noch nichts gefunden. Elite-Gegner und Bosse lassen Ausrüstung fallen.')}</p>`}
+      <h3 class="ob-h3">${t('Sets')}</h3>
       <ul class="ob-synlist ob-sets">${sets}</ul>
     </div>`;
   }
@@ -551,8 +563,8 @@ export class Menus {
       if (!s) return `<div class="ob-slot empty"></div>`;
       const k = this.anvilSel.indexOf(i);
       const dis = !!s.waffe.fusion;
-      return `<button type="button" class="ob-slot ${k >= 0 ? 'sel' : ''}" ${rarity(s.tier)} data-act="pick" data-i="${i}" data-focus="pick${i}" ${dis ? 'disabled title="Fusionen lassen sich nur mergen"' : ''}>
-        <span>${s.waffe.name}</span><b>${s.waffe.gruppe}</b>${k >= 0 ? `<em>${k + 1}</em>` : ''}
+      return `<button type="button" class="ob-slot ${k >= 0 ? 'sel' : ''}" ${rarity(s.tier)} data-act="pick" data-i="${i}" data-focus="pick${i}" ${dis ? `disabled title="${t('Fusionen lassen sich nur mergen')}"` : ''}>
+        <span>${s.waffe.name}</span><b>${t(s.waffe.gruppe)}</b>${k >= 0 ? `<em>${k + 1}</em>` : ''}
       </button>`;
     }).join('');
 
@@ -564,22 +576,22 @@ export class Menus {
           ${ws.map((wf, k) => `<button type="button" class="ob-part-btn ${this.parts[part] === k ? 'on' : ''}" data-act="part" data-part="${part}" data-i="${k}" data-focus="${part}${k}">
             ${partName(wf, part)}<small>${wf.name}</small></button>`).join('')}
         </div>`;
-      parts = `<h3 class="ob-h3">2 · Bauteile zuordnen <small>jede Waffe liefert mindestens eins</small></h3>
-        <div class="ob-parts">${row('geschoss', 'Geschoss – was fliegt')}${row('antrieb', 'Antrieb – wie es fliegt')}${row('ladung', 'Ladung – was passiert')}</div>`;
+      parts = `<h3 class="ob-h3">2 · ${t('Bauteile zuordnen')} <small>${t('jede Waffe liefert mindestens eins')}</small></h3>
+        <div class="ob-parts">${row('geschoss', t('Geschoss – was fliegt'))}${row('antrieb', t('Antrieb – wie es fliegt'))}${row('ladung', t('Ladung – was passiert'))}</div>`;
       const v = fusionPreview(w, p, this.fuseCmd());
       if (v.waffe) {
         const rz = v.waffe.fusion?.rezept;
         const secret = rz && !known.has(rz);
         preview = `<div class="ob-card ob-preview ${rz ? 'recipe' : ''}" ${rarity(rz ? 5 : v.tier)}>
-          <span class="ob-kind">${rz ? 'Geheimes Rezept' : 'Fusionswaffe'} · ${v.waffe.fusion!.gruppen.join(' · ')}</span>
-          <span class="ob-name">${secret ? '??? <small>Was passiert da wohl …</small>' : weaponTitle(v.waffe, v.tier)}</span>
-          ${secret ? '<p class="ob-flavor">Diese Zutaten kennt der Amboss. Verschmelze sie, um das Rezept zu entdecken!</p>' : `${weaponLines(p, v.waffe, v.tier)}<span class="ob-flavor">${v.waffe.text}</span>`}
+          <span class="ob-kind">${rz ? t('Geheimes Rezept') : t('Fusionswaffe')} · ${v.waffe.fusion!.gruppen.map((g) => t(g)).join(' · ')}</span>
+          <span class="ob-name">${secret ? `??? <small>${t('Was passiert da wohl …')}</small>` : weaponTitle(v.waffe, v.tier)}</span>
+          ${secret ? `<p class="ob-flavor">${t('Diese Zutaten kennt der Amboss. Verschmelze sie, um das Rezept zu entdecken!')}</p>` : `${weaponLines(p, v.waffe, v.tier)}<span class="ob-flavor">${v.waffe.text}</span>`}
         </div>`;
       }
-      const err = v.error ? `<p class="ob-warn">${v.error}</p>` : '';
-      preview += `${err}<div class="ob-row"><button type="button" class="ob-go" data-act="fuse" data-focus="fuse" ${v.error ? 'disabled' : ''}>Verschmelzen! ${GEM}${price}</button></div>`;
+      const err = v.error ? `<p class="ob-warn">${t(v.error)}</p>` : '';
+      preview += `${err}<div class="ob-row"><button type="button" class="ob-go" data-act="fuse" data-focus="fuse" ${v.error ? 'disabled' : ''}>${t('Verschmelzen!')} ${GEM}${price}</button></div>`;
     } else {
-      parts = `<p class="ob-sub">Wähle 2 oder 3 Waffen aus <b>verschiedenen Gruppen</b>. Jede liefert ein Bauteil – Geschoss, Antrieb oder Ladung – und es entsteht eine ganz neue Waffe. Je verschiedener die Gruppen, desto instabiler … und stärker.</p>`;
+      parts = `<p class="ob-sub">${t('Wähle 2 oder 3 Waffen aus <b>verschiedenen Gruppen</b>. Jede liefert ein Bauteil – Geschoss, Antrieb oder Ladung – und es entsteht eine ganz neue Waffe. Je verschiedener die Gruppen, desto instabiler … und stärker.')}</p>`;
     }
 
     const book = this.book ? `<ul class="ob-book">${REZEPTE.map((r) => known.has(r.id)
@@ -587,11 +599,11 @@ export class Menus {
       : `<li><b>???</b><span>${r.hinweis}</span></li>`).join('')}</ul>` : '';
 
     return `<div class="ob-anvil">
-      <h3 class="ob-h3">1 · Waffen wählen <small>Schmiedelohn ${GEM}${price}</small></h3>
+      <h3 class="ob-h3">1 · ${t('Waffen wählen')} <small>${t('Schmiedelohn')} ${GEM}${price}</small></h3>
       <div class="ob-slots">${picks}</div>
       ${parts}
       ${preview}
-      <div class="ob-row"><button type="button" class="ob-btn2" data-act="book" data-focus="book">Rezeptbuch ${known.size}/${REZEPTE.length}</button></div>
+      <div class="ob-row"><button type="button" class="ob-btn2" data-act="book" data-focus="book">${t('Rezeptbuch {n}/{max}', { n: known.size, max: REZEPTE.length })}</button></div>
       ${book}
     </div>`;
   }
@@ -601,44 +613,44 @@ export class Menus {
   showEnd(s: EndStats, seed: number): void {
     this.lastEnd = [s, seed];
     const rows: [string, string | number][] = [
-      ['Welle', s.wave],
-      ['Level', s.level],
-      ['Besiegt', s.kills],
-      ['Gesamtschaden', fmt(Math.round(s.damage))],
-      ['Größte Kette', s.maxChain ? `×${s.maxChain}` : '–'],
-      ['Kristalle', s.crystals],
-      ['MVP-Waffe', s.mvp ? `${waffeById(s.mvp)?.name ?? s.mvp}` : '–'],
-      ['Gefahr', `${s.gefahr} · ${GEFAHREN[s.gefahr]?.name ?? ''}`]
+      [t('Welle'), s.wave],
+      [t('Level'), s.level],
+      [t('Besiegt'), s.kills],
+      [t('Gesamtschaden'), fmt(Math.round(s.damage))],
+      [t('Größte Kette'), s.maxChain ? `×${s.maxChain}` : '–'],
+      [t('Kristalle'), s.crystals],
+      [t('MVP-Waffe'), s.mvp ? `${waffeById(s.mvp)?.name ?? s.mvp}` : '–'],
+      [t('Gefahr'), `${s.gefahr} · ${GEFAHREN[s.gefahr]?.name ?? ''}`]
     ];
     this.show('end', `
       <div class="ob-panel ob-end ${s.victory ? 'win' : ''}">
-        <h2>${s.victory ? 'Sieg!' : 'Kawumm!'}</h2>
+        <h2>${s.victory ? t('Sieg!') : t('Kawumm!')}</h2>
         <p class="ob-sub">${s.victory ? SIEG_TEXT : SPRUECHE_TOD[seed % SPRUECHE_TOD.length]}</p>
         <dl class="ob-end-stats">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
         <div class="ob-row ob-center">
-          ${this.koop === 'client' ? '<p class="ob-hint2">Der Host entscheidet, wie es weitergeht …</p><button type="button" class="ob-btn2" data-act="lverlassen">Raum verlassen</button>'
-            : this.koop === 'host' ? `${s.victory ? '<button type="button" class="ob-btn2" data-act="endless">Endlos weiter</button>' : ''}<button type="button" class="ob-go" data-act="lzurueck">Zurück in die Lobby</button>`
-            : `${s.victory ? '<button type="button" class="ob-btn2" data-act="endless">Endlos weiter</button>' : ''}<button type="button" class="ob-go" data-act="restart">Nochmal!</button>`}
+          ${this.koop === 'client' ? `<p class="ob-hint2">${t('Der Host entscheidet, wie es weitergeht …')}</p><button type="button" class="ob-btn2" data-act="lverlassen">${t('Raum verlassen')}</button>`
+            : this.koop === 'host' ? `${s.victory ? `<button type="button" class="ob-btn2" data-act="endless">${t('Endlos weiter')}</button>` : ''}<button type="button" class="ob-go" data-act="lzurueck">${t('Zurück in die Lobby')}</button>`
+            : `${s.victory ? `<button type="button" class="ob-btn2" data-act="endless">${t('Endlos weiter')}</button>` : ''}<button type="button" class="ob-go" data-act="restart">${t('Nochmal!')}</button>`}
           ${this.albumButton()}
         </div>
-        ${this.tastenHinweis('Pfeiltasten + Enter · Gamepad: Steuerkreuz + A', PAD_HINWEIS.menue)}
+        ${this.tastenHinweis(t('Pfeiltasten + Enter · Gamepad: Steuerkreuz + A'), PAD_HINWEIS.menue)}
       </div>`, '[data-act="restart"], [data-act="lzurueck"]');
   }
 
   showPause(): void {
     this.show('pause', `
       <div class="ob-panel ob-end">
-        <h2>Pause</h2>
-        <p class="ob-sub">${this.koop ? 'Achtung: Im Koop läuft das Spiel weiter!' : 'Kurz durchatmen. Die Grummelbolde warten (grummelnd).'}</p>
-        <p class="ob-tipp">Tipp: ${TIPPS[Math.floor(Date.now() / 1000) % TIPPS.length]}</p>
+        <h2>${t('Pause')}</h2>
+        <p class="ob-sub">${this.koop ? t('Achtung: Im Koop läuft das Spiel weiter!') : t('Kurz durchatmen. Die Grummelbolde warten (grummelnd).')}</p>
+        <p class="ob-tipp">${t('Tipp:')} ${TIPPS[Math.floor(Date.now() / 1000) % TIPPS.length]}</p>
         <div class="ob-row ob-center">
-          <button type="button" class="ob-go" data-act="resume">Weiter</button>
-          ${this.koop ? '' : '<button type="button" class="ob-btn2" data-act="restart">Neu starten</button>'}
+          <button type="button" class="ob-go" data-act="resume">${t('Weiter')}</button>
+          ${this.koop ? '' : `<button type="button" class="ob-btn2" data-act="restart">${t('Neu starten')}</button>`}
           ${this.beendenKnopf()}
-          <button type="button" class="ob-btn2" data-act="einst">Einstellungen</button>
+          <button type="button" class="ob-btn2" data-act="einst">${t('Einstellungen')}</button>
           ${this.albumButton()}
         </div>
-        ${this.tastenHinweis('Esc / P: Pause · WASD: laufen · Leertaste: Dash', PAD_HINWEIS.spiel)}
+        ${this.tastenHinweis(t('Esc / P: Pause · WASD: laufen · Leertaste: Dash'), PAD_HINWEIS.spiel)}
       </div>`);
   }
 
@@ -650,21 +662,21 @@ export class Menus {
 
   /** „Beenden“: solo zurück zum Titel, im Koop Raum verlassen (immer mit Rückfrage) */
   private beendenKnopf(): string {
-    return `<button type="button" class="ob-btn2 ob-beenden" data-act="beenden" data-focus="beenden">${this.koop ? 'Raum verlassen' : 'Beenden'}</button>`;
+    return `<button type="button" class="ob-btn2 ob-beenden" data-act="beenden" data-focus="beenden">${this.koop ? t('Raum verlassen') : t('Beenden')}</button>`;
   }
 
   private zeigeAbbruch(): void {
     this.abbruchZurueck = this.mode === 'pause' ? 'pause' : 'shop';
-    const text = this.koop === 'host' ? 'Du bist Host – wenn du gehst, endet das Spiel für alle Mitspieler.'
-      : this.koop === 'client' ? 'Deine Mitspieler spielen ohne dich weiter.'
-      : 'Der laufende Run endet. Freigeschaltete Karten, Helden und Erfolge bleiben erhalten.';
+    const text = this.koop === 'host' ? t('Du bist Host – wenn du gehst, endet das Spiel für alle Mitspieler.')
+      : this.koop === 'client' ? t('Deine Mitspieler spielen ohne dich weiter.')
+      : t('Der laufende Run endet. Freigeschaltete Karten, Helden und Erfolge bleiben erhalten.');
     this.show('abbruch', `
       <div class="ob-panel ob-end">
-        <h2>${this.koop ? 'Raum verlassen?' : 'Run beenden?'}</h2>
+        <h2>${this.koop ? t('Raum verlassen?') : t('Run beenden?')}</h2>
         <p class="ob-sub">${text}</p>
         <div class="ob-row ob-center">
-          <button type="button" class="ob-btn2" data-act="abbruchja" data-focus="abbruchja">${this.koop ? 'Ja, verlassen' : 'Ja, zum Titel'}</button>
-          <button type="button" class="ob-go" data-act="abbruchnein" data-focus="abbruchnein">Weiterspielen</button>
+          <button type="button" class="ob-btn2" data-act="abbruchja" data-focus="abbruchja">${this.koop ? t('Ja, verlassen') : t('Ja, zum Titel')}</button>
+          <button type="button" class="ob-go" data-act="abbruchnein" data-focus="abbruchnein">${t('Weiterspielen')}</button>
         </div>
       </div>`, '[data-act="abbruchnein"]');
   }
@@ -683,7 +695,7 @@ export class Menus {
   private albumButton(): string {
     const z = albumZaehler(this.profil());
     const neu = this.profil().neu.filter((id) => KARTE_BY_ID[id]).length;
-    return `<button type="button" class="ob-btn2 ob-albumbtn" data-act="album" data-focus="album">Kartenalbum ${z.gefunden}/${KARTEN.length}${neu ? ` <em class="ob-badge">${neu}</em>` : ''}</button>`;
+    return `<button type="button" class="ob-btn2 ob-albumbtn" data-act="album" data-focus="album">${t('Kartenalbum {n}/{max}', { n: z.gefunden, max: KARTEN.length })}${neu ? ` <em class="ob-badge">${neu}</em>` : ''}</button>`;
   }
 
   private openAlbum(): void {
@@ -714,15 +726,15 @@ export class Menus {
       if (pr.neu.includes(k.id)) this.gesehen(k.id);
       return;
     }
-    const tabs = ALBUM_TABS.map((t) => `<button type="button" class="ob-tab ${this.albumTab === t.id ? 'on' : ''}" data-act="atab" data-tab="${t.id}" data-focus="atab${t.id}">${t.name}</button>`).join('');
+    const tabs = ALBUM_TABS.map((tb) => `<button type="button" class="ob-tab ${this.albumTab === tb.id ? 'on' : ''}" data-act="atab" data-tab="${tb.id}" data-focus="atab${tb.id}">${tb.name}</button>`).join('');
     const body = this.albumTab === 'erfolge'
       ? erfolgeHtml(pr, this.profilCode(), this.importFehler)
-      : `${this.albumTab === 'rezept' ? '<p class="ob-sub">Das Rezeptbuch: Unentdeckte Rezepte zeigen nur ihren Hinweis – antippen!</p>' : ''}<div class="ob-kgrid">${albumGrid(pr, this.albumTab)}</div>`;
+      : `${this.albumTab === 'rezept' ? `<p class="ob-sub">${t('Das Rezeptbuch: Unentdeckte Rezepte zeigen nur ihren Hinweis – antippen!')}</p>` : ''}<div class="ob-kgrid">${albumGrid(pr, this.albumTab)}</div>`;
     this.show('album', `
       <div class="ob-panel ob-wide ob-album">
         <div class="ob-shop-head">
-          <div><h2 class="ob-h">Kartenalbum</h2><small class="ob-sub">Set „${WELT_INFO.kartenSet}" · ${z.gefunden}/${KARTEN.length} gefunden · ✦ ${z.glanz} Glanz</small></div>
-          <button type="button" class="ob-go" data-act="albumzu" data-focus="albumzu">Zurück</button>
+          <div><h2 class="ob-h">${t('Kartenalbum')}</h2><small class="ob-sub">${t('Set „{set}" · {n}/{max} gefunden · ✦ {glanz} Glanz', { set: WELT_INFO.kartenSet, n: z.gefunden, max: KARTEN.length, glanz: z.glanz })}</small></div>
+          <button type="button" class="ob-go" data-act="albumzu" data-focus="albumzu">${t('Zurück')}</button>
         </div>
         <div class="ob-tabs">${tabs}</div>
         ${body}
@@ -845,6 +857,7 @@ export class Menus {
       case 'khmehr': this.zeigeRechtliches('koophinweis'); return;
       case 'khab': this.koopAbbrechen(); return;
       case 'setzu': this.closeEinstellungen(); return;
+      case 'setsprache': if (el.dataset.l) this.onSprache(el.dataset.l); return;
       case 'setmusik': this.einstellungen = { ...this.einstellungen, musikStil: el.dataset.m as Einstellungen['musikStil'] }; this.onEinstellungen(this.einstellungen); this.renderEinstellungen(); return;
       case 'setq': this.einstellungen = { ...this.einstellungen, qualitaet: el.dataset.q as Einstellungen['qualitaet'] }; this.onEinstellungen(this.einstellungen); this.renderEinstellungen(); return;
       case 'settoggle': {

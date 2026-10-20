@@ -382,6 +382,16 @@
   .ob-recht-liste { margin: 4px 0 8px; padding-left: 18px; font-size: 10px; line-height: 1.6; color: #e6defc; }
   .ob-recht-liste li { margin: 2px 0; }
   .ob-recht-text { font-size: 11px; line-height: 1.6; color: #e6defc; margin: 6px 0; }
+
+  /* Sprachwahl beim ersten Start */
+  .ob-sprachwahl { z-index: 20; align-items: center; }
+  .ob-sprachwahl .ob-panel { width: min(620px, 94vw); box-sizing: border-box; }
+  .ob-sprache { white-space: nowrap; }
+  .ob-sprachliste { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+  .ob-sprache { min-width: 180px; }
+  .ob-sprache b { display: inline-block; min-width: 2.2em; opacity: 0.7; }
+  .ob-sprache:focus-visible, .ob-sprache:focus { outline: 3px solid var(--yellow); outline-offset: 3px; }
+  @media (max-width: 520px) { .ob-sprachliste { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>

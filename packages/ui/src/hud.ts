@@ -1,5 +1,6 @@
 import { PAD_HINWEIS, pad } from './glyphs.ts';
 import type { Platform } from '@overboom/platform';
+import { t } from '@overboom/data';
 
 export interface HudState {
   /** 0–1 */
@@ -62,29 +63,29 @@ export class Hud {
     this.root.innerHTML = `
       <div class="ob-hurt"></div>
       <div class="ob-left">
-        <div class="ob-title"><b>OVER</b><b class="boom">BOOM</b><span>v0.10.1 · Koop</span></div>
-        <div class="ob-hp" role="meter" aria-label="Leben"><div class="ob-hp-fill"></div><span class="ob-hp-txt">60 / 60</span></div>
-        <div class="ob-xp"><span class="ob-lvl">Lv 1</span><div class="ob-xp-bar"><div class="ob-xp-fill"></div></div></div>
-        <div class="ob-ok" role="meter" aria-label="Overkill"><span>Overkill</span><div class="ob-ok-bar"><div class="ob-ok-fill"></div></div></div>
+        <div class="ob-title"><b>OVER</b><b class="boom">BOOM</b><span>v0.11 · ${t('Koop')}</span></div>
+        <div class="ob-hp" role="meter" aria-label="${t('Leben')}"><div class="ob-hp-fill"></div><span class="ob-hp-txt">60 / 60</span></div>
+        <div class="ob-xp"><span class="ob-lvl">${t('Lv {n}', { n: 1 })}</span><div class="ob-xp-bar"><div class="ob-xp-fill"></div></div></div>
+        <div class="ob-ok" role="meter" aria-label="${t('Overkill')}"><span>${t('Overkill')}</span><div class="ob-ok-bar"><div class="ob-ok-fill"></div></div></div>
         <div class="ob-gems">${GEM_SVG}<span>0</span></div>
         <div class="ob-syn"></div>
       </div>
-      <div class="ob-wave"><div class="ob-wave-n">Welle 1</div><div class="ob-wave-t">0:20</div>
-        <div class="ob-boss hidden"><span>Baron von Bumm</span><div class="ob-boss-bar"><div class="ob-boss-fill"></div></div></div>
+      <div class="ob-wave"><div class="ob-wave-n">${t('Welle {n}', { n: 1 })}</div><div class="ob-wave-t">0:20</div>
+        <div class="ob-boss hidden"><span>${t('Baron von Bumm')}</span><div class="ob-boss-bar"><div class="ob-boss-fill"></div></div></div>
       </div>
       <div class="ob-top-right">
         <span class="ob-fps" aria-live="off">–– FPS</span>
-        <button type="button" class="ob-btn ob-pause" aria-label="Pause">❚❚</button>
-        <button type="button" class="ob-btn ob-full" aria-label="Vollbild">⛶</button>
+        <button type="button" class="ob-btn ob-pause" aria-label="${t('Pause')}">❚❚</button>
+        <button type="button" class="ob-btn ob-full" aria-label="${t('Vollbild')}">⛶</button>
       </div>
       <div class="ob-banner" aria-live="polite"></div>
       <div class="ob-chain"></div>
-      <div class="ob-hint">${controller ? PAD_HINWEIS.spiel : touch ? 'Linker Daumen: laufen · Waffen feuern von selbst · Rechts: <b>Dash</b>' : '<b>WASD</b>: laufen · Waffen feuern von selbst · <b>Leertaste</b>: Dash'}</div>
+      <div class="ob-hint">${controller ? PAD_HINWEIS.spiel : touch ? t('Linker Daumen: laufen · Waffen feuern von selbst · Rechts: <b>Dash</b>') : t('<b>WASD</b>: laufen · Waffen feuern von selbst · <b>Leertaste</b>: Dash')}</div>
       <div class="ob-boomtint"></div>
-      <button type="button" class="ob-boombtn" aria-label="OVERBOOM auslösen">OVER<b>BOOM</b><small>${controller ? pad('Y') : touch ? 'antippen' : 'E / Q'}</small></button>
-      <button type="button" class="ob-dash" aria-label="Dash">
+      <button type="button" class="ob-boombtn" aria-label="${t('OVERBOOM auslösen')}">OVER<b>BOOM</b><small>${controller ? pad('Y') : touch ? t('antippen') : 'E / Q'}</small></button>
+      <button type="button" class="ob-dash" aria-label="${t('Dash')}">
         <svg viewBox="0 0 8 8" width="30" height="30" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M4 0h3v1h-1v1h-1v1h3v1h-1v1h-1v1h-1v1h-1v1h-2v-1h1v-1h1v-1h-3v-1h1v-1h1v-1h1z"></path></svg>
-        <span>Dash</span>
+        <span>${t('Dash')}</span>
       </button>
 `;
     parent.appendChild(this.root);
@@ -156,7 +157,7 @@ export class Hud {
     this.chainShown = count;
     this.chainTimer = 1.4;
     const size = Math.min(2.2, 1 + (count - 3) * 0.06);
-    this.chainEl.textContent = `CHAIN ×${count}!`;
+    this.chainEl.textContent = t('CHAIN ×{n}!', { n: count });
     this.chainEl.style.setProperty('--s', String(size));
     this.chainEl.getAnimations().forEach((a) => a.cancel());
     this.chainEl.animate(
@@ -183,7 +184,7 @@ export class Hud {
     const key = list.map((x) => x.element + x.count).join();
     if (key === this.synKey) return;
     this.synKey = key;
-    this.synEl.innerHTML = list.filter((x) => x.level > 0).map((x) => `<span style="--c:${x.farbe}" title="${x.element}: ${x.count} Waffen">${x.element} ${'I'.repeat(x.level)}</span>`).join('');
+    this.synEl.innerHTML = list.filter((x) => x.level > 0).map((x) => `<span style="--c:${x.farbe}" title="${t('{element}: {n} Waffen', { element: t(x.element), n: x.count })}">${t(x.element)} ${'I'.repeat(x.level)}</span>`).join('');
   }
 
   update(dt: number, s: HudState): void {
@@ -216,15 +217,15 @@ export class Hud {
       L.crystals = s.crystals;
       this.gems.textContent = String(s.crystals);
     }
-    if (s.wave !== L.wave) { L.wave = s.wave; this.waveNum.textContent = s.wave ? `Welle ${s.wave} / 20` : 'Bereit?'; }
+    if (s.wave !== L.wave) { L.wave = s.wave; this.waveNum.textContent = s.wave ? t('Welle {n} / {max}', { n: s.wave, max: 20 }) : t('Bereit?'); }
     const timed = s.phase === 'welle' && Number.isFinite(s.waveTime) && s.waveTime < 3600;
     const sec = timed ? Math.max(0, Math.ceil(s.waveTime)) : -1;
     if (sec !== L.sec || s.phase !== L.phase) {
       L.sec = sec; L.phase = s.phase;
-      this.waveTimer.textContent = timed ? `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}` : s.phase === 'welle' ? 'BOSS' : s.phase === 'pause' ? 'Geschafft' : s.phase === 'shop' ? 'Shop' : '–';
+      this.waveTimer.textContent = timed ? `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}` : s.phase === 'welle' ? t('BOSS') : s.phase === 'pause' ? t('Geschafft') : s.phase === 'shop' ? t('Shop') : '–';
       this.waveTimer.classList.toggle('urgent', (timed && sec <= 5) || (s.phase === 'welle' && !timed));
     }
-    if (s.level !== L.level) { L.level = s.level; this.lvl.textContent = `Lv ${s.level}`; }
+    if (s.level !== L.level) { L.level = s.level; this.lvl.textContent = t('Lv {n}', { n: s.level }); }
     const xp = Math.round(s.xp * 50);
     if (xp !== L.xp) { L.xp = xp; this.xpFill.style.width = `${xp * 2}%`; }
     const boss = s.boss < 0 ? -1 : Math.ceil(s.boss * 100);

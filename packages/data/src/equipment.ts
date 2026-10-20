@@ -1,3 +1,4 @@
+import { t as tr } from './i18n.ts';
 import type { StatKey } from './stats.ts';
 
 /**
@@ -146,12 +147,31 @@ export const SET_BY_ID: Record<string, SetDef> = Object.fromEntries(SETS.map((s)
  * Würfelt ein Ausrüstungsteil. `next` liefert Zufallszahlen in [0, 1) (deterministisch aus der Simulation).
  * setChance: Wahrscheinlichkeit für ein Set-Teil (Bosse: hoch).
  */
+/** deutsche Namen der Set-Teile (der Spielzustand speichert immer die deutschen Namen) */
+const SET_TEILE_DE: string[][] = SETS.map((s) => s.teile.map((t) => t.name));
+
+/** alle Namensbausteine für den Übersetzungskatalog */
+export const AUSRUESTUNG_TEXTE: string[] = [
+  ...Object.values(BASIS).flat().map((b) => b.name),
+  ...Object.values(PRAEFIX),
+  ...SET_TEILE_DE.flat()
+];
+
+/** Anzeigename eines Ausrüstungsteils in der aktuellen Sprache */
+export function ausruestungsName(a: Pick<Ausruestung, 'name'>): string {
+  for (const p of Object.values(PRAEFIX)) {
+    if (a.name.startsWith(p + ' ')) return tr('{praefix} {basis}', { praefix: tr(p), basis: tr(a.name.slice(p.length + 1)) });
+  }
+  return tr(a.name);
+}
+
 export function rollAusruestung(next: () => number, uid: number, welle: number, seltenheit: number, setChance = 0.1, art?: Art): Ausruestung {
   if (next() < setChance) {
     const set = SETS[Math.floor(next() * SETS.length)];
     const pool = art ? set.teile.filter((t) => t.art === art) : set.teile;
     const t = (pool.length ? pool : set.teile)[Math.floor(next() * (pool.length || set.teile.length))];
-    return { uid, art: t.art, name: t.name, seltenheit: 3, werte: { ...t.werte }, set: set.id };
+    const deName = SET_TEILE_DE[SETS.indexOf(set)][set.teile.indexOf(t)] ?? t.name;
+    return { uid, art: t.art, name: deName, seltenheit: 3, werte: { ...t.werte }, set: set.id };
   }
   const arten = Object.keys(BASIS) as Art[];
   const a = art ?? arten[Math.floor(next() * arten.length)];

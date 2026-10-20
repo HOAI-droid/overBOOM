@@ -1,3 +1,4 @@
+import { fusionsGrammatik } from './i18n.ts';
 /**
  * OVERBOOM – Waffen-Datenbasis (Set 1 „Das Große Kawumm")
  *
@@ -274,6 +275,15 @@ export function elemente(w: Pick<Waffe, 'geschoss' | 'ladung'>): Element[] {
 
 /** Fusionsname: Adjektiv (Geschoss) + Element (Ladung) + Nomen (Antrieb) */
 export function fusionsName(geschoss: string, antrieb: string, ladung: string): string {
+  const gr = fusionsGrammatik();
+  if (gr) {
+    // andere Sprachen: Wortbausteine und Reihenfolge aus dem Wörterbuch
+    const n = gr.nomen[antrieb], adj = gr.adj[geschoss], el = gr.element[ladung];
+    if (n && adj && el !== undefined) {
+      const s = gr.muster.replace('{adj}', adj[n.genus]).replace('{element}', el).replace('{nomen}', n.wort).replace(/\s+/g, ' ').trim();
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+  }
   const a = A[antrieb];
   const endung = { m: 'er', f: 'e', n: 'es' }[a.genus];
   const adj = G[geschoss].adj.replace(/e$/, '') + endung;

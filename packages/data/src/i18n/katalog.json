@@ -1,0 +1,9364 @@
+{
+ "texte": [
+  {
+   "de": "Kugel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Klein, schnell, zuverlässig.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nagel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bleibt stecken. In allem.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kartoffel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hart wie eine Kartoffel. Weil es eine ist.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rakete",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mit Rauchfahne und guter Laune.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Granate",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rollt ein Stück, bevor sie Ernst macht.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dynamitstange",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Lunte ist immer zu kurz.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mine",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wartet geduldig. Sehr geduldig.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schleimbatzen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Klebt am Gegner wie Kaugummi am Schuh.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Meteor",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein kleiner Stein mit großem Auftritt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Plasmakugel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Summt leise und macht die Haare hochstehen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Flammenschwall",
+   "quelle": "daten"
+  },
+  {
+   "de": "Heiß. Sehr heiß.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eiszapfen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spitz, kalt und schlecht gelaunt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Seifenblase",
+   "quelle": "daten"
+  },
+  {
+   "de": "Platzt im ungünstigsten Moment – für den Gegner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wasserstrahl",
+   "quelle": "daten"
+  },
+  {
+   "de": "Macht nass. Nass leitet Blitze.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Baseballschläger",
+   "quelle": "daten"
+  },
+  {
+   "de": "Home-Run-Garantie.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kreissäge",
+   "quelle": "daten"
+  },
+  {
+   "de": "Brrrrrrrrrr.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Boxhandschuh",
+   "quelle": "daten"
+  },
+  {
+   "de": "An einer Sprungfeder. Natürlich.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Riesenhammer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Für Nägel zu groß. Für Gegner genau richtig.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bratpfanne",
+   "quelle": "daten"
+  },
+  {
+   "de": "BOINNNG.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wurfaxt",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dreht sich schneller als die Gerüchteküche.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Laserstrahl",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pew. Pew pew.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schallwelle",
+   "quelle": "daten"
+  },
+  {
+   "de": "Musik ist eine Waffe. Diese hier besonders.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mini-Singularität",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bitte nicht in die Tasche stecken.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mini-Drohne",
+   "quelle": "daten"
+  },
+  {
+   "de": "Klein, wendig, nervig.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glühtoast",
+   "quelle": "daten"
+  },
+  {
+   "de": "Frisch aus dem Toastomaten.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Biene",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fleißig im Stechen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ei",
+   "quelle": "daten"
+  },
+  {
+   "de": "Was war zuerst da? Der Schaden.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sporenwolke",
+   "quelle": "daten"
+  },
+  {
+   "de": "Riecht nach Pilzmoor am Montagmorgen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Quietscheente",
+   "quelle": "daten"
+  },
+  {
+   "de": "Quietsch. QUIETSCH.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bestochener Grummelbold",
+   "quelle": "daten"
+  },
+  {
+   "de": "Arbeitet für Kristalle. Grummelt trotzdem.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schneeball",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mit Überraschungskern.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bowlingkugel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Strike!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Banane",
+   "quelle": "daten"
+  },
+  {
+   "de": "Krumm genug, um zurückzukommen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wurfstern",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glitzert kurz, bevor er trifft.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Huhn",
+   "quelle": "daten"
+  },
+  {
+   "de": "Springt 3× und ist darüber sehr empört.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Luftballon",
+   "quelle": "daten"
+  },
+  {
+   "de": "Party! Für alle außer die Gegner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kuckuck",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kommt immer zur vollen Stunde. Oder jetzt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pflaster",
+   "quelle": "daten"
+  },
+  {
+   "de": "Klebt auf Mitspieler. Und auf Gegner – die mögen das nicht.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glücksmünze",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kopf: Schaden. Zahl: mehr Schaden.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Omas Keks",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mit Liebe gebacken. Und mit Rosinen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gerade",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fliegt geradeaus zum nächsten Gegner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fächer",
+   "quelle": "daten"
+  },
+  {
+   "de": "5 Geschosse im Fächer, kurze Reichweite.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bogenwurf",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fliegt im hohen Bogen über Hindernisse.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zielsuchend",
+   "quelle": "daten"
+  },
+  {
+   "de": "Verfolgt sein Ziel, bis es trifft.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zielsuchend im Bogen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Steigt auf und stürzt sich auf das Ziel.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Umlaufbahn",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kreist dauerhaft um den Spieler.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Querschläger",
+   "quelle": "daten"
+  },
+  {
+   "de": "Prallt 4× von Wänden und Gegnern ab.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bumerang",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fliegt raus und kommt zurück – trifft doppelt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spirale",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dreht sich spiralförmig nach außen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dauerstrahl",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sofortiger Strahl, trifft alles in einer Linie.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kegel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Breiter Kegel direkt vor dem Spieler.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Himmelsregen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fällt an zufälligen Stellen vom Himmel.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hüpfend",
+   "quelle": "daten"
+  },
+  {
+   "de": "Springt 3× über den Boden, trifft bei jedem Aufprall.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ablegen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wird am Boden abgelegt und löst bei Kontakt aus.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Turm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Baut einen kleinen Turm, der 8 s selbstständig feuert.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schwarm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Begleiter umschwirren den Spieler und greifen an.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rollen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rollt über den Boden und überfährt alles.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Teleport",
+   "quelle": "daten"
+  },
+  {
+   "de": "Erscheint direkt im Ziel. Kein Ausweichen möglich.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rundumschlag",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schwingt im Halbkreis um den Spieler.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Explosion",
+   "quelle": "daten"
+  },
+  {
+   "de": "Explodiert im Radius 2 m.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kettenblitz",
+   "quelle": "daten"
+  },
+  {
+   "de": "Blitz springt auf bis zu 4 weitere Gegner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Brand",
+   "quelle": "daten"
+  },
+  {
+   "de": "Setzt Gegner 3 s in Brand.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gift",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vergiftet; Gift stapelt sich bis 10×.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Frost",
+   "quelle": "daten"
+  },
+  {
+   "de": "Verlangsamt; nach 3 Treffern gefroren.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nässe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Macht nass – Blitze springen doppelt so weit.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schwerkraft",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zieht Gegner 2 s lang in einen Punkt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Splitter",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zerfällt beim Treffer in 4 kleine Geschosse.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Konfetti",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner tanzen 1,5 s verwirrt herum.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rückstoß",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schleudert Gegner weit zurück.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Säure",
+   "quelle": "daten"
+  },
+  {
+   "de": "Senkt Rüstung um 1 pro Treffer.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Küken",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lässt ein Küken schlüpfen, das 5 s mitkämpft.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ranken",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fesselt Gegner 1 s am Boden.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Magnet",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zieht Gegner und Kristalle zusammen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schall",
+   "quelle": "daten"
+  },
+  {
+   "de": "Betäubt 0,5 s – mit Cartoon-Sternchen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Verhühnerung",
+   "quelle": "daten"
+  },
+  {
+   "de": "Verwandelt Gegner 3 s in harmlose Hühner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "Getroffene Gegner lassen doppelt Kristalle fallen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lava",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hinterlässt eine Lavapfütze für 4 s.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kleister",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner kleben fest und rutschen aus.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lebensraub",
+   "quelle": "daten"
+  },
+  {
+   "de": "Heilt dich um 2 % des Schadens.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Plasma",
+   "quelle": "daten"
+  },
+  {
+   "de": "Durchschlägt Gegner; +10 % Schaden pro Durchschlag.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Heilung",
+   "quelle": "daten"
+  },
+  {
+   "de": "Heilt Mitspieler im Umkreis, kitzelt Gegner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pistole",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der Klassiker. Langweilig – bis man sie fusioniert.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schrotflinte",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fünf Kugeln, ein Problem weniger.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Minigun",
+   "quelle": "daten"
+  },
+  {
+   "de": "Braucht 1 s zum Anlaufen. Dann gibt es kein Halten mehr.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nagelpistole",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nagelt Gegner wortwörtlich fest.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kartoffelkanone",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mehlig kochend, hart treffend.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Präzisionsgewehr",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Schuss, drei Gegner, null Reue.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Raketenwerfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Raketen fliegen im Bogen über Wände.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Granatwerfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hüpft, platzt, verteilt Splitter. Wiederholt sich.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dynamitbündel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Großer Knall, kleine Lunte.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Minenleger",
+   "quelle": "daten"
+  },
+  {
+   "de": "Legt Minen hinter dir ab. Lauf im Kreis!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bombenhagel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Wettervorhersage: bewölkt mit Bomben.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Klebebombe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Klebt erst, knallt dann.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Tesla-Stab",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nass + Blitz = Kettenschock.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Flammenwerfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Grillabend für alle in Reichweite.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eiszapfenwerfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Cool bleiben. Gegner auch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Giftbläser",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hübsche Blasen. Hässliche Wirkung.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wasserwerfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Macht nass. Wartet auf einen Blitz.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lavaschleuder",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bitte nicht barfuß hinterherlaufen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner fliegen weit. Sehr weit.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kettensäge",
+   "quelle": "daten"
+  },
+  {
+   "de": "Brrrrr – und ein bisschen Heilung.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Federfaust",
+   "quelle": "daten"
+  },
+  {
+   "de": "BOING! Mit Sternchen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kawumm-Hammer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Jeder Schlag ist ein Erdbeben mit Knall.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Omas Lieblingswaffe. BOINNNG.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kommt immer zurück. Wie ein treuer Hund.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Laserpistole",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pew pew. Durch alles durch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Plasmaspirale",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hübsch anzusehen, schlimm getroffen zu werden.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Stirnlaser",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eine Stirnlampe mit Ambitionen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kampf-Kazoo",
+   "quelle": "daten"
+  },
+  {
+   "de": "Klingt furchtbar. Wirkt furchtbar gut.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schwarzes-Loch-Werfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Saugt alles ein. Außer Langeweile.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Magnetkanone",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bringt Gegner zusammen. Für Gruppenfotos und Explosionen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kampfdrohne",
+   "quelle": "daten"
+  },
+  {
+   "de": "Surrt um dich herum und hält dir den Rücken frei.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Geschützturm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Steht rum und schießt. Wie ein Grummelbold, nur nützlich.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Tesla-Turm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Turm voller schlechter Nachrichten.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Toaster-Turm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein umprogrammierter Toastomat. Er ist noch etwas beleidigt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Orbitalschlag",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Satellit, der dich mag. Gegner weniger.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rasenmäher-Bot",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mäht alles. Auch Dinge, die kein Rasen sind.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bienenstock",
+   "quelle": "daten"
+  },
+  {
+   "de": "Summ summ, aua aua.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kükenkorb",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eier hüpfen, Küken schlüpfen, Gegner flüchten.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pilzbeutel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lässt überall Pilze sprießen. Die halten Gegner fest.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entenarmee",
+   "quelle": "daten"
+  },
+  {
+   "de": "Quietsch. Quietsch. QUIETSCH.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Grummel-Pfeife",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ruft einen bestochenen Grummelbold, der für DICH Kristalle klaut.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schleimzucht",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dein eigener Glibber. Er hat dich lieb.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schneeballschleuder",
+   "quelle": "daten"
+  },
+  {
+   "de": "Winter is coming. Jetzt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner sind die Kegel.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bananarang",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kommt zurück. Gegner rutschen aus.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wurfsterne",
+   "quelle": "daten"
+  },
+  {
+   "de": "Funkeln. Stechen. Ätzen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Faule Eier",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schon drei Wochen alt. Die Wirkung ist enorm.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wasserbombe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sommer, Sonne, Kettenblitz.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hühnerkanone",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hühner hüpfen 3× und explodieren bei jedem Aufprall.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Partykanone",
+   "quelle": "daten"
+  },
+  {
+   "de": "Überraschungsparty! Niemand ist überrascht, alle sind verwirrt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sternschnuppenstab",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wünsch dir was. Zum Beispiel: weniger Gegner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Huhnifizierer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Verwandelt Gegner in Hühner. Die Hühnerkanone freut sich.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dudelsack des Grauens",
+   "quelle": "daten"
+  },
+  {
+   "de": "Klingt wie ein Pilzling, der in eine Tröte niest.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Teleport-Toaster",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der Toast erscheint direkt im Gegner. Frühstück ist serviert.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pflasterkanone",
+   "quelle": "daten"
+  },
+  {
+   "de": "Heilt Mitspieler. Gegner bekommen ein schlechtes Gewissen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schildblasen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Blasen kreisen um dich und schubsen Gegner weg.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glücksmünzen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Klimpern im Kreis. Mehr Kristalle für alle.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kriegstrommel",
+   "quelle": "daten"
+  },
+  {
+   "de": "BUMM-BUMM-BUMM. Mitspieler in der Nähe feuern 15 % schneller.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kuckucksuhr",
+   "quelle": "daten"
+  },
+  {
+   "de": "KUCKUCK! Die Zeit friert für Gegner 1 s ein.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Omas Keksdose",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kekse regnen vom Himmel und heilen alle in der Nähe.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Grummelbold",
+   "quelle": "daten"
+  },
+  {
+   "de": "Grummel-Fraktion",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Grmpf. Meins!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Grüner Kobold mit verbeultem Kochtopf als Helm. Grummelt beim Laufen und kommt nie allein.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bomben-Kröte",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sumpfbande",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Quaaak … KAWUMM!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dicke lila Kröte mit Glupschaugen und Bombe auf dem Rücken. Springt dir vor die Füße – und explodiert auch, wenn man sie erwischt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Toastomat",
+   "quelle": "daten"
+  },
+  {
+   "de": "Blechbrut",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Frühstück ist serviert!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wütender Toaster auf Stelzenbeinen mit roten LED-Augenbrauen. Hält Abstand und schießt glühenden Toast.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kampfhuhn",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hühner-Kult",
+   "quelle": "daten"
+  },
+  {
+   "de": "„BAGAWK!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Huhn mit Stirnband und sehr viel Wut. Scharrt kurz – und stürmt dann los wie ein gefiederter Torpedo.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vogelscheuche Stroh-Udo",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ich hab ein Herz aus Stroh – und das schlägt für meine Truppe!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hält Abstand und heilt mit wedelnden Armen alle Gegner in der Nähe. Zuerst ausschalten!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Funkenkobold",
+   "quelle": "daten"
+  },
+  {
+   "de": "Funkenbande",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Bzzzt! Hihi!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Winzig, flink, statisch aufgeladen. Kommt immer im Schwarm und schießt kleine Funken.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Tesla-Ritter",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Mein Schild ist geladen – im wahrsten Sinne!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Trägt einen Spulenschild. Treffer von vorne prallen fast wirkungslos ab – also: von der Seite oder mit Explosionen!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schrottgolem",
+   "quelle": "daten"
+  },
+  {
+   "de": "„KLONK. KLONK. KLONK.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein wandelnder Schrotthaufen mit Kühlschranktür als Brust. Langsam, aber zäh wie Omas Schnitzel.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Minenbot",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Piep. Hier liegt was. Piep.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rollt herum und verteilt blinkende Minen. Nicht drauftreten – oder vorher abschießen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pilzling",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Pfff. Riechst du das? Das bin ich.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kleiner Stinkepilz mit roter Kappe und Schmollmund. Hinterlässt Giftwolken, wo er langläuft.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schleimi",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Blubb. Blubb blubb.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein grimmiger Glibberklops. Platzt man ihn, werden es zwei kleine. Die sind noch grimmiger.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schleimchen",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Blubb!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Halber Schleimi, doppelte Laune.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lavaklops",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glutgesindel",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Heiß, heißer, ich!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein brodelnder Klumpen mit Grummelgesicht. Hinterlässt eine glühende Spur – nicht reintreten!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kawumm-Kultist",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Oh großes Kawumm, schick uns Verstärkung!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Verehrt das Große Kawumm. Hält Abstand und öffnet Portale, aus denen Grummelbolde purzeln.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schneemann Fritz",
+   "quelle": "daten"
+  },
+  {
+   "de": "Frostfrieder",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ich bin cool. Eiskalt sogar.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wirft pappige Schneebälle, die dich verlangsamen. Möhrennase gerümpft, Kohleaugen zusammengekniffen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bombenpinguin",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Wiiieeee – KAWUMM!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rutscht auf dem Bauch heran und explodiert beim Aufprall. Nimmt Anlauf: kurz Zeit zum Ausweichen!",
+   "quelle": "daten"
+  },
+  {
+   "de": "König Gockel der Laute",
+   "quelle": "daten"
+  },
+  {
+   "de": "„KIKERIKIIIII! Auf die Knie, Federlose!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Riesiger Hahn mit Goldkrone und Umhang. Stürmt los, schleudert Federn im Kreis und ruft seine Kampfhühner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Toastomat 3000",
+   "quelle": "daten"
+  },
+  {
+   "de": "„FRÜHSTÜCK. FÜR. ALLE.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der große Bruder aller Toastomaten. Feuert Toast-Salven im Kreis, wirft Brotbomben und ruft Minenbots.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pilzkönigin Morchella",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ihr seid nur Dünger für mein Reich!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewaltiger Pilz mit Spitzenkragen und Schmollmund. Lässt Giftsporen regnen und ruft Schleimis.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Baron von Bumm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bummburg",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ich bin nicht dick, ich bin explosiv gebaut!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Runder Bösewicht mit Zylinder, Monokel und Schnurrbart. Auf dem Hut brennt eine Bombe. Hat das Große Kawumm gezündet und ist sehr stolz darauf.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mehr Leben.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Regeneration",
+   "quelle": "daten"
+  },
+  {
+   "de": "Heilt 0,1 Leben pro Sekunde und Punkt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Chance, bei einem Treffer 1 Leben zu heilen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mehr Schaden mit allen Waffen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "Alle Waffen feuern schneller.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "Chance auf doppelten Schaden.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Reichweite",
+   "quelle": "daten"
+  },
+  {
+   "de": "Waffen zielen weiter.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rüstung",
+   "quelle": "daten"
+  },
+  {
+   "de": "Weniger Schaden durch Treffer.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ausweichen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Chance, einem Treffer komplett zu entgehen (max. 60 %).",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schneller laufen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bessere Angebote im Shop und beim Level-Up.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ernte",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bonus-Kristalle am Ende jeder Welle.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Explosionsradius",
+   "quelle": "daten"
+  },
+  {
+   "de": "Größere Explosionen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sammelradius",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kristalle fliegen dir von weiter weg zu.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewöhnlich",
+   "quelle": "daten"
+  },
+  {
+   "de": "Selten",
+   "quelle": "daten"
+  },
+  {
+   "de": "Episch",
+   "quelle": "daten"
+  },
+  {
+   "de": "Legendär",
+   "quelle": "daten"
+  },
+  {
+   "de": "OVERBOOM",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dicker Pelz",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kekspause",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vampirzähne",
+   "quelle": "daten"
+  },
+  {
+   "de": "Muckis",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zappelfinger",
+   "quelle": "daten"
+  },
+  {
+   "de": "Adlerauge",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fernglas",
+   "quelle": "daten"
+  },
+  {
+   "de": "Topfdeckel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Flinke Füße",
+   "quelle": "daten"
+  },
+  {
+   "de": "Turbo-Socken",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hufeisen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kristallsieb",
+   "quelle": "daten"
+  },
+  {
+   "de": "Extra-Schießpulver",
+   "quelle": "daten"
+  },
+  {
+   "de": "Magnetschuhe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Omas Strickschal",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kratzt, wärmt, heilt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kaffeetasse",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Hände zittern. Der Abzug auch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hühnerfeder",
+   "quelle": "daten"
+  },
+  {
+   "de": "Federleicht – fast wie ein Huhn.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rostiger Topfdeckel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Schild ist ein Schild.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glückskeks",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Du wirst bald etwas Großes sprengen.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kristallschaufel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wer schaufelt, der erntet.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Magnet im Socken",
+   "quelle": "daten"
+  },
+  {
+   "de": "Klebt am Fuß. Kristalle auch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fernrohr",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kapitän sieht Gegner. Kapitän schießt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lupe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Findet Schwachstellen. Und Krümel.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Muskelshake",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schmeckt nach Turnhalle.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vampirgebiss",
+   "quelle": "daten"
+  },
+  {
+   "de": "Aus dem Scherzartikelladen. Funktioniert trotzdem.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Turbo-Gummistiefel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Quietschen bei Höchstgeschwindigkeit.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pilzsuppe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Aus dem Pilzmoor. Riecht auch so.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wackelpudding",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wackelt sich aus jeder Gefahr.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Herzkissen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Flauschig und lebensverlängernd.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dynamitweste",
+   "quelle": "daten"
+  },
+  {
+   "de": "Du explodierst, wenn du getroffen wirst. Das ist gut so.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Toaster-Batterie",
+   "quelle": "daten"
+  },
+  {
+   "de": "Aus einem Toastomaten geklaut. Er will sie zurück.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bombengürtel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Modisch und explosiv.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Barons Monokel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der Baron sucht es schon überall.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Grummel-Kochtopf",
+   "quelle": "daten"
+  },
+  {
+   "de": "Verbeult, aber bewährt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sternenstaub",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glitzert. Trifft. Glitzert mehr.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Goldenes Huhn",
+   "quelle": "daten"
+  },
+  {
+   "de": "Legt keine Eier. Legt Gegner um.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kawumm-Kern",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Splitter vom Großen Kawumm. Brummt leise.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kristallkrone",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schwer auf dem Kopf, leicht im Geldbeutel.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Heugabel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Drei Zinken, null Zweifel.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Melkschemel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zum Draufstellen. Und Werfen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Frische Eier",
+   "quelle": "daten"
+  },
+  {
+   "de": "Proteine! Gackernde Proteine.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vogelfutter",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lockt Kristalle an. Und Tauben.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Strohhut",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schützt vor Sonne und Fragen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kuhglocke",
+   "quelle": "daten"
+  },
+  {
+   "de": "BIMM. Mehr Kristalle, mehr Lärm.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Traktorbatterie",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zieht den Strom aus allem.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vogelscheuchen-Hut",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner zögern. Kurz.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hahnenkamm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Steht dir. Wirklich.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Federkissen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Weich fallen, hart zurückschlagen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Goldenes Ei",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bitte nicht reinbeißen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Krone von König Gockel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein bisschen verbogen. Immer noch majestätisch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nudelholz",
+   "quelle": "daten"
+  },
+  {
+   "de": "Omas Argument in jeder Diskussion.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pfefferstreuer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hatschi! Gegner sind kurz abgelenkt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Chilischote",
+   "quelle": "daten"
+  },
+  {
+   "de": "Scharf. Sehr scharf. Feuer im Bauch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Knoblauchzehe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hält Vampire fern. Und Freunde.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kamillentee",
+   "quelle": "daten"
+  },
+  {
+   "de": "Beruhigt die Nerven, heilt die Kratzer.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Honigglas",
+   "quelle": "daten"
+  },
+  {
+   "de": "Klebrig süß, heilsam.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schnellkochtopf",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dampf ablassen? Niemals!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Espressomaschine",
+   "quelle": "daten"
+  },
+  {
+   "de": "Doppelter Espresso, dreifaches Tempo.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Küchenwecker",
+   "quelle": "daten"
+  },
+  {
+   "de": "Tick, tick … RIIING.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Omas Rezeptbuch",
+   "quelle": "daten"
+  },
+  {
+   "de": "Seite 42: Granaten-Gugelhupf.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Popcornmaschine",
+   "quelle": "daten"
+  },
+  {
+   "de": "Plopp plopp plopp – KAWUMM.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Unheimlich knuspriges Brot",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vom Toastomaten. Er weiß, dass du es hast.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Chefkoch-Mütze",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hier wird scharf gekocht.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schraubenzieher",
+   "quelle": "daten"
+  },
+  {
+   "de": "Für Schrauben. Und Gegner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Klebeband",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hält alles zusammen. Auch dich.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Taschenlampe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sieht Gegner früher.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rostiges Zahnrad",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dreht sich noch. Irgendwie.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Magnetspule",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kristalle können nicht widerstehen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lötkolben",
+   "quelle": "daten"
+  },
+  {
+   "de": "Heiß und präzise.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kleine Tesla-Spule",
+   "quelle": "daten"
+  },
+  {
+   "de": "Knistert beruhigend.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schutzbrille",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sicherheit geht vor. Dann Kawumm.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Werkzeuggürtel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Für jedes Problem ein Schraubenschlüssel.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Roboterarm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Greift zu. Präzise. Unermüdlich.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Blechpanzer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Scheppert beim Laufen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Atomuhr",
+   "quelle": "daten"
+  },
+  {
+   "de": "Auf die Nanosekunde pünktlich – zum Feuern.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Chip des Toastomat 3000",
+   "quelle": "daten"
+  },
+  {
+   "de": "Enthält 3000 Frühstücksrezepte und eine Zielerfassung.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Flummi",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hüpft. Du auch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wasserpistole",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spritzig. Erfrischend. Nutzlos? Nein!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Jo-Jo",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kommt immer zurück. Wie die Gegner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Seifenblasen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ablenkung! Hübsche Ablenkung!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Luftschlangen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Party in der Hosentasche.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Trillerpfeife",
+   "quelle": "daten"
+  },
+  {
+   "de": "TRRRRT! Alle mal herhören!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Brummkreisel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dreht durch. Du auch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gold-Kazoo",
+   "quelle": "daten"
+  },
+  {
+   "de": "Klingt immer noch furchtbar.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Konfettikanone",
+   "quelle": "daten"
+  },
+  {
+   "de": "Feiert jeden Treffer.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Scherzkeks-Box",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der Witz explodiert. Wortwörtlich.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Riesenteddy",
+   "quelle": "daten"
+  },
+  {
+   "de": "Knuddelig gepanzert.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zauberwürfel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nie gelöst. Trotzdem magisch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glückssocken",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ungewaschen seit dem Großen Kawumm.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Stirnband",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sieht sportlich aus. Hilft auch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Regenmantel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bleibt trocken. Blitze mögen das.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hosenträger",
+   "quelle": "daten"
+  },
+  {
+   "de": "Halten alles oben. Moral eingeschlossen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lederjacke",
+   "quelle": "daten"
+  },
+  {
+   "de": "Cool und zäh.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ninja-Schal",
+   "quelle": "daten"
+  },
+  {
+   "de": "Weht dramatisch, auch ohne Wind.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Superhelden-Umhang",
+   "quelle": "daten"
+  },
+  {
+   "de": "Flattert heroisch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sonnenbrille",
+   "quelle": "daten"
+  },
+  {
+   "de": "Explosionen schaut man nicht an. Man geht weg.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pilzmantel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Riecht muffig, schützt aber.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ritterrüstung",
+   "quelle": "daten"
+  },
+  {
+   "de": "Echt alt, echt schwer.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Tanzschuhe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Cha-Cha-Cha zwischen den Explosionen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Frack des Barons",
+   "quelle": "daten"
+  },
+  {
+   "de": "Etwas zu weit. Er ist explosiv gebaut.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glückskäfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sieben Punkte, sieben Mal Glück.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Haus-Schnecke",
+   "quelle": "daten"
+  },
+  {
+   "de": "Langsam, aber gepanzert.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Papagei",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ruft „Achtung!\" Meistens rechtzeitig.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Igel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Stachelig. Pikst zurück.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eule",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sieht alles. Auch nachts.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hamsterrad",
+   "quelle": "daten"
+  },
+  {
+   "de": "Läuft und läuft und läuft.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sprungfrosch",
+   "quelle": "daten"
+  },
+  {
+   "de": "Springt weg. Du auch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Honigbiene",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fleißig. Sticht zurück.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Drachenei",
+   "quelle": "daten"
+  },
+  {
+   "de": "Brütet. Wird warm. Sehr warm.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Phönixfeder",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glüht leicht. Heilt sanft.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Taschenkrake",
+   "quelle": "daten"
+  },
+  {
+   "de": "Acht Arme, acht Waffen?",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kristallsplitter",
+   "quelle": "daten"
+  },
+  {
+   "de": "Klein, aber funkelnd.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wünschelrute",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zuckt bei Kristallen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Runenstein",
+   "quelle": "daten"
+  },
+  {
+   "de": "Steht „Kawumm\" drauf. Auf Altkrawummisch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kristallkugel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zeigt die Zukunft. Sie ist laut.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spielzeug-Zauberstab",
+   "quelle": "daten"
+  },
+  {
+   "de": "Funktioniert erschreckend gut.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mondstaub",
+   "quelle": "daten"
+  },
+  {
+   "de": "Leicht wie nichts, schwer zu fangen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Heiltrank",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schmeckt nach Erdbeere und Rost.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kristallherz",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schlägt im Rhythmus der Explosionen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Chaos-Rune",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mal so, mal so. Meistens so.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Splitter des Großen Kawumm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Brummt. Glüht. Will raus.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Grummelzahn",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Hauer. Er grummelt noch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Toastkrümel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vom Toastomaten. Knuspriger Mut.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Krötenschleim",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glitschig. Gegner rutschen ab.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Funkenkugel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kitzelt beim Anfassen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pilzsporen-Säckchen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Riecht nach Abenteuer. Und Moder.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lavastein",
+   "quelle": "daten"
+  },
+  {
+   "de": "Noch warm.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ewige Schneeflocke",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schmilzt nie. Kühlt immer.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Splitter vom Tesla-Schild",
+   "quelle": "daten"
+  },
+  {
+   "de": "Leitet Blitze. Und Treffer ab.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kultisten-Kutte",
+   "quelle": "daten"
+  },
+  {
+   "de": "Riecht nach Räucherstäbchen und Pulver.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pinguinflosse",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rutscht wie geschmiert.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schleim im Glas",
+   "quelle": "daten"
+  },
+  {
+   "de": "Blubbert. Lebt. Mag dich.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Golemkern",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schwer wie ein Kühlschrank. Weil es einer war.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Morchellas Krone",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Pilzkönigin vermisst sie.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Laufreiniger",
+   "quelle": "daten"
+  },
+  {
+   "de": "Saubere Läufe treffen besser.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zielfernrohr",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Auge zu, und …",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schalldämpfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pssst. Pew.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Extra-Magazin",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mehr Munition, mehr Spaß.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schießpulverfass",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nicht rauchen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Panzerbrechende Munition",
+   "quelle": "daten"
+  },
+  {
+   "de": "Geht durch Blech wie durch Butter.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schnellabzug",
+   "quelle": "daten"
+  },
+  {
+   "de": "Finger am Abzug, Kopf woanders.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rückstoßdämpfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ruhige Hand, große Wirkung.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gold-Waffenöl",
+   "quelle": "daten"
+  },
+  {
+   "de": "Alles flutscht.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Munitionsgürtel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rambo wäre neidisch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pflasterpackung",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mit Dinos drauf.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Knieschoner",
+   "quelle": "daten"
+  },
+  {
+   "de": "Für Hechtsprünge.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Helmlampe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Licht an, Kopf geschützt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Erste-Hilfe-Koffer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Von Oma Granate gepackt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schwimmreifen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hält dich über Wasser. Und Lava? Nein.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Airbag",
+   "quelle": "daten"
+  },
+  {
+   "de": "PUFF! Gerettet.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vitamintabletten",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eine am Tag hält den Grummel fern.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schutzengel-Figur",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wacht über dich. Meistens.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Taschen-Whirlpool",
+   "quelle": "daten"
+  },
+  {
+   "de": "Blubbern heilt alles.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Unzerstörbare Thermoskanne",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hat das Große Kawumm überlebt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rollschuhe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bremsen ist überbewertet.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Energieriegel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schoko-Kawumm-Geschmack.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Taschen-Windrad",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rückenwind auf Knopfdruck.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Blitzschuhe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Funkeln bei jedem Schritt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mini-Raketenrucksack",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gibt Schub. Und Rauchzeichen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zeitlupen-Uhr",
+   "quelle": "daten"
+  },
+  {
+   "de": "Alles wird langsam – außer dir.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hufnagel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fast so gut wie ein Hufeisen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sparschwein",
+   "quelle": "daten"
+  },
+  {
+   "de": "Grunzt bei jeder Münze.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schatzkarte",
+   "quelle": "daten"
+  },
+  {
+   "de": "X markiert die Stelle. Überall.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vierblättriges Kleeblatt",
+   "quelle": "daten"
+  },
+  {
+   "de": "Selten. Wie dein Glück bisher.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kristallmühle",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mahlt Kristalle aus der Luft.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Goldzahn",
+   "quelle": "daten"
+  },
+  {
+   "de": "Grinsen mit Wert.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Füllhorn",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hört nie auf. Wirklich nie.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glaskanone",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mächtig. Zerbrechlich. Wie Opas Vase.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Berserkertrank",
+   "quelle": "daten"
+  },
+  {
+   "de": "GRAAAAH! (schmeckt nach Himbeere)",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pokerface-Maske",
+   "quelle": "daten"
+  },
+  {
+   "de": "Alles oder nichts.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wackelkontakt",
+   "quelle": "daten"
+  },
+  {
+   "de": "Manchmal geht’s, dann richtig.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Krawummischer Teufelspakt",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kleingedrucktes nicht gelesen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dynamitkuchen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mit Lunte statt Kerze.",
+   "quelle": "daten"
+  },
+  {
+   "de": "HUHNAGEDDON",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Riesenhuhn schwebt über dir und legt explodierende Eier. Es ist sehr stolz.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dreimal dasselbe Federvieh …",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kawummageddon",
+   "quelle": "daten"
+  },
+  {
+   "de": "Jede Explosion zerfällt in drei weitere. Nachbarn ziehen weg.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Alles, was im Explosiv-Regal knallt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Donnertoaster",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Toaster-Turm, der elektrischen Toast verschießt. Frühstück mit Spannung.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Drei Toaster-Sachen und ein bisschen Strom.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schwarzes Buffet",
+   "quelle": "daten"
+  },
+  {
+   "de": "Saugt alles zusammen – und lässt es dann sehr laut wieder los.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Was anzieht, was zieht und was rollt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Omas Geheimrezept",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kekse fallen vom Himmel, betäuben Gegner mit einem BOINNNG und heilen dich.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Was Oma in der Küche hat – und im Erste-Hilfe-Kasten.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Quietschendes Inferno",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sechs brennende Quietscheenten. Niemand hat danach gefragt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Enten, Feuer und Musik.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Frostfeuerwerk",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eiskalte Sternschnuppen mit Konfetti. Gegner frieren – und tanzen dabei.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eis, Party und ein Wunsch an die Sterne.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kettensägen-Karussell",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sechs Kreissägen kreisen um dich. Kuscheln ist gerade schwierig.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Was sägt, was kreist und was mäht.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bienenkönigin",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Königin schickt ihren Hofstaat. Vergiftete Gegner hinterlassen Giftwolken.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Summen, Blubbern und Sporen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gackerndes Chaos",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Strahl, der Gegner in Hühner verwandelt – und Küken schlüpfen lässt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Alles, was gackert, piepst oder Hühner macht.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pommesbude",
+   "quelle": "daten"
+  },
+  {
+   "de": "Frittierte Kartoffeln fliegen im Bogen und hinterlassen brennendes Fett.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kartoffeln, Feuer und eine Pfanne.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewitterkapelle",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sechs Noten kreisen um dich und schlagen Blitze in den Takt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Trommel, Dudelsack – und ein Stab unter Strom.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eiszeit-Schneeballschlacht",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schneebälle hageln vom Himmel. Manchmal friert gleich die ganze Nachbarschaft ein.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schnee, Wasser und Eis – alles, was kalt ist und fliegt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Goldesel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zielsuchende Goldmünzen. Getroffene Gegner spucken manchmal Kristalle aus.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Münzen, Kartoffeln und eine Grummel-Pfeife.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bowling-Apokalypse",
+   "quelle": "daten"
+  },
+  {
+   "de": "Explodierende Bowlingkugeln. Jeder Treffer ein Strike – und noch einer.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kugel, Party und Dynamit.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Frühstücksapokalypse",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glühende Toastscheiben regnen vom Himmel und hinterlassen Brandflecken.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zwei Toaster und eine Sternschnuppe.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Drohnenstaffel Bumm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sechs Kampfdrohnen, deren Treffer kleine Explosionen auslösen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Drohne, Turm und eine Menge Munition.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Laser-Disco",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Party-Laser, der Gegner verwirrt tanzen lässt – und manchmal platzen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Laser, Party und ein Kazoo.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schleimlawine",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rollende Schleimkugeln kleben Gegner fest und blubbern explosiv.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Alles, was klebt und schleimt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vulkanausbruch",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glühende Brocken regnen herab und lassen Lava zurück.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lava, Bomben und Flammen – der Lavakessel zum Mitnehmen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Stinkende Brut",
+   "quelle": "daten"
+  },
+  {
+   "de": "Faule Eier, aus denen giftige Küken schlüpfen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eier, Küken und ein Giftbläser.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zeitgewitter",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein teleportierender Kuckuck, der zur vollen Stunde Blitze ruft.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eine Uhr, ein Satellit und ein Turm unter Strom.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Magnetischer Mahlstrom",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spiralige Magnetkugeln ziehen Gegner zusammen und knallen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Magnet, Spirale und Minen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Holzfäller-Hurrikan",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bumerang-Äxte, die beim Treffer in Splitter und Funken zerfallen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Axt, Säge und Schläger.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lazarett-Luftbrücke",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pflaster und Kekse regnen auf dich und deine Freunde – Gegner bekommen trotzdem eins drauf.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pflaster, Kekse und Blasen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Tiefkühltruhe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein eiskalter Wasserstrahl, der ganze Gruppen schockgefriert.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kuckuck, Schnee und Wasser.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sternenhimmel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Drei Plasma-Sterne pro Schuss, die sich ihr Ziel selbst suchen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sterne, Sternschnuppen und ein sehr genaues Gewehr.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pilz-Rave",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Kegel aus Sporen und Konfetti. Die Gegner tanzen, bis ihnen schlecht wird.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pilze, Party und Dudelsack.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nagelbombe deluxe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hüpfende Nagelbündel, die in alle Richtungen zerplatzen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nägel, Granaten und Kleber.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ententeich-Tsunami",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sechs nasse Gummienten – und nasse Gegner leiten Blitze besonders gut.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Enten und ganz viel Wasser.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Grummel-Aufstand",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sechs bekehrte Grummelbolde stürmen mit Sprengstoff los.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pfeife, Hammer und Faust.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Todesblick",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Plasmastrahl, der gelegentlich einen Blitz hinterherschickt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Drei Arten, sehr genau zu zielen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Honigfalle",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sechs Bienen kleben Gegner mit Honig fest. Süß für dich, klebrig für sie.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bienen, Schleim und Kekse.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Teppichbombardement",
+   "quelle": "daten"
+  },
+  {
+   "de": "Raketen regnen in Dreiergruppen herab und zerfallen in Mini-Explosionen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vom Himmel, aus dem Himmel, in den Himmel.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Minenfeld-Rasenmäher",
+   "quelle": "daten"
+  },
+  {
+   "de": "Legt Minen, die in Kettenexplosionen hochgehen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Minen, Mäher und Turm.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kopf oder Kawumm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Fächer aus Glücksmünzen. Kopf: Kristalle. Zahl: auch Kristalle.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Münzen, Sterne und Schrot.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lawine",
+   "quelle": "daten"
+  },
+  {
+   "de": "Riesige rollende Schneebälle, die alles einfrieren, was im Weg steht.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eis, Schläger und Kugel.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Trommelfeuer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Drei Schallnoten pro Schlag. Taub wird hier jeder.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Trommel, Minigun und Kazoo.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Tesla-Spule",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sechs Blitzkugeln kreisen um dich und springen doppelt so oft weiter.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Turm, Magnet und Spirale – alles unter Strom.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hühnerstall-Revolte",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Schwarm Kampfhühner, aus deren Treffern Küken schlüpfen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Küken, Hühner und ein Grummel-Pfiff.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gackerfeld",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bauernhof-Insel mit Heuballen und Scheunen. Hier verehrt ein Hühner-Kult seinen König Gockel. Perfekt zum Einsteigen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Heuballen brennen lichterloh, wenn man sie anschießt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Funkenschlund",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eine zerklüftete Schlucht voller Tesla-Türme. Die Funkenbande lädt sich hier täglich auf.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Tesla-Platten laden sich auf (Leuchten!) und entladen sich – nicht draufstehen!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rostgrat",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schrottberge und rauchende Fabriken. Die Blechbrut baut hier Toaster, die Toaster bauen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schrotthaufen versperren den Weg – und explosive Ölfässer stehen überall.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pilzmoor",
+   "quelle": "daten"
+  },
+  {
+   "de": "Riesenpilze, Nebel und blubbernde Tümpel. Hier herrscht Pilzkönigin Morchella über die Sumpfbande.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gifttümpel verlangsamen und kratzen langsam am Leben.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lavakessel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein brodelnder Vulkan. Das Glutgesindel tanzt um Lavaströme und betet das Große Kawumm an.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lava verbrennt alles, was hineintritt – dich auch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Frostfass",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eiskristalle, Schneestürme und glatter Boden. Die Frostfrieder sind kühl – aber nicht freundlich.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eisflächen sind spiegelglatt: Bremsen dauert.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bumm-Garde",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Festung im Zentrum, Sitz von Baron von Bumm. Hier kämpfen alle Banden gemeinsam gegen dich.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lavagräben und Pulverfässer – die Festung ist ein Pulverfass.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kawumm-Kid",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der Neuling",
+   "quelle": "daten"
+  },
+  {
+   "de": "Frisch aus der Kawumm-Jäger-Akademie. Kann alles ein bisschen, nichts so richtig – aber mit Begeisterung.",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ich hab den Kurs mit Auszeichnung bestanden. Also, fast.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der Pyromane",
+   "quelle": "daten"
+  },
+  {
+   "de": "Brandstifter mit Diplom",
+   "quelle": "daten"
+  },
+  {
+   "de": "Liebt alles, was knallt. Im Shop gibt es für ihn nur Explosiv- und Feuerwaffen – dafür doppelter Radius.",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Mehr Kawumm! MEHR!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Ingenieurin",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schraubt an allem",
+   "quelle": "daten"
+  },
+  {
+   "de": "Baut zwei Türme gleichzeitig, und ihre Türme treffen härter. Nahkampf ist nicht ihr Ding.",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Das ist kein Turm. Das ist eine Lebenseinstellung.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der Glückspilz",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hat immer Schwein",
+   "quelle": "daten"
+  },
+  {
+   "de": "Startet mit einer zufälligen Waffe, hat viel Glück und würfelt im Shop einmal gratis neu.",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ich hab ein gutes Gefühl. Ich hab immer ein gutes Gefühl.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Oma Granate",
+   "quelle": "daten"
+  },
+  {
+   "de": "Strickt Splittergranaten",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wirft Granaten wie früher Wollknäuel und verteilt alle paar Sekunden Kekse. Etwas langsam auf den Beinen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Kindchen, iss was. Und dann duck dich.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bauer Bruno",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der Hühnerflüsterer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Seine Hühner gehorchen ihm aufs Wort. Gacker-Waffen sind stärker, und Küken laufen ihm ständig nach.",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ruhig, Berta. Ziel. Und … GACKER!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Blitz-Bettina",
+   "quelle": "daten"
+  },
+  {
+   "de": "Steht unter Strom",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ihre Kettenblitze springen doppelt so weit. Haare stehen immer zu Berge, Nerven auch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Bzzt! Entschuldigung. Passiert mir dauernd.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Frost-Fritz",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hat immer kalte Füße",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner frieren bei ihm schon nach zwei Frost-Treffern ein. Trägt drei Schals übereinander.",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Brrr. Für euch gleich noch mehr Brrr.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Giftmischerin Gerda",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kocht nicht für Gäste",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ihr Gift wirkt deutlich stärker. Hält sich gern auf Abstand und lächelt dabei unheimlich freundlich.",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Probier mal. Ist nur ein bisschen grün.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Panzer-Paule",
+   "quelle": "daten"
+  },
+  {
+   "de": "Läuft durch Wände (meistens)",
+   "quelle": "daten"
+  },
+  {
+   "de": "Viel Leben, viel Rüstung, Nahkampfwaffen +50 %. Dafür so schnell wie ein Kühlschrank.",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ausweichen ist was für Leute ohne Rüstung.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sprintina Flitz",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schneller als ihr Schatten",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rennt, dasht, rennt. Ihr Dash lädt schneller und schubst Gegner weg. Wenig Leben – nicht getroffen werden!",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Fang mich doch! Nein, wirklich, versuch es.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Prof. Fusionski",
+   "quelle": "daten"
+  },
+  {
+   "de": "Erfinder des Ambosses",
+   "quelle": "daten"
+  },
+  {
+   "de": "Verschmilzt Waffen gratis, und seine Fusionen sind stärker. Hat sich dabei leider die Augenbrauen weggesprengt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Wissenschaft! Und ein bisschen Kawumm.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Grubert der Bekehrte",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ex-Grummelbold",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Grummelbold, der die Seiten gewechselt hat. Kennt alle Kristallverstecke: Gegner lassen öfter Extra-Kristalle fallen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Grmpf. Ich bin jetzt einer von den Guten. Grmpf.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "+15 % Explosionsradius",
+   "quelle": "daten"
+  },
+  {
+   "de": "Explosionen hinterlassen manchmal Feuerpfützen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Jede 10. Explosion ist eine Mini-Nuke",
+   "quelle": "daten"
+  },
+  {
+   "de": "Brand macht 50 % mehr Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "Brennende Gegner zünden beim Tod ihre Nachbarn an",
+   "quelle": "daten"
+  },
+  {
+   "de": "+25 % Schaden gegen Brennende",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kettenblitze springen 1× mehr",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kettenblitze verlieren kaum Kraft",
+   "quelle": "daten"
+  },
+  {
+   "de": "Alle 4 s schlägt ein Gewitterblitz ein",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gift wirkt 50 % stärker",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vergiftete hinterlassen beim Tod Giftwolken",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vergiftete nehmen 30 % mehr Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "Frost verlangsamt stärker",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner frieren schon nach 2 Frost-Treffern ein",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eingefrorene nehmen 50 % mehr Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "+1 Kampfdrohne begleitet dich",
+   "quelle": "daten"
+  },
+  {
+   "de": "Drohnen schießen Laser",
+   "quelle": "daten"
+  },
+  {
+   "de": "+1 weitere Drohne",
+   "quelle": "daten"
+  },
+  {
+   "de": "+3 Regeneration",
+   "quelle": "daten"
+  },
+  {
+   "de": "Treffer fesseln Gegner manchmal mit Ranken",
+   "quelle": "daten"
+  },
+  {
+   "de": "+15 Max. Leben, +3 % Lebensraub",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiegte Gegner lassen manchmal ein Küken schlüpfen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Küken picken doppelt so hart",
+   "quelle": "daten"
+  },
+  {
+   "de": "Alle 6 s regnet es explodierende Eier",
+   "quelle": "daten"
+  },
+  {
+   "de": "+15 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "Treffer lösen manchmal zufällige Elemente aus",
+   "quelle": "daten"
+  },
+  {
+   "de": "Alle Waffen werden instabil (Bonus-Kawumm bei Krit)",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dampfexplosion!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Feuer trifft Eis: Es knallt in einer heißen Dampfwolke.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dampfwolke!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Feuer trifft Nässe: Zischender Dampf, Gegner sehen nichts und stolpern.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Stinkbombe!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Feuer trifft Gift: Eine grüne Explosion verteilt das Gift ringsum.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Plasmabrand!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Feuer trifft Blitz: Ein Plasmaball platzt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Feuerwirbel!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Feuer im Sog: Eine Lavaspirale zündet alles in der Nähe an.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Splitterschock!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Blitz trifft Eis: Der Gegner zerspringt in Eissplitter.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kettenschock!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Blitz trifft Nässe: Alle nassen Gegner in der Nähe kriegen eine gewischt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nervengift!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Blitz trifft Gift: Gegner zucken und stehen still.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Plasmakern!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Blitz im Sog: Ein Mega-Kettenblitz springt von Gegner zu Gegner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schockfrost!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eis trifft Nässe: Alles in der Nähe gefriert sofort.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Frostgift!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eis trifft Gift: Gefrorenes Gift wirkt doppelt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eisimplosion!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eis im Sog: Alles im Wirbel friert ein.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Giftsumpf!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gift trifft Nässe: Ein blubbernder Giftsumpf entsteht.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Giftstrudel!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gift im Sog: Alle im Wirbel werden vergiftet.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Strudel!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nässe im Sog: Ein Wasserstrudel zieht alles zusammen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Doppelschuss",
+   "quelle": "daten"
+  },
+  {
+   "de": "Feuert doppelt so viele Geschosse (Strahlen/Schläge: +60 % Schaden).",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zielsuch-Chip",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gerade Geschosse lenken aufs Ziel.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gerade Geschosse prallen 2× ab und suchen sich ein neues Ziel.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nachbrenner",
+   "quelle": "daten"
+  },
+  {
+   "de": "Geschosse fliegen 40 % schneller und treffen 15 % härter.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Clusterbombe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Treffer zerfallen in 4 Splitter.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Brandmunition",
+   "quelle": "daten"
+  },
+  {
+   "de": "Treffer setzen Gegner in Brand.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kettenblitz-Spule",
+   "quelle": "daten"
+  },
+  {
+   "de": "15 % Chance, dass ein Treffer einen Kettenblitz auslöst.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gravitations-Kern",
+   "quelle": "daten"
+  },
+  {
+   "de": "Treffer ziehen Gegner in der Nähe zusammen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Frostkern",
+   "quelle": "daten"
+  },
+  {
+   "de": "Treffer verlangsamen und unterkühlen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Giftspitze",
+   "quelle": "daten"
+  },
+  {
+   "de": "Treffer vergiften (stapelt sich).",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vampirzahn",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glücksbringer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Getroffene Gegner lassen öfter doppelt Kristalle fallen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Feuert in Salven zu dritt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Riesig, langsamer, verheerend: 2,4× Schaden und +50 % Explosionsradius.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Helm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Stiefel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Handschuhe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Amulett",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ring",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rucksack",
+   "quelle": "daten"
+  },
+  {
+   "de": "Grummel-Garnitur",
+   "quelle": "daten"
+  },
+  {
+   "de": "Grummels Kochtopf",
+   "quelle": "daten"
+  },
+  {
+   "de": "Grummel-Weste",
+   "quelle": "daten"
+  },
+  {
+   "de": "Grummel-Latschen",
+   "quelle": "daten"
+  },
+  {
+   "de": "+10 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "+4 Rüstung, +10 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "Barons Gala-Garderobe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Barons Zylinder",
+   "quelle": "daten"
+  },
+  {
+   "de": "Monokel an der Kette",
+   "quelle": "daten"
+  },
+  {
+   "de": "Samthandschuhe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Barons Siegelring",
+   "quelle": "daten"
+  },
+  {
+   "de": "+20 % Explosionsradius",
+   "quelle": "daten"
+  },
+  {
+   "de": "+10 % Krit, +20 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "Funkenkluft",
+   "quelle": "daten"
+  },
+  {
+   "de": "Isolierhandschuhe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gummi-Galoschen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Batterie-Rucksack",
+   "quelle": "daten"
+  },
+  {
+   "de": "+12 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "+10 % Feuerrate, +6 % Krit",
+   "quelle": "daten"
+  },
+  {
+   "de": "Omas Strickset",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pudelmütze",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kratzpulli",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fäustlinge",
+   "quelle": "daten"
+  },
+  {
+   "de": "Omas Ehering",
+   "quelle": "daten"
+  },
+  {
+   "de": "+20 Max. Leben, +4 Regeneration, +3 % Lebensraub",
+   "quelle": "daten"
+  },
+  {
+   "de": "Krawummia",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eine Welt in Brocken",
+   "quelle": "daten"
+  },
+  {
+   "de": "Es war einmal eine ganz normale, runde Welt. Dann kam Baron von Bumm.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Er baute die größte Bombe aller Zeiten und nannte sie „Das Große Kawumm\". Er wollte nur mal gucken, was passiert.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Seitdem schwebt Krawummia in Brocken durch den Himmel – und auf jedem Brocken hat sich eine andere Bande breitgemacht.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Du bist ein Kawumm-Jäger. Befreie Insel für Insel und stell den Baron in seiner Bummburg. Mit noch mehr Kawumm.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Das Große Kawumm",
+   "quelle": "daten"
+  },
+  {
+   "de": "GK",
+   "quelle": "daten"
+  },
+  {
+   "de": "Es riecht nach Heu und Verschwörung.",
+   "quelle": "daten"
+  },
+  {
+   "de": "König Gockel ist gestürzt. Die Hühner legen wieder ganz normale Eier. Meistens.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Befreie Gackerfeld, um hierher zu fliegen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Haare stehen dir zu Berge. Allen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Tesla-Türme summen jetzt friedlich. Man kann hier sogar Toast machen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Befreie Funkenschlund, um hierher zu fliegen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hier quietscht alles. Auch die Gegner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der Megatoaster ist nur noch ein Mega-Brotkrümel. Die Blechbrut sucht sich ein Hobby.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Befreie Rostgrat, um hierher zu fliegen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nicht anfassen. Nicht einatmen. Nicht essen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Morchella ist verwelkt. Der Sumpf riecht nur noch halb so schlimm.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Befreie Pilzmoor, um hierher zu fliegen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der Boden ist Lava. Diesmal wirklich.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der Vulkan blubbert jetzt gemütlich vor sich hin. Wie ein Fondue.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Befreie Lavakessel, um hierher zu fliegen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rutschig. Kalt. Pinguine mit Bomben. Viel Glück.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Das Eis taut. Die Schneemänner nehmen es sportlich.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Befreie Frostfass, um die Bummburg zu stürmen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hier wohnt der Baron. Klingeln zwecklos.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Bummburg wackelt. Nur noch der Baron selbst steht im Weg.",
+   "quelle": "daten"
+  },
+  {
+   "de": "„KIKERIKIII! Auf die Knie, Federlose!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der König plustert sich auf!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Krone kullert davon. Ein Huhn hebt sie auf und guckt verlegen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "„BROT. WIRD. GETOASTET.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Alle Schlitze glühen!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Es riecht nach verbranntem Toast. Und nach Sieg.",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Sporen, meine Kinder! Wachset!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Morchella verstreut ihre Sporen!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Morchella zerfällt zu einem sehr, sehr großen Pilzgericht.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der Baron ruft Verstärkung",
+   "quelle": "daten"
+  },
+  {
+   "de": "Baron von Bumm fliegt im hohen Bogen davon. „Das war noch nicht das letzte KAWUMM!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nur echtes Kawumm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Im Shop gibt es nur Waffen mit Explosiv- oder Feuer-Element.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Turmbau zu Bummel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zwei Türme gleichzeitig, Türme treffen 50 % härter.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schwein gehabt",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zufällige Startwaffe, der erste Reroll pro Shop ist gratis.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Keksdose",
+   "quelle": "daten"
+  },
+  {
+   "de": "Alle 8 Sekunden ein Keks: +2 Leben.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hühnerflüsterer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gacker-Waffen +40 % Schaden, alle 6 Sekunden schlüpft ein Küken.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hochspannung",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kettenblitze springen doppelt so weit.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kalte Schulter",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner frieren schon nach 2 Frost-Treffern ein.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hexenküche",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gift wirkt 60 % stärker.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Handfest",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nahkampf-Waffen +50 % Schaden.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Windhose",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dash lädt 40 % schneller und schubst Gegner weg.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Amboss-Abo",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schmiedelohn gratis, Fusionen +25 % Schaden.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Alte Kumpels",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner lassen öfter einen Extra-Kristall fallen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hinterher!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Läuft stur auf dich zu.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Letzter Hüpfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Springt dich an und explodiert – auch, wenn man sie erwischt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Aus der Ferne",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hält Abstand und schießt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Anlauf",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nimmt Anlauf und stürmt geradeaus los.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pflaster drauf",
+   "quelle": "daten"
+  },
+  {
+   "de": "Heilt Gegner in der Nähe.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schildwall",
+   "quelle": "daten"
+  },
+  {
+   "de": "Blockt Treffer von vorn größtenteils ab.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vorsicht, Stufe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Legt Minen auf den Boden.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schleimspur",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hinterlässt eine gefährliche Spur.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Herbeirufen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ruft weitere Gegner herbei.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bauchrutscher",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rutscht in hohem Tempo auf dich zu.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Endgegner",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wechselt zwischen mehreren Angriffen. Wird ab halber Energie wütend.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dreifach",
+   "quelle": "daten"
+  },
+  {
+   "de": "3 Geschosse pro Schuss.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Cluster",
+   "quelle": "daten"
+  },
+  {
+   "de": "Explosionen zerfallen in 3 Mini-Explosionen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Doppelblitz",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kettenblitze springen doppelt so oft.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Implosion",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der Sog explodiert am Ende.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Heilkeks",
+   "quelle": "daten"
+  },
+  {
+   "de": "Treffer können dich heilen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Großer Schwarm",
+   "quelle": "daten"
+  },
+  {
+   "de": "6 statt 3 Begleiter.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Konfettifrost",
+   "quelle": "daten"
+  },
+  {
+   "de": "Frost verwirrt zusätzlich.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Großer Orbit",
+   "quelle": "daten"
+  },
+  {
+   "de": "6 Kreisel auf größerem Radius.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Giftwolke",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vergiftete Gegner hinterlassen Giftpfützen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kükenschlupf",
+   "quelle": "daten"
+  },
+  {
+   "de": "Treffer lassen Küken schlüpfen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Riesig",
+   "quelle": "daten"
+  },
+  {
+   "de": "Größer, langsamer, verheerend.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mini-Bumm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Treffer lösen manchmal eine Mini-Explosion aus.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Feuerspur",
+   "quelle": "daten"
+  },
+  {
+   "de": "Treffer hinterlassen manchmal Lavapfützen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Frostnova",
+   "quelle": "daten"
+  },
+  {
+   "de": "Treffer frieren manchmal alles ringsum ein.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Goldregen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Getroffene Gegner spucken manchmal einen Kristall aus.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Donnerschlag",
+   "quelle": "daten"
+  },
+  {
+   "de": "Treffer rufen manchmal einen Blitzschlag.",
+   "quelle": "daten"
+  },
+  {
+   "de": "HP",
+   "quelle": "daten"
+  },
+  {
+   "de": "Held — Der Neuling",
+   "quelle": "daten"
+  },
+  {
+   "de": "Startwaffe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Talente",
+   "quelle": "daten"
+  },
+  {
+   "de": "+5 Max. Leben, +5 % Schaden, +3 % Lauftempo, +5 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spiele einen Run mit Kawumm-Kid.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne einen Run mit Kawumm-Kid.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Held — Brandstifter mit Diplom",
+   "quelle": "daten"
+  },
+  {
+   "de": "+100 % Explosionsradius, −2 Rüstung",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spiele einen Run mit Der Pyromane.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne einen Run mit Der Pyromane.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Held — Schraubt an allem",
+   "quelle": "daten"
+  },
+  {
+   "de": "+10 % Reichweite, −5 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spiele einen Run mit Die Ingenieurin.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne einen Run mit Die Ingenieurin.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Held — Hat immer Schwein",
+   "quelle": "daten"
+  },
+  {
+   "de": "zufällig",
+   "quelle": "daten"
+  },
+  {
+   "de": "+40 Glück, +5 Ernte",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spiele einen Run mit Der Glückspilz.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne einen Run mit Der Glückspilz.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Held — Strickt Splittergranaten",
+   "quelle": "daten"
+  },
+  {
+   "de": "+3 Regeneration, −8 % Lauftempo, +5 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spiele einen Run mit Oma Granate.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne einen Run mit Oma Granate.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Held — Der Hühnerflüsterer",
+   "quelle": "daten"
+  },
+  {
+   "de": "+8 Max. Leben, +5 Ernte",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spiele einen Run mit Bauer Bruno.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne einen Run mit Bauer Bruno.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Held — Steht unter Strom",
+   "quelle": "daten"
+  },
+  {
+   "de": "+15 % Feuerrate, −10 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spiele einen Run mit Blitz-Bettina.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne einen Run mit Blitz-Bettina.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Held — Hat immer kalte Füße",
+   "quelle": "daten"
+  },
+  {
+   "de": "+3 Rüstung, −3 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spiele einen Run mit Frost-Fritz.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne einen Run mit Frost-Fritz.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Held — Kocht nicht für Gäste",
+   "quelle": "daten"
+  },
+  {
+   "de": "+10 % Reichweite, +2 % Lebensraub",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spiele einen Run mit Giftmischerin Gerda.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne einen Run mit Giftmischerin Gerda.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Held — Läuft durch Wände (meistens)",
+   "quelle": "daten"
+  },
+  {
+   "de": "+30 Max. Leben, +5 Rüstung, −18 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spiele einen Run mit Panzer-Paule.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne einen Run mit Panzer-Paule.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Held — Schneller als ihr Schatten",
+   "quelle": "daten"
+  },
+  {
+   "de": "+25 % Lauftempo, +8 % Ausweichen, −20 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spiele einen Run mit Sprintina Flitz.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne einen Run mit Sprintina Flitz.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Held — Erfinder des Ambosses",
+   "quelle": "daten"
+  },
+  {
+   "de": "−5 % Schaden, +10 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spiele einen Run mit Prof. Fusionski.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne einen Run mit Prof. Fusionski.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Held — Ex-Grummelbold",
+   "quelle": "daten"
+  },
+  {
+   "de": "+10 Ernte, +10 Glück, −5 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spiele einen Run mit Grubert der Bekehrte.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne einen Run mit Grubert der Bekehrte.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wucht",
+   "quelle": "daten"
+  },
+  {
+   "de": "Waffe — Feuerwaffen",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Klein, aber oho. Vor allem oho.\" – Kawumm-Kid",
+   "quelle": "daten"
+  },
+  {
+   "de": "Benutze die Waffe in einem Run.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bringe die Waffe auf 5 Sterne.",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Abzug ziehen, nicht nachdenken.\" – Akademie-Leitfaden, Seite 1",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Peng ist das kleine Kawumm.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Waffe — Explosiv",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Warum zielen, wenn man die Rakete fragen kann?\" – Der Pyromane",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ohrenschützer? Wozu?\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ohne Kawumm ist alles doof.\" – Der Pyromane",
+   "quelle": "daten"
+  },
+  {
+   "de": "Waffe — Elementar",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Bitte nicht anfassen. Ehrlich.\" – Blitz-Bettina",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Die Natur ist wunderschön. Und wütend.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Bleib cool.\" – Frost-Fritz",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Nur eine Prise. Oder zwanzig.\" – Giftmischerin Gerda",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Element ist, was knallt, brennt oder blitzt.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Waffe — Nahkampf",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Reichweite wird überschätzt.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Holz? Nein. Gegner? Ja.\" – Panzer-Paule",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Nähe schafft Vertrauen. Und Beulen.\" – Panzer-Paule",
+   "quelle": "daten"
+  },
+  {
+   "de": "„In meiner Küche wird nicht gegrummelt!\" – Oma Granate",
+   "quelle": "daten"
+  },
+  {
+   "de": "Waffe — Energie",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Strom kostet nichts, wenn man ihn klaut.\" – Prof. Fusionski",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Pew pew. Aber in laut.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "„TÖÖÖÖRÖÖÖ!\" – unbekannter Musiker",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ups. Wo ist der Shop hin?\" – Prof. Fusionski",
+   "quelle": "daten"
+  },
+  {
+   "de": "Waffe — Drohnen & Türme",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Lass die Maschinen arbeiten.\" – Die Ingenieurin",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ich baue, also bin ich.\" – Die Ingenieurin",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Mein Turm, meine Regeln.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Bitte zurücktreten. Weiter. NOCH weiter.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Waffe — Beschwörung",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Viele kleine Helfer sind auch eine Armee.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Wer hat die alle eingeladen?\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Die hören auf mich. Meistens.\" – Grubert der Bekehrte",
+   "quelle": "daten"
+  },
+  {
+   "de": "Waffe — Werfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Was fliegt, das trifft. Irgendwann.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Kommt immer zurück. Wie schlechte Witze.\" – Sprintina Flitz",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ausholen, zielen, lachen.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Waffe — Exotisch",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Kein Huhn wurde verletzt. Nur sehr viele Gegner.\" – Bauer Bruno",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Konfetti ist auch eine Waffe.\" – Der Glückspilz",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Das war so nicht im Handbuch.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Musik, die Gegner in die Flucht schlägt. Und Freunde.\" – Grubert",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Fragen Sie nicht, wie es funktioniert. Es funktioniert.\" – Prof. Fusionski",
+   "quelle": "daten"
+  },
+  {
+   "de": "Waffe — Support",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Auch Helfer helfen beim Kawumm.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Erst heilen, dann knallen.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Kuckuck! … KAWUMM!\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ein Keks gegen jeden Kummer.\" – Oma Granate",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Exotisch",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zutaten",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hühnerkanone + Hühnerkanone + Hühnerkanone",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ich hab doch nur drei Hühner zusammengesteckt!\" – Bauer Bruno",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Dreimal dasselbe Federvieh …",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bringe die Rezept-Waffe auf Stufe V.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Explosiv",
+   "quelle": "daten"
+  },
+  {
+   "de": "Raketenwerfer + Dynamitbündel + Bombenhagel",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Endlich. ENDLICH!\" – Der Pyromane",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Alles, was im Explosiv-Regal knallt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Exotisch · Elementar · Drohnen & Türme",
+   "quelle": "daten"
+  },
+  {
+   "de": "Teleport-Toaster + Tesla-Stab + Toaster-Turm",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Frühstück ist die wichtigste Mahlzeit des Tages.\" – Megatoaster",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Drei Toaster-Sachen und ein bisschen Strom.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Energie · Werfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schwarzes-Loch-Werfer + Magnetkanone + Bowlingkugel",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Alles muss raus. Vor allem rein.\" – Prof. Fusionski",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Was anzieht, was zieht und was rollt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Support · Nahkampf",
+   "quelle": "daten"
+  },
+  {
+   "de": "Omas Keksdose + Bratpfanne + Pflasterkanone",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Das Rezept nehme ich mit ins Grab.\" – Oma Granate",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Was Oma in der Küche hat – und im Erste-Hilfe-Kasten.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Beschwörung · Elementar · Energie",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entenarmee + Flammenwerfer + Kampf-Kazoo",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Quiek!\" – eine Gummiente, kurz vor dem Ende",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Enten, Feuer und Musik.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Elementar · Exotisch",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eiszapfenwerfer + Partykanone + Sternschnuppenstab",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Schön kalt, schön bunt.\" – Frost-Fritz",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Eis, Party und ein Wunsch an die Sterne.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Nahkampf · Support · Drohnen & Türme",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kettensäge + Schildblasen + Rasenmäher-Bot",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Einmal rundherum, bitte.\" – Panzer-Paule",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Was sägt, was kreist und was mäht.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Beschwörung · Elementar",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bienenstock + Giftbläser + Pilzbeutel",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Bsssss.\" – Ihre Majestät",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Summen, Blubbern und Sporen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Exotisch · Beschwörung",
+   "quelle": "daten"
+  },
+  {
+   "de": "Huhnifizierer + Hühnerkanone + Kükenkorb",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Gack? GACK!\" – ehemaliger Grummelbold",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Alles, was gackert, piepst oder Hühner macht.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Feuerwaffen · Elementar · Nahkampf",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kartoffelkanone + Flammenwerfer + Bratpfanne",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Mit Mayo oder mit Kawumm?\" – Oma Granate",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Kartoffeln, Feuer und eine Pfanne.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Support · Elementar · Exotisch",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kriegstrommel + Tesla-Stab + Dudelsack des Grauens",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Das ist kein Lärm, das ist Hochspannungsmusik.\" – Blitz-Bettina",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Trommel, Dudelsack – und ein Stab unter Strom.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Werfer · Elementar",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schneeballschleuder + Wasserbombe + Eiszapfenwerfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Wer zuerst friert, hat verloren.\" – Frost-Fritz",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Schnee, Wasser und Eis – alles, was kalt ist und fliegt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Support · Feuerwaffen · Beschwörung",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glücksmünzen + Kartoffelkanone + Grummel-Pfeife",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Geld stinkt nicht. Grummelbolde schon.\" – Grubert",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Münzen, Kartoffeln und eine Grummel-Pfeife.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Werfer · Exotisch · Explosiv",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bowlingkugel + Partykanone + Dynamitbündel",
+   "quelle": "daten"
+  },
+  {
+   "de": "„STRIIIKE! Und … weg.\" – Panzer-Paule",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Kugel, Party und Dynamit.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Drohnen & Türme · Exotisch",
+   "quelle": "daten"
+  },
+  {
+   "de": "Toaster-Turm + Sternschnuppenstab + Teleport-Toaster",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ich wollte doch nur Frühstück.\" – Megatoaster",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Zwei Toaster und eine Sternschnuppe.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Drohnen & Türme · Feuerwaffen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kampfdrohne + Geschützturm + Minigun",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Staffel, Formation Kawumm!\" – Die Ingenieurin",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Drohne, Turm und eine Menge Munition.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Energie · Exotisch",
+   "quelle": "daten"
+  },
+  {
+   "de": "Laserpistole + Partykanone + Kampf-Kazoo",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Und jetzt alle: TÖÖÖRÖÖÖ!\" – Der Glückspilz",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Laser, Party und ein Kazoo.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Beschwörung · Explosiv · Werfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schleimzucht + Klebebombe + Bananarang",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Blubb.\" – ein Schleimi, sehr beeindruckt",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Alles, was klebt und schleimt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Elementar · Explosiv",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lavaschleuder + Bombenhagel + Flammenwerfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Das ist kein Ausbruch, das ist ein Gruß.\" – Der Pyromane",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Lava, Bomben und Flammen – der Lavakessel zum Mitnehmen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Werfer · Beschwörung · Elementar",
+   "quelle": "daten"
+  },
+  {
+   "de": "Faule Eier + Kükenkorb + Giftbläser",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Riecht wie Bauer Brunos Socken.\" – Giftmischerin Gerda",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Eier, Küken und ein Giftbläser.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Support · Drohnen & Türme",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kuckucksuhr + Orbitalschlag + Tesla-Turm",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Kuckuck! Es ist … Gewitterzeit.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Eine Uhr, ein Satellit und ein Turm unter Strom.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Energie · Explosiv",
+   "quelle": "daten"
+  },
+  {
+   "de": "Magnetkanone + Plasmaspirale + Minenleger",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Alles hängt zusammen. Vor allem die Gegner.\" – Prof. Fusionski",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Magnet, Spirale und Minen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Nahkampf",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wurfaxt + Kettensäge + Baseballschläger",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Holz vor der Hütte? Nicht mehr lange.\" – Panzer-Paule",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Axt, Säge und Schläger.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Support",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pflasterkanone + Omas Keksdose + Schildblasen",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Erst verarzten, dann verkloppen.\" – Oma Granate",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Pflaster, Kekse und Blasen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Support · Werfer · Elementar",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kuckucksuhr + Schneeballschleuder + Wasserwerfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Bitte nicht auftauen.\" – Frost-Fritz",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Kuckuck, Schnee und Wasser.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Werfer · Exotisch · Feuerwaffen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wurfsterne + Sternschnuppenstab + Präzisionsgewehr",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Wünsch dir was. Zum Beispiel weniger Gegner.\"",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Sterne, Sternschnuppen und ein sehr genaues Gewehr.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Beschwörung · Exotisch",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pilzbeutel + Partykanone + Dudelsack des Grauens",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Untz untz untz … hust.\" – ein Pilzling",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Pilze, Party und Dudelsack.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Feuerwaffen · Explosiv",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nagelpistole + Granatwerfer + Klebebombe",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Do it yourself!\" – Die Ingenieurin",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Nägel, Granaten und Kleber.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Beschwörung · Werfer · Elementar",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entenarmee + Wasserbombe + Wasserwerfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Quietsch!\" – die Flotte",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Enten und ganz viel Wasser.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Beschwörung · Nahkampf",
+   "quelle": "daten"
+  },
+  {
+   "de": "Grummel-Pfeife + Kawumm-Hammer + Federfaust",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Grmpf! Für Grubert!\" – die Grummel-Garde",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Pfeife, Hammer und Faust.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Energie · Feuerwaffen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Stirnlaser + Laserpistole + Präzisionsgewehr",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Nicht blinzeln.\" – Prof. Fusionski",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Drei Arten, sehr genau zu zielen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Beschwörung · Support",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bienenstock + Schleimzucht + Omas Keksdose",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Bsss … klebt.\" – eine sehr zufriedene Biene",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Bienen, Schleim und Kekse.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Drohnen & Türme · Explosiv",
+   "quelle": "daten"
+  },
+  {
+   "de": "Orbitalschlag + Bombenhagel + Raketenwerfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ich nenne es: Kunst.\" – Der Pyromane",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Vom Himmel, aus dem Himmel, in den Himmel.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Explosiv · Drohnen & Türme",
+   "quelle": "daten"
+  },
+  {
+   "de": "Minenleger + Rasenmäher-Bot + Geschützturm",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Bitte den Rasen nicht betreten.\" – Schild am Gartenzaun",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Minen, Mäher und Turm.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Support · Werfer · Feuerwaffen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glücksmünzen + Wurfsterne + Schrotflinte",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Ich gewinne immer.\" – Der Glückspilz",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Münzen, Sterne und Schrot.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Elementar · Nahkampf · Werfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eiszapfenwerfer + Baseballschläger + Bowlingkugel",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Vorsicht, rutschig!\" – Schneemann Fritz",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Eis, Schläger und Kugel.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Support · Feuerwaffen · Energie",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kriegstrommel + Minigun + Kampf-Kazoo",
+   "quelle": "daten"
+  },
+  {
+   "de": "„BUMM-TSCHAK-BUMM!\" – die Kapelle",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Trommel, Minigun und Kazoo.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe — Drohnen & Türme · Energie",
+   "quelle": "daten"
+  },
+  {
+   "de": "Tesla-Turm + Magnetkanone + Plasmaspirale",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Nicht anfassen. Nein, wirklich.\" – Blitz-Bettina",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Turm, Magnet und Spirale – alles unter Strom.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kükenkorb + Hühnerkanone + Grummel-Pfeife",
+   "quelle": "daten"
+  },
+  {
+   "de": "„Gack-gack-GACKERN!\" – König Gockel (unfreiwillig)",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke das Rezept am Amboss. Hinweis: Küken, Hühner und ein Grummel-Pfiff.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner — Grummel-Fraktion",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fraktion",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 50 Grummelbold.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 500 Grummelbold.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner — Sumpfbande",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kawumm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Explodiert beim Tod und reißt andere mit.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 50 Bomben-Kröte.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 500 Bomben-Kröte.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner — Blechbrut",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 50 Toastomat.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 500 Toastomat.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner — Hühner-Kult",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 50 Kampfhuhn.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 500 Kampfhuhn.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 50 Vogelscheuche Stroh-Udo.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 500 Vogelscheuche Stroh-Udo.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner — Funkenbande",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 50 Funkenkobold.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 500 Funkenkobold.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 50 Tesla-Ritter.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 500 Tesla-Ritter.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 50 Schrottgolem.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 500 Schrottgolem.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 50 Minenbot.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 500 Minenbot.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 50 Pilzling.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 500 Pilzling.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zellteilung",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zerfällt in 2 kleinere Gegner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 50 Schleimi.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 500 Schleimi.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 50 Schleimchen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 500 Schleimchen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner — Glutgesindel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 50 Lavaklops.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 500 Lavaklops.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 50 Kawumm-Kultist.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 500 Kawumm-Kultist.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner — Frostfrieder",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 50 Schneemann Fritz.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 500 Schneemann Fritz.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 50 Bombenpinguin.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege 500 Bombenpinguin.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Boss — Hühner-Kult",
+   "quelle": "daten"
+  },
+  {
+   "de": "Angriffe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ansturm quer durch die Arena, Geschossring in alle Richtungen, Ruft seine Bande zu Hilfe.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege König Gockel der Laute.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege König Gockel der Laute 5×.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Boss — Blechbrut",
+   "quelle": "daten"
+  },
+  {
+   "de": "Geschossring in alle Richtungen, Bombenhagel mit roten Einschlag-Markierungen, Ruft seine Bande zu Hilfe.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege Toastomat 3000.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege Toastomat 3000 5×.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Boss — Sumpfbande",
+   "quelle": "daten"
+  },
+  {
+   "de": "Giftsporen-Wolken, Geschossring in alle Richtungen, Ruft seine Bande zu Hilfe.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege Pilzkönigin Morchella.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege Pilzkönigin Morchella 5×.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Boss — Bummburg",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bombenhagel mit roten Einschlag-Markierungen, Ruft seine Bande zu Hilfe.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege Baron von Bumm.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege Baron von Bumm 5×.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Preis",
+   "quelle": "daten"
+  },
+  {
+   "de": "Item — Stapelbar",
+   "quelle": "daten"
+  },
+  {
+   "de": "Vorteil",
+   "quelle": "daten"
+  },
+  {
+   "de": "+5 Max. Leben, +1 Regeneration",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kaufe das Item im Shop.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besitze 5 Stück gleichzeitig.",
+   "quelle": "daten"
+  },
+  {
+   "de": "+8 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "Haken",
+   "quelle": "daten"
+  },
+  {
+   "de": "−2 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 % Lauftempo, +2 % Ausweichen",
+   "quelle": "daten"
+  },
+  {
+   "de": "+2 Rüstung",
+   "quelle": "daten"
+  },
+  {
+   "de": "−2 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "+8 Ernte",
+   "quelle": "daten"
+  },
+  {
+   "de": "+40 % Sammelradius",
+   "quelle": "daten"
+  },
+  {
+   "de": "+18 % Reichweite, +2 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "+10 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "−3 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "+3 % Lebensraub",
+   "quelle": "daten"
+  },
+  {
+   "de": "−3 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "+12 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "−1 Rüstung",
+   "quelle": "daten"
+  },
+  {
+   "de": "−3 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "+8 % Ausweichen",
+   "quelle": "daten"
+  },
+  {
+   "de": "−3 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "+12 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "Item — Einzigartig",
+   "quelle": "daten"
+  },
+  {
+   "de": "+35 % Explosionsradius",
+   "quelle": "daten"
+  },
+  {
+   "de": "−2 Rüstung",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kawumm-Weste",
+   "quelle": "daten"
+  },
+  {
+   "de": "Du explodierst, wenn du getroffen wirst.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne einen Run mit diesem Item.",
+   "quelle": "daten"
+  },
+  {
+   "de": "+18 % Feuerrate, +5 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "−5 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "+25 % Explosionsradius, +8 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "+12 % Krit-Chance, +10 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+5 Rüstung, +5 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "−4 % Ausweichen",
+   "quelle": "daten"
+  },
+  {
+   "de": "+15 % Reichweite, +5 % Krit-Chance, +5 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "+20 % Schaden, +15 % Feuerrate, +20 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "Einzigartig",
+   "quelle": "daten"
+  },
+  {
+   "de": "Höchstens 1× pro Run.",
+   "quelle": "daten"
+  },
+  {
+   "de": "+60 % Explosionsradius, +15 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "−10 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "+25 Ernte, +25 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+4 % Schaden, +5 % Reichweite",
+   "quelle": "daten"
+  },
+  {
+   "de": "+1 Rüstung, +3 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "−1 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "+30 % Sammelradius, +3 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+3 % Ausweichen, +4 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 Ernte",
+   "quelle": "daten"
+  },
+  {
+   "de": "−2 % Ausweichen",
+   "quelle": "daten"
+  },
+  {
+   "de": "+10 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 % Ausweichen, +1 Rüstung",
+   "quelle": "daten"
+  },
+  {
+   "de": "+4 % Krit-Chance, +5 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "+10 Max. Leben, +1 Regeneration",
+   "quelle": "daten"
+  },
+  {
+   "de": "+15 Ernte, +15 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+15 % Schaden, +8 % Krit-Chance, +15 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+5 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "−2 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "+3 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "+7 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "−3 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+2 Regeneration",
+   "quelle": "daten"
+  },
+  {
+   "de": "+1 Regeneration, +4 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "+15 % Explosionsradius, +1 Rüstung",
+   "quelle": "daten"
+  },
+  {
+   "de": "+12 % Feuerrate, +4 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "−1 Regeneration",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 % Feuerrate, +2 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "+8 Max. Leben, +2 Regeneration",
+   "quelle": "daten"
+  },
+  {
+   "de": "+20 % Explosionsradius, +8 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "+15 Max. Leben, +2 Regeneration",
+   "quelle": "daten"
+  },
+  {
+   "de": "+18 % Schaden, +10 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "+2 % Krit-Chance, +2 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "+5 Max. Leben, +1 Rüstung",
+   "quelle": "daten"
+  },
+  {
+   "de": "+10 % Reichweite",
+   "quelle": "daten"
+  },
+  {
+   "de": "+5 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "+45 % Sammelradius",
+   "quelle": "daten"
+  },
+  {
+   "de": "+5 % Krit-Chance, +3 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "+8 % Feuerrate, +5 % Reichweite",
+   "quelle": "daten"
+  },
+  {
+   "de": "+2 Rüstung, +3 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "+5 % Schaden, +6 % Reichweite, +3 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "+15 % Feuerrate, +4 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 Rüstung",
+   "quelle": "daten"
+  },
+  {
+   "de": "−6 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "+20 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "−8 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+20 % Feuerrate, +15 % Reichweite, +6 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "+4 % Ausweichen",
+   "quelle": "daten"
+  },
+  {
+   "de": "+4 % Feuerrate, +4 % Reichweite",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 % Reichweite, +2 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "+3 % Ausweichen, +3 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+8 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "−1 % Ausweichen",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 % Lauftempo, +3 % Ausweichen",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 % Schaden, +3 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "+10 % Explosionsradius, +6 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+18 % Explosionsradius, +5 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "−4 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "+18 Max. Leben, +2 Rüstung",
+   "quelle": "daten"
+  },
+  {
+   "de": "−4 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "+30 Glück, +6 % Krit-Chance, +10 Ernte",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 Glück, +1 % Ausweichen",
+   "quelle": "daten"
+  },
+  {
+   "de": "+4 % Feuerrate, +2 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "+1 Rüstung, +2 % Ausweichen",
+   "quelle": "daten"
+  },
+  {
+   "de": "+5 Max. Leben, +2 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+2 Rüstung, +6 Max. Leben, +2 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+7 % Ausweichen, +3 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "+8 % Lauftempo, +4 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "+12 % Explosionsradius, +2 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "+2 Regeneration, +1 Rüstung",
+   "quelle": "daten"
+  },
+  {
+   "de": "−4 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+7 Rüstung, +8 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "−8 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "+10 % Ausweichen, +6 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "−4 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "+30 % Explosionsradius, +12 % Schaden, +10 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+7 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+3 % Ausweichen, +4 % Reichweite",
+   "quelle": "daten"
+  },
+  {
+   "de": "+1 Rüstung, +3 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "+12 % Reichweite, +3 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "+7 % Lauftempo, +1 Regeneration",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 % Ausweichen, +4 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 % Feuerrate, +1 Regeneration",
+   "quelle": "daten"
+  },
+  {
+   "de": "+15 % Explosionsradius, +8 % Schaden, +5 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "+4 Regeneration, +10 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "+18 % Feuerrate, +12 % Reichweite, +5 % Ausweichen",
+   "quelle": "daten"
+  },
+  {
+   "de": "+4 Ernte, +15 % Sammelradius",
+   "quelle": "daten"
+  },
+  {
+   "de": "+25 % Sammelradius, +3 Ernte",
+   "quelle": "daten"
+  },
+  {
+   "de": "+8 % Explosionsradius, +2 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "+4 % Krit-Chance, +8 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 % Schaden, +8 % Reichweite",
+   "quelle": "daten"
+  },
+  {
+   "de": "+5 % Ausweichen, +3 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "+3 Regeneration, +4 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "+20 Max. Leben, +2 Regeneration",
+   "quelle": "daten"
+  },
+  {
+   "de": "+15 Glück, +6 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "+45 % Explosionsradius, +10 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "−8 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "+4 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "−2 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+4 Max. Leben, +2 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "+1 Regeneration, +3 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 % Explosionsradius, +2 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "+1 Rüstung, +2 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "+3 Rüstung, +3 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "+12 % Explosionsradius, +5 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+8 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "+2 Regeneration, +2 % Ausweichen",
+   "quelle": "daten"
+  },
+  {
+   "de": "+22 Max. Leben, +3 Rüstung",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 Regeneration, +15 Max. Leben, +3 % Lebensraub",
+   "quelle": "daten"
+  },
+  {
+   "de": "+2 % Krit-Chance, +4 % Reichweite",
+   "quelle": "daten"
+  },
+  {
+   "de": "+15 % Reichweite, +3 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "+3 % Krit-Chance, +1 % Ausweichen",
+   "quelle": "daten"
+  },
+  {
+   "de": "+16 % Explosionsradius",
+   "quelle": "daten"
+  },
+  {
+   "de": "+8 % Schaden, +2 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "−2 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 % Krit-Chance, +8 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "+14 % Feuerrate, +4 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "+22 % Feuerrate, +8 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "+1 Regeneration, +2 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "+1 Rüstung, +5 % Reichweite",
+   "quelle": "daten"
+  },
+  {
+   "de": "+3 Regeneration, +5 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "+3 Rüstung, +4 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "+2 Regeneration, +3 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "+8 % Ausweichen, +2 Regeneration, +2 Rüstung",
+   "quelle": "daten"
+  },
+  {
+   "de": "+5 Regeneration",
+   "quelle": "daten"
+  },
+  {
+   "de": "+8 Rüstung, +20 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "−5 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "+7 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "+4 % Lauftempo, +2 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "+5 % Lauftempo",
+   "quelle": "daten"
+  },
+  {
+   "de": "+10 % Lauftempo, +4 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "+12 % Lauftempo, +8 % Explosionsradius",
+   "quelle": "daten"
+  },
+  {
+   "de": "+15 % Lauftempo, +10 % Ausweichen, +10 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "+5 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+6 Ernte, +2 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+10 Ernte, +20 % Sammelradius",
+   "quelle": "daten"
+  },
+  {
+   "de": "+18 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+18 Ernte, +30 % Sammelradius",
+   "quelle": "daten"
+  },
+  {
+   "de": "+15 Glück, +5 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "+30 Ernte, +20 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+25 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "−15 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "+18 % Feuerrate, +10 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "−4 Rüstung",
+   "quelle": "daten"
+  },
+  {
+   "de": "+8 % Krit-Chance",
+   "quelle": "daten"
+  },
+  {
+   "de": "+14 % Feuerrate",
+   "quelle": "daten"
+  },
+  {
+   "de": "−3 % Krit-Chance, −5 Glück",
+   "quelle": "daten"
+  },
+  {
+   "de": "+35 % Schaden",
+   "quelle": "daten"
+  },
+  {
+   "de": "−4 Regeneration, −10 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "+30 % Explosionsradius",
+   "quelle": "daten"
+  },
+  {
+   "de": "−6 Max. Leben",
+   "quelle": "daten"
+  },
+  {
+   "de": "Held",
+   "quelle": "daten"
+  },
+  {
+   "de": "Helden",
+   "quelle": "daten"
+  },
+  {
+   "de": "Waffe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Waffen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fusionswaffe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rezepte",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner",
+   "quelle": "daten"
+  },
+  {
+   "de": "Boss",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bosse",
+   "quelle": "daten"
+  },
+  {
+   "de": "Item",
+   "quelle": "daten"
+  },
+  {
+   "de": "Items",
+   "quelle": "daten"
+  },
+  {
+   "de": "Frisch von der Akademie",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spiele deinen ersten Run.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Halbzeit",
+   "quelle": "daten"
+  },
+  {
+   "de": "Erreiche Welle 10.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bossknacker",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege deinen ersten Boss.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Krawummia atmet auf",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne einen Run.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Serientäter",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne 5 Runs.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kettenreaktion",
+   "quelle": "daten"
+  },
+  {
+   "de": "Löse eine Kette mit 25 Explosionen aus.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Löse eine Kette mit 50 Explosionen aus.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Aufräumkommando",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege insgesamt 1.000 Gegner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Bande schrumpft",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege insgesamt 10.000 Gegner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Amboss-Stammgast",
+   "quelle": "daten"
+  },
+  {
+   "de": "Verschmelze 10 Waffen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hobbykoch",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke 5 geheime Rezepte.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sternekoch",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke 20 geheime Rezepte.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Chemiebaukasten",
+   "quelle": "daten"
+  },
+  {
+   "de": "Löse 100 Elementar-Reaktionen aus.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Inselhüpfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Befreie 3 Inseln.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Befreier von Krawummia",
+   "quelle": "daten"
+  },
+  {
+   "de": "Befreie alle 7 Inseln.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Darwin wäre stolz",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lass eine Waffe evolvieren.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kristallkönig",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sammle insgesamt 5.000 Kristalle.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Scharfschmecker",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne einen Run auf Gefahr 5.",
+   "quelle": "daten"
+  },
+  {
+   "de": "OVERBOOM gemeistert",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewinne einen Run auf Gefahr 10.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gut angezogen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Trage ein komplettes Ausrüstungs-Set.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Entdecke 3 geheime Rezepte.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Befreie 2 Inseln.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Befreie 5 Inseln.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spiele 5 Runs.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Verschmelze 5 Waffen am Amboss.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Besiege insgesamt 2.000 Gegner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gemütlich",
+   "quelle": "daten"
+  },
+  {
+   "de": "Keine Extras – genau richtig zum Kennenlernen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Würzig",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner haben 12 % mehr Leben.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Scharf",
+   "quelle": "daten"
+  },
+  {
+   "de": "Doppelt so viele Elite-Gegner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Feurig",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner treffen 15 % härter.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Teuer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der Shop wird 15 % teurer.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gedränge",
+   "quelle": "daten"
+  },
+  {
+   "de": "20 % mehr Gegner.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Knausrig",
+   "quelle": "daten"
+  },
+  {
+   "de": "Heilung wirkt 25 % schwächer.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Boss-Laune",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bosse haben 35 % mehr Leben.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hektisch",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gegner laufen 12 % schneller.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mager",
+   "quelle": "daten"
+  },
+  {
+   "de": "15 % weniger Kristalle.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Alle Gegner explodieren beim Tod – auch in deine Richtung!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sie kommen wieder!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mehr! Es kommen mehr!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Nicht blinzeln.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hörst du das Grummeln?",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Bande holt Verstärkung.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Jetzt wird’s ernst. Ein bisschen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hinter dir! Nein, Scherz. Doch!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Tief durchatmen. Und dann Kawumm.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die haben Freunde mitgebracht.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Noch eine Runde Chaos, bitte.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kawumm! Das war wohl zu viel Kawumm.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Grummelbolde grummeln zufrieden.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Bomben-Kröten quaken ein Siegeslied.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der Toastomat toastet auf deinen Untergang.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Baron von Bumm zwirbelt zufrieden den Schnurrbart.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Kampfhuhn gackert hämisch.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der Schleimi teilt sich vor Freude.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Irgendwo lacht ein Pilzling. Leise. Sporig.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Kawumm-Jäger-Akademie schickt einen Beileids-Keks.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bomben-Kröten explodieren auch, wenn man sie erwischt. Stell dich nicht daneben. Oder doch – wenn du Ketten liebst.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Drei gleiche Waffen gleicher Stufe? Verschmelzen! Zwei verschiedene Gruppen? Ab zum Amboss!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Overkill-Leiste füllt sich durch Kills und Ketten. Voll? OVERBOOM drücken und genießen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Feuer + Wasser = Dampfexplosion. Die Natur ist ein großer Chemiebaukasten.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Im Koop rechnet das Gerät des Hosts für alle. Ein PC ist ein guter Host.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Niedergeschlagen? Ein Mitspieler muss nur kurz neben dir stehen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Elite-Gegner tragen eine Krone – und manchmal Ausrüstung.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sterne bekommt eine Waffe durch Kills. Bei fünf Sternen wartet eine Evolution.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gesperrte Karten im Album verraten, wie man sie bekommt.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Auf Gefahr 10 explodiert alles. Wirklich alles. Viel Glück!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glückspilz-Tipp: Neu würfeln ist manchmal gratis.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fässer sind Freunde. Explosive Freunde.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Oma Granate verteilt Kekse. Gegen Kekse hat noch niemand gewonnen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Prof. Fusionski schmiedet gratis. Er nennt das „Forschung\".",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schadenszahlen, Wackeln und Lichtblitze kannst du in den Einstellungen anpassen.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ein Kampfhuhn scharrt, bevor es stürmt. Hör auf das Scharren!",
+   "quelle": "daten"
+  },
+  {
+   "de": "Die Pilzkönigin mag keine Feuerwaffen. Und auch sonst nichts.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Spielstand sichern: Album → Erfolge → Code kopieren.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Der Baron hat das Große Kawumm gezündet. Zeit, das Kawumm zurückzugeben.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kein Huhn wurde bei der Entwicklung verletzt. Sie sind alle nur sehr wütend.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bombenhagel mit roten Einschlag-Markierungen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ansturm quer durch die Arena",
+   "quelle": "daten"
+  },
+  {
+   "de": "Geschossring in alle Richtungen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Giftsporen-Wolken",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ruft seine Bande zu Hilfe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schwarmraketen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Atomrakete",
+   "quelle": "daten"
+  },
+  {
+   "de": "Doppelpistolen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Handkanone",
+   "quelle": "daten"
+  },
+  {
+   "de": "Streuschrotflinte",
+   "quelle": "daten"
+  },
+  {
+   "de": "Elefantenflinte",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kreischende Minigun",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mega-Gatling",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gewitterstab",
+   "quelle": "daten"
+  },
+  {
+   "de": "Donnerkeil",
+   "quelle": "daten"
+  },
+  {
+   "de": "Flammenfächer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Drachenatem",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hühnerschwarm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Riesenhuhn-Kanone",
+   "quelle": "daten"
+  },
+  {
+   "de": "Granatenhagel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Großkaliber-Granate",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dynamit-Feuerwerk",
+   "quelle": "daten"
+  },
+  {
+   "de": "Dynamit-Fass",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pfannen-Wirbel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gusseisen-Pfanne",
+   "quelle": "daten"
+  },
+  {
+   "de": "Doppelschläger",
+   "quelle": "daten"
+  },
+  {
+   "de": "Home-Run-Keule",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bienenvolk",
+   "quelle": "daten"
+  },
+  {
+   "de": "Königinnenstock",
+   "quelle": "daten"
+  },
+  {
+   "de": "Eissplitter-Kanone",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gletscherspeer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Todesstrahl",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kazoo-Orchester",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mega-Kazoo",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bowling-Bahn",
+   "quelle": "daten"
+  },
+  {
+   "de": "Abrissbirne",
+   "quelle": "daten"
+  },
+  {
+   "de": "Turm-Batterie",
+   "quelle": "daten"
+  },
+  {
+   "de": "Festungsgeschütz",
+   "quelle": "daten"
+  },
+  {
+   "de": "Sternhaufen-Werfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Supermassiv-Werfer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Baron von Bumm ist geschlagen. Krawummia atmet auf – vorerst.",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kochtopf",
+   "quelle": "daten"
+  },
+  {
+   "de": "Pickelhaube",
+   "quelle": "daten"
+  },
+  {
+   "de": "Taucherhelm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Partyhut",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bauhelm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wikingerhelm",
+   "quelle": "daten"
+  },
+  {
+   "de": "Lederweste",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kettenhemd",
+   "quelle": "daten"
+  },
+  {
+   "de": "Daunenjacke",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schrottpanzer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Blaumann",
+   "quelle": "daten"
+  },
+  {
+   "de": "Turnschuhe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gummistiefel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Raketenstiefel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Holzschuhe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hausschuhe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Boxhandschuhe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Ofenhandschuhe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Fingerlose Handschuhe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gartenhandschuhe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gummihandschuhe",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hühnerknochen-Amulett",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kristallanhänger",
+   "quelle": "daten"
+  },
+  {
+   "de": "Bombenmedaillon",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glücksklee",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zahnkette",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schraubenmutter",
+   "quelle": "daten"
+  },
+  {
+   "de": "Kaugummiautomaten-Ring",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zwiebelring",
+   "quelle": "daten"
+  },
+  {
+   "de": "Siegelring",
+   "quelle": "daten"
+  },
+  {
+   "de": "Mondsteinring",
+   "quelle": "daten"
+  },
+  {
+   "de": "Jutebeutel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schulranzen",
+   "quelle": "daten"
+  },
+  {
+   "de": "Picknickkorb",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wanderrucksack",
+   "quelle": "daten"
+  },
+  {
+   "de": "Schatzbeutel",
+   "quelle": "daten"
+  },
+  {
+   "de": "Zäher",
+   "quelle": "daten"
+  },
+  {
+   "de": "Heilsamer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gieriger",
+   "quelle": "daten"
+  },
+  {
+   "de": "Wuchtiger",
+   "quelle": "daten"
+  },
+  {
+   "de": "Hektischer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Präziser",
+   "quelle": "daten"
+  },
+  {
+   "de": "Weitsichtiger",
+   "quelle": "daten"
+  },
+  {
+   "de": "Gepanzerter",
+   "quelle": "daten"
+  },
+  {
+   "de": "Flinker",
+   "quelle": "daten"
+  },
+  {
+   "de": "Rasender",
+   "quelle": "daten"
+  },
+  {
+   "de": "Glücklicher",
+   "quelle": "daten"
+  },
+  {
+   "de": "Reicher",
+   "quelle": "daten"
+  },
+  {
+   "de": "Explosiver",
+   "quelle": "daten"
+  },
+  {
+   "de": "Magnetischer",
+   "quelle": "daten"
+  },
+  {
+   "de": "Feuer",
+   "quelle": "daten:element/gruppe"
+  },
+  {
+   "de": "Blitz",
+   "quelle": "daten:element/gruppe"
+  },
+  {
+   "de": "Eis",
+   "quelle": "daten:element/gruppe"
+  },
+  {
+   "de": "Explosiv",
+   "quelle": "daten:element/gruppe"
+  },
+  {
+   "de": "Tech",
+   "quelle": "daten:element/gruppe"
+  },
+  {
+   "de": "Natur",
+   "quelle": "daten:element/gruppe"
+  },
+  {
+   "de": "Gacker",
+   "quelle": "daten:element/gruppe"
+  },
+  {
+   "de": "Chaos",
+   "quelle": "daten:element/gruppe"
+  },
+  {
+   "de": "Feuerwaffen",
+   "quelle": "daten:element/gruppe"
+  },
+  {
+   "de": "Elementar",
+   "quelle": "daten:element/gruppe"
+  },
+  {
+   "de": "Nahkampf",
+   "quelle": "daten:element/gruppe"
+  },
+  {
+   "de": "Energie",
+   "quelle": "daten:element/gruppe"
+  },
+  {
+   "de": "Drohnen & Türme",
+   "quelle": "daten:element/gruppe"
+  },
+  {
+   "de": "Beschwörung",
+   "quelle": "daten:element/gruppe"
+  },
+  {
+   "de": "Werfer",
+   "quelle": "daten:element/gruppe"
+  },
+  {
+   "de": "Exotisch",
+   "quelle": "daten:element/gruppe"
+  },
+  {
+   "de": "Support",
+   "quelle": "daten:element/gruppe"
+  },
+  {
+   "de": "Wähle 2 oder 3 Waffen.",
+   "quelle": "packages/core/src/progression.ts"
+  },
+  {
+   "de": "Jede Waffe muss mindestens ein Bauteil liefern.",
+   "quelle": "packages/core/src/progression.ts"
+  },
+  {
+   "de": "Nicht genug Kristalle.",
+   "quelle": "packages/core/src/progression.ts"
+  },
+  {
+   "de": "{praefix} {basis}",
+   "quelle": "packages/data/src/equipment.ts"
+  },
+  {
+   "de": "{geschoss}, {antrieb}, mit {ladung}.",
+   "quelle": "packages/data/src/fusion.ts"
+  },
+  {
+   "de": "Fusionen lassen sich nicht weiter verschmelzen – aber mergen!",
+   "quelle": "packages/data/src/fusion.ts"
+  },
+  {
+   "de": "Die Waffen müssen aus verschiedenen Gruppen kommen.",
+   "quelle": "packages/data/src/fusion.ts"
+  },
+  {
+   "de": "Jedes Bauteil muss von einer gewählten Waffe kommen.",
+   "quelle": "packages/data/src/fusion.ts"
+  },
+  {
+   "de": "Welle {n}",
+   "quelle": "packages/data/src/i18n.ts"
+  },
+  {
+   "de": "Schwarm-{name}",
+   "quelle": "packages/data/src/mods.ts"
+  },
+  {
+   "de": "Mega-{name}",
+   "quelle": "packages/data/src/mods.ts"
+  },
+  {
+   "de": "Andere Spielversion – bitte beide Seiten neu laden.",
+   "quelle": "packages/net/src/session.ts"
+  },
+  {
+   "de": "Das Spiel läuft schon.",
+   "quelle": "packages/net/src/session.ts"
+  },
+  {
+   "de": "Der Raum ist voll (4 Spieler).",
+   "quelle": "packages/net/src/session.ts"
+  },
+  {
+   "de": "{name} ist wieder da",
+   "quelle": "packages/net/src/session.ts"
+  },
+  {
+   "de": "{name} hat die Verbindung verloren – wartet 30 s",
+   "quelle": "packages/net/src/session.ts"
+  },
+  {
+   "de": "{name} ist raus",
+   "quelle": "packages/net/src/session.ts"
+  },
+  {
+   "de": "Der Host hat das Spiel beendet.",
+   "quelle": "packages/net/src/session.ts"
+  },
+  {
+   "de": "Verbindung zum Host verloren.",
+   "quelle": "packages/net/src/session.ts"
+  },
+  {
+   "de": "OVERBOOM-Karte",
+   "quelle": "packages/platform/src/capacitor.ts"
+  },
+  {
+   "de": "Alle",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Erfolge",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "neu",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Noch nicht gefunden.",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Glanzkarte",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Gefunden",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Gesperrt",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Fundort:",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Glanz:",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Als Bild",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Zurück",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Runs",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Siege",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Besiegte Gegner",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Längste Kette",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Fusionen",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Reaktionen",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Befreite Inseln",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Evolutionen",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Kristalle",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Komplette Sets",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Beste Welle",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Besiegte Bosse",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Höchste Gefahr (Sieg)",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Glanzkarte: {karte}",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Statistik",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Spielstand",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "als Code sichern oder auf ein anderes Gerät mitnehmen",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Code kopieren",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Code hier einfügen …",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Der Code ist ungültig.",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Code laden (ersetzt deinen Spielstand)",
+   "quelle": "packages/ui/src/album.ts"
+  },
+  {
+   "de": "Debug",
+   "quelle": "packages/ui/src/debug.ts"
+  },
+  {
+   "de": "+{n} Kristalle",
+   "quelle": "packages/ui/src/debug.ts"
+  },
+  {
+   "de": "Welle überspringen",
+   "quelle": "packages/ui/src/debug.ts"
+  },
+  {
+   "de": "Gott-Modus an/aus",
+   "quelle": "packages/ui/src/debug.ts"
+  },
+  {
+   "de": "Overkill voll",
+   "quelle": "packages/ui/src/debug.ts"
+  },
+  {
+   "de": "Volle Leben",
+   "quelle": "packages/ui/src/debug.ts"
+  },
+  {
+   "de": "Waffe geben",
+   "quelle": "packages/ui/src/debug.ts"
+  },
+  {
+   "de": "{n} spawnen",
+   "quelle": "packages/ui/src/debug.ts"
+  },
+  {
+   "de": "F1 schließt",
+   "quelle": "packages/ui/src/debug.ts"
+  },
+  {
+   "de": "Gefahrenstufe",
+   "quelle": "packages/ui/src/gefahr.ts"
+  },
+  {
+   "de": "leichter",
+   "quelle": "packages/ui/src/gefahr.ts"
+  },
+  {
+   "de": "schwerer",
+   "quelle": "packages/ui/src/gefahr.ts"
+  },
+  {
+   "de": "Gewinne hier, um Stufe {n} freizuschalten.",
+   "quelle": "packages/ui/src/gefahr.ts"
+  },
+  {
+   "de": "Menü",
+   "quelle": "packages/ui/src/glyphs.ts"
+  },
+  {
+   "de": "Ansicht",
+   "quelle": "packages/ui/src/glyphs.ts"
+  },
+  {
+   "de": "Steuerkreuz",
+   "quelle": "packages/ui/src/glyphs.ts"
+  },
+  {
+   "de": "L-Stick",
+   "quelle": "packages/ui/src/glyphs.ts"
+  },
+  {
+   "de": "{kreuz} wählen · {a} OK · {b} zurück",
+   "quelle": "packages/ui/src/glyphs.ts"
+  },
+  {
+   "de": "{stick} laufen · Waffen feuern von selbst · {a} Dash · {y} OVERBOOM · {menue} Pause",
+   "quelle": "packages/ui/src/glyphs.ts"
+  },
+  {
+   "de": "Koop",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "Leben",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "Lv {n}",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "Overkill",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "Pause",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "Vollbild",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "Linker Daumen: laufen · Waffen feuern von selbst · Rechts: <b>Dash</b>",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "<b>WASD</b>: laufen · Waffen feuern von selbst · <b>Leertaste</b>: Dash",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "OVERBOOM auslösen",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "antippen",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "Dash",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "CHAIN ×{n}!",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "{element}: {n} Waffen",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "Welle {n} / {max}",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "Bereit?",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "BOSS",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "Geschafft",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "Shop",
+   "quelle": "packages/ui/src/hud.ts"
+  },
+  {
+   "de": "Arena-Chaos mit Waffen-Fusion · 1–4 Spieler",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Solo spielen",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "bis zu 4 Spieler, jeder am eigenen Gerät",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Dein Name",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Raum erstellen",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "CODE",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Raumcode",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Beitreten",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Tipp: {tipp}",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "frei",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Host",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "getrennt …",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "über Relay · {ms} ms",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "direkt · {ms} ms",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "lokal",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "verbinde …",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "bereit",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "wählt …",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Noch nicht freigeschaltet",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Zufallswaffe",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "gesperrt",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Koop-Lobby",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Du bist Host – dein Gerät rechnet für alle.",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Der Host startet, sobald alle bereit sind.",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Verlassen",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Link teilen",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "QR-Code zum Beitreten",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Dein Held",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Insel",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "wählt der Host",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Warte auf Mitspieler …",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Los geht’s",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Warte, bis alle bereit sind …",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Doch nicht bereit",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Bereit!",
+   "quelle": "packages/ui/src/lobby.ts"
+  },
+  {
+   "de": "Freischalten: {text}",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Geschoss:",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Bei Krit kann es spontan Kawumm machen",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Instabil {n} %",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Einstellungen",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Beenden",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Wähle deinen Kawumm-Jäger",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Jeder Held hat eine Startwaffe und eine Macke. Waffen feuern von selbst – du läufst, weichst aus und kaufst nach jeder Welle nach.",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Noch gesperrt.",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Erobert ♛ – hier wurde der Baron besiegt.",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Befreit ⚑ – {text}",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Noch nicht befreit: Besiege den Boss auf Welle 10.",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "{n}/{max} befreit",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Gefahr:",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Boss:",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Welle 20: Baron von Bumm",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Level {n}!",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Wähle eine Verbesserung",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "noch {n}",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Verkauft",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Kein Platz mehr",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Gleiche Waffe da – verschmelzbar!",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Mod",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Einbau in Waffen ab Stufe II (Waffe antippen).",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Beutel voll",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "hast {n}",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Explodiert, wenn du getroffen wirst",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Entsperren",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Sperren",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Sperren: bleibt beim Reroll und in der nächsten Runde",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "{n} Mod",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "bisher {n} Schaden",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Verschmelzen",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Verkaufen +{preis}",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Schließen",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "noch keine",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Amboss",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Ausrüstung",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Welle {n} geschafft",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Neu würfeln",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Werte ausblenden",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Werte",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Boss!",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Waffen {n}/{max}",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "antippen: verschmelzen / verkaufen / Mods / Evolution",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "{n} Mod(s) im Rucksack",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Synergien",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Elemente deiner Waffen – Boni ab 2 / 4 / 6",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Sterne",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "{n}/{max} Kills bis zum nächsten Stern",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "evolviert",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "bereit zur Evolution!",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "je Stern +{n} % Schaden",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Evolution A · Mehr",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Evolution B · Größer",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Mods {n}/{max}",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "erst ab Stufe II",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Einbauen: {name}",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "leer",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Set",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Anlegen",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Statt: {name}",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Schrott +{n}",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Angelegt",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "8 Plätze – Werte zählen sofort",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Beutel {n}/{max}",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Beute von Elite-Gegnern und Bossen, oder aus dem Shop",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Noch nichts gefunden. Elite-Gegner und Bosse lassen Ausrüstung fallen.",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Sets",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Fusionen lassen sich nur mergen",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Bauteile zuordnen",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "jede Waffe liefert mindestens eins",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Geschoss – was fliegt",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Antrieb – wie es fliegt",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Ladung – was passiert",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Geheimes Rezept",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Was passiert da wohl …",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Diese Zutaten kennt der Amboss. Verschmelze sie, um das Rezept zu entdecken!",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Verschmelzen!",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Wähle 2 oder 3 Waffen aus <b>verschiedenen Gruppen</b>. Jede liefert ein Bauteil – Geschoss, Antrieb oder Ladung – und es entsteht eine ganz neue Waffe. Je verschiedener die Gruppen, desto instabiler … und stärker.",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Waffen wählen",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Schmiedelohn",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Rezeptbuch {n}/{max}",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Welle",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Level",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Besiegt",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Gesamtschaden",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Größte Kette",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "MVP-Waffe",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Gefahr",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Sieg!",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Kawumm!",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Der Host entscheidet, wie es weitergeht …",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Raum verlassen",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Endlos weiter",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Zurück in die Lobby",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Nochmal!",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Pfeiltasten + Enter · Gamepad: Steuerkreuz + A",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Achtung: Im Koop läuft das Spiel weiter!",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Kurz durchatmen. Die Grummelbolde warten (grummelnd).",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Tipp:",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Weiter",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Neu starten",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Esc / P: Pause · WASD: laufen · Leertaste: Dash",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Du bist Host – wenn du gehst, endet das Spiel für alle Mitspieler.",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Deine Mitspieler spielen ohne dich weiter.",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Der laufende Run endet. Freigeschaltete Karten, Helden und Erfolge bleiben erhalten.",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Raum verlassen?",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Run beenden?",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Ja, verlassen",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Ja, zum Titel",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Weiterspielen",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Kartenalbum {n}/{max}",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Das Rezeptbuch: Unentdeckte Rezepte zeigen nur ihren Hinweis – antippen!",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Kartenalbum",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Set „{set}\" · {n}/{max} gefunden · ✦ {glanz} Glanz",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Warte auf Hilfe …",
+   "quelle": "packages/ui/src/nametags.ts"
+  },
+  {
+   "de": "Hilfe! {p} %",
+   "quelle": "packages/ui/src/nametags.ts"
+  },
+  {
+   "de": "Datenschutz &amp; Lizenzen",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "Datenschutz",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "<b>Solo:</b> Es werden keine Daten übertragen. Kein Konto, keine Werbung, kein Tracking.",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "<b>Spielstand, Einstellungen, Name</b> bleiben nur auf diesem Gerät. Löschen: App deinstallieren bzw. Website-Daten löschen.",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "<b>Koop:</b> Damit sich die Geräte finden, gehen deine IP-Adresse und dein Spielername an Verbindungsserver (STUN von Google und Cloudflare, öffentliche Nostr-Relays) und an deine Mitspieler. Die Verbindung selbst ist verschlüsselt.",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "Einige dieser Anbieter sitzen außerhalb der EU (z. B. USA).",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "Ausführlich: {link}",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "Lizenz",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "OVERBOOM © 2026 HOAI-droid – alle Rechte vorbehalten. Bereitgestellt ohne Gewähr.",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "Verwendete Open-Source-Software",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "Schrift Silkscreen",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "Apps: Tauri (MIT/Apache 2.0), Capacitor (MIT), AndroidX (Apache 2.0), WinUI 2 (MIT) und weitere Bibliotheken",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "Vollständige Liste mit allen Lizenzen: {link}",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "Kurz vor dem Koop",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "Damit sich eure Geräte finden und direkt verbinden können, werden deine <b>IP-Adresse</b> und dein <b>Spielername</b> an Verbindungsserver (Google, Cloudflare, öffentliche Nostr-Relays – teils außerhalb der EU) und an deine Mitspieler übertragen.",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "Solo werden keine Daten übertragen. Tipp: Nimm einen Spitznamen statt deines echten Namens.",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "Verstanden – weiter",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "Mehr lesen",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "Abbrechen",
+   "quelle": "packages/ui/src/rechtliches.ts"
+  },
+  {
+   "de": "An",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Aus",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Automatisch",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Max",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Ultra",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Hoch",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Mittel",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Niedrig",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Rock",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Pop",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Retro",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Chiptune",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Fertig",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Ton",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Lautstärke",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Effekte",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Musik",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Sprache",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "wird live erzeugt und passt sich dem Kampf an",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Grafik",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Barrierefreiheit",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Bildschirm-Wackeln",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Lichtblitze",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Partikel",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Schadenszahlen",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Vibration",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Farbenblind-Modus",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Gefahren mit Mustern statt nur Farben",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "WebGL konnte nicht gestartet werden. Bitte einen aktuellen Browser verwenden.",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Kopiert",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Kopieren ging nicht",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Spielstand-Code",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Bitte von Hand markieren",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Spielstand geladen",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "{n} Karten",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Karte gespeichert",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Fehler",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Bild konnte nicht erstellt werden",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Gott-Modus an",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Gott-Modus aus",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "max",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "ultra",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "hoch",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "mittel",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "niedrig",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "gerade: {stufe}",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Speicher knapp",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Grafik auf „niedrig\" gestellt",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Koop beendet",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Jäger {id}",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Teile den Code oder Link – bis zu {n} Freunde können beitreten.",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Raumcode?",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Der Code hat {n} Zeichen.",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Suche Raum {code} …",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Keine Verbindung zum Raum. Stimmt der Code? Manche Netze (Mobilfunk, Firmen-WLAN) blockieren direkte Verbindungen – dann braucht es einen TURN-Relay.",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "OVERBOOM – spiel mit!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Link kopiert",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Ausgewichen!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Level up!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "{name}!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Auf geht’s!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Die letzte!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Jetzt wird’s ernst!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Welle geschafft!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Alles fliegt in die Luft",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Rezept entdeckt!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Verschmolzen!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "{n} Sterne!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "{waffe} kann im Shop evolvieren",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Evolution!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Beute: {name}",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "MINI-NUKE!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Am Boden!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Ein Mitspieler kann dich wiederbeleben",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Hilfe!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "{name} ist am Boden",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Jemand",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Wieder da!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "{name} hat dich gerettet",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Gerettet!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Overkill voll!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "OVERBOOM antippen",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "E oder Q drücken",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Doppelte Feuerrate · alles explodiert",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "{name} dreht durch",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Glanzkarte!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Neue Karte",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Erfolg",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Neue Gefahrenstufe",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Stufe {n} freigeschaltet",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "{insel} befreit!",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Neue Insel",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "{n} Gegner",
+   "quelle": "apps/web/src/main.ts"
+  }
+ ],
+ "fusion": {
+  "geschosse": [
+   {
+    "id": "kugel",
+    "name": "Kugel",
+    "adjektivDe": "Flinke"
+   },
+   {
+    "id": "nagel",
+    "name": "Nagel",
+    "adjektivDe": "Spitze"
+   },
+   {
+    "id": "kartoffel",
+    "name": "Kartoffel",
+    "adjektivDe": "Mehlige"
+   },
+   {
+    "id": "rakete",
+    "name": "Rakete",
+    "adjektivDe": "Zischende"
+   },
+   {
+    "id": "granate",
+    "name": "Granate",
+    "adjektivDe": "Kullernde"
+   },
+   {
+    "id": "dynamit",
+    "name": "Dynamitstange",
+    "adjektivDe": "Zündelnde"
+   },
+   {
+    "id": "mine",
+    "name": "Mine",
+    "adjektivDe": "Lauernde"
+   },
+   {
+    "id": "schleim",
+    "name": "Schleimbatzen",
+    "adjektivDe": "Glibbernde"
+   },
+   {
+    "id": "meteor",
+    "name": "Meteor",
+    "adjektivDe": "Himmlische"
+   },
+   {
+    "id": "blitzkugel",
+    "name": "Plasmakugel",
+    "adjektivDe": "Knisternde"
+   },
+   {
+    "id": "flamme",
+    "name": "Flammenschwall",
+    "adjektivDe": "Lodernde"
+   },
+   {
+    "id": "eiszapfen",
+    "name": "Eiszapfen",
+    "adjektivDe": "Frostige"
+   },
+   {
+    "id": "blase",
+    "name": "Seifenblase",
+    "adjektivDe": "Schillernde"
+   },
+   {
+    "id": "wasser",
+    "name": "Wasserstrahl",
+    "adjektivDe": "Plätschernde"
+   },
+   {
+    "id": "schlaeger",
+    "name": "Baseballschläger",
+    "adjektivDe": "Krachende"
+   },
+   {
+    "id": "saege",
+    "name": "Kreissäge",
+    "adjektivDe": "Sägende"
+   },
+   {
+    "id": "faust",
+    "name": "Boxhandschuh",
+    "adjektivDe": "Boxende"
+   },
+   {
+    "id": "hammer",
+    "name": "Riesenhammer",
+    "adjektivDe": "Wuchtige"
+   },
+   {
+    "id": "pfanne",
+    "name": "Bratpfanne",
+    "adjektivDe": "Scheppernde"
+   },
+   {
+    "id": "axt",
+    "name": "Wurfaxt",
+    "adjektivDe": "Wirbelnde"
+   },
+   {
+    "id": "laser",
+    "name": "Laserstrahl",
+    "adjektivDe": "Strahlende"
+   },
+   {
+    "id": "note",
+    "name": "Schallwelle",
+    "adjektivDe": "Tröötende"
+   },
+   {
+    "id": "schwarzloch",
+    "name": "Mini-Singularität",
+    "adjektivDe": "Schluckende"
+   },
+   {
+    "id": "drohne",
+    "name": "Mini-Drohne",
+    "adjektivDe": "Surrende"
+   },
+   {
+    "id": "toast",
+    "name": "Glühtoast",
+    "adjektivDe": "Knusprige"
+   },
+   {
+    "id": "biene",
+    "name": "Biene",
+    "adjektivDe": "Summende"
+   },
+   {
+    "id": "ei",
+    "name": "Ei",
+    "adjektivDe": "Eiernde"
+   },
+   {
+    "id": "spore",
+    "name": "Sporenwolke",
+    "adjektivDe": "Stinkende"
+   },
+   {
+    "id": "gummiente",
+    "name": "Quietscheente",
+    "adjektivDe": "Quietschende"
+   },
+   {
+    "id": "grummel",
+    "name": "Bestochener Grummelbold",
+    "adjektivDe": "Grummelnde"
+   },
+   {
+    "id": "schneeball",
+    "name": "Schneeball",
+    "adjektivDe": "Pappige"
+   },
+   {
+    "id": "bowling",
+    "name": "Bowlingkugel",
+    "adjektivDe": "Rollende"
+   },
+   {
+    "id": "banane",
+    "name": "Banane",
+    "adjektivDe": "Krumme"
+   },
+   {
+    "id": "stern",
+    "name": "Wurfstern",
+    "adjektivDe": "Funkelnde"
+   },
+   {
+    "id": "huhn",
+    "name": "Huhn",
+    "adjektivDe": "Gackernde"
+   },
+   {
+    "id": "luftballon",
+    "name": "Luftballon",
+    "adjektivDe": "Schwebende"
+   },
+   {
+    "id": "kuckuck",
+    "name": "Kuckuck",
+    "adjektivDe": "Pünktliche"
+   },
+   {
+    "id": "pflaster",
+    "name": "Pflaster",
+    "adjektivDe": "Heilende"
+   },
+   {
+    "id": "muenze",
+    "name": "Glücksmünze",
+    "adjektivDe": "Klimpernde"
+   },
+   {
+    "id": "keks",
+    "name": "Omas Keks",
+    "adjektivDe": "Krümelige"
+   }
+  ],
+  "antriebe": [
+   {
+    "id": "gerade",
+    "name": "Gerade",
+    "nomenDe": "kanone",
+    "genusDe": "f"
+   },
+   {
+    "id": "faecher",
+    "name": "Fächer",
+    "nomenDe": "flinte",
+    "genusDe": "f"
+   },
+   {
+    "id": "bogen",
+    "name": "Bogenwurf",
+    "nomenDe": "mörser",
+    "genusDe": "m"
+   },
+   {
+    "id": "zielsuchend",
+    "name": "Zielsuchend",
+    "nomenDe": "jäger",
+    "genusDe": "m"
+   },
+   {
+    "id": "zielbogen",
+    "name": "Zielsuchend im Bogen",
+    "nomenDe": "rakete",
+    "genusDe": "f"
+   },
+   {
+    "id": "orbit",
+    "name": "Umlaufbahn",
+    "nomenDe": "kreisel",
+    "genusDe": "m"
+   },
+   {
+    "id": "abprall",
+    "name": "Querschläger",
+    "nomenDe": "flipper",
+    "genusDe": "m"
+   },
+   {
+    "id": "bumerang",
+    "name": "Bumerang",
+    "nomenDe": "bumerang",
+    "genusDe": "m"
+   },
+   {
+    "id": "spirale",
+    "name": "Spirale",
+    "nomenDe": "spirale",
+    "genusDe": "f"
+   },
+   {
+    "id": "strahl",
+    "name": "Dauerstrahl",
+    "nomenDe": "strahler",
+    "genusDe": "m"
+   },
+   {
+    "id": "kegel",
+    "name": "Kegel",
+    "nomenDe": "werfer",
+    "genusDe": "m"
+   },
+   {
+    "id": "regen",
+    "name": "Himmelsregen",
+    "nomenDe": "regen",
+    "genusDe": "m"
+   },
+   {
+    "id": "huepfend",
+    "name": "Hüpfend",
+    "nomenDe": "hüpfer",
+    "genusDe": "m"
+   },
+   {
+    "id": "ablegen",
+    "name": "Ablegen",
+    "nomenDe": "falle",
+    "genusDe": "f"
+   },
+   {
+    "id": "turm",
+    "name": "Turm",
+    "nomenDe": "turm",
+    "genusDe": "m"
+   },
+   {
+    "id": "schwarm",
+    "name": "Schwarm",
+    "nomenDe": "schwarm",
+    "genusDe": "m"
+   },
+   {
+    "id": "rollen",
+    "name": "Rollen",
+    "nomenDe": "walze",
+    "genusDe": "f"
+   },
+   {
+    "id": "teleport",
+    "name": "Teleport",
+    "nomenDe": "blinzler",
+    "genusDe": "m"
+   },
+   {
+    "id": "nahkampf",
+    "name": "Rundumschlag",
+    "nomenDe": "keule",
+    "genusDe": "f"
+   }
+  ],
+  "ladungen": [
+   {
+    "id": "explosion",
+    "name": "Explosion",
+    "wortDe": "Kawumm"
+   },
+   {
+    "id": "kettenblitz",
+    "name": "Kettenblitz",
+    "wortDe": "Blitz"
+   },
+   {
+    "id": "brand",
+    "name": "Brand",
+    "wortDe": "Feuer"
+   },
+   {
+    "id": "gift",
+    "name": "Gift",
+    "wortDe": "Gift"
+   },
+   {
+    "id": "frost",
+    "name": "Frost",
+    "wortDe": "Frost"
+   },
+   {
+    "id": "wasser",
+    "name": "Nässe",
+    "wortDe": "Wasser"
+   },
+   {
+    "id": "schwerkraft",
+    "name": "Schwerkraft",
+    "wortDe": "Schwerkraft"
+   },
+   {
+    "id": "splitter",
+    "name": "Splitter",
+    "wortDe": "Splitter"
+   },
+   {
+    "id": "konfetti",
+    "name": "Konfetti",
+    "wortDe": "Konfetti"
+   },
+   {
+    "id": "rueckstoss",
+    "name": "Rückstoß",
+    "wortDe": "Wumms"
+   },
+   {
+    "id": "saeure",
+    "name": "Säure",
+    "wortDe": "Säure"
+   },
+   {
+    "id": "kueken",
+    "name": "Küken",
+    "wortDe": "Küken"
+   },
+   {
+    "id": "ranken",
+    "name": "Ranken",
+    "wortDe": "Ranken"
+   },
+   {
+    "id": "magnet",
+    "name": "Magnet",
+    "wortDe": "Magnet"
+   },
+   {
+    "id": "schall",
+    "name": "Schall",
+    "wortDe": "Schall"
+   },
+   {
+    "id": "verhuehnern",
+    "name": "Verhühnerung",
+    "wortDe": "Hühner"
+   },
+   {
+    "id": "glueck",
+    "name": "Glück",
+    "wortDe": "Glücks"
+   },
+   {
+    "id": "lava",
+    "name": "Lava",
+    "wortDe": "Lava"
+   },
+   {
+    "id": "kleister",
+    "name": "Kleister",
+    "wortDe": "Kleister"
+   },
+   {
+    "id": "lebensraub",
+    "name": "Lebensraub",
+    "wortDe": "Lebens"
+   },
+   {
+    "id": "plasma",
+    "name": "Plasma",
+    "wortDe": "Plasma"
+   },
+   {
+    "id": "heilung",
+    "name": "Heilung",
+    "wortDe": "Heil"
+   }
+  ]
+ }
+}

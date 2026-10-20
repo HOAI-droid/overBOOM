@@ -1,9 +1,9 @@
 import './fonts.css';
 import { World, DT, DASH_COOLDOWN, NO_INPUT, MetaTracker, heldenFrei, inselFrei, ladeProfil, profilAusCode, profilCode, spawnEnemy, type Command, type InputState, type SimEvent } from '@overboom/core';
-import { GEGNER_INDEX, BOSS_LORE, ELEMENT_INFO, ERFOLGE, GEGNER, GEGNER_BY_ID, HELD_BY_ID, INSELN, INSEL_BY_ID, INSEL_LORE, KARTE_BY_ID, LEVEL, SELTENHEIT, SYNERGIEN, WELLEN, WELLEN_SPRUECHE, waffeById, waehle } from '@overboom/data';
+import { t, istSprache, type Sprache, ladeWoerterbuch, lokalisiereDaten, setzeWoerterbuch, spracheAus, GEGNER_INDEX, BOSS_LORE, ELEMENT_INFO, ERFOLGE, GEGNER, GEGNER_BY_ID, HELD_BY_ID, INSELN, INSEL_BY_ID, INSEL_LORE, KARTE_BY_ID, LEVEL, SELTENHEIT, SYNERGIEN, WELLEN, WELLEN_SPRUECHE, waffeById, waehle } from '@overboom/data';
 import { CardArt, FX, GameRenderer, type PlayerPose } from '@overboom/render';
 import { AudioEngine, renderMusik } from '@overboom/audio';
-import { Controls, DamageNumbers, DebugMenu, Hud, MenuNav, Menus, NameTags, karteAlsBild, ladeEinstellungen, screenToWorld, type CoopAktion, type CoopAnsicht, type Einstellungen } from '@overboom/ui';
+import { sprachwahl, Controls, DamageNumbers, DebugMenu, Hud, MenuNav, Menus, NameTags, karteAlsBild, ladeEinstellungen, screenToWorld, type CoopAktion, type CoopAnsicht, type Einstellungen } from '@overboom/ui';
 import { ClientSession, HostSession, LocalTransport, createTrysteroTransport, makeRoomCode, normalizeRoomCode, type LobbySpieler, type Transport } from '@overboom/net';
 import { createPlatform, type Platform } from '@overboom/platform';
 
@@ -32,6 +32,14 @@ function turnConfig() {
 
 async function start() {
   platform = await createPlatform();
+  // Sprache: beim ersten Start abfragen, danach gemerkt (?lang=en zum Testen).
+  // Muss vor allen Texten passieren – Oberfläche und Spieldaten werden danach erzeugt bzw. übersetzt.
+  const gemerkt = params.get('lang') ?? await platform.storage.get('sprache');
+  const sprache: Sprache = istSprache(gemerkt) ? gemerkt : await sprachwahl(root, spracheAus(platform.systemSprache()));
+  if (!istSprache(gemerkt)) platform.storage.set('sprache', sprache);
+  setzeWoerterbuch(sprache, await ladeWoerterbuch(sprache));
+  lokalisiereDaten();
+  document.documentElement.lang = sprache;
   // Profil (Kartenalbum, Erfolge, befreite Inseln) laden – alte Rezeptliste übernehmen
   const profil = ladeProfil(await platform.storage.get('profil'));
   if (!profil.rezepte.length) {
@@ -103,7 +111,7 @@ async function start() {
   try {
     renderer = new GameRenderer(canvas, world, { internalShort, shadows: params.get('shadows') !== '0', shake: einst.shake });
   } catch (e) {
-    fail('WebGL konnte nicht gestartet werden. Bitte einen aktuellen Browser verwenden.');
+    fail(t('WebGL konnte nicht gestartet werden. Bitte einen aktuellen Browser verwenden.'));
     throw e;
   }
 
@@ -156,21 +164,21 @@ async function start() {
   Object.defineProperty(menus, 'kunst', { get: () => (kunst ??= new CardArt(96)) });
   menus.gesehen = (id) => { meta.gesehen(id); save(); };
   menus.profilCode = () => profilCode(meta.profil);
-  menus.kopieren = (text) => { platform.copyText(text).then((ok) => hud.toast(ok ? 'Kopiert' : 'Kopieren ging nicht', ok ? 'Spielstand-Code' : 'Bitte von Hand markieren', ok ? '#3de8ff' : '#ff3d6a')); };
+  menus.kopieren = (text) => { platform.copyText(text).then((ok) => hud.toast(ok ? t('Kopiert') : t('Kopieren ging nicht'), ok ? t('Spielstand-Code') : t('Bitte von Hand markieren'), ok ? '#3de8ff' : '#ff3d6a')); };
   menus.importCode = (code) => {
     const p = profilAusCode(code);
     if (!p) return false;
     meta.profil = p;
     meta.dirty = true;
     save(true);
-    hud.toast('Spielstand geladen', `${Object.keys(p.karten).length} Karten`, '#3de8ff');
+    hud.toast(t('Spielstand geladen'), t('{n} Karten', { n: Object.keys(p.karten).length }), '#3de8ff');
     return true;
   };
   menus.exportBild = (k, glanz) => {
     const art = (kunst ??= new CardArt(96)).thumb(k, false);
     karteAlsBild(k, art, glanz).then((blob) => platform.saveImage(blob, `overboom-${String(k.nr).padStart(3, '0')}-${k.ref}.png`))
-      .then((ort) => { if (ort) hud.toast('Karte gespeichert', ort, '#3de8ff'); })
-      .catch(() => hud.toast('Fehler', 'Bild konnte nicht erstellt werden', '#ff3d6a'));
+      .then((ort) => { if (ort) hud.toast(t('Karte gespeichert'), ort, '#3de8ff'); })
+      .catch(() => hud.toast(t('Fehler'), t('Bild konnte nicht erstellt werden'), '#ff3d6a'));
   };
   const nav = new MenuNav(menus.root);
   nav.textSperre = !!platform.nurController;
@@ -186,7 +194,7 @@ async function start() {
     switch (a.t) {
       case 'kristalle': p.crystals += 500; break;
       case 'welle': if (world.phase === 'welle') { world.waveTime = 0.1; if (world.boss >= 0) world.killEnemy(world.enemies[world.boss], 0, 0, false); } break;
-      case 'gott': (world.opt as { god: boolean }).god = !world.opt.god; hud.toast('Debug', world.opt.god ? 'Gott-Modus an' : 'Gott-Modus aus', '#3de8ff'); break;
+      case 'gott': (world.opt as { god: boolean }).god = !world.opt.god; hud.toast(t('Debug'), world.opt.god ? t('Gott-Modus an') : t('Gott-Modus aus'), '#3de8ff'); break;
       case 'overkill': p.overkill = 1; break;
       case 'heilen': p.hp = p.maxHp; break;
       case 'waffe': world.debugGive(me, a.id); break;
@@ -221,7 +229,10 @@ async function start() {
     if (speichern) platform.storage.set('einstellungen', JSON.stringify(einst));
   };
   menus.onEinstellungen = (e) => { Object.assign(einst, e); applyEinstellungen(true); };
-  menus.qualiInfo = () => `${renderer.internalSize.w}×${renderer.internalSize.h}${einst.qualitaet === 'auto' ? ` · gerade: ${qualiStufe()}` : ''}`;
+  /** Name einer Qualitätsstufe für die Anzeige (klein geschrieben wie bisher) */
+  const qualiName = (k: keyof typeof QUALI): string =>
+    k === 'max' ? t('max') : k === 'ultra' ? t('ultra') : k === 'hoch' ? t('hoch') : k === 'mittel' ? t('mittel') : t('niedrig');
+  menus.qualiInfo = () => `${renderer.internalSize.w}×${renderer.internalSize.h}${einst.qualitaet === 'auto' ? ' · ' + t('gerade: {stufe}', { stufe: qualiName(qualiStufe()) }) : ''}`;
   menus.klick = (art) => { audio.unlock(); audio.play(art); };
   // Ton erst nach der ersten Berührung/Taste (iOS)
   const unlock = () => audio.unlock();
@@ -295,6 +306,11 @@ async function start() {
   };
   menus.onRestart = restart;
   // Beenden aus Shop, Level-Up oder Pause (solo): Run verwerfen, zurück zum Titel
+  // Sprachwechsel: speichern und neu laden (alle Texte und Spieldaten neu in der neuen Sprache)
+  menus.onSprache = (s) => {
+    if (!istSprache(s) || s === sprache) return;
+    void platform.storage.set('sprache', s).then(() => platform.neuLaden());
+  };
   menus.onZumTitel = () => {
     restart();
     menus.screen = 'titel';
@@ -304,9 +320,9 @@ async function start() {
   // BackRequested gleichzeitig an, zählt nur der erste Druck
   let zurueckT = -1e9;
   const zurueck = () => {
-    const t = performance.now();
-    if (t - zurueckT < 300) return;
-    zurueckT = t;
+    const jetzt = performance.now();
+    if (jetzt - zurueckT < 300) return;
+    zurueckT = jetzt;
     if (!menus.back()) pause(!paused);
   };
   nav.onBack = zurueck;
@@ -315,7 +331,7 @@ async function start() {
     if (speicherKnapp) return;
     speicherKnapp = true;
     applyEinstellungen(false);
-    hud.toast('Speicher knapp', 'Grafik auf „niedrig" gestellt', '#ffd23f');
+    hud.toast(t('Speicher knapp'), t('Grafik auf „niedrig" gestellt'), '#ffd23f');
   });
   hud.pauseButton.addEventListener('click', () => pause(!paused));
   addEventListener('keydown', (e) => {
@@ -362,7 +378,7 @@ async function start() {
     menus.hide();
     menus.screen = 'titel';
     tags.update([], 0, () => {}, 0, 0);
-    if (grund) hud.toast('Koop beendet', grund, '#ff3d6a');
+    if (grund) hud.toast(t('Koop beendet'), grund, '#ff3d6a');
   };
 
   const startGameView = (w: World, slot: number, rolle: 'host' | 'client') => {
@@ -375,7 +391,7 @@ async function start() {
   };
 
   const nameMerken = (name: string) => {
-    spielerName = name || spielerName || `Jäger ${platform.randomId().slice(0, 3).toUpperCase()}`;
+    spielerName = name || spielerName || t('Jäger {id}', { id: platform.randomId().slice(0, 3).toUpperCase() });
     menus.name = spielerName;
     platform.storage.set('name', spielerName);
   };
@@ -385,17 +401,17 @@ async function start() {
       case 'erstellen': {
         nameMerken(a.name);
         const code = makeRoomCode(() => Math.random());
-        const t = await makeTransport(code);
+        const tr = await makeTransport(code);
         modus = 'host';
         meinHeld = heldenFrei(meta.profil).includes(meinHeld) ? meinHeld : 'kawummkid';
-        host = new HostSession(t, spielerName, token, {
+        host = new HostSession(tr, spielerName, token, {
           lobby: () => updateCoop(),
           events: (ev) => processEvents(ev, performance.now()),
-          info: (text) => hud.toast('Koop', text, '#ffd23f')
+          info: (text) => hud.toast(t('Koop'), text, '#ffd23f')
         });
         const ersteFreie = INSELN.filter((i) => inselFrei(meta.profil, i.id));
         host.pick(meinHeld, (ersteFreie.find((i) => !meta.profil.befreit.includes(i.id)) ?? ersteFreie[0] ?? INSELN[0]).id);
-        coop = { rolle: 'host', code, link: link(code), spieler: host.lobbyList(), slot: 0, insel: host.insel, status: 'Teile den Code oder Link – bis zu 3 Freunde können beitreten.', fehler: false, inselnFrei: [], heldenFrei: [], gefahr: 0, gefahrFrei: 0 };
+        coop = { rolle: 'host', code, link: link(code), spieler: host.lobbyList(), slot: 0, insel: host.insel, status: t('Teile den Code oder Link – bis zu {n} Freunde können beitreten.', { n: 3 }), fehler: false, inselnFrei: [], heldenFrei: [], gefahr: 0, gefahrFrei: 0 };
         updateCoop();
         menus.screen = 'lobby';
         menus.hide();
@@ -405,26 +421,26 @@ async function start() {
       case 'beitreten': {
         nameMerken(a.name);
         const code = normalizeRoomCode(a.code);
-        if (code.length !== 6) { hud.toast('Raumcode?', 'Der Code hat 6 Zeichen.', '#ff3d6a'); return; }
-        const t = await makeTransport(code);
+        if (code.length !== 6) { hud.toast(t('Raumcode?'), t('Der Code hat {n} Zeichen.', { n: 6 }), '#ff3d6a'); return; }
+        const tr = await makeTransport(code);
         modus = 'client';
-        coop = { rolle: 'client', code, link: link(code), spieler: [], slot: -1, insel: '', status: `Suche Raum ${code} …`, fehler: false, inselnFrei: [], heldenFrei: [], gefahr: 0, gefahrFrei: 0 };
-        client = new ClientSession(t, spielerName, token, {
+        coop = { rolle: 'client', code, link: link(code), spieler: [], slot: -1, insel: '', status: t('Suche Raum {code} …', { code }), fehler: false, inselnFrei: [], heldenFrei: [], gefahr: 0, gefahrFrei: 0 };
+        client = new ClientSession(tr, spielerName, token, {
           welcome: (slot) => {
             if (connectTimer) clearTimeout(connectTimer);
             meinHeld = heldenFrei(meta.profil).includes(meinHeld) ? meinHeld : 'kawummkid';
             client?.pick(meinHeld, meinBereit);
             updateCoop({ slot, status: '', fehler: false });
           },
-          reject: (grund) => updateCoop({ status: grund, fehler: true }),
+          reject: (grund) => updateCoop({ status: t(grund), fehler: true }),
           lobby: (spieler: LobbySpieler[], insel: string, _l: boolean, gefahr: number) => updateCoop({ spieler, insel, gefahr }),
           start: (w) => startGameView(w, client?.slot ?? 1, 'client'),
           lobbyzurueck: () => { meinBereit = false; client?.pick(meinHeld, false); menus.koop = null; menus.screen = 'lobby'; menus.hide(); updateCoop(); },
-          bye: (grund) => { void leaveCoop(grund); }
+          bye: (grund) => { void leaveCoop(t(grund)); }
         });
         client.startHello();
         connectTimer = setTimeout(() => {
-          if (client && client.slot < 0) updateCoop({ status: 'Keine Verbindung zum Raum. Stimmt der Code? Manche Netze (Mobilfunk, Firmen-WLAN) blockieren direkte Verbindungen – dann braucht es einen TURN-Relay.', fehler: true });
+          if (client && client.slot < 0) updateCoop({ status: t('Keine Verbindung zum Raum. Stimmt der Code? Manche Netze (Mobilfunk, Firmen-WLAN) blockieren direkte Verbindungen – dann braucht es einen TURN-Relay.'), fehler: true });
         }, 15000);
         updateCoop();
         menus.screen = 'lobby';
@@ -451,8 +467,8 @@ async function start() {
       }
       case 'teilen': {
         if (!coop) return;
-        const r = await platform.shareLink('OVERBOOM – spiel mit!', coop.link);
-        if (r === 'kopiert') hud.toast('Link kopiert', coop.code, '#3de8ff');
+        const r = await platform.shareLink(t('OVERBOOM – spiel mit!'), coop.link);
+        if (r === 'kopiert') hud.toast(t('Link kopiert'), coop.code, '#3de8ff');
         return;
       }
       case 'lobby': if (host) { host.backToLobby(); menus.koop = null; menus.screen = 'lobby'; menus.hide(); updateCoop(); } return;
@@ -504,46 +520,46 @@ async function start() {
           break;
         case 'chain': hud.chain(e.count); break;
         case 'hurt': if (e.player === me) { hud.hurt(); haptic(60); } break;
-        case 'dodge': damage.text(-e.player - 1, e.x, 1.2, e.z, 'Ausgewichen!', 'dodge'); break;
+        case 'dodge': damage.text(-e.player - 1, e.x, 1.2, e.z, t('Ausgewichen!'), 'dodge'); break;
         case 'heal': damage.text(-e.player - 100, e.x, 1.1, e.z, `+${e.value}`, 'heal'); break;
-        case 'levelUp': damage.text(-e.player - 200, e.x, 1.6, e.z, 'Level up!', 'lvl'); if (e.player === me) haptic(30); break;
+        case 'levelUp': damage.text(-e.player - 200, e.x, 1.6, e.z, t('Level up!'), 'lvl'); if (e.player === me) haptic(30); break;
         case 'waveStart': {
           const bossId = e.wave >= 20 ? 'baron' : world.insel.boss;
-          if (e.boss) hud.banner(`${GEGNER_BY_ID[bossId]?.name ?? 'Boss'}!`, BOSS_LORE[bossId]?.auftritt ?? '', 'rot');
-          else if (e.wave === 1) hud.banner(world.insel.name, INSEL_LORE[world.insel.id]?.ankunft ?? 'Auf geht’s!', 'gelb');
-          else hud.banner(`Welle ${e.wave}`, e.wave === 20 ? 'Die letzte!' : waehle(WELLEN_SPRUECHE, `${seed}:${runs}:${e.wave}`), 'gelb');
+          if (e.boss) hud.banner(t('{name}!', { name: GEGNER_BY_ID[bossId]?.name ?? t('Boss') }), BOSS_LORE[bossId]?.auftritt ?? '', 'rot');
+          else if (e.wave === 1) hud.banner(world.insel.name, INSEL_LORE[world.insel.id]?.ankunft ?? t('Auf geht’s!'), 'gelb');
+          else hud.banner(t('Welle {n}', { n: e.wave }), e.wave === 20 ? t('Die letzte!') : waehle(WELLEN_SPRUECHE, `${seed}:${runs}:${e.wave}`), 'gelb');
           break;
         }
         case 'bossPhase': {
           const bossId = world.wave >= 20 ? 'baron' : world.insel.boss;
-          hud.banner('Jetzt wird’s ernst!', BOSS_LORE[bossId]?.wut ?? '', 'rot'); haptic(120); break;
+          hud.banner(t('Jetzt wird’s ernst!'), BOSS_LORE[bossId]?.wut ?? '', 'rot'); haptic(120); break;
         }
-        case 'waveClear': hud.banner('Welle geschafft!', 'Alles fliegt in die Luft', 'cyan'); haptic(80); break;
+        case 'waveClear': hud.banner(t('Welle geschafft!'), t('Alles fliegt in die Luft'), 'cyan'); haptic(80); break;
         case 'victory': endTimer = 1.2; break;
         case 'fusion':
           if (e.player !== me) break;
           if (e.rezept && !meta.profil.rezepte.includes(e.rezept)) {
-            hud.banner('Rezept entdeckt!', e.name, 'gelb');
+            hud.banner(t('Rezept entdeckt!'), e.name, 'gelb');
             haptic(150);
-          } else hud.banner('Verschmolzen!', e.name, e.rezept ? 'gelb' : 'cyan');
+          } else hud.banner(t('Verschmolzen!'), e.name, e.rezept ? 'gelb' : 'cyan');
           break;
         case 'reaction': damage.text(-5000 - (e.x * 37 | 0) - (e.z * 11 | 0), e.x, 1.5, e.z, e.name, 'reaction', e.farbe); break;
-        case 'star': if (e.player === me) { damage.text(-7000 - e.slot, e.x, 1.9, e.z, `${'★'.repeat(e.stars)} ${e.weapon}`, 'lvl'); if (e.stars === 5) hud.banner('5 Sterne!', `${e.weapon} kann im Shop evolvieren`, 'gelb'); } break;
-        case 'evolve': if (e.player === me) { hud.banner('Evolution!', e.weapon, 'gelb'); haptic(120); } break;
-        case 'loot': if (e.player === me) { damage.text(-8000 - (e.seltenheit), e.x, 1.6, e.z, `Beute: ${e.name}`, 'lvl', SELTENHEIT[e.seltenheit - 1].farbe); haptic(40); } break;
-        case 'nuke': damage.text(-6000, e.x, 1.8, e.z, 'MINI-NUKE!', 'kawumm', '#ffd23f'); haptic(120); break;
-        case 'kawumm': damage.text(-999 - (e.x * 100 | 0), e.x, 1.3, e.z, 'Kawumm!', 'kawumm'); break;
+        case 'star': if (e.player === me) { damage.text(-7000 - e.slot, e.x, 1.9, e.z, `${'★'.repeat(e.stars)} ${e.weapon}`, 'lvl'); if (e.stars === 5) hud.banner(t('{n} Sterne!', { n: 5 }), t('{waffe} kann im Shop evolvieren', { waffe: e.weapon }), 'gelb'); } break;
+        case 'evolve': if (e.player === me) { hud.banner(t('Evolution!'), e.weapon, 'gelb'); haptic(120); } break;
+        case 'loot': if (e.player === me) { damage.text(-8000 - (e.seltenheit), e.x, 1.6, e.z, t('Beute: {name}', { name: e.name }), 'lvl', SELTENHEIT[e.seltenheit - 1].farbe); haptic(40); } break;
+        case 'nuke': damage.text(-6000, e.x, 1.8, e.z, t('MINI-NUKE!'), 'kawumm', '#ffd23f'); haptic(120); break;
+        case 'kawumm': damage.text(-999 - (e.x * 100 | 0), e.x, 1.3, e.z, t('Kawumm!'), 'kawumm'); break;
         case 'downed':
-          if (e.player === me) { hud.banner('Am Boden!', 'Ein Mitspieler kann dich wiederbeleben', 'rot'); haptic(200); }
-          else hud.toast('Hilfe!', `${world.players[e.player]?.name ?? 'Jemand'} ist am Boden`, '#ff3d6a');
+          if (e.player === me) { hud.banner(t('Am Boden!'), t('Ein Mitspieler kann dich wiederbeleben'), 'rot'); haptic(200); }
+          else hud.toast(t('Hilfe!'), t('{name} ist am Boden', { name: world.players[e.player]?.name ?? t('Jemand') }), '#ff3d6a');
           break;
         case 'revive':
-          if (e.player === me) hud.banner('Wieder da!', e.by >= 0 ? `${world.players[e.by]?.name ?? ''} hat dich gerettet` : '', 'cyan');
-          else if (e.by === me) hud.toast('Gerettet!', world.players[e.player]?.name ?? '', '#7dff5a');
+          if (e.player === me) hud.banner(t('Wieder da!'), e.by >= 0 ? t('{name} hat dich gerettet', { name: world.players[e.by]?.name ?? '' }) : '', 'cyan');
+          else if (e.by === me) hud.toast(t('Gerettet!'), world.players[e.player]?.name ?? '', '#7dff5a');
           break;
         case 'death': haptic(200); endTimer = 1.6; break;
-        case 'overkillVoll': if (e.player === me) hud.toast('Overkill voll!', touch ? 'OVERBOOM antippen' : 'E oder Q drücken', '#ff7a1a', true); break;
-        case 'overboom': hud.banner('OVERBOOM!', e.player === me ? 'Doppelte Feuerrate · alles explodiert' : `${world.players[e.player]?.name ?? ''} dreht durch`, 'rot'); haptic(250); break;
+        case 'overkillVoll': if (e.player === me) hud.toast(t('Overkill voll!'), touch ? t('OVERBOOM antippen') : t('E oder Q drücken'), '#ff7a1a', true); break;
+        case 'overboom': hud.banner('OVERBOOM!', e.player === me ? t('Doppelte Feuerrate · alles explodiert') : t('{name} dreht durch', { name: world.players[e.player]?.name ?? '' }), 'rot'); haptic(250); break;
       }
     }
     const self = world.players[me];
@@ -559,16 +575,16 @@ async function start() {
         const k = KARTE_BY_ID[n.id];
         if (!k) continue;
         const farbe = k.elemente[0] ? ELEMENT_INFO[k.elemente[0]].farbe : SELTENHEIT[k.seltenheit - 1].farbe;
-        hud.toast(n.art === 'glanz' ? 'Glanzkarte!' : 'Neue Karte', k.name, farbe, n.art === 'glanz');
+        hud.toast(n.art === 'glanz' ? t('Glanzkarte!') : t('Neue Karte'), k.name, farbe, n.art === 'glanz');
       } else if (n.art === 'erfolg') {
         const e = ERFOLGE.find((x) => x.id === n.id);
-        if (e) hud.toast('Erfolg', e.name, '#3de8ff', true);
+        if (e) hud.toast(t('Erfolg'), e.name, '#3de8ff', true);
       } else if (n.art === 'gefahr') {
-        hud.toast('Neue Gefahrenstufe', `Stufe ${n.id} freigeschaltet`, '#ff7a1a', true);
+        hud.toast(t('Neue Gefahrenstufe'), t('Stufe {n} freigeschaltet', { n: n.id }), '#ff7a1a', true);
       } else if (n.art === 'insel') {
         const i = INSELN.findIndex((x) => x.id === n.id);
-        hud.banner(`${INSELN[i].name} befreit!`, INSEL_LORE[n.id]?.befreit ?? '', 'cyan');
-        if (INSELN[i + 1]) hud.toast('Neue Insel', INSELN[i + 1].name, '#3de8ff');
+        hud.banner(t('{insel} befreit!', { insel: INSELN[i].name }), INSEL_LORE[n.id]?.befreit ?? '', 'cyan');
+        if (INSELN[i + 1]) hud.toast(t('Neue Insel'), INSELN[i + 1].name, '#3de8ff');
         haptic(150);
       }
     }
@@ -693,7 +709,7 @@ async function start() {
     const { w, h } = renderer.internalSize;
     hud.update(dt, {
       dashReady: 1 - p.dashCooldown / DASH_COOLDOWN,
-      info: `${w}×${h} · ${world.enemyCount} Gegner${modus === 'client' && client ? ` · ${(client.bytes / 1024).toFixed(1)} KB` : ''}`,
+      info: `${w}×${h} · ${t('{n} Gegner', { n: world.enemyCount })}${modus === 'client' && client ? ` · ${(client.bytes / 1024).toFixed(1)} KB` : ''}`,
       hp: p.hp, maxHp: p.maxHp, crystals: p.crystals,
       wave: world.wave, waveTime: world.waveTime, phase: world.phase,
       level: p.level, xp: p.xp / LEVEL.xpBedarf(p.level),

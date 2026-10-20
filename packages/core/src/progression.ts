@@ -3,6 +3,7 @@ import type { Offer, WeaponSlot } from './entities.ts';
 import type { PlatzId } from '../../data/src/index.ts';
 import { modMask, spezialMask } from './weapons.ts';
 import {
+  tx,
   AMBOSS, BEUTE, HELD_BY_ID, OVERKILL, PLAETZE, ausruestungsPreis, rollAusruestung, schrottwert, setBoni, ITEMS, MODS, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, ITEM_BY_ID, LEVEL, SHOP, SPIELER, STUFEN, UPGRADES, UPGRADE_BY_ID, W, WAFFEN, elemente,
   baseStats, fusionsWaffe, pruefeFusion, rollSeltenheit, waffeById, type Stats
 } from '../../data/src/index.ts';
@@ -425,7 +426,7 @@ export interface FusionPreview {
 export function fusionPreview(w: World, p: Player, cmd: { slots: number[]; geschoss: number; antrieb: number; ladung: number }): FusionPreview {
   const price = p.perk.fusionsprofi ? 0 : AMBOSS.preis(w.wave);
   const slots = cmd.slots;
-  if (new Set(slots).size !== slots.length || slots.some((i) => !p.weapons[i])) return { waffe: null, tier: 1, price, error: 'Wähle 2 oder 3 Waffen.' };
+  if (new Set(slots).size !== slots.length || slots.some((i) => !p.weapons[i])) return { waffe: null, tier: 1, price, error: tx('Wähle 2 oder 3 Waffen.') };
   const ids = slots.map((i) => p.weapons[i].waffe.id);
   const pick = (k: number) => ids[k] ?? ids[0];
   const wahl = { geschoss: pick(cmd.geschoss), antrieb: pick(cmd.antrieb), ladung: pick(cmd.ladung) };
@@ -433,10 +434,10 @@ export function fusionPreview(w: World, p: Player, cmd: { slots: number[]; gesch
   const idxOk = [cmd.geschoss, cmd.antrieb, cmd.ladung].every((k) => k >= 0 && k < ids.length);
   const used = new Set([cmd.geschoss, cmd.antrieb, cmd.ladung]);
   let error = pruefeFusion(ids, wahl);
-  if (!error && (!idxOk || (used.size < ids.length && !findRecipeIds(ids)))) error = 'Jede Waffe muss mindestens ein Bauteil liefern.';
+  if (!error && (!idxOk || (used.size < ids.length && !findRecipeIds(ids)))) error = tx('Jede Waffe muss mindestens ein Bauteil liefern.');
   if (error) return { waffe: null, tier: 1, price, error };
   const tier = Math.max(1, Math.min(5, Math.round(slots.reduce((s, i) => s + p.weapons[i].tier, 0) / slots.length)));
-  return { waffe: fusionsWaffe(wahl, ids), tier, price, error: p.crystals < price ? 'Nicht genug Kristalle.' : null };
+  return { waffe: fusionsWaffe(wahl, ids), tier, price, error: p.crystals < price ? tx('Nicht genug Kristalle.') : null };
 }
 
 function findRecipeIds(ids: string[]): boolean {

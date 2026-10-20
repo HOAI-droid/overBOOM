@@ -6,6 +6,11 @@ Arena-Roguelite mit Wellen-Runden, 3D-Voxel-Pixel-Grafik (schräge isometrische 
 
 ## Sprache
 - Kommunikation mit dem Nutzer, Spieltexte und Code-Kommentare auf Deutsch. Bezeichner im Code dürfen englisch oder deutsch sein, aber pro Datei einheitlich.
+- Mehrsprachigkeit (ab v0.11): Ausgangssprache Deutsch.
+  - **Jeder sichtbare Text im Code läuft über `t('…')`** aus `@overboom/data` (nur einfache Anführungszeichen, keine Verkettung, Variablen als `{platzhalter}`).
+  - Texte, die erst woanders angezeigt werden (z. B. vom Host), mit `tx('…')` markieren und beim Anzeigen `t(text)`.
+  - Spieldaten-Felder übersetzt `lokalisiereDaten()` (`data/src/lokalisierung.ts`, Feldliste `FELDER`). Werte, die zugleich Logik-Schlüssel sind (Elemente, Waffengruppen), nie in Daten übersetzen, sondern beim Anzeigen `t(wert)`. Nie Logik von Anzeigetexten abhängig machen.
+  - Nach neuen/geänderten Texten: `npm run i18n katalog`, dann die neuen Einträge in `packages/data/src/i18n/{en,es,fr}.json` ergänzen, `npm run i18n bauen`. Der Sprachtest in `npm test` schlägt sonst fehl.
 
 ## Architektur-Regeln (nicht brechen)
 - `packages/core`: reine Simulation. Kein DOM, kein Three.js, kein `Math.random()` (nur `Rng` mit Seed), fester Tick (`DT`). Muss in Node laufen (`npm test`).
@@ -45,5 +50,7 @@ Arena-Roguelite mit Wellen-Runden, 3D-Voxel-Pixel-Grafik (schräge isometrische 
 - Phase 9 (Apps, v0.9.0) fertig: Tauri 2 in `apps/desktop` (Windows/Mac/Linux, `desktop.yml`), Capacitor 8 in `apps/mobile` (Android/iOS, `mobile.yml`, Plugins müssen in apps/mobile/package.json stehen), Xbox als UWP-Hülle mit WebView2 in `apps/xbox` (`xbox.yml`, Doku `docs/xbox.md`). Push auf main → `release.yml` (alle Apps als Release v<Version>) und `pages.yml` (Browser-Version auf https://hoai-droid.github.io/overboom/). Plattformen in `packages/platform` (`tauri.ts`, `capacitor.ts`, `xbox.ts`), optionale Felder `nurController`/`beenden`/`onZurueck`/`onSpeicherKnapp`. Controller-Symbole `ui/src/glyphs.ts`, `MenuNav` kann Textfelder (`textSperre`) und Regler. Schrift lokal in `apps/web/src/fonts`.
 - v0.10.0: prozedurale Musik mit Stilwahl (rock/pop/retro/chip/aus, s. o.), Grafikstufen bis „max“ (540 px; `QUALI` in main.ts, „auto“ bis „ultra“), Balancing späte Wellen (`spaet()` in balance.ts, `KAMPF.waffenSchaden`, `SPIELER.lebensraubProSek`, Bot misst tiefstes Leben ab Welle 11), Explosionsgrafik ×0,8 (`EXPLOSION_GRAFIK` in render/effects.ts).
 - Rechtliches: `LICENSE` (alle Rechte vorbehalten), `DATENSCHUTZ.md`, `DRITTANBIETER.md` – bei neuen Abhängigkeiten oder Servern aktualisieren, ebenso `ui/src/rechtliches.ts` (Seite „Datenschutz & Lizenzen“ in den Einstellungen und einmaliger Koop-Hinweis, gemerkt als 'koop-hinweis' im Speicher).
+- v0.10.1: Koop-Fix (Trystero liefert Binärdaten als Uint8Array → `Reader` nimmt beides; Test-Transport bildet das nach), Snapshots < 16 KB (`SNAPSHOT_MAX`), Beenden aus Shop/Level-Up/Pause, Kristalle im Feld, Klippen-Ecken unter dem Boden, Balancing-Mittelweg.
+- v0.11.0: vier Sprachen (`data/src/i18n.ts`, `lokalisierung.ts`, `i18n/*.json|ts`, `tools/i18n.ts`, `ui/src/sprachwahl.ts`), Sprache gespeichert als 'sprache', Wechsel lädt die App neu (`platform.neuLaden`).
 - Nächster Schritt: Phase 10 – Store-Veröffentlichung (Signaturen, Store-Einträge) bzw. Feedback von echten Geräten.
 - Nach jeder Phase: Tests + Typecheck grün, kurze Änderungsliste, bekannte Probleme, nächster Schritt.

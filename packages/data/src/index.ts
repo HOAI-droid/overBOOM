@@ -14,3 +14,5 @@ export * from './equipment.ts';
 export * from './lore.ts';
 export * from './cards.ts';
 export * from './danger.ts';
+export * from './i18n.ts';
+export * from './lokalisierung.ts';

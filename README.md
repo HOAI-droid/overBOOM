@@ -9,7 +9,7 @@ OVERBOOM ist ein actiongeladenes Arena-Roguelite in knalliger 3D-Voxel-Pixel-Opt
   <img src="docs/werbung/kampf2.png" width="300" alt="Kettenexplosionen">
 </p>
 
-## Downloads (Version 0.10.1)
+## Downloads (Version 0.11.0)
 
 **Sofort im Browser spielen:** <https://hoai-droid.github.io/overboom/> – am Handy über *Teilen → Zum Home-Bildschirm* (iPhone) bzw. *App installieren* (Android) wie eine App im Vollbild, solo auch offline.
 
@@ -42,6 +42,7 @@ Die Downloads werden kostenlos und ohne Gewähr bereitgestellt. Solo werden kein
 - **Sammelkartenalbum** mit 292 Karten, Glanzkarten und Erfolgen – jede Karte auch als Bild speicherbar.
 - **Gefahrenstufen 0–10** für alle, denen es zu leicht wird.
 - **Musik, die mitspielt:** wird live erzeugt, wählbar als Rock, Pop, Retro (8/16 Bit) oder Chiptune, und passt sich dem Kampfgeschehen an.
+- **Vier Sprachen:** Englisch, Deutsch, Spanisch, Französisch – Abfrage beim ersten Start, umstellbar in den Einstellungen.
 - Grafik von „Niedrig“ bis „Max“ (doppelte Auflösung), Einstellungen für Barrierefreiheit (Wackeln, Lichtblitze, Farbenblind-Modus).
 
 ## Steuerung
@@ -98,6 +99,15 @@ Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` 
 Phase 10: Tests auf echten Geräten (Handy, Xbox, Koop über Mobilfunk), Signaturen und Store-Einträge.
 
 ## Versionsgeschichte
+
+### Version 0.11.0 – vier Sprachen
+- **Mehrsprachigkeit** (Englisch, Deutsch, Spanisch, Französisch):
+  - Deutsch ist die Ausgangssprache und zugleich der Schlüssel (`t('Solo spielen')`, Platzhalter `{n}`).
+  - Spieldaten übersetzt `lokalisiereDaten()` beim Start; die Logik arbeitet nur mit IDs.
+  - Fusionsnamen bekommen je Sprache eine eigene Grammatik (Wortstellung, Geschlecht).
+  - Texte, die vom Host kommen (z. B. Ablehnungsgründe), reisen als deutscher Schlüssel und werden beim Empfänger übersetzt.
+- **Werkzeug:** `npm run i18n katalog | pruefen | bauen`. Der Sprachtest in `npm test` prüft Vollständigkeit, Platzhalter und alle 16.720 Fusionsnamen je Sprache.
+- **Sprachwahl:** beim ersten Start mit Vorschlag nach Systemsprache; Wechsel in den Einstellungen lädt die App neu.
 
 ### Version 0.10.1 – Koop repariert
 - Koop-Synchronisierung: Trystero liefert Binärdaten als `Uint8Array`-Ausschnitt; der Snapshot-Decoder erwartete einen `ArrayBuffer` und brach ab. `Reader` nimmt jetzt beides, der Test-Transport bildet das Trystero-Verhalten nach. Snapshots bleiben unter 16 KB (`SNAPSHOT_MAX`, gestufte Kürzung unwichtiger Teile).

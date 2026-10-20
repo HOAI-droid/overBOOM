@@ -1,3 +1,4 @@
+import { t, tx } from './i18n.ts';
 /**
  * OVERBOOM – Waffen-Fusion (Kern-Feature)
  *
@@ -345,7 +346,7 @@ export function fusionsWaffe(wahl: FusionsWahl, quellen: readonly string[] = [wa
   let spezial: string[] = [];
   let mult = 1 + instabil / 100 * 0.6;
   let name = fusionsName(teile.geschoss, teile.antrieb, teile.ladung);
-  let text = `${G[teile.geschoss].name}, ${A[teile.antrieb].name.toLowerCase()}, mit ${L[teile.ladung].name.toLowerCase()}. ${A[teile.antrieb].text} ${L[teile.ladung].text}`;
+  let text = `${t('{geschoss}, {antrieb}, mit {ladung}.', { geschoss: G[teile.geschoss].name, antrieb: A[teile.antrieb].name.toLowerCase(), ladung: L[teile.ladung].name.toLowerCase() })} ${A[teile.antrieb].text} ${L[teile.ladung].text}`;
   if (rezept) {
     teile = { geschoss: rezept.geschoss, antrieb: rezept.antrieb, ladung: rezept.ladung };
     const avg = (f: (w: Waffe) => number) => inputs.reduce((sum, w) => sum + f(w), 0) / inputs.length;
@@ -401,14 +402,14 @@ export function waffeById(id: string): Waffe | undefined {
  * jede Waffe liefert mindestens ein Bauteil.
  */
 export function pruefeFusion(quellen: readonly string[], wahl: FusionsWahl): string | null {
-  if (quellen.length < 2 || quellen.length > 3) return 'Wähle 2 oder 3 Waffen.';
-  if (quellen.some((q) => !W[q])) return 'Fusionen lassen sich nicht weiter verschmelzen – aber mergen!';
+  if (quellen.length < 2 || quellen.length > 3) return tx('Wähle 2 oder 3 Waffen.');
+  if (quellen.some((q) => !W[q])) return tx('Fusionen lassen sich nicht weiter verschmelzen – aber mergen!');
   if (findeRezept(quellen)) return null;
   const gruppen = quellen.map((q) => W[q].gruppe);
-  if (new Set(gruppen).size !== gruppen.length) return 'Die Waffen müssen aus verschiedenen Gruppen kommen.';
+  if (new Set(gruppen).size !== gruppen.length) return tx('Die Waffen müssen aus verschiedenen Gruppen kommen.');
   const used = [wahl.geschoss, wahl.antrieb, wahl.ladung];
-  if (used.some((u) => !quellen.includes(u))) return 'Jedes Bauteil muss von einer gewählten Waffe kommen.';
-  if (quellen.some((q) => !used.includes(q))) return 'Jede Waffe muss mindestens ein Bauteil liefern.';
+  if (used.some((u) => !quellen.includes(u))) return tx('Jedes Bauteil muss von einer gewählten Waffe kommen.');
+  if (quellen.some((q) => !used.includes(q))) return tx('Jede Waffe muss mindestens ein Bauteil liefern.');
   return null;
 }
 

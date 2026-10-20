@@ -1,5 +1,5 @@
 import type { Player } from '@overboom/core';
-import { KOOP } from '@overboom/data';
+import { KOOP, t } from '@overboom/data';
 
 const FARBEN = ['#3de8ff', '#ff3df0', '#ffd23f', '#7dff5a'];
 
@@ -19,17 +19,17 @@ export class NameTags {
   }
 
   private tag(i: number) {
-    let t = this.tags[i];
-    if (!t) {
+    let tg = this.tags[i];
+    if (!tg) {
       const el = document.createElement('div');
       el.className = 'ob-nametag';
       el.style.setProperty('--c', FARBEN[i % FARBEN.length]);
       el.innerHTML = '<i class="ob-pfeil"></i><span class="n"></span><span class="i"></span>';
       this.root.appendChild(el);
-      t = { el, name: el.querySelector('.n')!, info: el.querySelector('.i')! };
-      this.tags[i] = t;
+      tg = { el, name: el.querySelector('.n')!, info: el.querySelector('.i')! };
+      this.tags[i] = tg;
     }
-    return t;
+    return tg;
   }
 
   /** jedes Frame; `me` = eigener Spieler, ohne Koop alles ausblenden */
@@ -38,27 +38,27 @@ export class NameTags {
     this.root.style.display = koop ? '' : 'none';
     if (!koop) return;
     for (let i = 0; i < players.length; i++) {
-      const p = players[i], t = this.tag(i);
+      const p = players[i], tg = this.tag(i);
       const show = i !== me && (p.alive || p.downed);
-      t.el.style.display = show || (i === me && p.downed) ? '' : 'none';
+      tg.el.style.display = show || (i === me && p.downed) ? '' : 'none';
       if (!show && !(i === me && p.downed)) continue;
-      if (t.name.textContent !== p.name) t.name.textContent = p.name;
-      const info = p.downed ? (i === me ? 'Warte auf Hilfe …' : `Hilfe! ${Math.round((p.reviveT / KOOP.reviveZeit) * 100)} %`) : '';
-      if (t.info.textContent !== info) t.info.textContent = info;
+      if (tg.name.textContent !== p.name) tg.name.textContent = p.name;
+      const info = p.downed ? (i === me ? t('Warte auf Hilfe …') : t('Hilfe! {p} %', { p: Math.round((p.reviveT / KOOP.reviveZeit) * 100) })) : '';
+      if (tg.info.textContent !== info) tg.info.textContent = info;
       project(p.x, p.downed ? 0.6 : 1.9, p.z, this.pt);
       const m = 24;
       const off = this.pt.x < m || this.pt.y < m + 40 || this.pt.x > w - m || this.pt.y > h - m;
-      t.el.classList.toggle('off', off);
-      t.el.classList.toggle('down', p.downed);
+      tg.el.classList.toggle('off', off);
+      tg.el.classList.toggle('down', p.downed);
       let x = this.pt.x, y = this.pt.y;
       if (off) {
         // an den Rand klemmen, Pfeil zeigt in die Richtung
         const cx = w / 2, cy = h / 2, dx = x - cx, dy = y - cy;
         const k = Math.min((w / 2 - m) / Math.max(1, Math.abs(dx)), (h / 2 - m - 20) / Math.max(1, Math.abs(dy)));
         x = cx + dx * k; y = cy + dy * k;
-        t.el.style.setProperty('--a', `${Math.atan2(dy, dx)}rad`);
+        tg.el.style.setProperty('--a', `${Math.atan2(dy, dx)}rad`);
       }
-      t.el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px) translate(-50%, -100%)`;
+      tg.el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px) translate(-50%, -100%)`;
     }
     for (let i = players.length; i < this.tags.length; i++) this.tags[i].el.style.display = 'none';
   }

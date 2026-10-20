@@ -26,6 +26,10 @@ export interface Platform {
   randomId(): string;
   /** Text in die Zwischenablage */
   copyText(text: string): Promise<boolean>;
+  /** Systemsprache, z. B. „de-DE" (für den Vorschlag bei der Sprachwahl) */
+  systemSprache(): string;
+  /** App neu laden (z. B. nach Sprachwechsel) */
+  neuLaden(): void;
   /** nur Controller, kein Zeiger/Touch (Konsole) – Menüs zeigen Controller-Symbole */
   readonly nurController?: boolean;
   /** App beenden (nur wo erlaubt, z. B. Xbox über das Titelmenü) */

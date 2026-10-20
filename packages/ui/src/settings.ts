@@ -1,3 +1,5 @@
+import { t, SPRACHEN, aktuelleSprache } from '@overboom/data';
+
 /** Spieler-Einstellungen (werden über platform.storage gespeichert) */
 export interface Einstellungen {
   gesamt: number;
@@ -44,39 +46,44 @@ function slider(key: keyof Einstellungen, label: string, v: number, min: number,
 }
 
 function toggle(key: keyof Einstellungen, label: string, v: boolean, hint = ''): string {
-  return `<button type="button" class="ob-set ob-toggle ${v ? 'on' : ''}" data-act="settoggle" data-key="${key}" data-focus="set-${key}" aria-pressed="${v}"><span>${label}${hint ? `<small>${hint}</small>` : ''}</span><b>${v ? 'An' : 'Aus'}</b></button>`;
+  return `<button type="button" class="ob-set ob-toggle ${v ? 'on' : ''}" data-act="settoggle" data-key="${key}" data-focus="set-${key}" aria-pressed="${v}"><span>${label}${hint ? `<small>${hint}</small>` : ''}</span><b>${v ? t('An') : t('Aus')}</b></button>`;
 }
 
 export function einstellungenHtml(e: Einstellungen, info: string): string {
-  const q = ([['auto', 'Automatisch'], ['max', 'Max'], ['ultra', 'Ultra'], ['hoch', 'Hoch'], ['mittel', 'Mittel'], ['niedrig', 'Niedrig']] as const).map(([k, n]) =>
+  const q = ([['auto', t('Automatisch')], ['max', t('Max')], ['ultra', t('Ultra')], ['hoch', t('Hoch')], ['mittel', t('Mittel')], ['niedrig', t('Niedrig')]] as const).map(([k, n]) =>
     `<button type="button" class="ob-tab ${e.qualitaet === k ? 'on' : ''}" data-act="setq" data-q="${k}" data-focus="setq-${k}">${n}</button>`).join('');
-  const stile = ([['rock', 'Rock'], ['pop', 'Pop'], ['retro', 'Retro'], ['chip', 'Chiptune'], ['aus', 'Aus']] as const).map(([k, n]) =>
+  // Sprachnamen stehen immer in der eigenen Sprache (nicht übersetzen)
+  const sprachen = SPRACHEN.map((s) =>
+    `<button type="button" class="ob-tab ${aktuelleSprache() === s.id ? 'on' : ''}" data-act="setsprache" data-l="${s.id}" data-focus="setl-${s.id}">${s.name}</button>`).join('');
+  const stile = ([['rock', t('Rock')], ['pop', t('Pop')], ['retro', t('Retro')], ['chip', t('Chiptune')], ['aus', t('Aus')]] as const).map(([k, n]) =>
     `<button type="button" class="ob-tab ${e.musikStil === k ? 'on' : ''}" data-act="setmusik" data-m="${k}" data-focus="setm-${k}">${n}</button>`).join('');
   return `
     <div class="ob-panel ob-wide ob-settings">
       <div class="ob-shop-head">
-        <h2 class="ob-h">Einstellungen</h2>
-        <button type="button" class="ob-go" data-act="setzu" data-focus="setzu">Fertig</button>
+        <h2 class="ob-h">${t('Einstellungen')}</h2>
+        <button type="button" class="ob-go" data-act="setzu" data-focus="setzu">${t('Fertig')}</button>
       </div>
-      <h3 class="ob-h3">Ton</h3>
+      <h3 class="ob-h3">${t('Ton')}</h3>
       <div class="ob-setgrid">
-        ${slider('gesamt', 'Lautstärke', e.gesamt, 0, 1, 0.05)}
-        ${slider('effekte', 'Effekte', e.effekte, 0, 1, 0.05)}
-        ${slider('musik', 'Musik', e.musik, 0, 1, 0.05)}
+        ${slider('gesamt', t('Lautstärke'), e.gesamt, 0, 1, 0.05)}
+        ${slider('effekte', t('Effekte'), e.effekte, 0, 1, 0.05)}
+        ${slider('musik', t('Musik'), e.musik, 0, 1, 0.05)}
       </div>
-      <h3 class="ob-h3">Musik <small>wird live erzeugt und passt sich dem Kampf an</small></h3>
+      <h3 class="ob-h3">${t('Sprache')} <small>Language · Idioma · Langue</small></h3>
+      <div class="ob-tabs">${sprachen}</div>
+      <h3 class="ob-h3">${t('Musik')} <small>${t('wird live erzeugt und passt sich dem Kampf an')}</small></h3>
       <div class="ob-tabs">${stile}</div>
-      <h3 class="ob-h3">Grafik <small>${info}</small></h3>
+      <h3 class="ob-h3">${t('Grafik')} <small>${info}</small></h3>
       <div class="ob-tabs">${q}</div>
-      <h3 class="ob-h3">Barrierefreiheit</h3>
+      <h3 class="ob-h3">${t('Barrierefreiheit')}</h3>
       <div class="ob-setgrid">
-        ${slider('shake', 'Bildschirm-Wackeln', e.shake, 0, 2, 0.1)}
-        ${slider('blitze', 'Lichtblitze', e.blitze, 0, 1, 0.05)}
-        ${slider('partikel', 'Partikel', e.partikel, 0.25, 1, 0.05)}
-        ${toggle('zahlen', 'Schadenszahlen', e.zahlen)}
-        ${toggle('vibration', 'Vibration', e.vibration)}
-        ${toggle('farbenblind', 'Farbenblind-Modus', e.farbenblind, 'Gefahren mit Mustern statt nur Farben')}
+        ${slider('shake', t('Bildschirm-Wackeln'), e.shake, 0, 2, 0.1)}
+        ${slider('blitze', t('Lichtblitze'), e.blitze, 0, 1, 0.05)}
+        ${slider('partikel', t('Partikel'), e.partikel, 0.25, 1, 0.05)}
+        ${toggle('zahlen', t('Schadenszahlen'), e.zahlen)}
+        ${toggle('vibration', t('Vibration'), e.vibration)}
+        ${toggle('farbenblind', t('Farbenblind-Modus'), e.farbenblind, t('Gefahren mit Mustern statt nur Farben'))}
       </div>
-      <div class="ob-row"><button type="button" class="ob-btn2" data-act="recht" data-focus="recht">Datenschutz &amp; Lizenzen</button></div>
+      <div class="ob-row"><button type="button" class="ob-btn2" data-act="recht" data-focus="recht">${t('Datenschutz &amp; Lizenzen')}</button></div>
     </div>`;
 }

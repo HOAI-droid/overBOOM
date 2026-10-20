@@ -1,3 +1,4 @@
+import { t } from './i18n.ts';
 import { W, type Waffe } from './weapons.ts';
 
 /**
@@ -45,7 +46,7 @@ export const STERNE = {
 };
 
 /** Eigene Namen für Evolutionen bekannter Waffen: [Variante A „Mehr", Variante B „Größer"] */
-const EVO_NAMEN: Record<string, [string, string]> = {
+export const EVO_NAMEN: Record<string, [string, string]> = {
   raketenwerfer: ['Schwarmraketen', 'Atomrakete'],
   pistole: ['Doppelpistolen', 'Handkanone'],
   schrotflinte: ['Streuschrotflinte', 'Elefantenflinte'],
@@ -75,7 +76,7 @@ export const EVOLUTION = {
 export function evoName(base: Waffe, v: 'a' | 'b'): string {
   const custom = EVO_NAMEN[base.id];
   if (custom) return custom[v === 'a' ? 0 : 1];
-  return (v === 'a' ? 'Schwarm-' : 'Mega-') + base.name;
+  return v === 'a' ? t('Schwarm-{name}', { name: base.name }) : t('Mega-{name}', { name: base.name });
 }
 
 /** Evolvierte Waffe aus einer Grundwaffe (auch Fusionen). */

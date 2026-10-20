@@ -1,5 +1,5 @@
 import type { SimEvent, World } from './sim.ts';
-import { ERFOLGE, GEGNER_BY_ID, HELDEN, HELD_FREI, INSELN, KARTE_BY_ID, KARTEN_REGELN, SETS, setBoni, type MetaStat } from '../../data/src/index.ts';
+import { ERFOLGE, GEGNER_BY_ID, HELDEN, HELD_FREI, INSELN, ITEM_BY_ID, KARTE_BY_ID, KARTEN_REGELN, SETS, setBoni, type MetaStat } from '../../data/src/index.ts';
 
 /**
  * Meta-Progression zwischen den Runs: Kartenalbum, Erfolge, befreite Inseln.
@@ -270,5 +270,6 @@ export class MetaTracker {
 }
 
 function isUnique(id: string): boolean {
-  return KARTE_BY_ID[`item:${id}`]?.typzeile.endsWith('Einzigartig') ?? false;
+  // aus den Item-Daten, nicht aus dem (übersetzten) Kartentext
+  return ITEM_BY_ID[id]?.max === 1;
 }

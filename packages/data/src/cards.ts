@@ -1,3 +1,4 @@
+import { zahl } from './i18n.ts';
 import { A, G, L, W, WAFFEN, elemente, type Element, type Waffe } from './weapons.ts';
 import { GEGNER, type GegnerDef } from './enemies.ts';
 import { HELDEN, type Held } from './heroes.ts';
@@ -83,7 +84,7 @@ const FRAKTION_ELEMENT: Record<string, Element[]> = {
   Funkenbande: ['Blitz'], Glutgesindel: ['Feuer'], Frostfrieder: ['Eis'], Bummburg: ['Explosiv']
 };
 
-const fmt = (v: number) => (Math.round(v * 10) / 10).toLocaleString('de-DE');
+const fmt = (v: number) => zahl(Math.round(v * 10) / 10);
 
 export function wertText(k: StatKey, v: number): string {
   const info = STAT_INFO[k];

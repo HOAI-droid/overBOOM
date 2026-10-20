@@ -1,4 +1,4 @@
-import { GEGNER, WAFFEN } from '@overboom/data';
+import { GEGNER, WAFFEN, t } from '@overboom/data';
 
 export type DebugAktion =
   | { t: 'kristalle' }
@@ -23,17 +23,17 @@ export class DebugMenu {
     this.root = document.createElement('div');
     this.root.className = 'ob-debug hidden';
     this.root.innerHTML = `
-      <b>Debug</b>
-      <button type="button" data-d="kristalle">+500 Kristalle</button>
-      <button type="button" data-d="welle">Welle überspringen</button>
-      <button type="button" data-d="gott">Gott-Modus an/aus</button>
-      <button type="button" data-d="overkill">Overkill voll</button>
-      <button type="button" data-d="heilen">Volle Leben</button>
-      <label>Waffe <select data-sel="waffe">${WAFFEN.map((w) => `<option value="${w.id}">${w.name}</option>`).join('')}</select></label>
-      <button type="button" data-d="waffe">Waffe geben</button>
-      <label>Gegner <select data-sel="gegner">${GEGNER.map((g) => `<option value="${g.id}">${g.name}</option>`).join('')}</select></label>
-      <button type="button" data-d="gegner">5 spawnen</button>
-      <small>F1 schließt</small>`;
+      <b>${t('Debug')}</b>
+      <button type="button" data-d="kristalle">${t('+{n} Kristalle', { n: 500 })}</button>
+      <button type="button" data-d="welle">${t('Welle überspringen')}</button>
+      <button type="button" data-d="gott">${t('Gott-Modus an/aus')}</button>
+      <button type="button" data-d="overkill">${t('Overkill voll')}</button>
+      <button type="button" data-d="heilen">${t('Volle Leben')}</button>
+      <label>${t('Waffe')} <select data-sel="waffe">${WAFFEN.map((w) => `<option value="${w.id}">${w.name}</option>`).join('')}</select></label>
+      <button type="button" data-d="waffe">${t('Waffe geben')}</button>
+      <label>${t('Gegner')} <select data-sel="gegner">${GEGNER.map((g) => `<option value="${g.id}">${g.name}</option>`).join('')}</select></label>
+      <button type="button" data-d="gegner">${t('{n} spawnen', { n: 5 })}</button>
+      <small>${t('F1 schließt')}</small>`;
     parent.appendChild(this.root);
     this.root.addEventListener('click', (e) => {
       const el = (e.target as HTMLElement).closest<HTMLElement>('[data-d]');

@@ -138,7 +138,9 @@ export const TIPPS = [
   'Kein Huhn wurde bei der Entwicklung verletzt. Sie sind alle nur sehr wütend.'
 ];
 
-export const SIEG_TEXT = 'Baron von Bumm ist geschlagen. Krawummia atmet auf – vorerst.';
+export let SIEG_TEXT = 'Baron von Bumm ist geschlagen. Krawummia atmet auf – vorerst.';
+/** nur für die Übersetzung (lokalisierung.ts) */
+export function setzeSiegText(s: string): void { SIEG_TEXT = s; }
 
 /** Namen und Texte der Helden-Macken (für Karten und Tooltips) */
 export const PERK_INFO: Record<string, { name: string; text: string }> = {

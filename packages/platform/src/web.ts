@@ -1,4 +1,5 @@
 import type { Platform } from './index.ts';
+import { t } from '../../data/src/i18n.ts';
 
 /* IndexedDB: Spielstand dauerhaft speichern (größer und robuster als localStorage) */
 let dbPromise: Promise<IDBDatabase | null> | null = null;
@@ -88,7 +89,7 @@ export function createWebPlatform(): Platform {
         const file = new File([blob], filename, { type: blob.type });
         const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
         if (matchMedia('(pointer: coarse)').matches && nav.canShare?.({ files: [file] })) {
-          await navigator.share({ files: [file], title: 'OVERBOOM-Karte' });
+          await navigator.share({ files: [file], title: t('OVERBOOM-Karte') });
           return;
         }
       } catch { /* abgebrochen oder nicht unterstützt → Download */ }
@@ -117,6 +118,10 @@ export function createWebPlatform(): Platform {
       crypto.getRandomValues(a);
       return [...a].map((n) => n.toString(36)).join('');
     },
+    systemSprache() {
+      return (typeof navigator !== 'undefined' && (navigator.languages?.[0] || navigator.language)) || 'en';
+    },
+    neuLaden() { location.reload(); },
     async copyText(text) {
       try { await navigator.clipboard.writeText(text); return true; } catch { return false; }
     },
