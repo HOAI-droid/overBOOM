@@ -6,6 +6,8 @@ import {
   A, AMBOSS, EVOLUTION, G, GEGNER_BY_ID, INSEL_BY_ID, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, evoName, HELDEN, HELD_BY_ID, INSELN, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
   elemente, type StatKey, INSEL_LORE, WELT, SIEG_TEXT, SPRUECHE_TOD, PLAETZE, SETS, SET_BY_ID, setBoni, schrottwert, BEUTE, type Ausruestung
 } from '@overboom/data';
+import { ALBUM_TABS, albumGrid, albumZaehler, erfolgeHtml, karteGross, kartenListe, type AlbumTab, type KartenKunst } from './album.ts';
+import { KARTEN, KARTE_BY_ID, WELT as WELT_INFO, type Karte } from '@overboom/data';
 
 const GEM = '<i class="ob-gem" aria-hidden="true"></i>';
 const LOCK_ON = '<svg viewBox="0 0 8 9" width="16" height="18" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M2 0h4v1h1v3h1v5h-8v-5h1v-3h1zM2 1v3h4v-3zM3 5v2h2v-2z"/></svg>';
@@ -76,7 +78,7 @@ export interface EndStats {
  */
 export class Menus {
   readonly root: HTMLDivElement;
-  private mode: 'none' | 'start' | 'shop' | 'end' | 'pause' = 'none';
+  private mode: 'none' | 'start' | 'shop' | 'end' | 'pause' | 'album' = 'none';
   private detail = -1;
   private showStats = false;
   private tab: 'shop' | 'amboss' | 'ausruestung' = 'shop';
@@ -92,6 +94,19 @@ export class Menus {
   private lastKey = '';
   /** Meta-Profil (Freischaltungen) – setzt die App */
   profil: () => Profil = () => neuesProfil();
+  /** Kartenalbum: Artworks, Callbacks für „gesehen", Bild-Export, Kopieren, Import */
+  kunst: KartenKunst | null = null;
+  gesehen: (id: string) => void = () => {};
+  exportBild: (k: Karte, glanz: boolean) => void = () => {};
+  kopieren: (text: string) => void = () => {};
+  profilCode: () => string = () => '';
+  importCode: (code: string) => boolean = () => false;
+  private albumTab: AlbumTab = 'alle';
+  private albumKarte = '';
+  private albumBack: 'start' | 'pause' | 'end' = 'start';
+  private albumScroll = 0;
+  private importFehler = false;
+  private lastEnd: [EndStats, number] | null = null;
   onRestart: () => void = () => {};
   onResume: () => void = () => {};
 
@@ -100,6 +115,14 @@ export class Menus {
     this.root.className = 'ob-menu hidden';
     parent.appendChild(this.root);
     this.root.addEventListener('click', (e) => this.onClick(e));
+    // Glanzkarten kippen mit dem Zeiger (holografischer Schimmer)
+    this.root.addEventListener('pointermove', (e) => {
+      const card = (e.target as HTMLElement).closest<HTMLElement>('.ob-bigcard');
+      if (!card) return;
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', ((e.clientX - r.left) / r.width).toFixed(3));
+      card.style.setProperty('--my', ((e.clientY - r.top) / r.height).toFixed(3));
+    });
     // Gamepad/Tastatur: Fokus auf eine Insel wählt sie gleich aus
     this.root.addEventListener('focusin', (e) => {
       const el = (e.target as HTMLElement).closest<HTMLElement>('.ob-isle');
@@ -136,7 +159,7 @@ export class Menus {
   /** Wird jedes Frame aufgerufen; baut nur neu, wenn sich der Zustand geändert hat. */
   sync(): void {
     const w = this.world, p = this.p;
-    if (this.mode === 'pause' || this.mode === 'end') return;
+    if (this.mode === 'pause' || this.mode === 'end' || this.mode === 'album') return;
     if (w.phase === 'wahl') {
       if (this.mode !== 'start') this.renderStart();
       return;
@@ -190,7 +213,7 @@ export class Menus {
       }).join('');
       this.show('start', `
         <div class="ob-panel ob-wide">
-          <h2 class="ob-h">Wähle deinen Kawumm-Jäger</h2>
+          <div class="ob-shop-head"><h2 class="ob-h">Wähle deinen Kawumm-Jäger</h2>${this.albumButton()}</div>
           <p class="ob-sub">Jeder Held hat eine Startwaffe und eine Macke. Waffen feuern von selbst – du läufst, weichst aus und kaufst nach jeder Welle nach.</p>
           <div class="ob-cards">${cards}</div>
         </div>`);
@@ -223,6 +246,7 @@ export class Menus {
         <div class="ob-map-head">
           <button type="button" class="ob-btn2" data-act="heldzurueck" data-focus="back">◀ ${h.name}</button>
           <div><h2 class="ob-h">${WELT.name}</h2><small>${WELT.untertitel} · ${pr.befreit.length}/${INSELN.length} befreit</small></div>
+          ${this.albumButton()}
         </div>
         <div class="ob-map-labels">${labels}</div>
         <div class="ob-map-info" style="--rc:${i.farben.spezial[0]}">
@@ -503,6 +527,7 @@ export class Menus {
   /* ---------------- Ende & Pause ---------------- */
 
   showEnd(s: EndStats, seed: number): void {
+    this.lastEnd = [s, seed];
     const rows: [string, string | number][] = [
       ['Welle', s.wave],
       ['Level', s.level],
@@ -520,6 +545,7 @@ export class Menus {
         <div class="ob-row ob-center">
           ${s.victory ? '<button type="button" class="ob-btn2" data-act="endless">Endlos weiter</button>' : ''}
           <button type="button" class="ob-go" data-act="restart">Nochmal!</button>
+          ${this.albumButton()}
         </div>
         ${this.touch ? '' : '<p class="ob-keys">Pfeiltasten + Enter · Gamepad: Steuerkreuz + A</p>'}
       </div>`, '[data-act="restart"]');
@@ -533,13 +559,92 @@ export class Menus {
         <div class="ob-row ob-center">
           <button type="button" class="ob-go" data-act="resume">Weiter</button>
           <button type="button" class="ob-btn2" data-act="restart">Neu starten</button>
+          ${this.albumButton()}
         </div>
         ${this.touch ? '' : '<p class="ob-keys">Esc / P: Pause · WASD: laufen · Leertaste: Dash</p>'}
       </div>`);
   }
 
+  /* ---------------- Kartenalbum ---------------- */
+
+  private albumButton(): string {
+    const z = albumZaehler(this.profil());
+    const neu = this.profil().neu.filter((id) => KARTE_BY_ID[id]).length;
+    return `<button type="button" class="ob-btn2 ob-albumbtn" data-act="album" data-focus="album">Kartenalbum ${z.gefunden}/${KARTEN.length}${neu ? ` <em class="ob-badge">${neu}</em>` : ''}</button>`;
+  }
+
+  private openAlbum(): void {
+    this.albumBack = this.mode === 'pause' ? 'pause' : this.mode === 'end' ? 'end' : 'start';
+    this.albumKarte = '';
+    this.albumScroll = 0;
+    this.renderAlbum();
+  }
+
+  private closeAlbum(): void {
+    this.albumKarte = '';
+    if (this.albumBack === 'pause') this.showPause();
+    else if (this.albumBack === 'end' && this.lastEnd) this.showEnd(this.lastEnd[0], this.lastEnd[1]);
+    else { this.mode = 'none'; this.sync(); }
+  }
+
+  private renderAlbum(): void {
+    const pr = this.profil();
+    const z = albumZaehler(pr);
+    const k = this.albumKarte ? KARTE_BY_ID[this.albumKarte] : null;
+    if (k) {
+      this.show('album', `<div class="ob-panel ob-wide ob-album">${karteGross(pr, k)}</div>`, '[data-act="knext"]');
+      const locked = !pr.karten[k.id];
+      if (this.kunst) {
+        this.root.querySelector('.ob-bc-art')?.appendChild(this.kunst.canvas);
+        this.kunst.live(k, locked);
+      }
+      if (pr.neu.includes(k.id)) this.gesehen(k.id);
+      return;
+    }
+    const tabs = ALBUM_TABS.map((t) => `<button type="button" class="ob-tab ${this.albumTab === t.id ? 'on' : ''}" data-act="atab" data-tab="${t.id}" data-focus="atab${t.id}">${t.name}</button>`).join('');
+    const body = this.albumTab === 'erfolge'
+      ? erfolgeHtml(pr, this.profilCode(), this.importFehler)
+      : `${this.albumTab === 'rezept' ? '<p class="ob-sub">Das Rezeptbuch: Unentdeckte Rezepte zeigen nur ihren Hinweis – antippen!</p>' : ''}<div class="ob-kgrid">${albumGrid(pr, this.albumTab)}</div>`;
+    this.show('album', `
+      <div class="ob-panel ob-wide ob-album">
+        <div class="ob-shop-head">
+          <div><h2 class="ob-h">Kartenalbum</h2><small class="ob-sub">Set „${WELT_INFO.kartenSet}" · ${z.gefunden}/${KARTEN.length} gefunden · ✦ ${z.glanz} Glanz</small></div>
+          <button type="button" class="ob-go" data-act="albumzu" data-focus="albumzu">Zurück</button>
+        </div>
+        <div class="ob-tabs">${tabs}</div>
+        ${body}
+      </div>`, `[data-focus="atab${this.albumTab}"]`);
+    this.root.scrollTop = this.albumScroll;
+  }
+
+  /** jedes Frame: Vorschaubilder nach und nach erzeugen, Live-Artwork drehen */
+  frame(time: number): void {
+    if (this.mode !== 'album' || !this.kunst) return;
+    if (this.albumKarte) { this.kunst.update(time); return; }
+    let n = 0;
+    for (const img of this.root.querySelectorAll<HTMLImageElement>('img[data-thumb]:not([src])')) {
+      const k = KARTE_BY_ID[img.dataset.thumb!];
+      if (!k) continue;
+      const locked = img.dataset.locked === '1';
+      const cached = this.kunst.hasThumb(k, locked);
+      img.src = this.kunst.thumb(k, locked);
+      if (!cached && ++n >= 6) break;
+    }
+  }
+
+  private albumSchritt(d: number): void {
+    const list = kartenListe(this.albumTab);
+    const i = list.findIndex((k) => k.id === this.albumKarte);
+    this.albumKarte = list[(i + d + list.length) % list.length].id;
+    this.renderAlbum();
+  }
+
   /** Zurück-Taste (Esc / Gamepad B) */
   back(): boolean {
+    if (this.mode === 'album') {
+      if (this.albumKarte) { this.albumKarte = ''; this.renderAlbum(); } else this.closeAlbum();
+      return true;
+    }
     if (this.mode === 'shop' && this.detail >= 0) { this.detail = -1; this.sync(); return true; }
     if (this.mode === 'start' && this.startHeld) { this.startHeld = ''; this.mode = 'none'; this.sync(); return true; }
     if (this.mode === 'pause') { this.hide(); this.onResume(); return true; }
@@ -566,6 +671,25 @@ export class Menus {
       case 'install': this.send({ type: 'installMod', slot: i, index: Number(el.dataset.k) }); break;
       case 'sell': this.send({ type: 'sell', slot: i }); this.detail = -1; break;
       case 'stats': this.showStats = !this.showStats; break;
+      case 'album': this.openAlbum(); return;
+      case 'albumzu': this.closeAlbum(); return;
+      case 'atab': this.albumTab = el.dataset.tab as AlbumTab; this.albumScroll = 0; this.importFehler = false; this.renderAlbum(); return;
+      case 'karte': this.albumScroll = this.root.scrollTop; this.albumKarte = el.dataset.id!; this.renderAlbum(); return;
+      case 'kprev': this.albumSchritt(-1); return;
+      case 'knext': this.albumSchritt(1); return;
+      case 'kzu': this.albumKarte = ''; this.renderAlbum(); return;
+      case 'kbild': {
+        const k = KARTE_BY_ID[this.albumKarte];
+        if (k) this.exportBild(k, this.profil().karten[k.id] === 2);
+        return;
+      }
+      case 'kcopy': this.kopieren(this.profilCode()); return;
+      case 'kimport': {
+        const code = this.root.querySelector<HTMLTextAreaElement>('[data-import]')?.value ?? '';
+        this.importFehler = !this.importCode(code);
+        this.renderAlbum();
+        return;
+      }
       case 'tab': this.tab = el.dataset.tab === 'amboss' ? 'amboss' : el.dataset.tab === 'ausruestung' ? 'ausruestung' : 'shop'; this.detail = -1; break;
       case 'equip': this.send({ type: 'equip', index: i, platz: (el.dataset.platz || undefined) as never }); break;
       case 'unequip': this.send({ type: 'unequip', platz: el.dataset.platz as never }); break;

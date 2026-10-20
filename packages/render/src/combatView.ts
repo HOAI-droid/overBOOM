@@ -6,7 +6,7 @@ import { voxelObject } from './voxel.ts';
 import { PROJECTILE_IDS, REZEPT_MODELLE, baron, bombenpinguin, funkenkobold, kampfhuhn, koenigGockel, kultist, lavaklops, megatoaster, minenbot, morchella, pilzling, schleimi, schneemann, schrottgolem, teslaritter, vogelscheuche, chicken, crown, disc, fusionModel, gem, grummel, kroete, projectileModel, spawnMarker, targetRing, toastomat, turret, weaponModel } from './models.ts';
 import type { Effects } from './effects.ts';
 
-const ENEMY_MODELS: Record<string, { vox: () => ReturnType<typeof grummel>; size: number; top: number; cap: number }> = {
+export const ENEMY_MODELS: Record<string, { vox: () => ReturnType<typeof grummel>; size: number; top: number; cap: number }> = {
   grummelbold: { vox: grummel, size: 0.11, top: 1.1, cap: 200 },
   bombenkroete: { vox: kroete, size: 0.1, top: 1.35, cap: 200 },
   toastomat: { vox: toastomat, size: 0.1, top: 1.3, cap: 200 },

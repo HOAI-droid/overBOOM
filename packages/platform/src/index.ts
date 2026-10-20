@@ -15,6 +15,10 @@ export interface Platform {
   /** verhindert, dass der Bildschirm während des Spielens ausgeht */
   keepAwake(on: boolean): Promise<void>;
   isTouchDevice(): boolean;
+  /** Bild teilen (Handy) oder herunterladen (PC) */
+  saveImage(blob: Blob, filename: string): Promise<void>;
+  /** Text in die Zwischenablage */
+  copyText(text: string): Promise<boolean>;
 }
 
 export { createWebPlatform } from './web.ts';

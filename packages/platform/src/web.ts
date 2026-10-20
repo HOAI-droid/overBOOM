@@ -35,6 +35,24 @@ export function createWebPlatform(): Platform {
         if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
       } catch { /* nicht unterstützt */ }
     },
+    async saveImage(blob, filename) {
+      try {
+        const file = new File([blob], filename, { type: blob.type });
+        const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
+        if (matchMedia('(pointer: coarse)').matches && nav.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'OVERBOOM-Karte' });
+          return;
+        }
+      } catch { /* abgebrochen oder nicht unterstützt → Download */ }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    },
+    async copyText(text) {
+      try { await navigator.clipboard.writeText(text); return true; } catch { return false; }
+    },
     isTouchDevice() {
       return matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
     }

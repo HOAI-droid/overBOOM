@@ -1,7 +1,7 @@
-import { World, DT, DASH_COOLDOWN, NO_INPUT, MetaTracker, ladeProfil, spawnEnemy, type Command, type InputState } from '@overboom/core';
+import { World, DT, DASH_COOLDOWN, NO_INPUT, MetaTracker, ladeProfil, profilAusCode, profilCode, spawnEnemy, type Command, type InputState } from '@overboom/core';
 import { BOSS_LORE, ELEMENT_INFO, ERFOLGE, GEGNER, GEGNER_BY_ID, HELD_BY_ID, INSELN, INSEL_BY_ID, INSEL_LORE, KARTE_BY_ID, LEVEL, SELTENHEIT, SYNERGIEN, WELLEN_SPRUECHE, waffeById, waehle } from '@overboom/data';
-import { GameRenderer, type PlayerPose } from '@overboom/render';
-import { Controls, DamageNumbers, Hud, MenuNav, Menus, screenToWorld } from '@overboom/ui';
+import { CardArt, GameRenderer, type PlayerPose } from '@overboom/render';
+import { Controls, DamageNumbers, Hud, MenuNav, Menus, karteAlsBild, screenToWorld } from '@overboom/ui';
 import { createWebPlatform } from '@overboom/platform';
 
 const root = document.getElementById('game')!;
@@ -96,6 +96,25 @@ async function start() {
   };
   const menus = new Menus(root, world, send, touch, () => (recipes.size === meta.profil.rezepte.length ? recipes : (recipes = new Set(meta.profil.rezepte))));
   menus.profil = () => meta.profil;
+  // Kartenalbum: Artworks in eigenem kleinen WebGL-Kontext (erst beim ersten Öffnen)
+  let kunst: CardArt | null = null;
+  Object.defineProperty(menus, 'kunst', { get: () => (kunst ??= new CardArt(96)) });
+  menus.gesehen = (id) => { meta.gesehen(id); save(); };
+  menus.profilCode = () => profilCode(meta.profil);
+  menus.kopieren = (text) => { platform.copyText(text).then((ok) => hud.toast(ok ? 'Kopiert' : 'Kopieren ging nicht', ok ? 'Spielstand-Code' : 'Bitte von Hand markieren', ok ? '#3de8ff' : '#ff3d6a')); };
+  menus.importCode = (code) => {
+    const p = profilAusCode(code);
+    if (!p) return false;
+    meta.profil = p;
+    meta.dirty = true;
+    save(true);
+    hud.toast('Spielstand geladen', `${Object.keys(p.karten).length} Karten`, '#3de8ff');
+    return true;
+  };
+  menus.exportBild = (k, glanz) => {
+    const art = (kunst ??= new CardArt(96)).thumb(k, false);
+    karteAlsBild(k, art, glanz).then((blob) => platform.saveImage(blob, `overboom-${String(k.nr).padStart(3, '0')}-${k.ref}.png`)).catch(() => hud.toast('Fehler', 'Bild konnte nicht erstellt werden', '#ff3d6a'));
+  };
   const nav = new MenuNav(menus.root);
 
   const resize = () => renderer.resize(root.clientWidth, root.clientHeight, devicePixelRatio || 1);
@@ -280,6 +299,7 @@ async function start() {
       }
     }
     if (!paused && menus.current !== 'end') menus.sync();
+    menus.frame(now / 1000);
 
     const frozen = freeze > 0 || paused;
     const mapState = menus.mapState();
