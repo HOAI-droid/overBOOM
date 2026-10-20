@@ -44,4 +44,7 @@ export const ITEMS: Item[] = [
   { id: 'kristallkrone', name: 'Kristallkrone', text: 'Schwer auf dem Kopf, leicht im Geldbeutel.', seltenheit: 4, preis: 95, werte: { ernte: 25, glueck: 25 }, max: 1 }
 ];
 
+import { ITEMS_EXTRA } from './items_extra.ts';
+ITEMS.push(...ITEMS_EXTRA);
+
 export const ITEM_BY_ID: Record<string, Item> = Object.fromEntries(ITEMS.map((i) => [i.id, i]));

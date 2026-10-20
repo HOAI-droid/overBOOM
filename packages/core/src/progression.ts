@@ -1,8 +1,9 @@
 import type { Player, World } from './sim.ts';
 import type { Offer, WeaponSlot } from './entities.ts';
+import type { PlatzId } from '../../data/src/index.ts';
 import { modMask, spezialMask } from './weapons.ts';
 import {
-  AMBOSS, HELD_BY_ID, ITEMS, MODS, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, ITEM_BY_ID, LEVEL, SHOP, SPIELER, STUFEN, UPGRADES, UPGRADE_BY_ID, W, WAFFEN, elemente,
+  AMBOSS, BEUTE, HELD_BY_ID, PLAETZE, ausruestungsPreis, rollAusruestung, schrottwert, setBoni, ITEMS, MODS, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, ITEM_BY_ID, LEVEL, SHOP, SPIELER, STUFEN, UPGRADES, UPGRADE_BY_ID, W, WAFFEN, elemente,
   baseStats, fusionsWaffe, pruefeFusion, rollSeltenheit, waffeById, type Stats
 } from '../../data/src/index.ts';
 
@@ -26,6 +27,12 @@ export type Command =
   | { type: 'evolve'; slot: number; variant: 'a' | 'b' }
   /** Mod aus dem Inventar (index) in eine Waffe einbauen */
   | { type: 'installMod'; slot: number; index: number }
+  /** Ausrüstung aus der Beute (index) anlegen; `platz` nur für den zweiten Ring nötig */
+  | { type: 'equip'; index: number; platz?: PlatzId }
+  /** Ausrüstung ablegen (zurück in die Beute) */
+  | { type: 'unequip'; platz: PlatzId }
+  /** Ausrüstung aus der Beute verschrotten → Kristalle */
+  | { type: 'scrap'; index: number }
   /** Fusions-Amboss: `slots` = 2–3 Waffenplätze; teile = Index in `slots` je Bauteil */
   | { type: 'fuse'; slots: number[]; geschoss: number; antrieb: number; ladung: number };
 
@@ -65,6 +72,11 @@ export function recomputeStats(p: Player): void {
     const n = p.synCount[syn.element] ?? 0;
     for (const st of syn.stufen) if (n >= st.ab && st.werte) for (const k in st.werte) s[k as keyof Stats] += st.werte[k as keyof Stats] ?? 0;
   }
+  // Ausrüstung und Set-Boni
+  const add = (werte: Partial<Stats>) => { for (const k in werte) s[k as keyof Stats] += werte[k as keyof Stats] ?? 0; };
+  const teile = Object.values(p.ausruestung);
+  for (const a of teile) if (a) add(a.werte);
+  for (const { set, anzahl } of setBoni(teile)) for (const b of set.boni) if (anzahl >= b.ab) add(b.werte);
   const held = HELD_BY_ID[p.held];
   if (held) for (const k in held.werte) s[k as keyof Stats] += held.werte[k as keyof Stats] ?? 0;
   s.maxHp += (p.level - 1) * LEVEL.hpProLevel;
@@ -140,6 +152,11 @@ function rollOffer(w: World, p: Player): Offer {
     const pool = MODS.filter((m) => m.seltenheit <= Math.max(tier, 1) + 1);
     const m = pool[Math.floor(r.next() * pool.length)];
     return { kind: 'mod', id: m.id, tier: m.seltenheit, price: Math.round(m.preis * SHOP.inflation(w.wave + 1)), locked: false, sold: false };
+  }
+  // Ausrüstung
+  if (r.next() < BEUTE.shopAnteil) {
+    const a = rollAusruestung(() => r.next(), w.equipUid++, w.wave + 1, Math.min(4, tier), 0.08);
+    return { kind: 'ausruestung', id: a.name, tier: a.seltenheit, price: ausruestungsPreis(a, w.wave + 1), locked: false, sold: false, equip: a };
   }
   if (r.next() < SHOP.waffenAnteil) {
     // Bevorzugt Waffen, die man schon hat (zum Mergen) – wie in Brotato
@@ -259,6 +276,9 @@ export function runCommand(w: World, p: Player, cmd: Command): boolean {
         }
       } else if (o.kind === 'mod') {
         p.modInv.push(o.id);
+      } else if (o.kind === 'ausruestung') {
+        if (!o.equip || p.beute.length >= BEUTE.maxBeute) return false;
+        p.beute.push(o.equip);
       } else {
         const def = ITEM_BY_ID[o.id];
         if (def.max && (p.items[o.id] ?? 0) >= def.max) return false;
@@ -339,6 +359,34 @@ export function runCommand(w: World, p: Player, cmd: Command): boolean {
       s.modMask = modMask(s.mods);
       p.modInv.splice(cmd.index, 1);
       p.loadout++;
+      return true;
+    }
+    case 'equip': {
+      const a = p.beute[cmd.index];
+      if (w.phase !== 'shop' || !a) return false;
+      const plaetze = PLAETZE.filter((x) => x.art === a.art).map((x) => x.id);
+      const platz = cmd.platz ?? plaetze.find((id) => !p.ausruestung[id]) ?? plaetze[0];
+      if (!plaetze.includes(platz)) return false;
+      const alt = p.ausruestung[platz];
+      p.ausruestung[platz] = a;
+      p.beute.splice(cmd.index, 1);
+      if (alt) p.beute.push(alt);
+      recomputeStats(p);
+      return true;
+    }
+    case 'unequip': {
+      const a = p.ausruestung[cmd.platz];
+      if (w.phase !== 'shop' || !a || p.beute.length >= BEUTE.maxBeute) return false;
+      p.ausruestung[cmd.platz] = null;
+      p.beute.push(a);
+      recomputeStats(p);
+      return true;
+    }
+    case 'scrap': {
+      const a = p.beute[cmd.index];
+      if (w.phase !== 'shop' || !a) return false;
+      p.crystals += schrottwert(a, w.wave);
+      p.beute.splice(cmd.index, 1);
       return true;
     }
     case 'endless': {

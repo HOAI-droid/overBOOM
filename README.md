@@ -2,7 +2,19 @@
 
 3D-Voxel-Arena-Roguelite mit Waffen-Fusion. Läuft im Browser (Handy + PC), später als App (Capacitor) und Desktop (Tauri) aus demselben Code.
 
-## Stand: Phase 4 – Waffen-Fusion (v0.4.0)
+## Stand: Phase 5 – Content-Ausbau (v0.5.0)
+- **13 Helden** mit Startwaffe, Werten und Macke (z. B. Pyromane bekommt nur Explosiv/Feuer, Glückspilz startet mit Zufallswaffe, Oma Kawumm verteilt Heil-Kekse, Turmbauer darf 2 Türme). Start: Held wählen → Insel wählen.
+- **7 Inseln** mit eigener Gegner-Fraktion, Farbpalette, Bodengefahr (Eis rutscht, Gift, Tesla-Platten, Lava, brennendes Heu …) und Boss auf Welle 10; Welle 20 immer Baron von Bumm.
+- **16 Gegnertypen + 4 Bosse** mit neuen Verhalten: Sprinter, Heiler, Schildträger, Minenleger, Spurleger, Beschwörer, Rutscher, Splitter (Schleimi teilt sich). Bosse König Gockel, Megatoaster, Morchella mit wechselnden Angriffsmustern.
+- **Synergien**: 9 Elemente, Boni ab 2/4/6 Waffen gleichen Elements (Feuerpfützen, Mini-Nuke, Gewitter, Giftwolken, Drohnen, Küken, Eierregen …). Anzeige im Shop und als Chips im HUD.
+- **15 Elementar-Reaktionen** (Dampfexplosion, Schockfrost, Plasmabrand, Sumpf, Strudel …), wenn zwei Elemente denselben Gegner treffen.
+- **Sterne & Evolutionen**: Waffen sammeln Kills (★1–5, je Stern mehr Schaden/Feuerrate); mit 5 Sternen Evolution A „Mehr" (Salven) oder B „Größer" (2,4× Schaden), mit eigenen Namen (Schwarmraketen/Atomrakete, Doppelpistolen/Handkanone …).
+- **12 Waffen-Mods** (Doppelschuss, Querschläger, Zielsuch-Chip, Clusterbombe, Kettenblitz, Gravitations-Kern …), im Shop kaufbar, Einbau ab Stufe II (II: 1 Slot … V: 4).
+- **159 Items** (vorher 24), viele mit Vor- und Nachteil.
+- **Ausrüstung**: 8 Plätze (Helm, Rüstung, Stiefel, Handschuhe, Amulett, 2 Ringe, Rucksack), Seltenheit I–IV mit zufälligen Zusatzwerten, **4 Sets** (Grummel-Garnitur, Barons Gala-Garderobe, Funkenkluft, Omas Strickset) mit Boni ab 2 Teilen bzw. komplett. Quellen: Elite-Gegner (30 %), Bosse (immer, oft Set-Teile), Shop. Shop-Tab „Ausrüstung": anlegen, ablegen, verschrotten.
+- Tests: alle Reaktionen, Synergie-Stufen, Helden, Inseln, Bosse, Sterne, Evolution, Mods, Ausrüstung und Sets.
+
+## Stand: Phase 4 – Waffen-Fusion
 - **Fusions-Amboss** im Shop (Tab „⚒ Amboss"): 2–3 Waffen aus verschiedenen Gruppen wählen, dann festlegen, welche Waffe **Geschoss**, **Antrieb** und **Ladung** liefert (jede mindestens eins). Live-Vorschau mit Name, Werten, Elementen und Instabilität; Schmiedelohn steigt mit der Welle.
 - **Systemisch**: Jede der ~16.700 Kombinationen funktioniert. Dafür simuliert der Kern jetzt **alle 19 Antriebe** (u. a. Kreisel, Querschläger, Bumerang, Spirale, Strahl, Kegel, Himmelsregen, Hüpfen, Minen, Türme, Schwarm-Begleiter, Rollen, Teleport, Rundumschlag) und **alle 22 Ladungen** (u. a. Küken-Begleiter, Verhühnerung, Lavapfützen, Nässe leitet Blitze doppelt weit, Säure, Magnet, Schwerkraft-Sog, Konfetti-Verwirrung, Einfrieren nach 3 Frost-Treffern). Dadurch sind auch **alle 60 Waffen im Shop**.
 - **Werte**: Feuerrate und Reichweite vom Antriebs-Spender, Schaden so, dass der DPS dem Mittel der Zutaten entspricht – plus Bonus je nach **Instabilität** (0–100 %: je verschiedener die Gruppen, desto instabiler und stärker). Bei Krit kann eine instabile Waffe einen Bonus-„Kawumm!" auslösen (nie schädlich für dich).
@@ -40,13 +52,16 @@ npm run build:single   # alles in einer HTML-Datei
 ```
 
 URL-Parameter: `?res=360` (Auflösung), `?seed=42` (Arena), `?shadows=0` (Schatten aus), `?shake=0` (Screen-Shake aus, 0–2), `?zahlen=0` (Schadenszahlen aus).
-Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` (Startkristalle), `?waffen=huehnerkanone,huehnerkanone,huehnerkanone` (Startwaffen, überspringt die Wahl).
+Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` (Startkristalle), `?waffen=huehnerkanone,huehnerkanone,huehnerkanone` (Startwaffen, überspringt die Wahl), `?held=pyromane&insel=lavakessel` (Schnellstart), `?galerie=1` (alle Gegner zum Anschauen), `?beute=6` (Ausrüstung in den Beutel).
 
 ## Bekannte Probleme
 - Gegner laufen direkt auf den Spieler zu (noch kein Flow-Field); an Säulen rutschen sie seitlich ab.
 - Simulations-Ereignisse sind kleine Objekte pro Tick (wenig, aber nicht null GC); Gegner, Geschosse und Partikel sind gepoolt.
 - Hit-Stop hält die lokale Simulation an – im Koop (Phase 7) muss er rein visuell werden.
-- Noch kein Audio (Phase 8), keine Overkill-Leiste, kein Debug-Menü (nur URL-Parameter), keine Heldenwahl (nur Startwaffe).
+- Noch kein Audio (Phase 8), keine Overkill-Leiste, kein Debug-Menü (nur URL-Parameter).
+- Phase-5-Inhalte sind grob balanciert; der Balancing-Bot kauft noch keine Mods/Ausrüstung und evolviert nicht.
+- Helden und Inseln sind alle von Anfang an frei (Freischaltungen und Weltkarte kommen mit Phase 6).
+- Erst 10 der geplanten ~40 geheimen Rezepte.
 - Balancing grob: Mit Bot-Spieler starke Streuung (Tod zwischen Welle 2 und 12, gute Runs gewinnen); Raketenwerfer als Start ist am stärksten. Muss mit echten Spielern nachjustiert werden (`data/src/balance.ts`).
 - Fusions-Vorschau am Trainings-Dummy (10 s testen) fehlt noch; die Vorschau zeigt nur Werte.
 - Fusionen aus Fusionen sind bewusst nicht möglich (nur Mergen).
@@ -54,6 +69,6 @@ Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` 
 - Einstellungen (Shake, Zahlen) nur per URL, noch nicht im Menü gespeichert.
 - Auf echten Handys noch nicht gemessen (nur Headless-Chromium mit Software-Rendering getestet).
 
-## Nächster Schritt: Phase 5 – Content-Ausbau
-Mods, Sterne/Evolutionen, Synergien (Tag-Sets), Elementar-Reaktionen, mehr Items, Ausrüstung, Helden, Gegner-Fraktionen, Inseln – und die übrigen ~30 geheimen Rezepte.
+## Nächster Schritt: Phase 6 – Welt & Karten
+Weltkarte mit Inseln, Freischaltungen, Sammelkarten, weitere geheime Rezepte – siehe `docs/OVERBOOM_Prompt.md`.
 Vollständige Planung: `docs/OVERBOOM_Prompt.md`, Waffendaten: `docs/Waffenkatalog.md`.

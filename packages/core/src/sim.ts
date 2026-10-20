@@ -9,7 +9,7 @@ import {
 import { spawnBoss, spawnEnemy, stepEnemies, stepWaves } from './enemies.ts';
 import { maintainDrones, pull, rainEgg, spawnChickFor, stepProjectiles, stepWeapons, stormStrike } from './weapons.ts';
 import { addWeapon, creditKill, gainXp, openShop, recomputeStats, runCommand, type Command } from './progression.ts';
-import { FINALBOSS, GEGNER, GEGNER_INDEX, HELD_BY_ID, INSEL_BY_ID, KAMPF, SPIELER, WELLEN, baseStats, type Insel, type Stats } from '../../data/src/index.ts';
+import { BEUTE, FINALBOSS, GEGNER, GEGNER_INDEX, HELD_BY_ID, INSEL_BY_ID, KAMPF, SPIELER, WELLEN, baseStats, rollAusruestung, type Ausruestung, type Insel, type PlatzId, type Stats } from '../../data/src/index.ts';
 
 import { ACCEL, BARREL_RADIUS, DASH_COOLDOWN, DASH_SPEED, DASH_TIME, DT, MOVE_SPEED, PLAYER_COLORS, PLAYER_RADIUS } from './constants.ts';
 export * from './constants.ts';
@@ -82,6 +82,10 @@ export interface Player {
   eggT: number;
   /** gekaufte, noch nicht eingebaute Mods */
   modInv: string[];
+  /** angelegte Ausrüstung je Platz */
+  ausruestung: Record<PlatzId, Ausruestung | null>;
+  /** gefundene, noch nicht angelegte Ausrüstung */
+  beute: Ausruestung[];
 }
 
 /**
@@ -133,6 +137,7 @@ export type SimEvent =
   | { type: 'storm'; x: number; z: number }
   | { type: 'star'; player: number; slot: number; stars: number; weapon: string; x: number; z: number }
   | { type: 'evolve'; player: number; weapon: string; x: number; z: number }
+  | { type: 'loot'; player: number; name: string; seltenheit: number; set: string; x: number; z: number }
   | { type: 'victory'; wave: number };
 
 
@@ -167,6 +172,10 @@ export class World {
   rng: Rng;
   /** eigener Zufall für Shop und Level-Up – Einkaufen verändert den Kampfverlauf nicht */
   shopRng: Rng;
+  /** eigener Zufall für Beute – verändert den Kampfverlauf nicht */
+  lootRng: Rng;
+  /** fortlaufende Nummer für Ausrüstungsteile */
+  equipUid = 1;
   tick = 0;
   players: Player[] = [];
   /** Ereignisse dieses Ticks; Effekte im Renderer entstehen nur hieraus */
@@ -217,6 +226,7 @@ export class World {
     this.arena = createArena(seed, this.insel.gefahr as ArenaStyle);
     this.rng = new Rng(seed ^ 0x5eed);
     this.shopRng = new Rng(seed ^ 0x5409);
+    this.lootRng = new Rng(seed ^ 0x100f);
     this.barrels = this.arena.props.filter((p) => p.kind === 'barrel' || p.kind === 'heu');
     this.hash = new SpatialHash(this.arena.size, 2, MAX_ENEMIES);
     for (let i = 0; i < MAX_ENEMIES; i++) this.enemies.push(makeEnemy(i, GEGNER[0]));
@@ -233,6 +243,8 @@ export class World {
   reset(): void {
     this.rng = new Rng(this.seed ^ 0x5eed);
     this.shopRng = new Rng(this.seed ^ 0x5409);
+    this.lootRng = new Rng(this.seed ^ 0x100f);
+    this.equipUid = 1;
     this.tick = 0;
     this.endless = false;
     this.boss = -1;
@@ -295,7 +307,8 @@ export class World {
       level: 1, xp: 0, pendingLevels: 0, upgradeOffers: [], upgrades: [], items: {},
       stats: baseStats(), offers: [], rerolls: 0, ready: false, regenAcc: 0, loadout: 0, stealAcc: 0,
       held: '', perk: {}, slowT: 0, perkT: 0, floorT: 0,
-      synCount: {}, syn: {}, boomCount: 0, stormT: 0, eggT: 0, modInv: []
+      synCount: {}, syn: {}, boomCount: 0, stormT: 0, eggT: 0, modInv: [],
+      ausruestung: { helm: null, ruestung: null, stiefel: null, handschuhe: null, amulett: null, ring1: null, ring2: null, rucksack: null }, beute: []
     };
     this.players.push(p);
     if (this.opt.held) this.setHero(p, this.opt.held);
@@ -715,6 +728,8 @@ export class World {
       const g = group || this.newGroup();
       this.queueBlast(e.x, e.z, e.def.explosionsRadius ?? 1.8, (e.def.explosionsSchaden ?? 15) * 1.5 * (e.elite ? 2 : 1), KAMPF.kettenVerzoegerung, group ? chain + 1 : 0, g, false, 'kroete', src);
     }
+    // Beute: Elite manchmal, Bosse immer (für jeden lebenden Spieler)
+    if (e.doom < 0 && (e.def.verhalten === 'boss' || (e.elite && this.lootRng.chance(BEUTE.eliteChance)))) this.dropLoot(e.x, e.z, e.def.verhalten === 'boss');
     if (e.def.verhalten === 'boss' && e.slot === this.boss) {
       this.boss = -1;
       // Boss besiegt: Riesenexplosion, Welle vorbei
@@ -724,6 +739,20 @@ export class World {
         this.queueBlast(e.x + Math.cos(a) * 1.2, e.z + Math.sin(a) * 1.2, 2.2, 0, 0.12 * (i + 1), 1, g, false, 'welle');
       }
       if (this.phase === 'welle') this.clearWave();
+    }
+  }
+
+  /** Ausrüstung für alle lebenden Spieler würfeln und in ihre Beute legen */
+  dropLoot(x: number, z: number, boss: boolean): void {
+    const r = this.lootRng;
+    for (const p of this.players) {
+      if (!p.alive) continue;
+      const roll = r.next() * 100 + p.stats.glueck * 0.3 + this.wave * 2;
+      const selt = boss ? (roll > 70 ? 4 : 3) : roll > 95 ? 4 : roll > 70 ? 3 : roll > 35 ? 2 : 1;
+      const a = rollAusruestung(() => r.next(), this.equipUid++, Math.max(1, this.wave), selt, boss ? 0.45 : 0.1);
+      if (p.beute.length >= BEUTE.maxBeute) p.beute.shift();
+      p.beute.push(a);
+      this.events.push({ type: 'loot', player: p.id, name: a.name, seltenheit: a.seltenheit, set: a.set ?? '', x, z });
     }
   }
 

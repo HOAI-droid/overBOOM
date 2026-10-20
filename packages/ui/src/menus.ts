@@ -4,7 +4,7 @@ import {
 } from '@overboom/core';
 import {
   A, AMBOSS, EVOLUTION, G, GEGNER_BY_ID, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, evoName, HELDEN, HELD_BY_ID, INSELN, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
-  elemente, type StatKey
+  elemente, type StatKey, PLAETZE, SETS, SET_BY_ID, setBoni, schrottwert, BEUTE, type Ausruestung
 } from '@overboom/data';
 
 const GEM = '<i class="ob-gem" aria-hidden="true"></i>';
@@ -36,6 +36,12 @@ function weaponLines(p: Player, w: Waffe, tier: number, real?: WeaponSlot): stri
     ${fu}<li class="ob-part"><b>${A[w.antrieb].name}:</b> ${A[w.antrieb].text}</li>
     <li class="ob-part"><b>${L[w.ladung].name}:</b> ${L[w.ladung].text}</li>
   </ul>${w.fusion ? instabilBar(w.fusion.instabil) : ''}${el.length ? `<div class="ob-tags">${el.map((e) => `<span>${e}</span>`).join('')}</div>` : ''}`;
+}
+
+const ART_NAME: Record<string, string> = { helm: 'Helm', ruestung: 'Rüstung', stiefel: 'Stiefel', handschuhe: 'Handschuhe', amulett: 'Amulett', ring: 'Ring', rucksack: 'Rucksack' };
+function artName(a: Ausruestung): string { return ART_NAME[a.art] ?? a.art; }
+function gearLines(a: Ausruestung): string {
+  return `<ul class="ob-lines">${(Object.keys(a.werte) as StatKey[]).map((k) => statLine(k, a.werte[k]!)).join('')}</ul>`;
 }
 
 function instabilBar(v: number): string {
@@ -80,7 +86,7 @@ export class Menus {
   private mode: 'none' | 'start' | 'shop' | 'end' | 'pause' = 'none';
   private detail = -1;
   private showStats = false;
-  private tab: 'shop' | 'amboss' = 'shop';
+  private tab: 'shop' | 'amboss' | 'ausruestung' = 'shop';
   /** Amboss: gewählte Waffenplätze und wer welches Bauteil liefert (Index in anvilSel) */
   private anvilSel: number[] = [];
   private parts = { geschoss: 0, antrieb: 1, ladung: 2 };
@@ -134,7 +140,7 @@ export class Menus {
     if (w.phase === 'shop') {
       if (this.shopWave !== w.wave) { this.shopWave = w.wave; this.tab = 'shop'; this.resetAnvil(); }
       const key = JSON.stringify([w.wave, p.crystals, p.pendingLevels, p.upgradeOffers, p.offers, p.loadout, p.weapons.map((s) => s.tier + ':' + s.stars + ':' + s.mods.join('/') + s.waffe.id), p.modInv, this.detail, this.showStats, p.ready,
-        this.tab, this.anvilSel, this.parts, this.book, this.recipes().size]);
+        this.tab, p.beute.map((a) => a.uid), Object.values(p.ausruestung).map((a) => a?.uid ?? 0), this.anvilSel, this.parts, this.book, this.recipes().size]);
       if (this.mode !== 'shop' || key !== this.lastKey) { this.lastKey = key; this.renderShop(); }
       return;
     }
@@ -224,6 +230,12 @@ export class Menus {
         kind = `Mod · ${SELTENHEIT[m.seltenheit - 1].name}`;
         title = m.name;
         body = `<ul class="ob-lines"><li class="ob-part">${m.text}</li></ul><span class="ob-flavor">Einbau in Waffen ab Stufe II (Waffe antippen).</span>`;
+      } else if (o.kind === 'ausruestung' && o.equip) {
+        const a = o.equip;
+        kind = `${artName(a)} · ${SELTENHEIT[a.seltenheit - 1].name}`;
+        title = a.name;
+        body = gearLines(a);
+        if (p.beute.length >= BEUTE.maxBeute) body += '<span class="ob-warn">Beutel voll</span>';
       } else {
         const it = ITEM_BY_ID[o.id];
         kind = `Item · ${SELTENHEIT[it.seltenheit - 1].name}${p.items[o.id] ? ` · hast ${p.items[o.id]}` : ''}`;
@@ -283,11 +295,12 @@ export class Menus {
           <div class="ob-tabs">
             <button type="button" class="ob-tab ${this.tab === 'shop' ? 'on' : ''}" data-act="tab" data-tab="shop" data-focus="tabshop">Shop</button>
             <button type="button" class="ob-tab ${this.tab === 'amboss' ? 'on' : ''}" data-act="tab" data-tab="amboss" data-focus="tabamboss">⚒ Amboss</button>
+            <button type="button" class="ob-tab ${this.tab === 'ausruestung' ? 'on' : ''}" data-act="tab" data-tab="ausruestung" data-focus="tabgear">Ausrüstung${p.beute.length ? ` <em class="ob-badge">${p.beute.length}</em>` : ''}</button>
             <small>Welle ${w.wave} geschafft</small>
           </div>
           <div class="ob-wallet">${GEM}<b>${p.crystals}</b></div>
         </div>
-        ${this.tab === 'shop' ? `<div class="ob-cards">${offers}</div>` : this.renderAnvil()}
+        ${this.tab === 'shop' ? `<div class="ob-cards">${offers}</div>` : this.tab === 'amboss' ? this.renderAnvil() : this.renderGear()}
         <div class="ob-row ob-actions">
           ${this.tab === 'shop' ? `<button type="button" class="ob-btn2" data-act="reroll" data-focus="reroll" ${p.crystals >= reroll ? '' : 'disabled'}>Neu würfeln ${GEM}${reroll}</button>` : ''}
           <button type="button" class="ob-btn2" data-act="stats" data-focus="stats">${this.showStats ? 'Werte ausblenden' : 'Werte'}</button>
@@ -326,6 +339,49 @@ export class Menus {
       html += `<div class="ob-row">${p.modInv.map((m, k) => `<button type="button" class="ob-btn2" data-act="install" data-i="${i}" data-k="${k}" data-focus="mod${k}" ${s.mods.includes(m) ? 'disabled' : ''}>Einbauen: ${MOD_BY_ID[m].name}</button>`).join('')}</div>`;
     }
     return html;
+  }
+
+  /* ---------------- Ausrüstung ---------------- */
+
+  private renderGear(): string {
+    const w = this.world, p = this.p;
+    const slots = PLAETZE.map((pl) => {
+      const a = p.ausruestung[pl.id];
+      if (!a) return `<div class="ob-gear empty"><small>${pl.name}</small><span>leer</span></div>`;
+      return `<div class="ob-gear" ${rarity(a.seltenheit)}>
+        <small>${pl.name}${a.set ? ' · Set' : ''}</small><b>${a.name}</b>${gearLines(a)}
+        <button type="button" class="ob-btn2" data-act="unequip" data-platz="${pl.id}" data-focus="un${pl.id}" ${p.beute.length < BEUTE.maxBeute ? '' : 'disabled'}>Ablegen</button>
+      </div>`;
+    }).join('');
+    const aktiv = setBoni(Object.values(p.ausruestung));
+    const sets = SETS.map((set) => {
+      const n = aktiv.find((x) => x.set.id === set.id)?.anzahl ?? 0;
+      return `<li class="${n ? 'some' : ''}"><b>${set.name} ${n}/${set.teile.length}</b>
+        <span class="ob-setparts">${set.teile.map((t) => t.name).join(' · ')}</span>
+        ${set.boni.map((b) => `<div class="${n >= b.ab ? 'on' : ''}">${b.ab}: ${b.text}</div>`).join('')}</li>`;
+    }).join('');
+    const beute = p.beute.map((a, k) => {
+      const plaetze = PLAETZE.filter((x) => x.art === a.art);
+      const anlegen = plaetze.length > 1
+        ? plaetze.map((pl, j) => `<button type="button" class="ob-btn2" data-act="equip" data-i="${k}" data-platz="${pl.id}" data-focus="eq${k}${j}">→ ${pl.name} ${j + 1}</button>`).join('')
+        : `<button type="button" class="ob-btn2" data-act="equip" data-i="${k}" data-focus="eq${k}">Anlegen</button>`;
+      const alt = plaetze.map((pl) => p.ausruestung[pl.id]).find((x) => x);
+      return `<div class="ob-card" ${rarity(a.seltenheit)}>
+        <span class="ob-kind">${artName(a)} · ${SELTENHEIT[a.seltenheit - 1].name}${a.set ? ` · ${SET_BY_ID[a.set].name}` : ''}</span>
+        <span class="ob-name">${a.name}</span>
+        ${gearLines(a)}
+        ${alt ? `<span class="ob-flavor">Statt: ${alt.name}</span>` : ''}
+        <div class="ob-row">${anlegen}<button type="button" class="ob-btn2" data-act="scrap" data-i="${k}" data-focus="sc${k}">Schrott +${schrottwert(a, w.wave)}</button></div>
+      </div>`;
+    }).join('');
+    return `<div class="ob-gearview">
+      <h3 class="ob-h3">Angelegt <small>8 Plätze – Werte zählen sofort</small></h3>
+      <div class="ob-gearslots">${slots}</div>
+      <h3 class="ob-h3">Beutel ${p.beute.length}/${BEUTE.maxBeute} <small>Beute von Elite-Gegnern und Bossen, oder aus dem Shop</small></h3>
+      ${beute ? `<div class="ob-cards">${beute}</div>` : '<p class="ob-none">Noch nichts gefunden. Elite-Gegner und Bosse lassen Ausrüstung fallen.</p>'}
+      <h3 class="ob-h3">Sets</h3>
+      <ul class="ob-synlist ob-sets">${sets}</ul>
+    </div>`;
   }
 
   /* ---------------- Fusions-Amboss ---------------- */
@@ -464,7 +520,10 @@ export class Menus {
       case 'install': this.send({ type: 'installMod', slot: i, index: Number(el.dataset.k) }); break;
       case 'sell': this.send({ type: 'sell', slot: i }); this.detail = -1; break;
       case 'stats': this.showStats = !this.showStats; break;
-      case 'tab': this.tab = el.dataset.tab === 'amboss' ? 'amboss' : 'shop'; this.detail = -1; break;
+      case 'tab': this.tab = el.dataset.tab === 'amboss' ? 'amboss' : el.dataset.tab === 'ausruestung' ? 'ausruestung' : 'shop'; this.detail = -1; break;
+      case 'equip': this.send({ type: 'equip', index: i, platz: (el.dataset.platz || undefined) as never }); break;
+      case 'unequip': this.send({ type: 'unequip', platz: el.dataset.platz as never }); break;
+      case 'scrap': this.send({ type: 'scrap', index: i }); break;
       case 'pick': {
         const k = this.anvilSel.indexOf(i);
         if (k >= 0) this.anvilSel = this.anvilSel.filter((x) => x !== i);

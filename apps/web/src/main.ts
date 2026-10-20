@@ -1,5 +1,5 @@
 import { World, DT, DASH_COOLDOWN, NO_INPUT, spawnEnemy, type Command, type InputState } from '@overboom/core';
-import { GEGNER, HELD_BY_ID, INSEL_BY_ID, LEVEL, SYNERGIEN, waffeById } from '@overboom/data';
+import { GEGNER, HELD_BY_ID, INSEL_BY_ID, LEVEL, SELTENHEIT, SYNERGIEN, waffeById } from '@overboom/data';
 import { GameRenderer, type PlayerPose } from '@overboom/render';
 import { Controls, DamageNumbers, Hud, MenuNav, Menus, screenToWorld } from '@overboom/ui';
 import { createWebPlatform } from '@overboom/platform';
@@ -33,6 +33,8 @@ function start() {
     if (!debugWeapons.length && !dbgHeld && !dbgInsel && !galerie) return;
     world.command(0, { type: 'start', held: HELD_BY_ID[dbgHeld] ? dbgHeld : 'kawummkid', insel: INSEL_BY_ID[dbgInsel] ? dbgInsel : 'bummburg' });
     if (debugWeapons.length || galerie) { world.players[0].weapons.length = 0; for (const id of debugWeapons) world.debugGive(0, id); }
+    // Debug: ?beute=6 (Ausrüstung in den Beutel)
+    for (let i = 0; i < Math.min(10, num('beute', 0)); i++) world.dropLoot(0, 0, i % 2 === 0);
     if (galerie) {
       world.spawnAcc = -1e9;
       world.waveTime = 1e9;
@@ -171,6 +173,7 @@ function start() {
         case 'reaction': damage.text(-5000 - (e.x * 37 | 0) - (e.z * 11 | 0), e.x, 1.5, e.z, e.name, 'reaction', e.farbe); break;
         case 'star': damage.text(-7000 - e.slot, e.x, 1.9, e.z, `${'★'.repeat(e.stars)} ${e.weapon}`, 'lvl'); if (e.stars === 5) hud.banner('5 Sterne!', `${e.weapon} kann im Shop evolvieren`, 'gelb'); break;
         case 'evolve': hud.banner('Evolution!', e.weapon, 'gelb'); platform.haptic(120); break;
+        case 'loot': if (e.player === 0) { damage.text(-8000 - (e.seltenheit), e.x, 1.6, e.z, `Beute: ${e.name}`, 'lvl', SELTENHEIT[e.seltenheit - 1].farbe); platform.haptic(40); } break;
         case 'nuke': damage.text(-6000, e.x, 1.8, e.z, 'MINI-NUKE!', 'kawumm', '#ffd23f'); platform.haptic(120); break;
         case 'kawumm': damage.text(-999 - (e.x * 100 | 0), e.x, 1.3, e.z, 'Kawumm!', 'kawumm'); break;
         case 'death': platform.haptic(200); endTimer = 1.6; break;

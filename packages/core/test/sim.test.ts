@@ -1,6 +1,8 @@
 import { World, Tile, DT, spawnEnemy, type InputState } from '../src/index.ts';
 import { ANTRIEBE, GEGNER, GEGNER_INDEX, HELDEN, INSELN, REAKTIONEN, LADUNG_ELEMENT, SYNERGIEN, LADUNGEN, REZEPTE, WAFFEN, WELLEN, fusionsWaffe, waffeById } from '../../data/src/index.ts';
 import { Tile as T } from '../src/arena.ts';
+import * as D from '../../data/src/index.ts';
+import { Rng } from '../src/rng.ts';
 
 let fails = 0;
 const ok = (cond: boolean, msg: string) => { console.log((cond ? '✓ ' : '✗ ') + msg); if (!cond) fails++; };
@@ -787,6 +789,45 @@ for (const [el, ids, ev] of [
   p.weapons[1].stars = 3; p.weapons[1].kills = 70;
   w.command(0, { type: 'merge', slot: 0 });
   ok(p.weapons.length === 1 && p.weapons[0].tier === 2 && p.weapons[0].stars === 3, 'Merge: Stufe II, Sterne bleiben');
+}
+
+// Ausrüstung: Shop-Kauf, Anlegen, Set-Boni, Verschrotten, Boss-Beute
+{
+  ok(D.ITEMS.length >= 150 && new Set(D.ITEMS.map((i) => i.id)).size === D.ITEMS.length, `${D.ITEMS.length} Items, alle IDs eindeutig`);
+  const w = new World(74, 1, { god: true });
+  const p = w.players[0];
+  runUntil(w, () => w.phase === 'shop');
+  while (p.pendingLevels) w.command(0, { type: 'upgrade', index: 0 });
+  p.crystals = 999;
+  const hp0 = p.maxHp;
+  const set = D.SET_BY_ID.grummel;
+  const teil = (k: number) => ({ uid: 900 + k, art: set.teile[k].art, name: set.teile[k].name, seltenheit: 3, werte: { ...set.teile[k].werte }, set: 'grummel' });
+  p.offers[0] = { kind: 'ausruestung', id: 'x', tier: 3, price: 10, locked: false, sold: false, equip: teil(0) };
+  ok(w.command(0, { type: 'buy', index: 0 }) && p.beute.length === 1, 'Ausrüstung gekauft → Beute');
+  p.beute.push(teil(1), teil(2));
+  ok(w.command(0, { type: 'equip', index: 0 }) && p.ausruestung.helm?.set === 'grummel', 'Helm angelegt');
+  w.command(0, { type: 'equip', index: 0 }); w.command(0, { type: 'equip', index: 0 });
+  // Teile 5+10+0 HP, Set (2) +10, Set (3) +4 Rüstung
+  ok(p.maxHp === hp0 + 25 && p.stats.ruestung >= 3 + 1 + 4, `Grummel-Set komplett: +${p.maxHp - hp0} Leben, Rüstung ${p.stats.ruestung}`);
+  const r3 = p.stats.ruestung;
+  ok(w.command(0, { type: 'unequip', platz: 'stiefel' }) && p.stats.ruestung === r3 - 4 && p.maxHp === hp0 + 25, 'Ablegen: dritter Set-Bonus fällt weg');
+  const c0 = p.crystals;
+  ok(w.command(0, { type: 'scrap', index: 0 }) && p.crystals > c0 && p.beute.length === 0, `Verschrotten: +${p.crystals - c0} Kristalle`);
+  // Ringe: zwei Plätze
+  const ring = (u: number) => D.rollAusruestung(() => 0.5, u, 5, 2, 0, 'ring');
+  p.beute.push(ring(1), ring(2));
+  w.command(0, { type: 'equip', index: 0 }); w.command(0, { type: 'equip', index: 0 });
+  ok(!!p.ausruestung.ring1 && !!p.ausruestung.ring2, 'Zwei Ringe angelegt');
+  // Boss lässt immer Beute fallen
+  w.command(0, { type: 'ready' });
+  for (const warn of w.warnings) warn.active = false; w.spawnAcc = -999;
+  const b = spawnEnemy(w, GEGNER_INDEX.megatoaster, p.x + 5, p.z)!;
+  w.killEnemy(b, 0, 0, false);
+  const loot = p.beute.length === 1 && p.beute[0].seltenheit >= 3 && w.events.some((ev) => ev.type === 'loot');
+  ok(loot, `Boss-Beute: ${p.beute[0]?.name} (Seltenheit ${p.beute[0]?.seltenheit})`);
+  // deterministisch
+  const roll = () => { const r = new Rng(5); return D.rollAusruestung(() => r.next(), 1, 8, 4); };
+  ok(JSON.stringify(roll()) === JSON.stringify(roll()), `Würfeln ist deterministisch (${roll().name})`);
 }
 
 if (fails) { console.log(`\n${fails} Test(s) fehlgeschlagen`); process.exit(1); } else console.log('\nAlle Tests bestanden');

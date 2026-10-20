@@ -249,8 +249,10 @@ export function makeWarning(): Warning {
 
 /** Ein Angebot im Shop */
 export interface Offer {
-  kind: 'waffe' | 'item' | 'mod';
+  kind: 'waffe' | 'item' | 'mod' | 'ausruestung';
   id: string;
+  /** nur bei kind 'ausruestung': das angebotene Teil */
+  equip?: import('../../data/src/index.ts').Ausruestung;
   /** Stufe der Waffe bzw. Seltenheit des Items (1–4) */
   tier: number;
   price: number;
