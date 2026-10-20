@@ -25,6 +25,10 @@ Immer die neueste Version – einfach anklicken:
 
 Alle Versionen und Änderungen: [Releases](https://github.com/HOAI-droid/overboom/releases)
 
+**Rechtliches:** [Datenschutz](DATENSCHUTZ.md) · [Lizenz – alle Rechte vorbehalten](LICENSE) · [Drittanbieter-Software](DRITTANBIETER.md)
+
+Die Downloads werden kostenlos und ohne Gewähr bereitgestellt. Solo werden keine Daten übertragen; für Koop gehen IP-Adresse und Spielername an Verbindungsserver und Mitspieler (Details im Datenschutzhinweis).
+
 ## Was dich erwartet
 
 - **20 Wellen pro Run** auf **7 Inseln** der Welt Krawummia – jede mit eigener Gegner-Fraktion, Bodengefahr und Boss. Am Ende wartet der Baron von Bumm.

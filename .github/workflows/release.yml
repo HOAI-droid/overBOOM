@@ -69,6 +69,10 @@ jobs:
           eins art/OVERBOOM-iOS     '*.ipa'      OVERBOOM-iOS-unsigniert.ipa
           eins art/OVERBOOM-Browser 'index.html' OVERBOOM-Browser.html
           (cd art/OVERBOOM-Xbox && zip -qr ../../rel/OVERBOOM-Xbox.zip .)
+          # Lizenz, Drittanbieter-Lizenzen und Datenschutz: ins Xbox-Zip und als eigene Release-Dateien
+          zip -qj rel/OVERBOOM-Xbox.zip LICENSE DRITTANBIETER.md DATENSCHUTZ.md
+          cp LICENSE rel/LIZENZ.txt
+          cp DRITTANBIETER.md DATENSCHUTZ.md rel/
           ls -la rel
           V=$(node -p "require('./package.json').version")
           echo "VERSION=$V" >> "$GITHUB_ENV"
