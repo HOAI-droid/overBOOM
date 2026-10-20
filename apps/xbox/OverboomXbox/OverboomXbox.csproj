@@ -90,6 +90,11 @@
     <PackageReference Include="Microsoft.UI.Xaml">
       <Version>2.8.6</Version>
     </PackageReference>
+    <!-- WebView2-SDK ausdrücklich mitliefern: Die in Microsoft.UI.Xaml enthaltene ältere Fassung
+         findet die WebView2-Laufzeit der Xbox nicht („keine geeignete Version … erkannt“). -->
+    <PackageReference Include="Microsoft.Web.WebView2">
+      <Version>1.0.2088.41</Version>
+    </PackageReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

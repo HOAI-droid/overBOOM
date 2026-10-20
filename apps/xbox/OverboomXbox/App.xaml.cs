@@ -2,6 +2,7 @@ using Windows.ApplicationModel.Activation;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using UnhandledExceptionEventArgs = Windows.UI.Xaml.UnhandledExceptionEventArgs;
 
 namespace OverboomXbox
 {
@@ -13,6 +14,16 @@ namespace OverboomXbox
             InitializeComponent();
             // Kein Mauszeiger auf der Xbox – das Spiel wird komplett per Controller bedient
             RequiresPointerMode = ApplicationRequiresPointerMode.WhenRequested;
+            // Unbehandelte Fehler nicht als Absturz enden lassen, sondern anzeigen
+            UnhandledException += OnUnhandled;
+        }
+
+        void OnUnhandled(object sender, UnhandledExceptionEventArgs e)
+        {
+            e.Handled = true;
+            var seite = (Window.Current?.Content as Frame)?.Content as MainPage;
+            seite?.ZeigeFehler("Fehler in der Xbox-Hülle:\n\n" + e.Message +
+                "\n\nBitte ein Foto dieser Meldung schicken. Im Edge-Browser läuft das Spiel: hoai-droid.github.io/overboom");
         }
 
         protected override void OnLaunched(LaunchActivatedEventArgs e)

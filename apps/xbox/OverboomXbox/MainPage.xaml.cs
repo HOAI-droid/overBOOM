@@ -42,7 +42,14 @@ namespace OverboomXbox
             }
             catch (Exception ex)
             {
-                ZeigeFehler("WebView2 konnte nicht gestartet werden: " + ex.Message);
+                ZeigeFehler("WebView2 konnte nicht gestartet werden.\n\n" + ex.Message +
+                    "\n\nBitte die Xbox aktualisieren (Einstellungen → System → Updates)." +
+                    "\nIm Edge-Browser läuft das Spiel auch: hoai-droid.github.io/overboom");
+                return;
+            }
+            if (Web.CoreWebView2 == null)
+            {
+                ZeigeFehler("WebView2 ist nicht verfügbar. Bitte die Xbox aktualisieren.");
                 return;
             }
             var core = Web.CoreWebView2;
@@ -65,10 +72,13 @@ namespace OverboomXbox
             Web.Focus(FocusState.Programmatic);
         }
 
-        void ZeigeFehler(string text)
+        /// <summary>Fehler sichtbar machen statt die App zu schließen (auch aus App.UnhandledException)</summary>
+        public void ZeigeFehler(string text)
         {
             Fehler.Text = text;
             Fehler.Visibility = Visibility.Visible;
+            // Das WebView bleibt sonst über dem Text liegen
+            Web.Visibility = Visibility.Collapsed;
         }
 
         void OnBackRequested(object sender, BackRequestedEventArgs e)
