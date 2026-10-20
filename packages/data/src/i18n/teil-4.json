@@ -1,5 +1,145 @@
 [
  {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Alles, was klebt und schleimt.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Elementar · Explosiv",
+  "quelle": "daten"
+ },
+ {
+  "de": "Lavaschleuder + Bombenhagel + Flammenwerfer",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Das ist kein Ausbruch, das ist ein Gruß.\" – Der Pyromane",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Lava, Bomben und Flammen – der Lavakessel zum Mitnehmen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Werfer · Beschwörung · Elementar",
+  "quelle": "daten"
+ },
+ {
+  "de": "Faule Eier + Kükenkorb + Giftbläser",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Riecht wie Bauer Brunos Socken.\" – Giftmischerin Gerda",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Eier, Küken und ein Giftbläser.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Support · Drohnen & Türme",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kuckucksuhr + Orbitalschlag + Tesla-Turm",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Kuckuck! Es ist … Gewitterzeit.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Eine Uhr, ein Satellit und ein Turm unter Strom.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Energie · Explosiv",
+  "quelle": "daten"
+ },
+ {
+  "de": "Magnetkanone + Plasmaspirale + Minenleger",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Alles hängt zusammen. Vor allem die Gegner.\" – Prof. Fusionski",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Magnet, Spirale und Minen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Nahkampf",
+  "quelle": "daten"
+ },
+ {
+  "de": "Wurfaxt + Kettensäge + Baseballschläger",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Holz vor der Hütte? Nicht mehr lange.\" – Panzer-Paule",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Axt, Säge und Schläger.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Support",
+  "quelle": "daten"
+ },
+ {
+  "de": "Pflasterkanone + Omas Keksdose + Schildblasen",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Erst verarzten, dann verkloppen.\" – Oma Granate",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Pflaster, Kekse und Blasen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Support · Werfer · Elementar",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kuckucksuhr + Schneeballschleuder + Wasserwerfer",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Bitte nicht auftauen.\" – Frost-Fritz",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Kuckuck, Schnee und Wasser.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Werfer · Exotisch · Feuerwaffen",
+  "quelle": "daten"
+ },
+ {
+  "de": "Wurfsterne + Sternschnuppenstab + Präzisionsgewehr",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Wünsch dir was. Zum Beispiel weniger Gegner.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Entdecke das Rezept am Amboss. Hinweis: Sterne, Sternschnuppen und ein sehr genaues Gewehr.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fusionswaffe — Beschwörung · Exotisch",
+  "quelle": "daten"
+ },
+ {
+  "de": "Pilzbeutel + Partykanone + Dudelsack des Grauens",
+  "quelle": "daten"
+ },
+ {
   "de": "„Untz untz untz … hust.\" – ein Pilzling",
   "quelle": "daten"
  },
@@ -428,7 +568,7 @@
   "quelle": "daten"
  },
  {
-  "de": "Bombenhagel mit roten Einschlag-Markierungen, Ruft seine Bande zu Hilfe.",
+  "de": "Bombenhagel mit roten Einschlag-Markierungen, Bodenflächen leuchten auf und explodieren, Gezielter Geschossfächer, Ruft seine Bande zu Hilfe, Kugelspirale, die sich langsam dreht.",
   "quelle": "daten"
  },
  {
@@ -437,6 +577,106 @@
  },
  {
   "de": "Besiege Baron von Bumm 5×.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Bodenflächen leuchten auf und explodieren, Ansturm quer durch die Arena, Gezielter Geschossfächer, Geschossring in alle Richtungen, Ruft seine Bande zu Hilfe.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Besiege Baronin Gackerella von Federstein.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Besiege Baronin Gackerella von Federstein 5×.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Boss — Funkenbande",
+  "quelle": "daten"
+ },
+ {
+  "de": "Bodenflächen leuchten auf und explodieren, Kreuzfeuer, das sich dreht, Ruft seine Bande zu Hilfe, Geschossring in alle Richtungen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Besiege Baron Blitzbirne.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Besiege Baron Blitzbirne 5×.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kugelspirale, die sich langsam dreht, Streut Minen rund um sich, Gezielter Geschossfächer, Ruft seine Bande zu Hilfe.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Besiege Baronin Schraubella.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Besiege Baronin Schraubella 5×.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Bodenflächen leuchten auf und explodieren, Kugelspirale, die sich langsam dreht, Giftsporen-Wolken, Ruft seine Bande zu Hilfe, Geschossring in alle Richtungen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Besiege Baronin Sporella.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Besiege Baronin Sporella 5×.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Boss — Glutgesindel",
+  "quelle": "daten"
+ },
+ {
+  "de": "Sprung mit Druckwelle bei der Landung, Bodenflächen leuchten auf und explodieren, Geschossring in alle Richtungen, Ruft seine Bande zu Hilfe.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Besiege Baron Glutbauch.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Besiege Baron Glutbauch 5×.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Boss — Frostfrieder",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gezielter Geschossfächer, Ansturm quer durch die Arena, Kugelspirale, die sich langsam dreht, Bodenflächen leuchten auf und explodieren, Ruft seine Bande zu Hilfe.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Besiege Baronin Frostine von Bibberstein.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Besiege Baronin Frostine von Bibberstein 5×.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Boss — Urknall",
+  "quelle": "daten"
+ },
+ {
+  "de": "Bodenflächen leuchten auf und explodieren, Geschossring in alle Richtungen, Gezielter Geschossfächer, Bombenhagel mit roten Einschlag-Markierungen, Kugelspirale, die sich langsam dreht, Sprung mit Druckwelle bei der Landung, Ruft seine Bande zu Hilfe, Kreuzfeuer, das sich dreht.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Besiege Das Große Kawumm.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Besiege Das Große Kawumm 5×.",
   "quelle": "daten"
  },
  {
@@ -1557,246 +1797,6 @@
  },
  {
   "de": "Die haben Freunde mitgebracht.",
-  "quelle": "daten"
- },
- {
-  "de": "Noch eine Runde Chaos, bitte.",
-  "quelle": "daten"
- },
- {
-  "de": "Kawumm! Das war wohl zu viel Kawumm.",
-  "quelle": "daten"
- },
- {
-  "de": "Die Grummelbolde grummeln zufrieden.",
-  "quelle": "daten"
- },
- {
-  "de": "Die Bomben-Kröten quaken ein Siegeslied.",
-  "quelle": "daten"
- },
- {
-  "de": "Der Toastomat toastet auf deinen Untergang.",
-  "quelle": "daten"
- },
- {
-  "de": "Baron von Bumm zwirbelt zufrieden den Schnurrbart.",
-  "quelle": "daten"
- },
- {
-  "de": "Ein Kampfhuhn gackert hämisch.",
-  "quelle": "daten"
- },
- {
-  "de": "Der Schleimi teilt sich vor Freude.",
-  "quelle": "daten"
- },
- {
-  "de": "Irgendwo lacht ein Pilzling. Leise. Sporig.",
-  "quelle": "daten"
- },
- {
-  "de": "Die Kawumm-Jäger-Akademie schickt einen Beileids-Keks.",
-  "quelle": "daten"
- },
- {
-  "de": "Bomben-Kröten explodieren auch, wenn man sie erwischt. Stell dich nicht daneben. Oder doch – wenn du Ketten liebst.",
-  "quelle": "daten"
- },
- {
-  "de": "Drei gleiche Waffen gleicher Stufe? Verschmelzen! Zwei verschiedene Gruppen? Ab zum Amboss!",
-  "quelle": "daten"
- },
- {
-  "de": "Die Overkill-Leiste füllt sich durch Kills und Ketten. Voll? OVERBOOM drücken und genießen.",
-  "quelle": "daten"
- },
- {
-  "de": "Feuer + Wasser = Dampfexplosion. Die Natur ist ein großer Chemiebaukasten.",
-  "quelle": "daten"
- },
- {
-  "de": "Im Koop rechnet das Gerät des Hosts für alle. Ein PC ist ein guter Host.",
-  "quelle": "daten"
- },
- {
-  "de": "Niedergeschlagen? Ein Mitspieler muss nur kurz neben dir stehen.",
-  "quelle": "daten"
- },
- {
-  "de": "Elite-Gegner tragen eine Krone – und manchmal Ausrüstung.",
-  "quelle": "daten"
- },
- {
-  "de": "Sterne bekommt eine Waffe durch Kills. Bei fünf Sternen wartet eine Evolution.",
-  "quelle": "daten"
- },
- {
-  "de": "Gesperrte Karten im Album verraten, wie man sie bekommt.",
-  "quelle": "daten"
- },
- {
-  "de": "Auf Gefahr 10 explodiert alles. Wirklich alles. Viel Glück!",
-  "quelle": "daten"
- },
- {
-  "de": "Glückspilz-Tipp: Neu würfeln ist manchmal gratis.",
-  "quelle": "daten"
- },
- {
-  "de": "Fässer sind Freunde. Explosive Freunde.",
-  "quelle": "daten"
- },
- {
-  "de": "Oma Granate verteilt Kekse. Gegen Kekse hat noch niemand gewonnen.",
-  "quelle": "daten"
- },
- {
-  "de": "Prof. Fusionski schmiedet gratis. Er nennt das „Forschung\".",
-  "quelle": "daten"
- },
- {
-  "de": "Schadenszahlen, Wackeln und Lichtblitze kannst du in den Einstellungen anpassen.",
-  "quelle": "daten"
- },
- {
-  "de": "Ein Kampfhuhn scharrt, bevor es stürmt. Hör auf das Scharren!",
-  "quelle": "daten"
- },
- {
-  "de": "Die Pilzkönigin mag keine Feuerwaffen. Und auch sonst nichts.",
-  "quelle": "daten"
- },
- {
-  "de": "Spielstand sichern: Album → Erfolge → Code kopieren.",
-  "quelle": "daten"
- },
- {
-  "de": "Der Baron hat das Große Kawumm gezündet. Zeit, das Kawumm zurückzugeben.",
-  "quelle": "daten"
- },
- {
-  "de": "Kein Huhn wurde bei der Entwicklung verletzt. Sie sind alle nur sehr wütend.",
-  "quelle": "daten"
- },
- {
-  "de": "Bombenhagel mit roten Einschlag-Markierungen",
-  "quelle": "daten"
- },
- {
-  "de": "Ansturm quer durch die Arena",
-  "quelle": "daten"
- },
- {
-  "de": "Geschossring in alle Richtungen",
-  "quelle": "daten"
- },
- {
-  "de": "Giftsporen-Wolken",
-  "quelle": "daten"
- },
- {
-  "de": "Ruft seine Bande zu Hilfe",
-  "quelle": "daten"
- },
- {
-  "de": "Schwarmraketen",
-  "quelle": "daten"
- },
- {
-  "de": "Atomrakete",
-  "quelle": "daten"
- },
- {
-  "de": "Doppelpistolen",
-  "quelle": "daten"
- },
- {
-  "de": "Handkanone",
-  "quelle": "daten"
- },
- {
-  "de": "Streuschrotflinte",
-  "quelle": "daten"
- },
- {
-  "de": "Elefantenflinte",
-  "quelle": "daten"
- },
- {
-  "de": "Kreischende Minigun",
-  "quelle": "daten"
- },
- {
-  "de": "Mega-Gatling",
-  "quelle": "daten"
- },
- {
-  "de": "Gewitterstab",
-  "quelle": "daten"
- },
- {
-  "de": "Donnerkeil",
-  "quelle": "daten"
- },
- {
-  "de": "Flammenfächer",
-  "quelle": "daten"
- },
- {
-  "de": "Drachenatem",
-  "quelle": "daten"
- },
- {
-  "de": "Hühnerschwarm",
-  "quelle": "daten"
- },
- {
-  "de": "Riesenhuhn-Kanone",
-  "quelle": "daten"
- },
- {
-  "de": "Granatenhagel",
-  "quelle": "daten"
- },
- {
-  "de": "Großkaliber-Granate",
-  "quelle": "daten"
- },
- {
-  "de": "Dynamit-Feuerwerk",
-  "quelle": "daten"
- },
- {
-  "de": "Dynamit-Fass",
-  "quelle": "daten"
- },
- {
-  "de": "Pfannen-Wirbel",
-  "quelle": "daten"
- },
- {
-  "de": "Gusseisen-Pfanne",
-  "quelle": "daten"
- },
- {
-  "de": "Doppelschläger",
-  "quelle": "daten"
- },
- {
-  "de": "Home-Run-Keule",
-  "quelle": "daten"
- },
- {
-  "de": "Bienenvolk",
-  "quelle": "daten"
- },
- {
-  "de": "Königinnenstock",
-  "quelle": "daten"
- },
- {
-  "de": "Eissplitter-Kanone",
   "quelle": "daten"
  }
 ]

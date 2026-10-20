@@ -1,5 +1,93 @@
 [
  {
+  "de": "Frost-Fritz",
+  "quelle": "daten"
+ },
+ {
+  "de": "Hat immer kalte Füße",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gegner frieren bei ihm schon nach zwei Frost-Treffern ein. Trägt drei Schals übereinander.",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Brrr. Für euch gleich noch mehr Brrr.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Giftmischerin Gerda",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kocht nicht für Gäste",
+  "quelle": "daten"
+ },
+ {
+  "de": "Ihr Gift wirkt deutlich stärker. Hält sich gern auf Abstand und lächelt dabei unheimlich freundlich.",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Probier mal. Ist nur ein bisschen grün.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Panzer-Paule",
+  "quelle": "daten"
+ },
+ {
+  "de": "Läuft durch Wände (meistens)",
+  "quelle": "daten"
+ },
+ {
+  "de": "Viel Leben, viel Rüstung, Nahkampfwaffen +50 %. Dafür so schnell wie ein Kühlschrank.",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Ausweichen ist was für Leute ohne Rüstung.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Sprintina Flitz",
+  "quelle": "daten"
+ },
+ {
+  "de": "Schneller als ihr Schatten",
+  "quelle": "daten"
+ },
+ {
+  "de": "Rennt, dasht, rennt. Ihr Dash lädt schneller und schubst Gegner weg. Wenig Leben – nicht getroffen werden!",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Fang mich doch! Nein, wirklich, versuch es.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Prof. Fusionski",
+  "quelle": "daten"
+ },
+ {
+  "de": "Erfinder des Ambosses",
+  "quelle": "daten"
+ },
+ {
+  "de": "Verschmilzt Waffen gratis, und seine Fusionen sind stärker. Hat sich dabei leider die Augenbrauen weggesprengt.",
+  "quelle": "daten"
+ },
+ {
+  "de": "„Wissenschaft! Und ein bisschen Kawumm.\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Grubert der Bekehrte",
+  "quelle": "daten"
+ },
+ {
+  "de": "Ex-Grummelbold",
+  "quelle": "daten"
+ },
+ {
   "de": "Ein Grummelbold, der die Seiten gewechselt hat. Kennt alle Kristallverstecke: Gegner lassen öfter Extra-Kristalle fallen.",
   "quelle": "daten"
  },
@@ -480,10 +568,6 @@
   "quelle": "daten"
  },
  {
-  "de": "Das Große Kawumm",
-  "quelle": "daten"
- },
- {
   "de": "GK",
   "quelle": "daten"
  },
@@ -609,6 +693,62 @@
  },
  {
   "de": "Baron von Bumm fliegt im hohen Bogen davon. „Das war noch nicht das letzte KAWUMM!\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Die Baronin rümpft den Schnabel – jetzt wird gegackert!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gackerella rafft die Federn und stolziert beleidigt davon. Ein Ei bleibt liegen. Mit Monogramm.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Die Birne flackert gefährlich hell!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Plopp. Die Birne ist durch. Irgendwo ruft jemand: „Wer macht das Licht wieder an?\"",
+  "quelle": "daten"
+ },
+ {
+  "de": "Schraubella dreht voll auf!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Schraubella zerfällt in ein ordentlich sortiertes Häufchen Schrauben. Gründlich bis zuletzt.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Der Moosschleier bebt – die Luft wird dick!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Sporella sinkt in sich zusammen. Zurück bleibt ein Hut, unter dem bequem ein Dorf Platz hätte.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Glutbauchs Bauch brodelt über!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Zisch! Glutbauch kühlt zu einem sehr beleidigten Stein ab. Der Schnauzbart raucht noch ein bisschen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Frostine wird eisig – sogar die Luft klirrt!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Frostine schmilzt dahin. „Das … ist … unter meiner Würde\", tropft sie.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Das Große Kawumm brodelt – die Arena bricht auseinander!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Das Große Kawumm macht ein letztes, winziges „pfff\". Über Krawummia geht zum ersten Mal seit Langem die Sonne auf.",
   "quelle": "daten"
  },
  {
@@ -1657,146 +1797,6 @@
  },
  {
   "de": "„Blubb.\" – ein Schleimi, sehr beeindruckt",
-  "quelle": "daten"
- },
- {
-  "de": "Entdecke das Rezept am Amboss. Hinweis: Alles, was klebt und schleimt.",
-  "quelle": "daten"
- },
- {
-  "de": "Fusionswaffe — Elementar · Explosiv",
-  "quelle": "daten"
- },
- {
-  "de": "Lavaschleuder + Bombenhagel + Flammenwerfer",
-  "quelle": "daten"
- },
- {
-  "de": "„Das ist kein Ausbruch, das ist ein Gruß.\" – Der Pyromane",
-  "quelle": "daten"
- },
- {
-  "de": "Entdecke das Rezept am Amboss. Hinweis: Lava, Bomben und Flammen – der Lavakessel zum Mitnehmen.",
-  "quelle": "daten"
- },
- {
-  "de": "Fusionswaffe — Werfer · Beschwörung · Elementar",
-  "quelle": "daten"
- },
- {
-  "de": "Faule Eier + Kükenkorb + Giftbläser",
-  "quelle": "daten"
- },
- {
-  "de": "„Riecht wie Bauer Brunos Socken.\" – Giftmischerin Gerda",
-  "quelle": "daten"
- },
- {
-  "de": "Entdecke das Rezept am Amboss. Hinweis: Eier, Küken und ein Giftbläser.",
-  "quelle": "daten"
- },
- {
-  "de": "Fusionswaffe — Support · Drohnen & Türme",
-  "quelle": "daten"
- },
- {
-  "de": "Kuckucksuhr + Orbitalschlag + Tesla-Turm",
-  "quelle": "daten"
- },
- {
-  "de": "„Kuckuck! Es ist … Gewitterzeit.\"",
-  "quelle": "daten"
- },
- {
-  "de": "Entdecke das Rezept am Amboss. Hinweis: Eine Uhr, ein Satellit und ein Turm unter Strom.",
-  "quelle": "daten"
- },
- {
-  "de": "Fusionswaffe — Energie · Explosiv",
-  "quelle": "daten"
- },
- {
-  "de": "Magnetkanone + Plasmaspirale + Minenleger",
-  "quelle": "daten"
- },
- {
-  "de": "„Alles hängt zusammen. Vor allem die Gegner.\" – Prof. Fusionski",
-  "quelle": "daten"
- },
- {
-  "de": "Entdecke das Rezept am Amboss. Hinweis: Magnet, Spirale und Minen.",
-  "quelle": "daten"
- },
- {
-  "de": "Fusionswaffe — Nahkampf",
-  "quelle": "daten"
- },
- {
-  "de": "Wurfaxt + Kettensäge + Baseballschläger",
-  "quelle": "daten"
- },
- {
-  "de": "„Holz vor der Hütte? Nicht mehr lange.\" – Panzer-Paule",
-  "quelle": "daten"
- },
- {
-  "de": "Entdecke das Rezept am Amboss. Hinweis: Axt, Säge und Schläger.",
-  "quelle": "daten"
- },
- {
-  "de": "Fusionswaffe — Support",
-  "quelle": "daten"
- },
- {
-  "de": "Pflasterkanone + Omas Keksdose + Schildblasen",
-  "quelle": "daten"
- },
- {
-  "de": "„Erst verarzten, dann verkloppen.\" – Oma Granate",
-  "quelle": "daten"
- },
- {
-  "de": "Entdecke das Rezept am Amboss. Hinweis: Pflaster, Kekse und Blasen.",
-  "quelle": "daten"
- },
- {
-  "de": "Fusionswaffe — Support · Werfer · Elementar",
-  "quelle": "daten"
- },
- {
-  "de": "Kuckucksuhr + Schneeballschleuder + Wasserwerfer",
-  "quelle": "daten"
- },
- {
-  "de": "„Bitte nicht auftauen.\" – Frost-Fritz",
-  "quelle": "daten"
- },
- {
-  "de": "Entdecke das Rezept am Amboss. Hinweis: Kuckuck, Schnee und Wasser.",
-  "quelle": "daten"
- },
- {
-  "de": "Fusionswaffe — Werfer · Exotisch · Feuerwaffen",
-  "quelle": "daten"
- },
- {
-  "de": "Wurfsterne + Sternschnuppenstab + Präzisionsgewehr",
-  "quelle": "daten"
- },
- {
-  "de": "„Wünsch dir was. Zum Beispiel weniger Gegner.\"",
-  "quelle": "daten"
- },
- {
-  "de": "Entdecke das Rezept am Amboss. Hinweis: Sterne, Sternschnuppen und ein sehr genaues Gewehr.",
-  "quelle": "daten"
- },
- {
-  "de": "Fusionswaffe — Beschwörung · Exotisch",
-  "quelle": "daten"
- },
- {
-  "de": "Pilzbeutel + Partykanone + Dudelsack des Grauens",
   "quelle": "daten"
  }
 ]

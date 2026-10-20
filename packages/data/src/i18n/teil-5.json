@@ -1,5 +1,269 @@
 [
  {
+  "de": "Noch eine Runde Chaos, bitte.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kawumm! Das war wohl zu viel Kawumm.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Die Grummelbolde grummeln zufrieden.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Die Bomben-Kröten quaken ein Siegeslied.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Der Toastomat toastet auf deinen Untergang.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Baron von Bumm zwirbelt zufrieden den Schnurrbart.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Ein Kampfhuhn gackert hämisch.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Der Schleimi teilt sich vor Freude.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Irgendwo lacht ein Pilzling. Leise. Sporig.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Die Kawumm-Jäger-Akademie schickt einen Beileids-Keks.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Bomben-Kröten explodieren auch, wenn man sie erwischt. Stell dich nicht daneben. Oder doch – wenn du Ketten liebst.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Drei gleiche Waffen gleicher Stufe? Verschmelzen! Zwei verschiedene Gruppen? Ab zum Amboss!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Die Overkill-Leiste füllt sich durch Kills und Ketten. Voll? OVERBOOM drücken und genießen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Feuer + Wasser = Dampfexplosion. Die Natur ist ein großer Chemiebaukasten.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Im Koop rechnet das Gerät des Hosts für alle. Ein PC ist ein guter Host.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Niedergeschlagen? Ein Mitspieler muss nur kurz neben dir stehen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Elite-Gegner tragen eine Krone – und manchmal Ausrüstung.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Sterne bekommt eine Waffe durch Kills. Bei fünf Sternen wartet eine Evolution.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gesperrte Karten im Album verraten, wie man sie bekommt.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Auf Gefahr 10 explodiert alles. Wirklich alles. Viel Glück!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Glückspilz-Tipp: Neu würfeln ist manchmal gratis.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Fässer sind Freunde. Explosive Freunde.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Oma Granate verteilt Kekse. Gegen Kekse hat noch niemand gewonnen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Prof. Fusionski schmiedet gratis. Er nennt das „Forschung\".",
+  "quelle": "daten"
+ },
+ {
+  "de": "Schadenszahlen, Wackeln und Lichtblitze kannst du in den Einstellungen anpassen.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Ein Kampfhuhn scharrt, bevor es stürmt. Hör auf das Scharren!",
+  "quelle": "daten"
+ },
+ {
+  "de": "Die Pilzkönigin mag keine Feuerwaffen. Und auch sonst nichts.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Spielstand sichern: Album → Erfolge → Code kopieren.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Der Baron hat das Große Kawumm gezündet. Zeit, das Kawumm zurückzugeben.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kein Huhn wurde bei der Entwicklung verletzt. Sie sind alle nur sehr wütend.",
+  "quelle": "daten"
+ },
+ {
+  "de": "Bombenhagel mit roten Einschlag-Markierungen",
+  "quelle": "daten"
+ },
+ {
+  "de": "Ansturm quer durch die Arena",
+  "quelle": "daten"
+ },
+ {
+  "de": "Geschossring in alle Richtungen",
+  "quelle": "daten"
+ },
+ {
+  "de": "Giftsporen-Wolken",
+  "quelle": "daten"
+ },
+ {
+  "de": "Ruft seine Bande zu Hilfe",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kugelspirale, die sich langsam dreht",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gezielter Geschossfächer",
+  "quelle": "daten"
+ },
+ {
+  "de": "Bodenflächen leuchten auf und explodieren",
+  "quelle": "daten"
+ },
+ {
+  "de": "Sprung mit Druckwelle bei der Landung",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kreuzfeuer, das sich dreht",
+  "quelle": "daten"
+ },
+ {
+  "de": "Streut Minen rund um sich",
+  "quelle": "daten"
+ },
+ {
+  "de": "Schwarmraketen",
+  "quelle": "daten"
+ },
+ {
+  "de": "Atomrakete",
+  "quelle": "daten"
+ },
+ {
+  "de": "Doppelpistolen",
+  "quelle": "daten"
+ },
+ {
+  "de": "Handkanone",
+  "quelle": "daten"
+ },
+ {
+  "de": "Streuschrotflinte",
+  "quelle": "daten"
+ },
+ {
+  "de": "Elefantenflinte",
+  "quelle": "daten"
+ },
+ {
+  "de": "Kreischende Minigun",
+  "quelle": "daten"
+ },
+ {
+  "de": "Mega-Gatling",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gewitterstab",
+  "quelle": "daten"
+ },
+ {
+  "de": "Donnerkeil",
+  "quelle": "daten"
+ },
+ {
+  "de": "Flammenfächer",
+  "quelle": "daten"
+ },
+ {
+  "de": "Drachenatem",
+  "quelle": "daten"
+ },
+ {
+  "de": "Hühnerschwarm",
+  "quelle": "daten"
+ },
+ {
+  "de": "Riesenhuhn-Kanone",
+  "quelle": "daten"
+ },
+ {
+  "de": "Granatenhagel",
+  "quelle": "daten"
+ },
+ {
+  "de": "Großkaliber-Granate",
+  "quelle": "daten"
+ },
+ {
+  "de": "Dynamit-Feuerwerk",
+  "quelle": "daten"
+ },
+ {
+  "de": "Dynamit-Fass",
+  "quelle": "daten"
+ },
+ {
+  "de": "Pfannen-Wirbel",
+  "quelle": "daten"
+ },
+ {
+  "de": "Gusseisen-Pfanne",
+  "quelle": "daten"
+ },
+ {
+  "de": "Doppelschläger",
+  "quelle": "daten"
+ },
+ {
+  "de": "Home-Run-Keule",
+  "quelle": "daten"
+ },
+ {
+  "de": "Bienenvolk",
+  "quelle": "daten"
+ },
+ {
+  "de": "Königinnenstock",
+  "quelle": "daten"
+ },
+ {
+  "de": "Eissplitter-Kanone",
+  "quelle": "daten"
+ },
+ {
   "de": "Gletscherspeer",
   "quelle": "daten"
  },
@@ -648,11 +912,15 @@
   "quelle": "packages/ui/src/hud.ts"
  },
  {
-  "de": "Welle {n} / {max}",
+  "de": "Bereit?",
   "quelle": "packages/ui/src/hud.ts"
  },
  {
-  "de": "Bereit?",
+  "de": "FINALE",
+  "quelle": "packages/ui/src/hud.ts"
+ },
+ {
+  "de": "Welle {n} / {max}",
   "quelle": "packages/ui/src/hud.ts"
  },
  {
@@ -668,7 +936,35 @@
   "quelle": "packages/ui/src/hud.ts"
  },
  {
+  "de": "Zu viele Zeichen – der Raumcode hat genau {n}.",
+  "quelle": "packages/ui/src/lobby.ts"
+ },
+ {
+  "de": "Bitte den 6-stelligen Raumcode eingeben.",
+  "quelle": "packages/ui/src/lobby.ts"
+ },
+ {
+  "de": "Noch {n} Zeichen",
+  "quelle": "packages/ui/src/lobby.ts"
+ },
+ {
+  "de": "{n}/{max} Zeichen",
+  "quelle": "packages/ui/src/lobby.ts"
+ },
+ {
+  "de": "Codes enthalten kein O, 0, I oder 1 – bitte genau abschreiben.",
+  "quelle": "packages/ui/src/lobby.ts"
+ },
+ {
   "de": "Arena-Chaos mit Waffen-Fusion · 1–4 Spieler",
+  "quelle": "packages/ui/src/lobby.ts"
+ },
+ {
+  "de": "Fortsetzen",
+  "quelle": "packages/ui/src/lobby.ts"
+ },
+ {
+  "de": "Neuer Run",
   "quelle": "packages/ui/src/lobby.ts"
  },
  {
@@ -812,6 +1108,10 @@
   "quelle": "packages/ui/src/menus.ts"
  },
  {
+  "de": "Stufe {n}",
+  "quelle": "packages/ui/src/menus.ts"
+ },
+ {
   "de": "Geschoss:",
   "quelle": "packages/ui/src/menus.ts"
  },
@@ -884,6 +1184,10 @@
   "quelle": "packages/ui/src/menus.ts"
  },
  {
+  "de": "Überspringen (zufällig)",
+  "quelle": "packages/ui/src/menus.ts"
+ },
+ {
   "de": "Verkauft",
   "quelle": "packages/ui/src/menus.ts"
  },
@@ -928,6 +1232,54 @@
   "quelle": "packages/ui/src/menus.ts"
  },
  {
+  "de": "Insel {i}/{n}",
+  "quelle": "packages/ui/src/menus.ts"
+ },
+ {
+  "de": "Amboss",
+  "quelle": "packages/ui/src/menus.ts"
+ },
+ {
+  "de": "Ausrüstung",
+  "quelle": "packages/ui/src/menus.ts"
+ },
+ {
+  "de": "Kartenalbum",
+  "quelle": "packages/ui/src/menus.ts"
+ },
+ {
+  "de": "Welle {n} geschafft",
+  "quelle": "packages/ui/src/menus.ts"
+ },
+ {
+  "de": "Auf nach {insel}!",
+  "quelle": "packages/ui/src/menus.ts"
+ },
+ {
+  "de": "Inselboss!",
+  "quelle": "packages/ui/src/menus.ts"
+ },
+ {
+  "de": "Finale!",
+  "quelle": "packages/ui/src/menus.ts"
+ },
+ {
+  "de": "Baron!",
+  "quelle": "packages/ui/src/menus.ts"
+ },
+ {
+  "de": "Neu würfeln",
+  "quelle": "packages/ui/src/menus.ts"
+ },
+ {
+  "de": "Werte ausblenden",
+  "quelle": "packages/ui/src/menus.ts"
+ },
+ {
+  "de": "Werte",
+  "quelle": "packages/ui/src/menus.ts"
+ },
+ {
   "de": "{n} Mod",
   "quelle": "packages/ui/src/menus.ts"
  },
@@ -949,34 +1301,6 @@
  },
  {
   "de": "noch keine",
-  "quelle": "packages/ui/src/menus.ts"
- },
- {
-  "de": "Amboss",
-  "quelle": "packages/ui/src/menus.ts"
- },
- {
-  "de": "Ausrüstung",
-  "quelle": "packages/ui/src/menus.ts"
- },
- {
-  "de": "Welle {n} geschafft",
-  "quelle": "packages/ui/src/menus.ts"
- },
- {
-  "de": "Neu würfeln",
-  "quelle": "packages/ui/src/menus.ts"
- },
- {
-  "de": "Werte ausblenden",
-  "quelle": "packages/ui/src/menus.ts"
- },
- {
-  "de": "Werte",
-  "quelle": "packages/ui/src/menus.ts"
- },
- {
-  "de": "Boss!",
   "quelle": "packages/ui/src/menus.ts"
  },
  {
@@ -1044,10 +1368,6 @@
   "quelle": "packages/ui/src/menus.ts"
  },
  {
-  "de": "Set",
-  "quelle": "packages/ui/src/menus.ts"
- },
- {
   "de": "Anlegen",
   "quelle": "packages/ui/src/menus.ts"
  },
@@ -1081,6 +1401,10 @@
  },
  {
   "de": "Sets",
+  "quelle": "packages/ui/src/menus.ts"
+ },
+ {
+  "de": "Gruppe schon gewählt",
   "quelle": "packages/ui/src/menus.ts"
  },
  {
@@ -1232,6 +1556,10 @@
   "quelle": "packages/ui/src/menus.ts"
  },
  {
+  "de": "Zurück zum Titel. Mit „Fortsetzen“ geht es ab dem letzten Shop weiter.",
+  "quelle": "packages/ui/src/menus.ts"
+ },
+ {
   "de": "Der laufende Run endet. Freigeschaltete Karten, Helden und Erfolge bleiben erhalten.",
   "quelle": "packages/ui/src/menus.ts"
  },
@@ -1261,10 +1589,6 @@
  },
  {
   "de": "Das Rezeptbuch: Unentdeckte Rezepte zeigen nur ihren Hinweis – antippen!",
-  "quelle": "packages/ui/src/menus.ts"
- },
- {
-  "de": "Kartenalbum",
   "quelle": "packages/ui/src/menus.ts"
  },
  {
@@ -1473,258 +1797,6 @@
  },
  {
   "de": "Kopiert",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Kopieren ging nicht",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Spielstand-Code",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Bitte von Hand markieren",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Spielstand geladen",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "{n} Karten",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Karte gespeichert",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Fehler",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Bild konnte nicht erstellt werden",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Gott-Modus an",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Gott-Modus aus",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "max",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "ultra",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "hoch",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "mittel",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "niedrig",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "gerade: {stufe}",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Speicher knapp",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Grafik auf „niedrig\" gestellt",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Koop beendet",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Jäger {id}",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Teile den Code oder Link – bis zu {n} Freunde können beitreten.",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Raumcode?",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Der Code hat {n} Zeichen.",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Suche Raum {code} …",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Keine Verbindung zum Raum. Stimmt der Code? Manche Netze (Mobilfunk, Firmen-WLAN) blockieren direkte Verbindungen – dann braucht es einen TURN-Relay.",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "OVERBOOM – spiel mit!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Link kopiert",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Ausgewichen!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Level up!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "{name}!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Auf geht’s!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Die letzte!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Jetzt wird’s ernst!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Welle geschafft!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Alles fliegt in die Luft",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Rezept entdeckt!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Verschmolzen!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "{n} Sterne!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "{waffe} kann im Shop evolvieren",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Evolution!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Beute: {name}",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "MINI-NUKE!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Am Boden!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Ein Mitspieler kann dich wiederbeleben",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Hilfe!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "{name} ist am Boden",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Jemand",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Wieder da!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "{name} hat dich gerettet",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Gerettet!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Overkill voll!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "OVERBOOM antippen",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "E oder Q drücken",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Doppelte Feuerrate · alles explodiert",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "{name} dreht durch",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Glanzkarte!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Neue Karte",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Erfolg",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Neue Gefahrenstufe",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Stufe {n} freigeschaltet",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "{insel} befreit!",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Neue Insel",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "{n} Gegner",
   "quelle": "apps/web/src/main.ts"
  }
 ]

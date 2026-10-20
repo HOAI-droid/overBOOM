@@ -213,7 +213,13 @@ export const BOSS_ANGRIFF_INFO: Record<string, string> = {
   ansturm: 'Ansturm quer durch die Arena',
   ring: 'Geschossring in alle Richtungen',
   sporen: 'Giftsporen-Wolken',
-  beschwoeren: 'Ruft seine Bande zu Hilfe'
+  beschwoeren: 'Ruft seine Bande zu Hilfe',
+  spirale: 'Kugelspirale, die sich langsam dreht',
+  faecher: 'Gezielter Geschossfächer',
+  flaechen: 'Bodenflächen leuchten auf und explodieren',
+  sprung: 'Sprung mit Druckwelle bei der Landung',
+  kreuz: 'Kreuzfeuer, das sich dreht',
+  minen: 'Streut Minen rund um sich'
 };
 
 /** Zitate auf Waffenkarten: eigene für einige Waffen, sonst je Gruppe */

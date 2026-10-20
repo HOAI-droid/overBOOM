@@ -23,8 +23,9 @@ export interface HudState {
   level: number;
   /** 0–1 Fortschritt zum nächsten Level */
   xp: number;
-  /** Boss-Leben 0–1 oder -1 (kein Boss) */
+  /** Boss-Leben 0–1 oder -1 (kein Boss) und sein Name */
   boss: number;
+  bossName: string;
   /** Overkill-Leiste 0–1 und verbleibende OVERBOOM-Zeit */
   overkill: number;
   boomT: number;
@@ -54,6 +55,8 @@ export class Hud {
   private lvl: HTMLSpanElement;
   private xpFill: HTMLDivElement;
   private bossEl: HTMLDivElement;
+  private bossName: HTMLSpanElement;
+  private lastBossName = '';
   private bossFill: HTMLDivElement;
   readonly pauseButton: HTMLButtonElement;
   private synEl: HTMLDivElement;
@@ -73,7 +76,7 @@ export class Hud {
     this.root.innerHTML = `
       <div class="ob-hurt"></div>
       <div class="ob-left">
-        <div class="ob-title"><b>OVER</b><b class="boom">BOOM</b><span>v0.11 · ${t('Koop')}</span></div>
+        <div class="ob-title"><b>OVER</b><b class="boom">BOOM</b><span>v0.12 · ${t('Koop')}</span></div>
         <div class="ob-hp" role="meter" aria-label="${t('Leben')}"><div class="ob-hp-fill"></div><span class="ob-hp-txt">60 / 60</span></div>
         <div class="ob-xp"><span class="ob-lvl">${t('Lv {n}', { n: 1 })}</span><div class="ob-xp-bar"><div class="ob-xp-fill"></div></div></div>
         <div class="ob-ok" role="meter" aria-label="${t('Overkill')}"><span>${t('Overkill')}</span><div class="ob-ok-bar"><div class="ob-ok-fill"></div></div></div>
@@ -81,7 +84,7 @@ export class Hud {
         <div class="ob-syn"></div>
       </div>
       <div class="ob-wave"><div class="ob-wave-n">${t('Welle {n}', { n: 1 })}</div><div class="ob-wave-t">0:20</div><div class="ob-wave-i" style="font-size:9px;opacity:.75;letter-spacing:.04em;white-space:nowrap"></div>
-        <div class="ob-boss hidden"><span>${t('Baron von Bumm')}</span><div class="ob-boss-bar"><div class="ob-boss-fill"></div></div></div>
+        <div class="ob-boss hidden"><span class="ob-boss-name"></span><div class="ob-boss-bar"><div class="ob-boss-fill"></div></div></div>
       </div>
       <div class="ob-top-right">
         <span class="ob-fps" aria-live="off">–– FPS</span>
@@ -118,6 +121,7 @@ export class Hud {
     this.xpFill = q('.ob-xp-fill');
     this.bossEl = q('.ob-boss');
     this.bossFill = q('.ob-boss-fill');
+    this.bossName = q('.ob-boss-name');
     this.pauseButton = q('.ob-pause');
     this.synEl = q('.ob-syn');
     if (!touch) this.dashButton.classList.add('desktop');
@@ -244,6 +248,7 @@ export class Hud {
     if (s.level !== L.level) { L.level = s.level; this.lvl.textContent = t('Lv {n}', { n: s.level }); }
     const xp = Math.round(s.xp * 50);
     if (xp !== L.xp) { L.xp = xp; this.xpFill.style.width = `${xp * 2}%`; }
+    if (s.bossName !== this.lastBossName) { this.lastBossName = s.bossName; this.bossName.textContent = s.bossName; }
     const boss = s.boss < 0 ? -1 : Math.ceil(s.boss * 100);
     if (boss !== L.boss) {
       L.boss = boss;

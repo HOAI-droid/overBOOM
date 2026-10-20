@@ -884,7 +884,7 @@ export function baroninGackerella(): Vox[] {
   // Riesenfedern: Magenta, Cyan, Gelb
   const feder = (x0: number, z0: number, c: string, h: number, dx: number) => {
     for (let k = 0; k < h; k++) {
-      const x = x0 + Math.round(dx * (k / h) ** 2 * 4), y = 28 + k, z = z0 - Math.round(k * 0.45);
+      const x = x0 + Math.round(dx * (k / h) ** 2 * 4), y = 28 + Math.round(k * (1 - k / (h * 2.2))), z = z0 - Math.round((k / h) ** 2 * h * 0.9);
       const f = k >= h - 2 ? shade(c, 1.15) : c;
       b.box(x, x + 1, y, y, z, z + 1, f);
     }
@@ -984,11 +984,15 @@ export function baroninSchraubella(): Vox[] {
   rundGesicht(b, 0, 23, { gap: 1, brow: INK, eye: '#ffffff', eyeGlow: 1, dame: { lippen: '#ff3df0', rouge: '#ff9ac8' } });
   // Nieten auf den Wangen, Mutter-Ohrringe mit leuchtenden Tropfen
   b.v(-5, 23, 1, stahl).v(5, 23, 1, stahl).box(-6, -6, 20, 21, 0, 0, gold).box(6, 6, 20, 21, 0, 0, gold).v(-6, 19, 0, '#3de8ff', 1).v(6, 19, 0, '#3de8ff', 1);
-  // Schrauben-Monokel ersetzt das rechte Auge: Goldring, Glas leuchtet, Schraube und Kettchen
-  for (let x = 1; x <= 3; x++) for (let y = 21; y <= 23; y++) if (x !== 2 || y !== 22) b.vorn(x, y, gold, 0, 1);
-  b.vorn(2, 22, '#a8f6ff', 1, 1);
-  b.vorn(4, 22, goldD, 0, 1).vorn(4, 22, gold, 0, 1);
-  b.vorn(3, 20, goldD, 0, 1).vorn(3, 19, goldD, 0, 1).vorn(4, 18, goldD, 0, 1);
+  // Schrauben-Monokel über dem rechten Auge: Goldring, leuchtendes Glas, hochgezogene Braue, Schraube und Kettchen
+  const mz = b.vorne(2, 22) + 1;
+  for (let x = 0; x <= 3; x++) for (let y = 21; y <= 24; y++) {
+    const rand = x === 0 || x === 3 || y === 21 || y === 24;
+    b.v(x, y, mz, rand ? gold : x === 1 && y === 23 ? INK : '#a8f6ff', rand ? 0 : x === 1 && y === 23 ? 0 : 1);
+  }
+  b.v(1, 25, mz, INK).v(2, 26, mz, INK).v(3, 26, mz, INK).v(4, 26, mz, INK);
+  b.v(4, 22, mz, goldD).v(5, 22, mz, gold).v(5, 23, mz, gold).v(5, 21, mz, gold);
+  b.v(3, 20, mz, goldD).v(3, 19, mz, goldD).v(4, 18, mz, goldD);
   // Seidenschärpe mit Schleife (Magenta)
   for (let x = -4; x <= 4; x++) for (let z = -4; z <= 4; z++) if (b.hat(x, 12, z) && !(b.hat(x + 1, 12, z) && b.hat(x - 1, 12, z) && b.hat(x, 12, z + 1) && b.hat(x, 12, z - 1))) b.v(x, 12, z, '#ff3df0');
   b.vorn(0, 12, '#ffb0f8', 1, 1);
@@ -1001,7 +1005,8 @@ export function baroninSchraubella(): Vox[] {
   for (let x = -6; x <= 6; x++) for (let y = -6; y <= 6; y++) {
     const d = Math.hypot(x, y), a = Math.atan2(y, x);
     const zahn = Math.cos(a * 8) > 0.3;
-    const speiche = d < 3.6 && (Math.abs(x) < 0.6 || Math.abs(y) < 0.6);
+    // drei Speichen im Y (90°, 210°, 330°)
+    const speiche = d < 3.6 && [Math.PI / 2, Math.PI * 7 / 6, -Math.PI / 6].some((w) => Math.abs(x * Math.sin(w) - y * Math.cos(w)) < 0.55 && x * Math.cos(w) + y * Math.sin(w) > 0);
     if (!(speiche || (d >= 3.2 && d <= (zahn ? 5.9 : 4.6)))) continue;
     if (y < -3) continue;
     b.v(x, 32 + y, -2, gold).v(x, 32 + y, -3, goldD);
@@ -1082,14 +1087,16 @@ export function baronGlutbauch(): Vox[] {
   // Gesicht: glühende Augen, Wutbrauen aus Obsidian
   rundGesicht(b, 0, 16, { gap: 1, brow: '#141018', eye: hell, eyeGlow: 1, pupil: INK, mouth: '' });
   b.vorn(-4, 18, '#141018', 0, 1).vorn(3, 18, '#141018', 0, 1);
-  // Rauch-Schnauzbart, an den Enden hochgezwirbelt
-  for (let x = -7; x <= 6; x++) {
-    const ax = Math.abs(x + 0.5);
-    const y = ax < 2 ? 13 : ax < 5 ? 13 : 14;
-    b.vorn(x, y, ax > 3 ? rauch : rauchH, 0, 1);
-    if (ax < 4.5) b.vorn(x, 12, rauch, 0, 1);
+  // Rauch-Schnauzbart: zwei dicke Wölkchen-Hälften, an den Enden hochgezwirbelt
+  for (let x = -7; x <= 7; x++) {
+    const ax = Math.abs(x);
+    if (ax === 0) { b.vorn(x, 13, rauch, 0, 1); continue; }
+    if (ax <= 5) b.vorn(x, 13, rauchH, 0, 1).vorn(x, 12, rauch, 0, 1);
+    if (ax >= 2 && ax <= 4) b.vorn(x, 11, rauch, 0, 1);
+    if (ax >= 5) b.vorn(x, 14, rauchH, 0, 1);
+    if (ax >= 6) b.vorn(x, 15, rauchH, 0, 1);
   }
-  b.vorn(-8, 15, rauchH, 0, 1).vorn(7, 15, rauchH, 0, 1).vorn(-8, 16, rauch, 0, 1).vorn(7, 16, rauch, 0, 1);
+  b.vorn(-7, 16, rauch, 0, 1).vorn(7, 16, rauch, 0, 1).vorn(-6, 16, rauchH, 0, 1).vorn(6, 16, rauchH, 0, 1);
   // Hauer unterm Bart
   b.vorn(-2, 10, '#fff6d8', 0, 1).vorn(1, 10, '#fff6d8', 0, 1);
   // Obsidian-Krönchen mit Lavasteinen
@@ -1132,8 +1139,8 @@ export function baroninFrostine(): Vox[] {
   // Eiszepter mit Schneeflocke
   b.box(8, 8, 6, 15, 2, 2, eisD).v(8, 16, 2, '#3de8ff', 1).v(8, 17, 2, eisH, 1).v(7, 17, 2, '#3de8ff', 1).v(9, 17, 2, '#3de8ff', 1).v(8, 18, 2, '#3de8ff', 1);
   // Kopf
-  b.kugel(0, 21, 0.5, 4.5, 4.5, 4.5, () => haut);
-  rundGesicht(b, 0, 21, { gap: 1, brow: '#2a3a6a', pupil: '#1a2a5a', dame: { lippen: '#5a6ad8', rouge: '#f0b8d8', wimpern: '#1a2a5a' } });
+  b.kugel(0, 21, 0.5, 5, 4.8, 4.8, () => haut);
+  rundGesicht(b, 0, 21, { gap: 1, brow: '#1a2a5a', pupil: '#1a2a5a', eyeGlow: 1, dame: { lippen: '#c04ad8', rouge: '#f0b8d8', wimpern: '#1a2a5a' } });
   // Hochsteckfrisur (silberweiß-blau)
   b.kugel(0, 25, -1, 4.8, 2.5, 4.5, (x, y, z) => (z > 3 && y < 25 ? null : (x + y) % 3 === 0 ? '#5a8ad0' : '#7aa8e8'));
   b.kugel(0, 28.5, -2, 2.5, 2, 2.5, (x, y) => ((x + y) % 2 ? '#5a8ad0' : '#7aa8e8'));

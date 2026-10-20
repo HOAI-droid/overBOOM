@@ -9,7 +9,7 @@ OVERBOOM ist ein actiongeladenes Arena-Roguelite in knalliger 3D-Voxel-Pixel-Opt
   <img src="docs/werbung/kampf2.png" width="300" alt="Kettenexplosionen">
 </p>
 
-## Downloads (Version 0.11.0)
+## Downloads (Version 0.12.0)
 
 **Sofort im Browser spielen:** <https://hoai-droid.github.io/overboom/> – am Handy über *Teilen → Zum Home-Bildschirm* (iPhone) bzw. *App installieren* (Android) wie eine App im Vollbild, solo auch offline.
 

@@ -843,6 +843,7 @@ export class Menus {
     this.abbruchZurueck = this.mode === 'pause' ? 'pause' : 'shop';
     const text = this.koop === 'host' ? t('Du bist Host – wenn du gehst, endet das Spiel für alle Mitspieler.')
       : this.koop === 'client' ? t('Deine Mitspieler spielen ohne dich weiter.')
+      : this.fortsetzenText ? t('Zurück zum Titel. Mit „Fortsetzen“ geht es ab dem letzten Shop weiter.')
       : t('Der laufende Run endet. Freigeschaltete Karten, Helden und Erfolge bleiben erhalten.');
     this.show('abbruch', `
       <div class="ob-panel ob-end">

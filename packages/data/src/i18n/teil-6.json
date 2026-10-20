@@ -1,0 +1,262 @@
+[
+ {
+  "de": "Kopieren ging nicht",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Spielstand-Code",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Bitte von Hand markieren",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Spielstand geladen",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "{n} Karten",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Karte gespeichert",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Fehler",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Bild konnte nicht erstellt werden",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Gott-Modus an",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Gott-Modus aus",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "max",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "ultra",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "hoch",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "mittel",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "niedrig",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "gerade: {stufe}",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Speicher knapp",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Grafik auf „niedrig\" gestellt",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Koop beendet",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Jäger {id}",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Teile den Code oder Link – bis zu {n} Freunde können beitreten.",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Raumcode?",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Der Code hat {n} Zeichen.",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Suche Raum {code} …",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Keine Verbindung zum Raum. Stimmt der Code? Manche Netze (Mobilfunk, Firmen-WLAN) blockieren direkte Verbindungen – dann braucht es einen TURN-Relay.",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "OVERBOOM – spiel mit!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Link kopiert",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Ausgewichen!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Level up!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Das Finale!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "{name}!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Auf geht’s!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Letzte Phase!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Jetzt wird’s ernst!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Die Arena zerbricht!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Welle geschafft!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Alles fliegt in die Luft",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Rezept entdeckt!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Verschmolzen!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "{n} Sterne!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "{waffe} kann im Shop evolvieren",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Evolution!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Beute: {name}",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "MINI-NUKE!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Am Boden!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Ein Mitspieler kann dich wiederbeleben",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Hilfe!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "{name} ist am Boden",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Jemand",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Wieder da!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "{name} hat dich gerettet",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Gerettet!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Overkill voll!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "OVERBOOM antippen",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "E oder Q drücken",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Doppelte Feuerrate · alles explodiert",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "{name} dreht durch",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Glanzkarte!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Neue Karte",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Erfolg",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Neue Gefahrenstufe",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Stufe {n} freigeschaltet",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "{insel} befreit!",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Neue Insel",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "{n} Gegner",
+  "quelle": "apps/web/src/main.ts"
+ }
+]

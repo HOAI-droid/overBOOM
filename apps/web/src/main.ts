@@ -750,6 +750,7 @@ async function start() {
       inselWelle: world.inselWelle, inselWellen: world.reiseRegel.wellen, insel: world.insel.name, inselNr: world.reiseIndex + 1, inseln: world.reise.length, finale: world.wellenArt === 'finale',
       level: p.level, xp: p.xp / LEVEL.xpBedarf(p.level),
       boss: boss && boss.alive ? Math.max(0, boss.hp / boss.maxHp) : -1,
+      bossName: boss && boss.alive ? boss.def.name : '',
       overkill: p.overkill, boomT: p.boomT
     });
     if (world.phase !== lastPhase || p.loadout !== lastLoadout || p.items !== lastItems || Object.keys(p.items).length !== lastItemCount) {
