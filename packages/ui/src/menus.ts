@@ -3,7 +3,7 @@ import {
   type Command, type Player, type World, type WeaponSlot
 } from '@overboom/core';
 import {
-  A, AMBOSS, G, GEGNER_BY_ID, SYNERGIEN, HELDEN, HELD_BY_ID, INSELN, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
+  A, AMBOSS, EVOLUTION, G, GEGNER_BY_ID, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, evoName, HELDEN, HELD_BY_ID, INSELN, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
   elemente, type StatKey
 } from '@overboom/data';
 
@@ -25,8 +25,8 @@ function rarity(tier: number): string {
 }
 
 /** Werte einer Waffe so, wie sie mit den aktuellen Spielerwerten feuern würde */
-function weaponLines(p: Player, w: Waffe, tier: number): string {
-  const slot = { waffe: w, tier } as WeaponSlot;
+function weaponLines(p: Player, w: Waffe, tier: number, real?: WeaponSlot): string {
+  const slot = real ?? ({ waffe: w, tier, stars: 0, kills: 0, mods: [], modMask: 0, mask: 0 } as unknown as WeaponSlot);
   const el = w.fusion ? w.fusion.elemente : elemente(w);
   const fu = w.fusion ? `<li class="ob-part"><b>Geschoss:</b> ${G[w.geschoss].name}</li>` : '';
   return `<ul class="ob-lines">
@@ -133,7 +133,7 @@ export class Menus {
     }
     if (w.phase === 'shop') {
       if (this.shopWave !== w.wave) { this.shopWave = w.wave; this.tab = 'shop'; this.resetAnvil(); }
-      const key = JSON.stringify([w.wave, p.crystals, p.pendingLevels, p.upgradeOffers, p.offers, p.loadout, p.weapons.map((s) => s.tier), this.detail, this.showStats, p.ready,
+      const key = JSON.stringify([w.wave, p.crystals, p.pendingLevels, p.upgradeOffers, p.offers, p.loadout, p.weapons.map((s) => s.tier + ':' + s.stars + ':' + s.mods.join('/') + s.waffe.id), p.modInv, this.detail, this.showStats, p.ready,
         this.tab, this.anvilSel, this.parts, this.book, this.recipes().size]);
       if (this.mode !== 'shop' || key !== this.lastKey) { this.lastKey = key; this.renderShop(); }
       return;
@@ -219,6 +219,11 @@ export class Menus {
         body = weaponLines(p, W[o.id], o.tier);
         if (p.weapons.length >= SPIELER.maxWaffen && !p.weapons.some((s) => s.waffe.id === o.id && s.tier === o.tier && s.tier < 5)) body += '<span class="ob-warn">Kein Platz mehr</span>';
         else if (p.weapons.some((s) => s.waffe.id === o.id && s.tier === o.tier)) body += '<span class="ob-hint2">Gleiche Waffe da – verschmelzbar!</span>';
+      } else if (o.kind === 'mod') {
+        const m = MOD_BY_ID[o.id];
+        kind = `Mod · ${SELTENHEIT[m.seltenheit - 1].name}`;
+        title = m.name;
+        body = `<ul class="ob-lines"><li class="ob-part">${m.text}</li></ul><span class="ob-flavor">Einbau in Waffen ab Stufe II (Waffe antippen).</span>`;
       } else {
         const it = ITEM_BY_ID[o.id];
         kind = `Item · ${SELTENHEIT[it.seltenheit - 1].name}${p.items[o.id] ? ` · hast ${p.items[o.id]}` : ''}`;
@@ -242,6 +247,7 @@ export class Menus {
       const m = canMerge(p, i);
       return `<button type="button" class="ob-slot ${this.detail === i ? 'sel' : ''}" ${rarity(s.tier)} data-act="slot" data-i="${i}" data-focus="slot${i}">
         <span>${s.waffe.name}</span><b>${TIER_ZAHL[s.tier - 1]}</b>${m ? '<em>⇧</em>' : ''}${s.waffe.fusion ? '<i class="ob-fz">⚒</i>' : ''}
+        <small class="ob-stars ${s.stars >= 5 && !s.waffe.evo ? 'ready' : ''}">${'★'.repeat(s.stars)}${'☆'.repeat(5 - s.stars)}${s.mods.length ? ` · ${s.mods.length} Mod` : ''}</small>
       </button>`;
     }).join('');
 
@@ -251,8 +257,9 @@ export class Menus {
       const dmg = w.stats.waffen[ds.waffe.id] ?? 0;
       detail = `<div class="ob-detail" ${rarity(ds.tier)}>
         <div class="ob-name">${weaponTitle(ds.waffe, ds.tier)}</div>
-        ${weaponLines(p, ds.waffe, ds.tier)}
+        ${weaponLines(p, ds.waffe, ds.tier, ds)}
         <p class="ob-flavor">${ds.waffe.text}${dmg ? ` · bisher ${fmt(dmg)} Schaden` : ''}</p>
+        ${this.detailExtras(ds)}
         <div class="ob-row">
           <button type="button" class="ob-btn2" data-act="merge" data-i="${this.detail}" data-focus="merge" ${canMerge(p, this.detail) ? '' : 'disabled'}>Verschmelzen ⇧</button>
           <button type="button" class="ob-btn2" data-act="sell" data-i="${this.detail}" data-focus="sell" ${p.weapons.length > 1 ? '' : 'disabled'}>Verkaufen +${sellPrice(ds, w.wave + 1)}</button>
@@ -286,7 +293,7 @@ export class Menus {
           <button type="button" class="ob-btn2" data-act="stats" data-focus="stats">${this.showStats ? 'Werte ausblenden' : 'Werte'}</button>
           <button type="button" class="ob-go" data-act="ready" data-focus="ready">Welle ${w.wave + 1}${WELLEN.bossWellen.includes(w.wave + 1) ? ' · Boss!' : ''} ▶</button>
         </div>
-        <h3 class="ob-h3">Waffen ${p.weapons.length}/${SPIELER.maxWaffen} <small>antippen: verschmelzen / verkaufen</small></h3>
+        <h3 class="ob-h3">Waffen ${p.weapons.length}/${SPIELER.maxWaffen} <small>antippen: verschmelzen / verkaufen / Mods / Evolution${p.modInv.length ? ` · ${p.modInv.length} Mod(s) im Rucksack` : ''}</small></h3>
         <div class="ob-slots">${slots}</div>
         ${detail}
         <h3 class="ob-h3">Synergien <small>Elemente deiner Waffen – Boni ab 2 / 4 / 6</small></h3>
@@ -298,6 +305,27 @@ export class Menus {
         <div class="ob-items">${items}</div>
         ${stats}
       </div>`, this.detail >= 0 ? '[data-act="merge"]:not([disabled]), [data-act="sell"]:not([disabled])' : '[data-act="buy"]:not([disabled]), [data-act="ready"]');
+  }
+
+  /** Sterne, Evolution und Mods im Waffendetail */
+  private detailExtras(s: WeaponSlot): string {
+    const p = this.p, i = this.detail;
+    const next = s.stars < 5 ? STERNE.kills[s.stars] : 0;
+    let html = `<p class="ob-part"><b>Sterne ${'★'.repeat(s.stars)}${'☆'.repeat(5 - s.stars)}</b> ${s.stars < 5 ? `${s.kills}/${next} Kills bis zum nächsten Stern` : s.waffe.evo ? 'evolviert' : 'bereit zur Evolution!'} · je Stern +${Math.round(STERNE.schadenProStern * 100)} % Schaden</p>`;
+    if (s.stars >= 5 && !s.waffe.evo) {
+      html += `<div class="ob-evo">${(['a', 'b'] as const).map((v) => `
+        <button type="button" class="ob-card" ${rarity(5)} data-act="evolve" data-i="${i}" data-v="${v}" data-focus="evo${v}">
+          <span class="ob-kind">Evolution ${v === 'a' ? 'A · Mehr' : 'B · Größer'}</span>
+          <span class="ob-name">${evoName(s.waffe, v)}</span>
+          <span class="ob-part">${EVOLUTION[v].text}</span>
+        </button>`).join('')}</div>`;
+    }
+    const slots = MOD_SLOTS[s.tier - 1];
+    html += `<p class="ob-part"><b>Mods ${s.mods.length}/${slots}</b> ${s.mods.map((m) => MOD_BY_ID[m].name).join(', ') || (slots ? 'noch keine' : 'erst ab Stufe II')}</p>`;
+    if (p.modInv.length && s.mods.length < slots) {
+      html += `<div class="ob-row">${p.modInv.map((m, k) => `<button type="button" class="ob-btn2" data-act="install" data-i="${i}" data-k="${k}" data-focus="mod${k}" ${s.mods.includes(m) ? 'disabled' : ''}>Einbauen: ${MOD_BY_ID[m].name}</button>`).join('')}</div>`;
+    }
+    return html;
   }
 
   /* ---------------- Fusions-Amboss ---------------- */
@@ -432,6 +460,8 @@ export class Menus {
       case 'slot': this.detail = this.detail === i ? -1 : i; break;
       case 'close': this.detail = -1; break;
       case 'merge': this.send({ type: 'merge', slot: i }); this.detail = -1; break;
+      case 'evolve': this.send({ type: 'evolve', slot: i, variant: el.dataset.v === 'b' ? 'b' : 'a' }); break;
+      case 'install': this.send({ type: 'installMod', slot: i, index: Number(el.dataset.k) }); break;
       case 'sell': this.send({ type: 'sell', slot: i }); this.detail = -1; break;
       case 'stats': this.showStats = !this.showStats; break;
       case 'tab': this.tab = el.dataset.tab === 'amboss' ? 'amboss' : 'shop'; this.detail = -1; break;

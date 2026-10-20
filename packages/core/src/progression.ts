@@ -1,8 +1,8 @@
 import type { Player, World } from './sim.ts';
 import type { Offer, WeaponSlot } from './entities.ts';
-import { spezialMask } from './weapons.ts';
+import { modMask, spezialMask } from './weapons.ts';
 import {
-  AMBOSS, HELD_BY_ID, ITEMS, SYNERGIEN, ITEM_BY_ID, LEVEL, SHOP, SPIELER, STUFEN, UPGRADES, UPGRADE_BY_ID, W, WAFFEN, elemente,
+  AMBOSS, HELD_BY_ID, ITEMS, MODS, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, ITEM_BY_ID, LEVEL, SHOP, SPIELER, STUFEN, UPGRADES, UPGRADE_BY_ID, W, WAFFEN, elemente,
   baseStats, fusionsWaffe, pruefeFusion, rollSeltenheit, waffeById, type Stats
 } from '../../data/src/index.ts';
 
@@ -22,6 +22,10 @@ export type Command =
   | { type: 'merge'; slot: number }
   | { type: 'ready' }
   | { type: 'endless' }
+  /** Evolution einer 5-Sterne-Waffe: Variante a (mehr) oder b (größer) */
+  | { type: 'evolve'; slot: number; variant: 'a' | 'b' }
+  /** Mod aus dem Inventar (index) in eine Waffe einbauen */
+  | { type: 'installMod'; slot: number; index: number }
   /** Fusions-Amboss: `slots` = 2–3 Waffenplätze; teile = Index in `slots` je Bauteil */
   | { type: 'fuse'; slots: number[]; geschoss: number; antrieb: number; ladung: number };
 
@@ -102,7 +106,7 @@ export function layoutWeapons(p: Player): void {
 
 export function addWeapon(p: Player, id: string, tier: number): void {
   const waffe = waffeById(id) ?? W.pistole;
-  p.weapons.push({ waffe, tier, cd: 0.3 + p.weapons.length * 0.13, aim: 0, ox: 0, oz: 0, target: -1, mask: spezialMask(waffe) });
+  p.weapons.push({ waffe, tier, cd: 0.3 + p.weapons.length * 0.13, aim: 0, ox: 0, oz: 0, target: -1, mask: spezialMask(waffe), kills: 0, stars: 0, mods: [], modMask: 0 });
   layoutWeapons(p);
 }
 
@@ -131,6 +135,12 @@ function rollUpgrades(w: World, p: Player): void {
 function rollOffer(w: World, p: Player): Offer {
   const r = w.shopRng;
   const tier = rollSeltenheit(w.wave + 1, p.stats.glueck, r.next());
+  // Mods: etwa jedes 7. Angebot
+  if (r.next() < 0.14) {
+    const pool = MODS.filter((m) => m.seltenheit <= Math.max(tier, 1) + 1);
+    const m = pool[Math.floor(r.next() * pool.length)];
+    return { kind: 'mod', id: m.id, tier: m.seltenheit, price: Math.round(m.preis * SHOP.inflation(w.wave + 1)), locked: false, sold: false };
+  }
   if (r.next() < SHOP.waffenAnteil) {
     // Bevorzugt Waffen, die man schon hat (zum Mergen) – wie in Brotato
     const ownable = p.weapons.filter((s) => !s.waffe.fusion);
@@ -173,9 +183,31 @@ export function openShop(w: World): void {
 }
 
 function mergeInto(p: Player, keep: number, remove: number): void {
-  p.weapons[keep].tier++;
+  const a = p.weapons[keep], b = p.weapons[remove];
+  a.tier++;
+  // Sterne und Kills bleiben (das Bessere), Mods werden zusammengelegt (soweit Platz)
+  a.kills = Math.max(a.kills, b.kills);
+  a.stars = Math.max(a.stars, b.stars);
+  for (const m of b.mods) if (a.mods.length < MOD_SLOTS[a.tier - 1]) a.mods.push(m); else p.modInv.push(m);
+  a.modMask = modMask(a.mods);
   p.weapons.splice(remove, 1);
   layoutWeapons(p);
+}
+
+/** Kill einer Waffe gutschreiben → Sterne (Waffen-Level) */
+export function creditKill(w: World, src: string): void {
+  for (const p of w.players) {
+    for (let i = 0; i < p.weapons.length; i++) {
+      const s = p.weapons[i];
+      if (s.waffe.id !== src) continue;
+      s.kills++;
+      if (s.stars < 5 && s.kills >= STERNE.kills[s.stars]) {
+        s.stars++;
+        w.events.push({ type: 'star', player: p.id, slot: i, stars: s.stars, weapon: s.waffe.name, x: p.x, z: p.z });
+      }
+      return;
+    }
+  }
 }
 
 /** Führt einen Befehl eines Spielers aus. Rückgabe: hat geklappt? */
@@ -225,6 +257,8 @@ export function runCommand(w: World, p: Player, cmd: Command): boolean {
         } else {
           addWeapon(p, o.id, o.tier);
         }
+      } else if (o.kind === 'mod') {
+        p.modInv.push(o.id);
       } else {
         const def = ITEM_BY_ID[o.id];
         if (def.max && (p.items[o.id] ?? 0) >= def.max) return false;
@@ -284,6 +318,27 @@ export function runCommand(w: World, p: Player, cmd: Command): boolean {
       [...new Set(cmd.slots)].sort((a, b) => b - a).forEach((i) => p.weapons.splice(i, 1));
       addWeapon(p, v.waffe.id, tier);
       w.events.push({ type: 'fusion', player: p.id, weapon: v.waffe.id, name: v.waffe.name, rezept: v.waffe.fusion?.rezept ?? '', x: p.x, z: p.z });
+      return true;
+    }
+    case 'evolve': {
+      const s = p.weapons[cmd.slot];
+      if (w.phase !== 'shop' || !s || s.stars < 5 || s.waffe.evo) return false;
+      const evo = waffeById(`evo:${cmd.variant}:${s.waffe.id}`);
+      if (!evo) return false;
+      s.waffe = evo;
+      s.mask = spezialMask(evo);
+      layoutWeapons(p);
+      w.events.push({ type: 'evolve', player: p.id, weapon: evo.name, x: p.x, z: p.z });
+      return true;
+    }
+    case 'installMod': {
+      const s = p.weapons[cmd.slot], mod = p.modInv[cmd.index];
+      if (w.phase !== 'shop' || !s || !mod || !MOD_BY_ID[mod]) return false;
+      if (s.mods.length >= MOD_SLOTS[s.tier - 1] || s.mods.includes(mod)) return false;
+      s.mods.push(mod);
+      s.modMask = modMask(s.mods);
+      p.modInv.splice(cmd.index, 1);
+      p.loadout++;
       return true;
     }
     case 'endless': {

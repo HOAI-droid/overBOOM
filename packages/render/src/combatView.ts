@@ -118,9 +118,9 @@ export class CombatView {
         let vox;
         if (f?.rezept && REZEPT_MODELLE[f.rezept]) vox = REZEPT_MODELLE[f.rezept]();
         else if (f) vox = fusionModel(f.teile.antrieb, W[f.teile.antrieb]?.gruppe ?? s.waffe.gruppe, s.waffe.geschoss, s.waffe.ladung, f.instabil, glow);
-        else vox = weaponModel(s.waffe.id, s.waffe.gruppe, glow);
+        else vox = weaponModel(s.waffe.id.startsWith('evo:') ? s.waffe.id.slice(6) : s.waffe.id, s.waffe.gruppe, glow);
         const m = voxelObject(vox, f?.rezept ? 0.08 : 0.07, { origin: [0.5, 0.5, 0.5], jitter: 0.05 });
-        m.scale.setScalar(1 + (s.tier - 1) * 0.12);
+        m.scale.setScalar((1 + (s.tier - 1) * 0.12) * (s.waffe.evo === 'b' ? 1.35 : s.waffe.evo === 'a' ? 1.15 : 1));
         root.add(m);
         this.group.add(root);
         return { root, aim: s.aim, kick: 0 };

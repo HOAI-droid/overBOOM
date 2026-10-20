@@ -169,6 +169,8 @@ function start() {
           } else hud.banner('Verschmolzen!', e.name, e.rezept ? 'gelb' : 'cyan');
           break;
         case 'reaction': damage.text(-5000 - (e.x * 37 | 0) - (e.z * 11 | 0), e.x, 1.5, e.z, e.name, 'reaction', e.farbe); break;
+        case 'star': damage.text(-7000 - e.slot, e.x, 1.9, e.z, `${'★'.repeat(e.stars)} ${e.weapon}`, 'lvl'); if (e.stars === 5) hud.banner('5 Sterne!', `${e.weapon} kann im Shop evolvieren`, 'gelb'); break;
+        case 'evolve': hud.banner('Evolution!', e.weapon, 'gelb'); platform.haptic(120); break;
         case 'nuke': damage.text(-6000, e.x, 1.8, e.z, 'MINI-NUKE!', 'kawumm', '#ffd23f'); platform.haptic(120); break;
         case 'kawumm': damage.text(-999 - (e.x * 100 | 0), e.x, 1.3, e.z, 'Kawumm!', 'kawumm'); break;
         case 'death': platform.haptic(200); endTimer = 1.6; break;

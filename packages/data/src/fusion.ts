@@ -7,6 +7,7 @@
  * Ausnahme: geheime Rezepte (feste Zutaten) mit eigenem Namen, Effekt und Modell.
  */
 import { A, G, L, W, elemente, fusionsName, type Gruppe, type Waffe } from './weapons.ts';
+import { evolve } from './mods.ts';
 
 export interface Rezept {
   id: string;
@@ -191,6 +192,13 @@ export function fusionsWaffe(wahl: FusionsWahl, quellen: readonly string[] = [wa
 export function waffeById(id: string): Waffe | undefined {
   if (W[id]) return W[id];
   if (cache.has(id)) return cache.get(id);
+  if (id.startsWith('evo:')) {
+    const v = id[4] as 'a' | 'b', base = waffeById(id.slice(6));
+    if (!base || base.evo || (v !== 'a' && v !== 'b')) return undefined;
+    const w = evolve(base, v);
+    cache.set(id, w);
+    return w;
+  }
   if (id.startsWith('fusion:')) {
     const [g, a, l] = id.slice(7).split('+');
     if (W[g] && W[a] && W[l]) return fusionsWaffe({ geschoss: g, antrieb: a, ladung: l }, [g, a, l]);

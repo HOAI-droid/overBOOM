@@ -59,8 +59,10 @@ export interface Waffe {
   text: string;
   /** nur bei Fusionswaffen gesetzt */
   fusion?: FusionsInfo;
-  /** Sonderwirkungen geheimer Rezepte (siehe fusion.ts) */
+  /** Sonderwirkungen geheimer Rezepte (siehe fusion.ts) und Evolutionen */
   spezial?: string[];
+  /** evolvierte Waffe: Variante a oder b (siehe mods.ts) */
+  evo?: 'a' | 'b';
 }
 
 export interface FusionsInfo {

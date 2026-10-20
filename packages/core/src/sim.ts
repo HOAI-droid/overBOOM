@@ -8,7 +8,7 @@ import {
 } from './entities.ts';
 import { spawnBoss, spawnEnemy, stepEnemies, stepWaves } from './enemies.ts';
 import { maintainDrones, pull, rainEgg, spawnChickFor, stepProjectiles, stepWeapons, stormStrike } from './weapons.ts';
-import { addWeapon, gainXp, openShop, recomputeStats, runCommand, type Command } from './progression.ts';
+import { addWeapon, creditKill, gainXp, openShop, recomputeStats, runCommand, type Command } from './progression.ts';
 import { FINALBOSS, GEGNER, GEGNER_INDEX, HELD_BY_ID, INSEL_BY_ID, KAMPF, SPIELER, WELLEN, baseStats, type Insel, type Stats } from '../../data/src/index.ts';
 
 import { ACCEL, BARREL_RADIUS, DASH_COOLDOWN, DASH_SPEED, DASH_TIME, DT, MOVE_SPEED, PLAYER_COLORS, PLAYER_RADIUS } from './constants.ts';
@@ -80,6 +80,8 @@ export interface Player {
   boomCount: number;
   stormT: number;
   eggT: number;
+  /** gekaufte, noch nicht eingebaute Mods */
+  modInv: string[];
 }
 
 /**
@@ -129,6 +131,8 @@ export type SimEvent =
   | { type: 'reaction'; id: string; name: string; farbe: string; x: number; z: number }
   | { type: 'nuke'; x: number; z: number }
   | { type: 'storm'; x: number; z: number }
+  | { type: 'star'; player: number; slot: number; stars: number; weapon: string; x: number; z: number }
+  | { type: 'evolve'; player: number; weapon: string; x: number; z: number }
   | { type: 'victory'; wave: number };
 
 
@@ -291,7 +295,7 @@ export class World {
       level: 1, xp: 0, pendingLevels: 0, upgradeOffers: [], upgrades: [], items: {},
       stats: baseStats(), offers: [], rerolls: 0, ready: false, regenAcc: 0, loadout: 0, stealAcc: 0,
       held: '', perk: {}, slowT: 0, perkT: 0, floorT: 0,
-      synCount: {}, syn: {}, boomCount: 0, stormT: 0, eggT: 0
+      synCount: {}, syn: {}, boomCount: 0, stormT: 0, eggT: 0, modInv: []
     };
     this.players.push(p);
     if (this.opt.held) this.setHero(p, this.opt.held);
@@ -678,6 +682,7 @@ export class World {
     this.enemyCount--;
     this.stats.kills++;
     this.events.push({ type: 'kill', id: e.id, enemy: e.def.id, x: e.x, z: e.z, doomed: e.doom >= 0 });
+    if (src && e.doom < 0) creditKill(this, src);
     const n = e.def.kristalle * (e.elite ? 6 : 1) * (e.lucky ? 2 : 1);
     // große Mengen als wertvollere Kristalle (weniger Objekte)
     const big = n > 12 ? Math.ceil(n / 12) : 1;

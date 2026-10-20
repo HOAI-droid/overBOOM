@@ -1,7 +1,7 @@
 import { DT, PLAYER_RADIUS } from './constants.ts';
 import type { World, Player } from './sim.ts';
 import type { Enemy, Projectile, WeaponSlot } from './entities.ts';
-import { AMBOSS, KAMPF, LADUNG_ELEMENT, STUFEN, elemente, findeReaktion, type Reaktionselement, type Waffe } from '../../data/src/index.ts';
+import { AMBOSS, KAMPF, LADUNG_ELEMENT, STERNE, STUFEN, elemente, findeReaktion, type Reaktionselement, type Waffe } from '../../data/src/index.ts';
 
 /**
  * Waffen feuern automatisch auf den nächsten Gegner in Reichweite.
@@ -14,8 +14,22 @@ import { AMBOSS, KAMPF, LADUNG_ELEMENT, STUFEN, elemente, findeReaktion, type Re
 /** Sonderwirkungen geheimer Rezepte als Bitmaske */
 export const SP = {
   salve3: 1, cluster: 2, doppelblitz: 4, implosion: 8, heilkeks: 16,
-  schwarm6: 32, konfettifrost: 64, orbit6: 128, giftwolke: 256, kueken: 512
+  schwarm6: 32, konfettifrost: 64, orbit6: 128, giftwolke: 256, kueken: 512,
+  /** Evolution „Mega": größere Explosionen */
+  gross: 1024
 } as const;
+
+/** Mods als Bitmaske */
+export const MOD = {
+  doppelschuss: 1, zielsuchend: 2, querschlaeger: 4, nachbrenner: 8, clusterbombe: 16, brandmunition: 32,
+  kettenblitz: 64, gravkern: 128, frostkern: 256, giftspitze: 512, vampirzahn: 1024, gluecksbringer: 2048
+} as const;
+
+export function modMask(mods: readonly string[]): number {
+  let m = 0;
+  for (const id of mods) m |= (MOD as Record<string, number>)[id] ?? 0;
+  return m;
+}
 
 export function spezialMask(w: Waffe): number {
   let m = 0;
@@ -30,6 +44,8 @@ const scratch2 = new Int32Array(256);
 
 /** Kontext eines Treffers – ein einziges wiederverwendetes Objekt (keine Allokation) */
 interface HitCtx {
+  /** Mods (Bitmaske) */
+  mods: number;
   player: number;
   ladung: string;
   geschoss: string;
@@ -40,19 +56,21 @@ interface HitCtx {
   dmg: number;
   crit: boolean;
 }
-const ctx: HitCtx = { player: 0, ladung: '', geschoss: '', src: '', blastMul: 1, instabil: 0, mask: 0, dmg: 0, crit: false };
+const ctx: HitCtx = { mods: 0, player: 0, ladung: '', geschoss: '', src: '', blastMul: 1, instabil: 0, mask: 0, dmg: 0, crit: false };
 
 function ctxFromShot(pr: Projectile): HitCtx {
   ctx.player = pr.player; ctx.ladung = pr.ladung; ctx.geschoss = pr.geschoss; ctx.src = pr.src;
   ctx.blastMul = pr.blastMul; ctx.instabil = pr.instabil; ctx.mask = pr.mask; ctx.dmg = pr.dmg; ctx.crit = pr.crit;
+  ctx.mods = pr.mods;
   return ctx;
 }
 
 function ctxFromSlot(p: Player, s: WeaponSlot, dmg: number, crit: boolean): HitCtx {
   const w = s.waffe;
   ctx.player = p.id; ctx.ladung = w.ladung; ctx.geschoss = w.geschoss; ctx.src = w.id;
-  ctx.blastMul = Math.max(0.3, 1 + p.stats.explosion / 100); ctx.instabil = w.fusion?.instabil ?? 0;
+  ctx.blastMul = Math.max(0.3, 1 + p.stats.explosion / 100) * (s.mask & SP.gross ? 1.5 : 1); ctx.instabil = w.fusion?.instabil ?? 0;
   ctx.mask = s.mask; ctx.dmg = dmg; ctx.crit = crit;
+  ctx.mods = s.modMask;
   return ctx;
 }
 
@@ -64,10 +82,13 @@ export function weaponDamage(p: Player, s: WeaponSlot): number {
   if (p.perk.turmprofi && w.antrieb === 'turm') perk *= 1.5;
   if (p.perk.fusionsprofi && w.fusion) perk *= 1.25;
   if (p.perk.huehnerfreund && (w.fusion ? w.fusion.elemente : elemente(w)).includes('Gacker')) perk *= 1.4;
-  return w.schaden * STUFEN.schaden[s.tier - 1] * Math.max(0.1, 1 + p.stats.schaden / 100) * perk;
+  const stars = 1 + s.stars * STERNE.schadenProStern;
+  const instant = w.antrieb === 'strahl' || w.antrieb === 'kegel' || w.antrieb === 'nahkampf' || w.antrieb === 'teleport';
+  const mods = (s.modMask & MOD.nachbrenner ? 1.15 : 1) * (s.modMask & MOD.doppelschuss && instant ? 1.6 : 1);
+  return w.schaden * STUFEN.schaden[s.tier - 1] * Math.max(0.1, 1 + p.stats.schaden / 100) * perk * stars * mods;
 }
 export function weaponRate(p: Player, s: WeaponSlot): number {
-  return s.waffe.feuerrate * STUFEN.feuerrate[s.tier - 1] * Math.max(0.2, 1 + p.stats.angriff / 100);
+  return s.waffe.feuerrate * STUFEN.feuerrate[s.tier - 1] * Math.max(0.2, 1 + p.stats.angriff / 100) * (1 + s.stars * STERNE.feuerrateProStern);
 }
 export function weaponRange(p: Player, s: WeaponSlot): number {
   return Math.max(1.5, s.waffe.reichweite * (1 + p.stats.reichweite / 100));
@@ -119,8 +140,8 @@ function fire(w: World, p: Player, slot: number, s: WeaponSlot, e: Enemy, x: num
   const a = waffe.antrieb;
   const crit = w.rng.next() * 100 < KAMPF.kritChance * 100 + p.stats.krit;
   const dmg = weaponDamage(p, s) * (crit ? KAMPF.kritFaktor : 1);
-  const speed = KAMPF.tempo[a] ?? KAMPF.tempo.gerade;
-  const volley = s.mask & SP.salve3 ? 3 : 1;
+  const speed = (KAMPF.tempo[a] ?? KAMPF.tempo.gerade) * (s.modMask & MOD.nachbrenner ? 1.4 : 1);
+  const volley = (s.mask & SP.salve3 ? 3 : 1) * (s.modMask & MOD.doppelschuss ? 2 : 1);
 
   if (cap(a, s.mask, p) < Infinity && countOwned(w, p.id, slot) >= cap(a, s.mask, p)) {
     // Begleiter/Türme/Minen voll – nichts Neues
@@ -137,8 +158,8 @@ function fire(w: World, p: Player, slot: number, s: WeaponSlot, e: Enemy, x: num
       impactAt(w, ctxFromSlot(p, s, dmg, crit), e.x, e.z, e, dx, dz);
       break;
     case 'faecher':
-      for (let k = -2; k <= 2; k++) {
-        const ang = Math.atan2(dx, dz) + k * 0.18;
+      for (let k = -2; k <= 2; k++) for (let v = 0; v < (s.modMask & MOD.doppelschuss ? 2 : 1); v++) {
+        const ang = Math.atan2(dx, dz) + k * 0.18 + v * 0.09;
         spawnShot(w, p, s, slot, 'gerade', x, z, Math.sin(ang), Math.cos(ang), speed, dmg, crit, e, dist, range);
       }
       break;
@@ -150,7 +171,10 @@ function fire(w: World, p: Player, slot: number, s: WeaponSlot, e: Enemy, x: num
       }
       break;
     default: {
-      const flight = FLIGHTS.has(a) ? a : 'gerade';
+      let flight = FLIGHTS.has(a) ? a : 'gerade';
+      // Mods verändern gerade Geschosse
+      if (flight === 'gerade' && s.modMask & MOD.querschlaeger) flight = 'abprall';
+      else if (flight === 'gerade' && s.modMask & MOD.zielsuchend) flight = 'zielsuchend';
       for (let k = 0; k < volley; k++) {
         const ang = Math.atan2(dx, dz) + (k - (volley - 1) / 2) * 0.25;
         spawnShot(w, p, s, slot, flight, x, z, Math.sin(ang), Math.cos(ang), speed, dmg, crit, e, dist, range);
@@ -198,6 +222,8 @@ function spawnShot(w: World, p: Player, s: WeaponSlot, slot: number, flight: str
   pr.mask = s.mask;
   pr.instabil = waffe.fusion?.instabil ?? 0;
   pr.bounces = 0; pr.mode = 0; pr.cd = 0; pr.rate = 1;
+  pr.mods = s.modMask;
+  if (s.mask & SP.gross) { pr.blastMul *= 1.5; pr.r *= 1.4; }
   pr.ang = Math.atan2(dz, dx); pr.rad = 0;
   pr.life = (range / speed) * 1.25 + 0.1;
 
@@ -208,7 +234,7 @@ function spawnShot(w: World, p: Player, s: WeaponSlot, slot: number, flight: str
       if (flight === 'bogen') { pr.tx = e.x + e.vx * pr.dur * 0.6; pr.tz = e.z + e.vz * pr.dur * 0.6; }
       break;
     case 'zielsuchend': pr.life = 2.5; break;
-    case 'abprall': pr.bounces = 4; pr.life = 3; break;
+    case 'abprall': pr.bounces = waffe.antrieb === 'abprall' ? 4 : 2; pr.life = 3; break;
     case 'huepfend': pr.bounces = 3; pr.dur = Math.max(0.35, Math.min(0.8, dist / speed)); pr.life = 4; break;
     case 'bumerang': pr.dur = range / speed; pr.life = pr.dur * 2 + 1.5; pr.pierce = 99; break;
     case 'spirale': pr.rad = 0.4; pr.ang = Math.atan2(dz, dx); pr.life = range / 2.4; pr.pierce = 2; break;
@@ -258,7 +284,7 @@ function initChild(pr: Projectile, c: HitCtx, x: number, z: number, y: number, d
   pr.dmg = dmg; pr.crit = false;
   pr.target = -1; pr.targetId = 0; pr.t = 0; pr.life = 1; pr.r = 0.15;
   pr.src = c.src; pr.blastMul = c.blastMul; pr.pierce = c.ladung === 'plasma' ? 3 : 0; pr.lastHit = 0;
-  pr.slot = -1; pr.mask = c.mask & ~SP.salve3; pr.instabil = c.instabil;
+  pr.slot = -1; pr.mask = c.mask & ~SP.salve3; pr.instabil = c.instabil; pr.mods = c.mods & ~(MOD.clusterbombe | MOD.doppelschuss);
   pr.bounces = 0; pr.mode = 0; pr.ang = 0; pr.rad = 0; pr.cd = 0; pr.rate = 1; pr.dur = 0;
 }
 
@@ -389,6 +415,23 @@ function hitEnemy(w: World, c: HitCtx, e: Enemy, dx: number, dz: number, primary
     case 'splitter': if (primary) spawnSplinters(w, c, e.x, e.z, e.id); break;
   }
   if (c.mask & SP.heilkeks && owner && w.rng.chance(0.15)) w.heal(owner, 1);
+  // Mods
+  const m = c.mods;
+  if (m && primary) {
+    if (m & MOD.brandmunition) { e.burnT = 3; e.burnDps = Math.max(e.burnDps, c.dmg * 0.25); }
+    if (m & MOD.frostkern) { e.slow = Math.max(e.slow, 1.5); e.frostT = 3; }
+    if (m & MOD.giftspitze) { e.poisonT = 4; e.poisonDps = Math.min(c.dmg, e.poisonDps + c.dmg * 0.1); }
+    if (m & MOD.gluecksbringer && w.rng.chance(0.15)) e.lucky = true;
+    if (m & MOD.vampirzahn && owner) w.lifesteal(owner, c.dmg * 0.02);
+    if (m & MOD.gravkern) pull(w, e.x, e.z, 1.8, false, 4);
+    if (m & MOD.clusterbombe && c.ladung !== 'splitter') spawnSplinters(w, c, e.x, e.z, e.id);
+    if (m & MOD.kettenblitz && c.ladung !== 'kettenblitz' && w.rng.chance(0.15)) {
+      const save = c.ladung, saveMods = c.mods;
+      c.ladung = 'kettenblitz'; c.mods = 0;
+      zap(w, c, e);
+      c.ladung = save; c.mods = saveMods;
+    }
+  }
   // Natur-Synergie: Ranken fesseln
   if (syn?.ranken && primary && !boss && w.rng.chance(0.1)) e.stun = Math.max(e.stun, 1);
   // Chaos-Synergie: zufälliges Element

@@ -230,6 +230,8 @@ export class GameRenderer {
         case 'teleport': fx.teleport(e.x, e.z, shotColor(e.geschoss)); break;
         case 'kawumm': kick(0.2); break;
         case 'fusion': fx.fusion(e.x, e.z, !!e.rezept); break;
+        case 'evolve': fx.fusion(e.x, e.z, true); break;
+        case 'star': fx.levelUp(e.x, e.z); break;
         case 'heal': fx.heal(e.x, e.z); break;
         case 'dodge': fx.dodge(e.x, e.z); break;
         case 'bossSpawn': fx.explosion(e.x, e.z, 2.5, true); kick(0.45); break;

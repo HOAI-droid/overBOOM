@@ -132,6 +132,8 @@ export interface Projectile {
   cd: number;
   /** Feuerintervall des Turms */
   rate: number;
+  /** Mods des Schützen (Bitmaske) */
+  mods: number;
 }
 
 export interface Crystal {
@@ -183,6 +185,12 @@ export interface WeaponSlot {
   target: number;
   /** Sonderwirkungen (Bitmaske) */
   mask: number;
+  /** Kills dieser Waffe in diesem Run und daraus Sterne (0–5) */
+  kills: number;
+  stars: number;
+  /** eingebaute Mods (IDs) und deren Bitmaske */
+  mods: string[];
+  modMask: number;
 }
 
 /** Bodeneffekt: Lava- oder Giftpfütze, Schwerkraft-Sog */
@@ -223,7 +231,7 @@ export function makeProjectile(): Projectile {
     alive: false, hostile: false, player: 0, geschoss: '', antrieb: '', ladung: '',
     x: 0, y: 0, z: 0, px: 0, py: 0, pz: 0, vx: 0, vz: 0, speed: 0, dmg: 0, crit: false,
     target: -1, targetId: 0, life: 0, t: 0, dur: 0, sx: 0, sz: 0, tx: 0, tz: 0, r: 0.15,
-    src: '', blastMul: 1, pierce: 0, lastHit: 0, slot: -1, mask: 0, instabil: 0, bounces: 0, mode: 0, ang: 0, rad: 0, cd: 0, rate: 1
+    src: '', blastMul: 1, pierce: 0, lastHit: 0, slot: -1, mask: 0, instabil: 0, bounces: 0, mode: 0, ang: 0, rad: 0, cd: 0, rate: 1, mods: 0
   };
 }
 
@@ -241,7 +249,7 @@ export function makeWarning(): Warning {
 
 /** Ein Angebot im Shop */
 export interface Offer {
-  kind: 'waffe' | 'item';
+  kind: 'waffe' | 'item' | 'mod';
   id: string;
   /** Stufe der Waffe bzw. Seltenheit des Items (1–4) */
   tier: number;

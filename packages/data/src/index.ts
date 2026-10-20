@@ -9,3 +9,4 @@ export * from './islands.ts';
 export * from './heroes.ts';
 export * from './synergies.ts';
 export * from './reactions.ts';
+export * from './mods.ts';

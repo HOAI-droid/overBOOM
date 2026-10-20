@@ -712,4 +712,81 @@ for (const [el, ids, ev] of [
   ok(p.syn[lvl] && (el === 'Gacker' ? explosions > 10 : n > 0), `${el} 6 (${lvl}): ${el === 'Gacker' ? explosions + ' Explosionen' : n + '× ' + ev}`);
 }
 
+/* ------------------------------------------------------------------ */
+/* Phase 5 / Etappe 3: Sterne, Evolutionen, Mods                        */
+/* ------------------------------------------------------------------ */
+
+// Kills geben Sterne
+{
+  const w = calm(70);
+  const p = give(w, ['pistole']);
+  let stars = 0;
+  for (let t = 0; t < 30 * 90 && p.weapons[0].stars < 2; t++) {
+    if (w.enemyCount < 4) for (let k = 0; k < 4; k++) spawnEnemy(w, 0, p.x + 3 + k * 0.5, p.z + 1)!.cd = 99;
+    w.step([idle]);
+    stars += w.events.filter((e) => e.type === 'star').length;
+  }
+  ok(p.weapons[0].stars >= 2 && stars >= 2, `Pistole sammelt Sterne (${p.weapons[0].kills} Kills → ${p.weapons[0].stars} ★)`);
+}
+// Evolution bei 5 Sternen
+{
+  const w = new World(71, 1, { god: true });
+  const p = w.players[0];
+  runUntil(w, () => w.phase === 'shop');
+  while (p.pendingLevels) w.command(0, { type: 'upgrade', index: 0 });
+  const slot = p.weapons.findIndex((x) => x.waffe.id === 'raketenwerfer');
+  ok(!w.command(0, { type: 'evolve', slot, variant: 'b' }), 'Evolution erst ab 5 Sternen');
+  p.weapons[slot].stars = 5;
+  const dmg0 = W2.weaponDamage(p, p.weapons[slot]);
+  ok(w.command(0, { type: 'evolve', slot, variant: 'b' }) && p.weapons[slot].waffe.name === 'Atomrakete', `Raketenwerfer → ${p.weapons[slot].waffe.name}`);
+  ok(W2.weaponDamage(p, p.weapons[slot]) > dmg0 * 2, `Atomrakete macht mehr Schaden (${dmg0.toFixed(0)} → ${W2.weaponDamage(p, p.weapons[slot]).toFixed(0)})`);
+  ok(!w.command(0, { type: 'evolve', slot, variant: 'a' }), 'evolvierte Waffen evolvieren nicht nochmal');
+  const other = p.weapons.findIndex((x) => x.waffe.id === 'pistole');
+  p.weapons[other].stars = 5;
+  w.command(0, { type: 'evolve', slot: other, variant: 'a' });
+  ok(p.weapons[other].waffe.name === 'Doppelpistolen' && (p.weapons[other].mask & W2.SP.salve3) !== 0, 'Pistole → Doppelpistolen (Salve)');
+  const f = fusionsWaffe({ geschoss: 'pistole', antrieb: 'teslastab', ladung: 'raketenwerfer' });
+  ok(waffeById(`evo:b:${f.id}`)?.name === 'Mega-' + f.name, `auch Fusionen evolvieren („Mega-${f.name}")`);
+}
+// Mods: kaufen, einbauen, wirken
+{
+  const w = new World(72, 1, { god: true });
+  const p = w.players[0];
+  runUntil(w, () => w.phase === 'shop');
+  while (p.pendingLevels) w.command(0, { type: 'upgrade', index: 0 });
+  p.crystals = 999;
+  p.offers[0] = { kind: 'mod', id: 'brandmunition', tier: 1, price: 10, locked: false, sold: false };
+  p.offers[1] = { kind: 'mod', id: 'doppelschuss', tier: 3, price: 10, locked: false, sold: false };
+  w.command(0, { type: 'buy', index: 0 }); w.command(0, { type: 'buy', index: 1 });
+  ok(p.modInv.length === 2, 'Mods landen im Inventar');
+  const slot = p.weapons.findIndex((x) => x.waffe.id === 'pistole');
+  ok(!w.command(0, { type: 'installMod', slot, index: 0 }), 'Stufe I hat keinen Mod-Slot');
+  p.weapons[slot].tier = 3;
+  ok(w.command(0, { type: 'installMod', slot, index: 0 }) && w.command(0, { type: 'installMod', slot, index: 0 }), 'Stufe III: 2 Mods eingebaut');
+  ok(p.weapons[slot].mods.length === 2 && p.modInv.length === 0, `Pistole mit ${p.weapons[slot].mods.join(' + ')}`);
+  w.command(0, { type: 'ready' });
+  for (const warn of w.warnings) warn.active = false; w.spawnAcc = -999;
+  p.weapons = p.weapons.filter((x, k) => k === slot);
+  for (let k = 0; k < 3; k++) { const e = spawnEnemy(w, GEGNER_INDEX.schrottgolem, p.x + 4, p.z + k)!; e.hp = e.maxHp = 1e6; e.cd = 99; }
+  let shots = 0, burning = false;
+  for (let t = 0; t < 30 * 3; t++) {
+    w.step([idle]);
+    shots = Math.max(shots, w.projectiles.filter((q) => q.alive && q.src === 'pistole').length);
+    if (w.enemies.some((e) => e.alive && e.burnT > 0)) burning = true;
+  }
+  ok(shots >= 2 && burning, `Doppelschuss (${shots} Kugeln gleichzeitig) und Brandmunition wirken`);
+}
+// Merge behält Sterne
+{
+  const w = new World(73, 1, { god: true });
+  const p = w.players[0];
+  runUntil(w, () => w.phase === 'shop');
+  while (p.pendingLevels) w.command(0, { type: 'upgrade', index: 0 });
+  p.weapons = [];
+  progression.addWeapon(p, 'pistole', 1); progression.addWeapon(p, 'pistole', 1);
+  p.weapons[1].stars = 3; p.weapons[1].kills = 70;
+  w.command(0, { type: 'merge', slot: 0 });
+  ok(p.weapons.length === 1 && p.weapons[0].tier === 2 && p.weapons[0].stars === 3, 'Merge: Stufe II, Sterne bleiben');
+}
+
 if (fails) { console.log(`\n${fails} Test(s) fehlgeschlagen`); process.exit(1); } else console.log('\nAlle Tests bestanden');
