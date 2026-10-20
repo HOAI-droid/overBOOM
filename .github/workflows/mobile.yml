@@ -33,7 +33,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-      - uses: android-actions/setup-android@v3
+      # Android-SDK ist auf ubuntu-latest vorinstalliert (ANDROID_HOME), fehlende Teile lädt Gradle
       - run: npm ci
       - run: npm test
       - run: npm run build:mobile
