@@ -1,5 +1,5 @@
 /**
- * OVERBOOM – Gefahrenstufen 0–10 (wie in Brotato): jede Stufe bringt einen
+ * OVERBOOM – Gefahrenstufen 0–10: jede Stufe bringt einen
  * zusätzlichen Modifikator und enthält alle darunter. Freigeschaltet wird die
  * nächste Stufe durch einen Sieg auf der höchsten bisher geschafften.
  */

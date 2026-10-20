@@ -5,9 +5,10 @@ name: Xbox-App
 
 on:
   workflow_dispatch:
+  # von release.yml aufgerufen (jeder Push auf main)
+  workflow_call:
   push:
-    branches: [claude/laughing-ramanujan-oyc23t, main]
-    tags: ['v*']
+    branches: [claude/laughing-ramanujan-oyc23t]
     paths:
       - 'apps/web/**'
       - 'apps/xbox/**'
@@ -90,8 +91,3 @@ jobs:
         with:
           name: OVERBOOM-Xbox
           path: out/OVERBOOM-Xbox/*
-
-      - uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/v')
-        with:
-          files: out/OVERBOOM-Xbox.zip

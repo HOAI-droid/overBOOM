@@ -6,7 +6,7 @@
 
 ## 1. Rolle & Ziel
 
-Du bist ein Senior Game Developer mit Erfahrung in Web-3D (Three.js), Netcode und Game Feel. Entwickle **OVERBOOM**, ein Arena-Roguelite im Stil von *Brotato*, mit einer **3D-Voxel-Pixel-Optik** und **isometrischer Kamera wie Minecraft Dungeons**.
+Du bist ein Senior Game Developer mit Erfahrung in Web-3D (Three.js), Netcode und Game Feel. Entwickle **OVERBOOM**, ein Arena-Roguelite mit kurzen Wellen-Runden, einer **3D-Voxel-Pixel-Optik** und einer **schrägen isometrischen Kamera** von oben.
 
 Das Spiel läuft **komplett im Browser**, ist auf **Smartphones spielbar** (Touch) und unterstützt **lokalen Solo-Modus** sowie **Online-Koop mit bis zu 4 Spielern auf jeweils eigenem Gerät** – plattformübergreifend (iOS Safari, Android Chrome, Desktop Chrome/Firefox/Safari/Edge auf Windows, macOS, Linux).
 
@@ -29,7 +29,7 @@ Leitprinzip: **„Übertrieben, aber lesbar."** Absurde Explosionsmengen, Ketten
 - **TypeScript + Vite**, kein schweres Engine-Framework.
 - **Three.js** (WebGL2) für das Rendering.
 - **Netzwerk:** WebRTC-DataChannels über **Trystero** (serverloses Signaling) als Default; abstrahiere die Transport-Schicht hinter einem Interface, damit später PeerJS oder ein eigener WebSocket-Relay einsetzbar ist.
-- **Audio:** WebAudio-API, prozedurale SFX mit `jsfxr`-artigem Generator + Musik-Loops. Audio erst nach erster Nutzerinteraktion entsperren (iOS!).
+- **Audio:** WebAudio-API, prozedurale SFX mit eigenem Retro-Klanggenerator + Musik-Loops. Audio erst nach erster Nutzerinteraktion entsperren (iOS!).
 - **PWA:** Manifest + Service Worker, installierbar, offline spielbar im Solo-Modus, Vollbild/Landscape-Lock auf Mobilgeräten.
 - **Hosting:** rein statisch (GitHub Pages / Netlify / Cloudflare Pages). Kein eigener Spielserver nötig – nur ein TURN-Relay als Fallback (siehe unten).
 - Keine externen Asset-Downloads zur Laufzeit – Voxel-Modelle werden **prozedural im Code** definiert (Voxel-Arrays → zusammengeführte Geometrie mit Greedy-Meshing).
@@ -80,7 +80,7 @@ Dafür gelten diese Regeln:
 
 ---
 
-## 4. Gameplay-Kern (Brotato-Loop)
+## 4. Gameplay-Kern (Wellen-Schleife)
 
 1. **Charakterwahl** (startet mit 1 Waffe + Charakter-Perk).
 2. **Welle** in einer Arena: 20–90 s Countdown (steigt mit Welle). Gegner spawnen kontinuierlich an Rändern/aus Portalen, mit Spawn-Warnung (rotes Kreuz 1 s vorher).
@@ -194,7 +194,7 @@ Jede Waffe ist in drei austauschbare **Bauteile** zerlegt. Bei der Fusion liefer
 
 ### Meta-Progression (zwischen Runs, lokal gespeichert)
 - Freischaltbare Charaktere, Waffen und Items über Erfolge.
-- **Gefahrenstufen 0–10** (wie Brotato), jede mit zusätzlichem Modifikator.
+- **Gefahrenstufen 0–10**, jede mit zusätzlichem Modifikator.
 - Statistik-Seite & Codex (alle entdeckten Waffen/Items/Gegner mit Beschreibung).
 - Speichern in **IndexedDB**, Export/Import als Code.
 

@@ -1,12 +1,13 @@
 # Desktop-Apps (Tauri) aus demselben Web-Code bauen.
-# Ergebnisse liegen als Artefakte am Workflow-Lauf; bei Tags v* zusätzlich am GitHub-Release.
+# Ergebnisse liegen als Artefakte am Workflow-Lauf; release.yml macht daraus das Release.
 name: Desktop-Apps
 
 on:
   workflow_dispatch:
+  # von release.yml aufgerufen (jeder Push auf main)
+  workflow_call:
   push:
-    branches: [claude/laughing-ramanujan-oyc23t, main]
-    tags: ['v*']
+    branches: [claude/laughing-ramanujan-oyc23t]
     paths:
       - 'apps/**'
       - 'packages/**'
@@ -84,10 +85,3 @@ jobs:
           name: OVERBOOM-${{ matrix.name }}
           path: ${{ matrix.bundles }}
           if-no-files-found: error
-
-      - name: An GitHub-Release anhängen (nur bei Tag)
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          draft: true
-          files: ${{ matrix.bundles }}

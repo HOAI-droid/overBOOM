@@ -1,0 +1,85 @@
+# Release: Jeder Push auf main baut alle Apps und legt sie als GitHub-Release
+# „v<Version aus package.json>" mit festen Dateinamen ab. Die Download-Links im README
+# (releases/latest/download/…) zeigen dadurch immer auf den neuesten Stand.
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: true
+
+jobs:
+  desktop:
+    uses: ./.github/workflows/desktop.yml
+    secrets: inherit
+  mobile:
+    uses: ./.github/workflows/mobile.yml
+    secrets: inherit
+  xbox:
+    uses: ./.github/workflows/xbox.yml
+    secrets: inherit
+
+  browser:
+    name: Browser (eine HTML-Datei)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:single
+      - uses: actions/upload-artifact@v5
+        with:
+          name: OVERBOOM-Browser
+          path: dist-single/index.html
+          if-no-files-found: error
+
+  release:
+    name: Release veröffentlichen
+    needs: [desktop, mobile, xbox, browser]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          path: art
+      - name: Dateien mit festen Namen
+        run: |
+          set -euo pipefail
+          find art -type f | sort
+          eins() { local f; f=$(find "$1" -type f -name "$2" | head -n 1); [ -n "$f" ] || { echo "fehlt: $1/$2"; exit 1; }; cp "$f" "rel/$3"; }
+          mkdir rel
+          eins art/OVERBOOM-Windows '*.exe'      OVERBOOM-Windows-Setup.exe
+          eins art/OVERBOOM-Windows '*.msi'      OVERBOOM-Windows.msi
+          eins art/OVERBOOM-Mac     '*.dmg'      OVERBOOM-Mac.dmg
+          eins art/OVERBOOM-Linux   '*.AppImage' OVERBOOM-Linux.AppImage
+          eins art/OVERBOOM-Linux   '*.deb'      OVERBOOM-Linux.deb
+          eins art/OVERBOOM-Linux   '*.rpm'      OVERBOOM-Linux.rpm
+          eins art/OVERBOOM-Android '*.apk'      OVERBOOM-Android.apk
+          eins art/OVERBOOM-Android '*.aab'      OVERBOOM-Android-GooglePlay.aab
+          eins art/OVERBOOM-iOS     '*.ipa'      OVERBOOM-iOS-unsigniert.ipa
+          eins art/OVERBOOM-Browser 'index.html' OVERBOOM-Browser.html
+          (cd art/OVERBOOM-Xbox && zip -qr ../../rel/OVERBOOM-Xbox.zip .)
+          ls -la rel
+          V=$(node -p "require('./package.json').version")
+          echo "VERSION=$V" >> "$GITHUB_ENV"
+          NOTES="docs/releases/v$V.md"
+          [ -f "$NOTES" ] || NOTES=docs/releases/standard.md
+          echo "NOTES=$NOTES" >> "$GITHUB_ENV"
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: OVERBOOM ${{ env.VERSION }}
+          target_commitish: ${{ github.sha }}
+          body_path: ${{ env.NOTES }}
+          make_latest: true
+          files: rel/*

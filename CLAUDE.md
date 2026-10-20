@@ -1,6 +1,6 @@
 # CLAUDE.md – OVERBOOM
 
-Arena-Roguelite im Stil von Brotato mit 3D-Voxel-Pixel-Grafik (Kamera wie Minecraft Dungeons), Waffen-Fusion und Koop für 1–4 Spieler. Läuft im Browser und als App (Tauri: Windows/Mac/Linux, Capacitor: iOS/Android, UWP+WebView2: Xbox) aus demselben Code.
+Arena-Roguelite mit Wellen-Runden, 3D-Voxel-Pixel-Grafik (schräge isometrische Kamera), Waffen-Fusion und Koop für 1–4 Spieler. Läuft im Browser und als App (Tauri: Windows/Mac/Linux, Capacitor: iOS/Android, UWP+WebView2: Xbox) aus demselben Code.
 
 **Die vollständige Spezifikation steht in `docs/OVERBOOM_Prompt.md` – vor größeren Änderungen lesen.** Waffendaten: `packages/data/src/weapons.ts` (lesbar: `docs/Waffenkatalog.md`).
 

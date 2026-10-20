@@ -73,7 +73,7 @@ export const STUFEN = {
 };
 
 export const LEVEL = {
-  /** XP für den nächsten Level (wie Brotato: (Level + 3)²) */
+  /** XP für den nächsten Level ((Level + 3)²) */
   xpBedarf: (level: number) => (level + 3) * (level + 3),
   /** +Max-Leben pro Level */
   hpProLevel: 1,

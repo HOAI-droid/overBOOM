@@ -166,7 +166,7 @@ function rollOfferRaw(w: World, p: Player): Offer {
     return { kind: 'ausruestung', id: a.name, tier: a.seltenheit, price: ausruestungsPreis(a, w.wave + 1), locked: false, sold: false, equip: a };
   }
   if (r.next() < SHOP.waffenAnteil) {
-    // Bevorzugt Waffen, die man schon hat (zum Mergen) – wie in Brotato
+    // Bevorzugt Waffen, die man schon hat (zum Mergen)
     const ownable = p.weapons.filter((s) => !s.waffe.fusion);
     const own = ownable.length && r.next() < 0.35 ? ownable[Math.floor(r.next() * ownable.length)].waffe.id : '';
     // Der Pyromane bekommt nur, was knallt oder brennt

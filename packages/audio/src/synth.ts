@@ -1,5 +1,5 @@
 /**
- * Mini-Synthesizer im jsfxr-Stil: erzeugt Soundeffekte als Samples (einmal beim Start),
+ * Mini-Synthesizer für Retro-Klänge: erzeugt Soundeffekte als Samples (einmal beim Start),
  * abgespielt werden sie danach als fertige AudioBuffer – das kostet im Spiel fast nichts.
  */
 
