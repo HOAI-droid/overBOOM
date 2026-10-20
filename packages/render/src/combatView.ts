@@ -1,18 +1,17 @@
 import * as THREE from 'three';
 import { EnemyState, type World } from '@overboom/core';
-import { GEGNER } from '@overboom/data';
+import { ELITE, GEGNER, SELTENHEIT } from '@overboom/data';
 import { VoxelInstances } from './instanced.ts';
 import { voxelObject } from './voxel.ts';
-import { gem, grummel, kroete, projectileModel, spawnMarker, toastomat, weaponModel } from './models.ts';
+import { PROJECTILE_IDS, baron, crown, gem, grummel, kroete, projectileModel, spawnMarker, targetRing, toastomat, weaponModel } from './models.ts';
 import type { Effects } from './effects.ts';
 
-const ENEMY_MODELS: Record<string, { vox: () => ReturnType<typeof grummel>; size: number }> = {
-  grummelbold: { vox: grummel, size: 0.11 },
-  bombenkroete: { vox: kroete, size: 0.1 },
-  toastomat: { vox: toastomat, size: 0.1 }
+const ENEMY_MODELS: Record<string, { vox: () => ReturnType<typeof grummel>; size: number; top: number; cap: number }> = {
+  grummelbold: { vox: grummel, size: 0.11, top: 1.1, cap: 200 },
+  bombenkroete: { vox: kroete, size: 0.1, top: 1.35, cap: 200 },
+  toastomat: { vox: toastomat, size: 0.1, top: 1.3, cap: 200 },
+  baron: { vox: baron, size: 0.1, top: 3, cap: 4 }
 };
-
-const PROJECTILES = ['kugel', 'rakete', 'blitzkugel', 'toast'];
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
@@ -40,7 +39,10 @@ export class CombatView {
   private shots = new Map<string, VoxelInstances>();
   private gems: VoxelInstances;
   private markers: VoxelInstances;
+  private crowns: VoxelInstances;
+  private rings: VoxelInstances;
   private weapons: WeaponVis[][] = [];
+  private loadouts: number[] = [];
   private m = new THREE.Matrix4();
   private pos = new THREE.Vector3();
   private quat = new THREE.Quaternion();
@@ -50,18 +52,21 @@ export class CombatView {
   constructor(private world: World, private fx: Effects) {
     this.enemies = GEGNER.map((g) => {
       const m = ENEMY_MODELS[g.id] ?? ENEMY_MODELS.grummelbold;
-      const inst = new VoxelInstances(m.vox(), m.size, 200, { jitter: 0.06 });
+      const inst = new VoxelInstances(m.vox(), m.size, m.cap, { jitter: 0.06 });
       this.group.add(inst.group);
       return inst;
     });
-    for (const id of PROJECTILES) {
-      const inst = new VoxelInstances(projectileModel(id), id === 'toast' ? 0.09 : 0.07, 300, { jitter: 0, shadows: false, origin: [0.5, 0.5, 0.5] });
+    for (const id of PROJECTILE_IDS) {
+      const size = id === 'toast' || id === 'bombe' ? 0.09 : 0.07;
+      const inst = new VoxelInstances(projectileModel(id), size, id === 'kugel' ? 400 : 200, { jitter: 0, shadows: id === 'bombe', origin: [0.5, 0.5, 0.5] });
       this.shots.set(id, inst);
       this.group.add(inst.group);
     }
     this.gems = new VoxelInstances(gem(), 0.07, 320, { jitter: 0, shadows: false, origin: [1, 0, 1] });
     this.markers = new VoxelInstances(spawnMarker(), 0.1, 48, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] });
-    this.group.add(this.gems.group, this.markers.group);
+    this.crowns = new VoxelInstances(crown(), 0.07, 64, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] });
+    this.rings = new VoxelInstances(targetRing(), 1 / 9, 64, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] });
+    this.group.add(this.gems.group, this.markers.group, this.crowns.group, this.rings.group);
   }
 
   /** Rückstoß der Waffe nach einem Schuss */
@@ -73,15 +78,23 @@ export class CombatView {
   private weaponVis(player: number): WeaponVis[] {
     const p = this.world.players[player];
     let list = this.weapons[player];
-    if (!list || list.length !== p.weapons.length) {
-      for (const v of list ?? []) this.group.remove(v.root);
+    if (!list || this.loadouts[player] !== p.loadout) {
+      // Waffen haben sich geändert (Kauf, Merge, Verkauf): Modelle neu bauen
+      for (const v of list ?? []) {
+        this.group.remove(v.root);
+        v.root.traverse((o) => { if (o instanceof THREE.Mesh) o.geometry.dispose(); });
+      }
       list = p.weapons.map((s) => {
         const root = new THREE.Group();
-        root.add(voxelObject(weaponModel(s.waffe.id), 0.07, { origin: [0.5, 0.5, 0.5], jitter: 0.05 }));
+        const glow = SELTENHEIT[s.tier - 1]?.farbe ?? '#3de8ff';
+        const m = voxelObject(weaponModel(s.waffe.id, s.waffe.gruppe, glow), 0.07, { origin: [0.5, 0.5, 0.5], jitter: 0.05 });
+        m.scale.setScalar(1 + (s.tier - 1) * 0.12);
+        root.add(m);
         this.group.add(root);
         return { root, aim: s.aim, kick: 0 };
       });
       this.weapons[player] = list;
+      this.loadouts[player] = p.loadout;
     }
     return list;
   }
@@ -99,6 +112,7 @@ export class CombatView {
 
     // Gegner
     for (const inst of this.enemies) inst.begin();
+    this.crowns.begin();
     for (const e of w.enemies) {
       if (!e.alive) continue;
       const x = lerp(e.px, e.x, alpha), z = lerp(e.pz, e.z, alpha), y = lerp(e.py, e.y, alpha);
@@ -128,23 +142,45 @@ export class CombatView {
         flash = Math.max(flash, (Math.sin(time * 45) * 0.5 + 0.5) * (0.3 + 0.7 * k));
         roll = Math.sin(time * 60 + e.id) * 0.15;
       }
+      if (e.stun > 0) { roll = Math.sin(time * 20) * 0.2; hop = 0; }
       const jx = e.doom >= 0 ? Math.sin(time * 70 + e.id) * 0.03 : 0;
-      this.enemies[e.type].push(this.matrix(x + jx, y + hop, z, e.facing, pitch, roll, sx * pop, sy * pop, sx * pop), flash);
+      const big = e.elite ? ELITE.groesse : 1;
+      this.enemies[e.type].push(this.matrix(x + jx, y + hop, z, e.facing, pitch, roll, sx * pop * big, sy * pop * big, sx * pop * big), flash);
+      const info = ENEMY_MODELS[e.def.id] ?? ENEMY_MODELS.grummelbold;
+      if (e.elite) {
+        this.crowns.push(this.matrix(x + jx, y + hop + info.top * big * sy * pop + Math.sin(time * 4) * 0.04, z, time * 1.5, 0, 0, 1.2, 1.2, 1.2));
+      }
+      // Statuseffekte als kleine Partikel
+      if (e.burnT > 0 && this.fx.chance(dt * 14)) this.fx.burning(x, y + info.top * 0.5 * big, z);
+      if (e.poisonT > 0 && this.fx.chance(dt * 8)) this.fx.poisoned(x, y + info.top * 0.6 * big, z);
+      if (e.slow > 0 && this.fx.chance(dt * 8)) this.fx.chilled(x, y + info.top * 0.5 * big, z);
+      if (e.stun > 0 && this.fx.chance(dt * 10)) this.fx.dizzy(x, y + info.top * big + 0.15, z, time);
     }
     for (const inst of this.enemies) inst.end();
+    this.crowns.end();
 
     // Geschosse
     for (const inst of this.shots.values()) inst.begin();
+    this.rings.begin();
     for (const pr of w.projectiles) {
       if (!pr.alive) continue;
       const inst = this.shots.get(pr.geschoss) ?? this.shots.get('kugel')!;
+      if (pr.hostile && pr.antrieb === 'zielbogen') {
+        // Einschlag-Markierung des Bosses: wird zum Aufprall hin voll
+        const k = Math.max(0, Math.min(1, pr.t / pr.dur));
+        const r = pr.r * (0.5 + 0.5 * k);
+        this.rings.push(this.matrix(pr.tx, 0.03, pr.tz, time * 2, 0, 0, r, 1, r), 0);
+      }
       const x = lerp(pr.px, pr.x, alpha), y = lerp(pr.py, pr.y, alpha), z = lerp(pr.pz, pr.z, alpha);
       const yaw = Math.atan2(pr.vx, pr.vz);
       let pitch = 0, roll = 0;
-      if (pr.antrieb === 'zielbogen') {
+      if (pr.geschoss === 'bombe') {
+        pitch = time * 8; roll = time * 5;
+        if (pr.t > 0) this.fx.trail(x, y + 0.2, z);
+      } else if (pr.antrieb === 'zielbogen' || pr.antrieb === 'bogen') {
         const h = Math.hypot(pr.x - pr.px, pr.z - pr.pz);
         pitch = -Math.atan2(pr.y - pr.py, h || 1e-4);
-        this.fx.trail(x, y, z);
+        if (pr.geschoss === 'rakete') this.fx.trail(x, y, z);
       } else if (pr.geschoss === 'blitzkugel') {
         roll = time * 12; pitch = time * 9;
       } else if (pr.geschoss === 'toast') {
@@ -154,6 +190,7 @@ export class CombatView {
       inst.push(this.matrix(x, y, z, yaw, pitch, roll, s, s, s));
     }
     for (const inst of this.shots.values()) inst.end();
+    this.rings.end();
 
     // Kristalle
     this.gems.begin();

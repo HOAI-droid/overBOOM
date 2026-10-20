@@ -2,7 +2,9 @@ import { DT, PLAYER_RADIUS } from './constants.ts';
 import type { World } from './sim.ts';
 import { EnemyState, JUMP_TIME, type Enemy } from './entities.ts';
 import { Tile } from './arena.ts';
-import { GEGNER, WELLEN } from '../../data/src/index.ts';
+import { BOSS, ELITE, GEGNER, WELLEN } from '../../data/src/index.ts';
+
+const BOSS_TYPE = GEGNER.findIndex((g) => g.verhalten === 'boss');
 
 const KB_DECAY = Math.pow(0.004, DT);
 
@@ -13,10 +15,10 @@ export function stepWaves(w: World): void {
     warn.t -= DT;
     if (warn.t <= 0) {
       warn.active = false;
-      spawnEnemy(w, warn.type, warn.x, warn.z);
+      spawnEnemy(w, warn.type, warn.x, warn.z, warn.elite);
     }
   }
-  w.spawnAcc += WELLEN.spawnRate(w.wave) * DT;
+  w.spawnAcc += WELLEN.spawnRate(w.wave) * (w.isBossWave ? BOSS.spawnAnteil : 1) * DT;
   while (w.spawnAcc >= 1) {
     w.spawnAcc -= 1;
     trySpawn(w);
@@ -32,6 +34,7 @@ function pendingWarnings(w: World): number {
 function pickType(w: World): number {
   let sum = 0;
   for (const g of GEGNER) if (g.abWelle <= w.wave) sum += g.gewicht;
+  if (sum <= 0) return 0;
   let r = w.rng.next() * sum;
   for (let i = 0; i < GEGNER.length; i++) {
     const g = GEGNER[i];
@@ -51,11 +54,11 @@ function freeSpot(w: World, x: number, z: number): boolean {
   return true;
 }
 
-function warn(w: World, type: number, x: number, z: number): void {
+function warn(w: World, type: number, x: number, z: number, elite = false): void {
   for (const warn of w.warnings) {
     if (warn.active) continue;
     warn.active = true;
-    warn.x = x; warn.z = z; warn.t = WELLEN.warnung; warn.type = type;
+    warn.x = x; warn.z = z; warn.t = WELLEN.warnung; warn.type = type; warn.elite = elite;
     return;
   }
 }
@@ -75,7 +78,7 @@ function trySpawn(w: World): void {
       x = w.rng.range(1.5, size - 1.5); z = w.rng.range(1.5, size - 1.5);
     }
     if (!freeSpot(w, x, z)) continue;
-    warn(w, type, x, z);
+    warn(w, type, x, z, w.rng.chance(ELITE.chance(w.wave)));
     // Grummelbolde kommen gern im Rudel
     if (GEGNER[type].id === 'grummelbold' && w.rng.chance(WELLEN.rudelChance)) {
       const extra = 2 + w.rng.int(0, 2);
@@ -89,7 +92,28 @@ function trySpawn(w: World): void {
   }
 }
 
-export function spawnEnemy(w: World, type: number, x: number, z: number): Enemy | null {
+/** Boss erscheint am Arenarand gegenüber dem Spieler. */
+export function spawnBoss(w: World): void {
+  if (BOSS_TYPE < 0) return;
+  const p = w.nearestPlayer(w.arena.size / 2, w.arena.size / 2);
+  const size = w.arena.size;
+  let bx = size / 2, bz = size / 2;
+  for (let t = 0; t < 30; t++) {
+    const a = w.rng.next() * Math.PI * 2;
+    const x = size / 2 + Math.cos(a) * 7, z = size / 2 + Math.sin(a) * 7;
+    if (freeSpot(w, x, z) && !w.solidAt(x + 0.8, z) && !w.solidAt(x - 0.8, z) && !w.solidAt(x, z + 0.8) && !w.solidAt(x, z - 0.8)) { bx = x; bz = z; break; }
+  }
+  const e = spawnEnemy(w, BOSS_TYPE, bx, bz);
+  if (!e) return;
+  e.maxHp = e.hp = e.def.hp * BOSS.hpFaktor(w.wave);
+  e.cd = 2.5;
+  e.bossPhase = 1;
+  w.boss = e.slot;
+  if (p) e.facing = Math.atan2(p.x - bx, p.z - bz);
+  w.events.push({ type: 'bossSpawn', x: bx, z: bz });
+}
+
+export function spawnEnemy(w: World, type: number, x: number, z: number, elite = false): Enemy | null {
   const def = GEGNER[type];
   for (const e of w.enemies) {
     if (e.alive) continue;
@@ -99,8 +123,13 @@ export function spawnEnemy(w: World, type: number, x: number, z: number): Enemy 
     e.type = type;
     e.x = e.px = x; e.z = e.pz = z; e.y = e.py = 0;
     e.vx = e.vz = e.kbx = e.kbz = 0;
-    e.r = def.radius;
-    e.maxHp = e.hp = def.hp * WELLEN.hpFaktor(w.wave);
+    e.elite = elite;
+    e.r = def.radius * (elite ? ELITE.groesse : 1);
+    e.maxHp = e.hp = def.hp * WELLEN.hpFaktor(w.wave) * (elite ? ELITE.hp : 1);
+    e.dmgMul = WELLEN.schadenFaktor(w.wave) * (elite ? ELITE.schaden : 1);
+    e.slow = e.stun = e.burnT = e.burnDps = e.poisonT = e.poisonDps = e.dotClock = 0;
+    e.lucky = false;
+    e.bossPhase = 1; e.summonCd = 0;
     const p = w.nearestPlayer(x, z);
     e.facing = p ? Math.atan2(p.x - x, p.z - z) : 0;
     e.flash = 0; e.age = 0;
@@ -126,6 +155,29 @@ export function stepEnemies(w: World): void {
       continue;
     }
 
+    // Schaden über Zeit (Brand, Gift) – zweimal pro Sekunde
+    if (e.burnT > 0 || e.poisonT > 0) {
+      e.dotClock += DT;
+      if (e.dotClock >= 0.5) {
+        e.dotClock -= 0.5;
+        const dmg = (e.burnT > 0 ? e.burnDps : 0) * 0.5 + (e.poisonT > 0 ? e.poisonDps : 0) * 0.5;
+        e.burnT = Math.max(0, e.burnT - 0.5);
+        e.poisonT = Math.max(0, e.poisonT - 0.5);
+        if (e.poisonT <= 0) e.poisonDps = 0;
+        if (dmg > 0) { w.damageEnemy(e, dmg, false, 0, 0); if (!e.alive) continue; }
+      }
+    }
+    e.slow = Math.max(0, e.slow - DT);
+    if (e.stun > 0) {
+      e.stun -= DT;
+      e.kbx *= KB_DECAY; e.kbz *= KB_DECAY;
+      e.x += e.kbx * DT; e.z += e.kbz * DT;
+      e.vx = e.vz = 0;
+      w.collideCircle(e, e.r, true);
+      continue;
+    }
+    const slowMul = e.slow > 0 ? 0.55 : 1;
+
     const p = w.nearestPlayer(e.x, e.z);
     let dx = 0, dz = 0, d = 99;
     if (p) {
@@ -146,7 +198,7 @@ export function stepEnemies(w: World): void {
       if (k >= 1) {
         e.y = 0;
         w.collideCircle(e, e.r, false);
-        w.queueBlast(e.x, e.z, def.explosionsRadius ?? 1.8, def.explosionsSchaden ?? 15, 0, 0, w.newGroup(), true, 'kroete');
+        w.queueBlast(e.x, e.z, (def.explosionsRadius ?? 1.8) * (e.elite ? 1.3 : 1), (def.explosionsSchaden ?? 15) * e.dmgMul, 0, 0, w.newGroup(), true, 'kroete');
         w.killEnemy(e, 0, 0, true);
       }
       continue;
@@ -203,8 +255,15 @@ export function stepEnemies(w: World): void {
           }
           break;
         }
+
+        case 'boss':
+          stepBoss(w, e);
+          mx = dx * def.tempo * (e.bossPhase === 2 ? 1.25 : 1); mz = dz * def.tempo * (e.bossPhase === 2 ? 1.25 : 1);
+          if (e.state === EnemyState.Aim) { mx *= 0.2; mz *= 0.2; }
+          break;
       }
     }
+    mx *= slowMul; mz *= slowMul;
 
     const acc = Math.min(1, DT * 10);
     e.vx += (mx - e.vx) * acc;
@@ -224,7 +283,7 @@ export function stepEnemies(w: World): void {
     }
 
     // Berührungsschaden
-    if (p && d < e.r + PLAYER_RADIUS + 0.05) w.hurtPlayer(p, def.beruehrSchaden, e.x, e.z);
+    if (p && d < e.r + PLAYER_RADIUS + 0.05) w.hurtPlayer(p, def.beruehrSchaden * e.dmgMul, e.x, e.z);
   }
 
   separate(w);
@@ -261,9 +320,73 @@ function shootToast(w: World, e: Enemy, dx: number, dz: number): void {
     pr.geschoss = 'toast'; pr.antrieb = 'gerade'; pr.ladung = 'brand';
     pr.x = pr.px = e.x + dx * 0.4; pr.z = pr.pz = e.z + dz * 0.4; pr.y = pr.py = 0.75;
     pr.vx = dx * sp; pr.vz = dz * sp; pr.speed = sp;
-    pr.dmg = e.def.schussSchaden ?? 8; pr.crit = false;
+    pr.dmg = (e.def.schussSchaden ?? 8) * e.dmgMul; pr.crit = false;
     pr.target = -1; pr.targetId = 0;
     pr.life = 3; pr.t = 0; pr.dur = 0; pr.r = 0.2;
+    pr.src = ''; pr.blastMul = 1; pr.pierce = 0; pr.lastHit = 0;
+    w.events.push({ type: 'enemyShot', x: e.x, z: e.z });
+    return;
+  }
+}
+
+/**
+ * Baron von Bumm: wirft Bomben-Salven, die rot markiert landen.
+ * Phase 2 (unter 50 % Leben): größere Salven, schneller, ruft Bomben-Kröten.
+ */
+function stepBoss(w: World, e: Enemy): void {
+  const ph = e.bossPhase === 2 ? BOSS.phase2 : BOSS.phase1;
+  e.cd -= DT;
+  if (e.state === EnemyState.Walk && e.cd <= 0) {
+    e.state = EnemyState.Aim;
+    e.stateT = 0.6;
+    w.events.push({ type: 'windup', enemy: e.def.id, x: e.x, z: e.z });
+  } else if (e.state === EnemyState.Aim) {
+    e.stateT -= DT;
+    if (e.stateT <= 0) {
+      const p = w.nearestPlayer(e.x, e.z);
+      if (p) {
+        for (let i = 0; i < ph.salve; i++) {
+          // erste Bombe genau auf den Spieler, der Rest drumherum
+          const a = w.rng.next() * Math.PI * 2, r = i === 0 ? 0 : 1 + w.rng.next() * 2.4;
+          throwBomb(w, e, p.x + p.vx * 0.4 + Math.cos(a) * r, p.z + p.vz * 0.4 + Math.sin(a) * r, i * 0.08);
+        }
+      }
+      e.cd = ph.intervall;
+      e.state = EnemyState.Walk;
+    }
+  }
+  if (e.bossPhase === 2) {
+    e.summonCd -= DT;
+    if (e.summonCd <= 0) {
+      e.summonCd = BOSS.phase2.kroetenIntervall;
+      const k = GEGNER.findIndex((g) => g.verhalten === 'kamikaze');
+      for (let i = 0; i < BOSS.phase2.kroeten; i++) {
+        const a = (i / BOSS.phase2.kroeten) * Math.PI * 2 + w.rng.next();
+        const x = e.x + Math.cos(a) * 1.6, z = e.z + Math.sin(a) * 1.6;
+        if (!w.solidAt(x, z)) warn(w, k, x, z);
+      }
+    }
+  }
+}
+
+function throwBomb(w: World, e: Enemy, tx: number, tz: number, delay: number): void {
+  const size = w.arena.size;
+  tx = Math.max(1.2, Math.min(size - 1.6, tx));
+  tz = Math.max(1.2, Math.min(size - 1.6, tz));
+  for (const pr of w.projectiles) {
+    if (pr.alive) continue;
+    pr.alive = true;
+    pr.hostile = true;
+    pr.player = -1;
+    pr.geschoss = 'bombe'; pr.antrieb = 'zielbogen'; pr.ladung = 'explosion';
+    pr.x = pr.px = pr.sx = e.x; pr.z = pr.pz = pr.sz = e.z; pr.y = pr.py = 2.2;
+    pr.tx = tx; pr.tz = tz;
+    pr.vx = tx - e.x; pr.vz = tz - e.z; pr.speed = 1;
+    pr.dmg = BOSS.bombenSchaden * e.dmgMul; pr.crit = false;
+    pr.target = -1; pr.targetId = 0;
+    pr.t = -delay; pr.dur = BOSS.flugzeit; pr.life = BOSS.flugzeit + delay + 0.5;
+    pr.r = BOSS.bombenRadius;
+    pr.src = ''; pr.blastMul = 1; pr.pierce = 0; pr.lastHit = 0;
     w.events.push({ type: 'enemyShot', x: e.x, z: e.z });
     return;
   }

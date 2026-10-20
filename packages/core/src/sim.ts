@@ -4,11 +4,12 @@ import { SpatialHash } from './spatial.ts';
 import {
   MAX_BLASTS, MAX_CRYSTALS, MAX_ENEMIES, MAX_PROJECTILES, MAX_WARNINGS,
   makeBlast, makeCrystal, makeEnemy, makeProjectile, makeWarning,
-  type Blast, type BlastSource, type Crystal, type Enemy, type Projectile, type Warning, type WeaponSlot
+  type Blast, type BlastSource, type Crystal, type Enemy, type Offer, type Projectile, type UpgradeOffer, type Warning, type WeaponSlot
 } from './entities.ts';
-import { stepEnemies, stepWaves } from './enemies.ts';
+import { spawnBoss, stepEnemies, stepWaves } from './enemies.ts';
 import { stepProjectiles, stepWeapons } from './weapons.ts';
-import { GEGNER, KAMPF, SPIELER, W, WELLEN } from '../../data/src/index.ts';
+import { addWeapon, gainXp, openShop, recomputeStats, runCommand, type Command } from './progression.ts';
+import { GEGNER, KAMPF, SPIELER, WELLEN, baseStats, type Stats } from '../../data/src/index.ts';
 
 import { ACCEL, BARREL_RADIUS, DASH_COOLDOWN, DASH_SPEED, DASH_TIME, DT, MOVE_SPEED, PLAYER_COLORS, PLAYER_RADIUS } from './constants.ts';
 export * from './constants.ts';
@@ -45,9 +46,29 @@ export interface Player {
   alive: boolean;
   crystals: number;
   weapons: WeaponSlot[];
+  level: number;
+  xp: number;
+  /** Level-Ups, die nach der Welle noch eingelöst werden */
+  pendingLevels: number;
+  upgradeOffers: UpgradeOffer[];
+  upgrades: UpgradeOffer[];
+  /** Item-ID → Anzahl */
+  items: Record<string, number>;
+  stats: Stats;
+  offers: Offer[];
+  rerolls: number;
+  /** im Shop „Weiter" gedrückt */
+  ready: boolean;
+  regenAcc: number;
+  /** zählt bei jeder Änderung der Waffen hoch (Renderer baut Modelle dann neu) */
+  loadout: number;
 }
 
-export type Phase = 'welle' | 'pause' | 'ende';
+/**
+ * Ablauf eines Runs:
+ * wahl (Startwaffe) → welle → pause (alles explodiert) → shop → welle … → sieg | ende
+ */
+export type Phase = 'wahl' | 'welle' | 'pause' | 'shop' | 'sieg' | 'ende';
 
 export type SimEvent =
   | { type: 'dash'; player: number; x: number; z: number; dirX: number; dirZ: number }
@@ -66,8 +87,17 @@ export type SimEvent =
   | { type: 'hurt'; player: number; dmg: number; x: number; z: number }
   | { type: 'death'; player: number; x: number; z: number }
   | { type: 'chain'; count: number; x: number; z: number }
-  | { type: 'waveStart'; wave: number }
-  | { type: 'waveClear'; wave: number };
+  | { type: 'waveStart'; wave: number; boss: boolean }
+  | { type: 'waveClear'; wave: number }
+  | { type: 'levelUp'; player: number; level: number; x: number; z: number }
+  | { type: 'harvest'; player: number; value: number }
+  | { type: 'merge'; player: number; weapon: string; tier: number }
+  | { type: 'dodge'; player: number; x: number; z: number }
+  | { type: 'heal'; player: number; value: number; x: number; z: number }
+  | { type: 'bossSpawn'; x: number; z: number }
+  | { type: 'bossPhase'; phase: number; x: number; z: number }
+  | { type: 'shopOpen'; wave: number }
+  | { type: 'victory'; wave: number };
 
 
 export interface WorldOptions {
@@ -77,6 +107,10 @@ export interface WorldOptions {
   wave?: number;
   /** Spieler nimmt keinen Schaden (Debug) */
   god?: boolean;
+  /** Run beginnt mit der Wahl der Startwaffe (Spiel); sonst Startwaffen aus SPIELER (Tests) */
+  choose?: boolean;
+  /** Shop überspringen: nach der Pause sofort nächste Welle (Tests, Bots) */
+  autoShop?: boolean;
 }
 
 interface ChainSlot { group: number; count: number; t: number }
@@ -88,6 +122,8 @@ interface ChainSlot { group: number; count: number; t: number }
 export class World {
   readonly arena: Arena;
   rng: Rng;
+  /** eigener Zufall für Shop und Level-Up – Einkaufen verändert den Kampfverlauf nicht */
+  shopRng: Rng;
   tick = 0;
   players: Player[] = [];
   /** Ereignisse dieses Ticks; Effekte im Renderer entstehen nur hieraus */
@@ -111,7 +147,11 @@ export class World {
   nextGroup = 1;
   /** Kettengruppe für die große Wellenende-Explosion */
   doomGroup = 0;
-  readonly stats = { kills: 0, maxChain: 0, explosions: 0, damage: 0, crystals: 0 };
+  /** nach Welle 20 weiterspielen */
+  endless = false;
+  /** Slot des Bosses oder -1 */
+  boss = -1;
+  readonly stats = { kills: 0, maxChain: 0, explosions: 0, damage: 0, crystals: 0, waffen: {} as Record<string, number> };
   readonly opt: Required<WorldOptions>;
 
   private chains: ChainSlot[] = [];
@@ -122,9 +162,10 @@ export class World {
   constructor(seed = 1337, playerCount = 1, opt: WorldOptions = {}) {
     this.seed = seed;
     this.playerCount = playerCount;
-    this.opt = { combat: opt.combat ?? true, wave: opt.wave ?? 1, god: opt.god ?? false };
+    this.opt = { combat: opt.combat ?? true, wave: opt.wave ?? 1, god: opt.god ?? false, choose: opt.choose ?? false, autoShop: opt.autoShop ?? false };
     this.arena = createArena(seed);
     this.rng = new Rng(seed ^ 0x5eed);
+    this.shopRng = new Rng(seed ^ 0x5409);
     this.barrels = this.arena.props.filter((p) => p.kind === 'barrel');
     this.hash = new SpatialHash(this.arena.size, 2, MAX_ENEMIES);
     for (let i = 0; i < MAX_ENEMIES; i++) this.enemies.push(makeEnemy(i, GEGNER[0]));
@@ -139,7 +180,10 @@ export class World {
   /** Neuer Run in derselben Arena (gleicher Seed → gleicher Ablauf). */
   reset(): void {
     this.rng = new Rng(this.seed ^ 0x5eed);
+    this.shopRng = new Rng(this.seed ^ 0x5409);
     this.tick = 0;
+    this.endless = false;
+    this.boss = -1;
     this.events.length = 0;
     this.players = [];
     for (const e of this.enemies) e.alive = false;
@@ -149,13 +193,15 @@ export class World {
     for (const w of this.warnings) w.active = false;
     for (const c of this.chains) { c.group = 0; c.count = 0; c.t = 99; }
     this.restoreBarrels();
-    Object.assign(this.stats, { kills: 0, maxChain: 0, explosions: 0, damage: 0, crystals: 0 });
+    Object.assign(this.stats, { kills: 0, maxChain: 0, explosions: 0, damage: 0, crystals: 0, waffen: {} });
     this.enemyCount = 0;
     this.nextId = 1;
     this.nextGroup = 1;
     for (let i = 0; i < this.playerCount; i++) this.addPlayer();
-    if (this.opt.combat) this.startWave(this.opt.wave);
-    else { this.phase = 'pause'; this.pauseTime = Infinity; }
+    this.wave = 0;
+    if (!this.opt.combat) { this.phase = 'pause'; this.pauseTime = Infinity; }
+    else if (this.opt.choose) this.phase = 'wahl';
+    else this.startWave(this.opt.wave);
   }
 
   addPlayer(): Player {
@@ -171,19 +217,12 @@ export class World {
       dashTime: 0, dashCooldown: 0, dashDirX: 0, dashDirZ: 1,
       stride: 0,
       hp: SPIELER.maxHp, maxHp: SPIELER.maxHp, invuln: 0, alive: true, crystals: 0,
-      weapons: []
+      weapons: [],
+      level: 1, xp: 0, pendingLevels: 0, upgradeOffers: [], upgrades: [], items: {},
+      stats: baseStats(), offers: [], rerolls: 0, ready: false, regenAcc: 0, loadout: 0
     };
-    if (this.opt.combat) {
-      const ids = SPIELER.startWaffen;
-      ids.forEach((id, k) => {
-        // Waffen schweben im Halbkreis über/neben der Figur (Bildschirm: links, oben, rechts)
-        const ang = Math.PI * 0.25 + Math.PI + ((k + 0.5) / ids.length - 0.5) * Math.PI * 1.3;
-        p.weapons.push({
-          waffe: W[id], cd: 0.3 + k * 0.17, aim: ang,
-          ox: Math.sin(ang) * SPIELER.waffenAbstand, oz: Math.cos(ang) * SPIELER.waffenAbstand, target: -1
-        });
-      });
-    }
+    if (this.opt.combat && !this.opt.choose) for (const id of SPIELER.startWaffen) addWeapon(p, id, 1);
+    recomputeStats(p);
     this.players.push(p);
     return p;
   }
@@ -201,15 +240,16 @@ export class World {
         this.waveTime -= DT;
         stepWaves(this);
         if (this.waveTime <= 0) this.clearWave();
+        for (const p of this.players) this.regen(p);
       } else if (this.phase === 'pause') {
         this.pauseTime -= DT;
-        if (this.pauseTime <= 0) this.startWave(this.wave + 1);
+        if (this.pauseTime <= 0) this.endWave();
       }
 
       this.hash.clear();
       for (const e of this.enemies) if (e.alive) this.hash.insert(e.slot, e.x, e.z);
       stepEnemies(this);
-      if (this.phase !== 'ende') stepWeapons(this);
+      if (this.phase === 'welle') stepWeapons(this);
       stepProjectiles(this);
       this.stepBlasts();
       this.stepCrystals();
@@ -222,14 +262,76 @@ export class World {
   /* Wellen                                                             */
   /* ---------------------------------------------------------------- */
 
+  get isBossWave(): boolean {
+    return WELLEN.bossWellen.includes(this.wave) || (this.endless && this.wave > WELLEN.anzahl && this.wave % 10 === 0);
+  }
+
   startWave(n: number): void {
     this.wave = n;
     this.phase = 'welle';
-    this.waveTime = WELLEN.dauer(n);
     this.spawnAcc = 1.6;
+    this.boss = -1;
     this.restoreBarrels();
-    for (const p of this.players) if (p.alive) p.hp = p.maxHp;
-    this.events.push({ type: 'waveStart', wave: n });
+    for (const p of this.players) {
+      if (!p.alive) continue;
+      p.hp = p.maxHp;
+      p.ready = false;
+      // Spieler zurück in die Mitte
+      p.x = this.arena.spawn.x + (p.id ? Math.cos(p.id * 1.57) * 1.5 : 0);
+      p.z = this.arena.spawn.z + (p.id ? Math.sin(p.id * 1.57) * 1.5 : 0);
+      p.vx = p.vz = 0;
+    }
+    const boss = this.isBossWave;
+    // Boss-Wellen enden erst, wenn der Boss fällt
+    this.waveTime = boss ? Infinity : WELLEN.dauer(n);
+    if (boss) spawnBoss(this);
+    this.events.push({ type: 'waveStart', wave: n, boss });
+  }
+
+  /** Nach der Pause: Sieg, Shop oder (Tests) direkt weiter. */
+  private endWave(): void {
+    // übrige Kristalle einsammeln
+    for (const c of this.crystals) {
+      if (!c.alive) continue;
+      const p = this.nearestPlayer(c.x, c.z);
+      c.alive = false;
+      if (p) this.collect(p, c);
+    }
+    if (this.wave >= WELLEN.anzahl && !this.endless) {
+      this.phase = 'sieg';
+      this.events.push({ type: 'victory', wave: this.wave });
+      return;
+    }
+    if (this.opt.autoShop) {
+      for (const p of this.players) { p.pendingLevels = 0; p.upgradeOffers = []; }
+      this.startWave(this.wave + 1);
+      return;
+    }
+    this.phase = 'shop';
+    openShop(this);
+    this.events.push({ type: 'shopOpen', wave: this.wave });
+  }
+
+  /** Befehl eines Spielers ausführen (Shop, Level-Up, Startwahl …). */
+  command(player: number, cmd: Command): boolean {
+    const p = this.players[player];
+    return p ? runCommand(this, p, cmd) : false;
+  }
+
+  private regen(p: Player): void {
+    if (!p.alive || p.stats.regen <= 0 || p.hp >= p.maxHp) return;
+    p.regenAcc += p.stats.regen * 0.1 * DT;
+    if (p.regenAcc >= 1) {
+      const v = Math.floor(p.regenAcc);
+      p.regenAcc -= v;
+      this.heal(p, v);
+    }
+  }
+
+  heal(p: Player, v: number): void {
+    if (!p.alive || p.hp >= p.maxHp) return;
+    p.hp = Math.min(p.maxHp, p.hp + v);
+    this.events.push({ type: 'heal', player: p.id, value: v, x: p.x, z: p.z });
   }
 
   /** Welle vorbei: alle Gegner explodieren nacheinander – vom Spieler aus nach außen. */
@@ -279,8 +381,9 @@ export class World {
       p.vx = p.dashDirX * DASH_SPEED;
       p.vz = p.dashDirZ * DASH_SPEED;
     } else {
-      const tx = mx * MOVE_SPEED, tz = mz * MOVE_SPEED;
-      const k = Math.min(1, ACCEL * DT / MOVE_SPEED);
+      const ms = MOVE_SPEED * Math.max(0.3, 1 + p.stats.tempo / 100);
+      const tx = mx * ms, tz = mz * ms;
+      const k = Math.min(1, ACCEL * DT / ms);
       p.vx += (tx - p.vx) * k;
       p.vz += (tz - p.vz) * k;
       if (len < 0.05 && Math.hypot(p.vx, p.vz) < 0.05) { p.vx = 0; p.vz = 0; }
@@ -320,8 +423,19 @@ export class World {
   /** Schaden am Spieler. Dash und Schutzzeit machen unverwundbar. */
   hurtPlayer(p: Player, dmg: number, fromX: number, fromZ: number): void {
     if (!p.alive || p.invuln > 0 || p.dashTime > 0 || this.phase !== 'welle') return;
+    // Ausweichen: kompletter Treffer verpufft
+    if (this.rng.next() * 100 < Math.min(SPIELER.maxAusweichen, p.stats.ausweichen)) {
+      p.invuln = SPIELER.schutzzeit * 0.5;
+      this.events.push({ type: 'dodge', player: p.id, x: p.x, z: p.z });
+      return;
+    }
+    const a = p.stats.ruestung, K = SPIELER.ruestungsKonstante;
+    dmg = Math.max(1, Math.round(dmg * (a >= 0 ? K / (K + a) : (K - a) / K)));
     if (!this.opt.god) p.hp -= dmg;
     p.invuln = SPIELER.schutzzeit;
+    if (p.items.dynamitweste) {
+      this.queueBlast(p.x, p.z, 2.4 * (1 + p.stats.explosion / 100), 30 * (1 + p.stats.schaden / 100), 0, 0, this.newGroup(), false, 'weste', 'dynamitweste');
+    }
     const dx = p.x - fromX, dz = p.z - fromZ, d = Math.hypot(dx, dz) || 1;
     p.vx += (dx / d) * 7; p.vz += (dz / d) * 7;
     this.events.push({ type: 'hurt', player: p.id, dmg, x: p.x, z: p.z });
@@ -362,28 +476,48 @@ export class World {
     return this.nextGroup++;
   }
 
-  damageEnemy(e: Enemy, dmg: number, crit: boolean, kbx: number, kbz: number, chain = 0, group = 0): void {
+  damageEnemy(e: Enemy, dmg: number, crit: boolean, kbx: number, kbz: number, chain = 0, group = 0, src = ''): void {
     if (!e.alive || e.doom >= 0) return;
+    const dealt = Math.min(dmg, Math.max(0, e.hp));
     e.hp -= dmg;
     e.flash = 0.12;
     e.kbx += kbx / e.def.masse;
     e.kbz += kbz / e.def.masse;
-    this.stats.damage += dmg;
-    this.events.push({ type: 'hit', id: e.id, x: e.x, y: e.y + 0.9, z: e.z, dmg: Math.round(dmg), crit });
-    if (e.hp <= 0) this.killEnemy(e, chain, group, false);
+    this.stats.damage += dealt;
+    if (src) this.stats.waffen[src] = (this.stats.waffen[src] ?? 0) + dealt;
+    this.events.push({ type: 'hit', id: e.id, x: e.x, y: e.y + 0.9 * (e.elite ? 1.4 : 1) + (e.def.verhalten === 'boss' ? 1.4 : 0), z: e.z, dmg: Math.round(dmg), crit });
+    if (e.def.verhalten === 'boss' && e.bossPhase === 1 && e.hp < e.maxHp * 0.5 && e.hp > 0) {
+      e.bossPhase = 2;
+      e.summonCd = 1.5;
+      this.events.push({ type: 'bossPhase', phase: 2, x: e.x, z: e.z });
+    }
+    if (e.hp <= 0) this.killEnemy(e, chain, group, false, src);
   }
 
   /** Gegner stirbt. Bomben-Kröten nehmen ihre Umgebung mit – so entstehen Ketten. */
-  killEnemy(e: Enemy, chain: number, group: number, selfDestruct: boolean): void {
+  killEnemy(e: Enemy, chain: number, group: number, selfDestruct: boolean, src = ''): void {
     if (!e.alive) return;
     e.alive = false;
     this.enemyCount--;
     this.stats.kills++;
     this.events.push({ type: 'kill', id: e.id, enemy: e.def.id, x: e.x, z: e.z, doomed: e.doom >= 0 });
-    for (let i = 0; i < e.def.kristalle; i++) this.spawnCrystal(e.x, e.z, 1);
+    const n = e.def.kristalle * (e.elite ? 6 : 1) * (e.lucky ? 2 : 1);
+    // große Mengen als wertvollere Kristalle (weniger Objekte)
+    const big = n > 12 ? Math.ceil(n / 12) : 1;
+    for (let i = 0; i < n; i += big) this.spawnCrystal(e.x, e.z, Math.min(big, n - i));
     if (e.def.verhalten === 'kamikaze' && !selfDestruct && e.doom < 0) {
       const g = group || this.newGroup();
-      this.queueBlast(e.x, e.z, e.def.explosionsRadius ?? 1.8, (e.def.explosionsSchaden ?? 15) * 1.5, KAMPF.kettenVerzoegerung, group ? chain + 1 : 0, g, false, 'kroete');
+      this.queueBlast(e.x, e.z, e.def.explosionsRadius ?? 1.8, (e.def.explosionsSchaden ?? 15) * 1.5 * (e.elite ? 2 : 1), KAMPF.kettenVerzoegerung, group ? chain + 1 : 0, g, false, 'kroete', src);
+    }
+    if (e.def.verhalten === 'boss' && e.slot === this.boss) {
+      this.boss = -1;
+      // Boss besiegt: Riesenexplosion, Welle vorbei
+      const g = this.newGroup();
+      for (let i = 0; i < 6; i++) {
+        const a = i * 1.047;
+        this.queueBlast(e.x + Math.cos(a) * 1.2, e.z + Math.sin(a) * 1.2, 2.2, 0, 0.12 * (i + 1), 1, g, false, 'welle');
+      }
+      if (this.phase === 'welle') this.clearWave();
     }
   }
 
@@ -394,22 +528,23 @@ export class World {
     this.queueBlast(x, z, 1.3, 0, 0, 1, this.doomGroup, false, 'welle');
   }
 
-  queueBlast(x: number, z: number, r: number, dmg: number, delay: number, chain: number, group: number, hurtsPlayer: boolean, source: BlastSource): void {
+  queueBlast(x: number, z: number, r: number, dmg: number, delay: number, chain: number, group: number, hurtsPlayer: boolean, source: BlastSource, src = ''): void {
     for (const b of this.blasts) {
       if (b.active) continue;
       b.active = true;
       b.x = x; b.z = z; b.r = r; b.dmg = dmg; b.delay = delay;
-      b.chain = chain; b.group = group; b.hurtsPlayer = hurtsPlayer; b.source = source;
+      b.chain = chain; b.group = group; b.hurtsPlayer = hurtsPlayer; b.source = source; b.src = src;
       return;
     }
     // Pool voll: Explosion fällt aus – lieber zusammenfassen als ruckeln
   }
 
-  breakBarrel(b: Prop, chain: number, group: number): void {
+  breakBarrel(b: Prop, chain: number, group: number, src = ''): void {
     if (b.broken) return;
     b.broken = true;
     b.r = 0;
-    this.queueBlast(b.x, b.z, KAMPF.fassRadius, KAMPF.fassSchaden, group ? KAMPF.kettenVerzoegerung : 0, group ? chain + 1 : 0, group || this.newGroup(), false, 'fass');
+    const dmg = KAMPF.fassSchaden * (1 + 0.15 * (Math.max(1, this.wave) - 1));
+    this.queueBlast(b.x, b.z, KAMPF.fassRadius, dmg, group ? KAMPF.kettenVerzoegerung : 0, group ? chain + 1 : 0, group || this.newGroup(), false, 'fass', src);
   }
 
   private stepBlasts(): void {
@@ -434,17 +569,18 @@ export class World {
       for (let i = 0; i < n; i++) {
         const e = this.enemies[this.scratch[i]];
         if (!e.alive) continue;
+        if (b.source === 'boss' && e.def.verhalten === 'boss') continue;
         const dx = e.x - b.x, dz = e.z - b.z, d = Math.hypot(dx, dz);
         if (d > b.r + e.r) continue;
         const k = Math.min(1, d / b.r);
         const dmg = b.dmg * (1 - k * (1 - KAMPF.randSchaden));
         const push = 3 + 6 * (1 - k);
         const nx = d > 1e-4 ? dx / d : 1, nz = d > 1e-4 ? dz / d : 0;
-        this.damageEnemy(e, dmg, false, nx * push, nz * push, b.chain, b.group);
+        this.damageEnemy(e, dmg, false, nx * push, nz * push, b.chain, b.group, b.src);
       }
     }
     for (const bar of this.barrels) {
-      if (!bar.broken && Math.hypot(bar.x - b.x, bar.z - b.z) < b.r + BARREL_RADIUS) this.breakBarrel(bar, b.chain, b.group);
+      if (!bar.broken && Math.hypot(bar.x - b.x, bar.z - b.z) < b.r + BARREL_RADIUS) this.breakBarrel(bar, b.chain, b.group, b.src);
     }
     if (b.hurtsPlayer) {
       for (const p of this.players) if (Math.hypot(p.x - b.x, p.z - b.z) < b.r * 0.85 + PLAYER_RADIUS) this.hurtPlayer(p, b.dmg, b.x, b.z);
@@ -503,12 +639,10 @@ export class World {
         const dx = p.x - c.x, dz = p.z - c.z, d = Math.hypot(dx, dz);
         if (d < SPIELER.sammelRadius) {
           c.alive = false;
-          p.crystals += c.value;
-          this.stats.crystals += c.value;
-          this.events.push({ type: 'pickup', player: p.id, x: c.x, z: c.z, value: c.value });
+          this.collect(p, c);
           continue;
         }
-        if (c.age > 0.35 && (c.magnet || d < SPIELER.magnetRadius)) {
+        if (c.age > 0.35 && (c.magnet || d < SPIELER.magnetRadius * (1 + p.stats.magnet / 100))) {
           const sp = c.magnet ? 13 : 9;
           const k = Math.min(1, DT * 9);
           c.vx += ((dx / d) * sp - c.vx) * k;
@@ -523,6 +657,13 @@ export class World {
       c.z += c.vz * DT;
       if (!c.magnet) this.collideCircle(c, 0.12, false);
     }
+  }
+
+  private collect(p: Player, c: Crystal): void {
+    p.crystals += c.value;
+    this.stats.crystals += c.value;
+    gainXp(this, p, c.value);
+    this.events.push({ type: 'pickup', player: p.id, x: c.x, z: c.z, value: c.value });
   }
 
   /* ---------------------------------------------------------------- */
@@ -584,7 +725,7 @@ export class World {
     return JSON.stringify({
       t: this.tick,
       ph: this.phase, w: this.wave,
-      p: this.players.map((p) => [f(p.x), f(p.z), f(p.facing), f(p.hp), p.crystals]),
+      p: this.players.map((p) => [f(p.x), f(p.z), f(p.facing), f(p.hp), p.crystals, p.level, p.weapons.map((s) => s.waffe.id + s.tier)]),
       e: this.enemies.filter((e) => e.alive).map((e) => [e.type, f(e.x), f(e.z), f(e.hp)]),
       s: this.stats
     });

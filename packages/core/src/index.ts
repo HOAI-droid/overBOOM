@@ -4,3 +4,5 @@ export * from './entities.ts';
 export * from './spatial.ts';
 export * from './sim.ts';
 export { spawnEnemy } from './enemies.ts';
+export { SHOP_WEAPONS, canMerge, rerollPrice, sellPrice, weaponPrice, itemPrice, type Command } from './progression.ts';
+export { weaponDamage, weaponRate, weaponRange } from './weapons.ts';

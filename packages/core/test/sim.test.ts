@@ -80,8 +80,8 @@ function fight(seed: number, ticks: number, opt = {}) {
   return { w, kills, fires, explosions, pickups, hits, nan, chains, waveStarts, inWall };
 }
 
-const f1 = fight(99, 30 * 70, { god: true });
-const f2 = fight(99, 30 * 70, { god: true });
+const f1 = fight(99, 30 * 70, { god: true, autoShop: true });
+const f2 = fight(99, 30 * 70, { god: true, autoShop: true });
 ok(f1.w.snapshot() === f2.w.snapshot(), 'Kampf deterministisch (70 s, gleiche Eingaben)');
 ok(!f1.nan, 'keine NaN-Positionen');
 ok(f1.inWall === 0, `Gegner stecken nie in Wänden (${f1.inWall})`);
@@ -94,7 +94,7 @@ ok(f1.w.wave >= 3, `Wellen laufen durch (jetzt Welle ${f1.w.wave})`);
 
 // Wellen-Timer: Welle 1 dauert 20 s, danach Pause
 {
-  const w = new World(5, 1, { god: true });
+  const w = new World(5, 1, { god: true, autoShop: true });
   for (let t = 0; t < Math.round(WELLEN.dauer(1) / DT) + 2; t++) w.step([{ mx: 0, mz: 0, dash: false }]);
   ok(w.phase === 'pause' && w.wave === 1, `nach ${WELLEN.dauer(1)} s: Pause (Phase ${w.phase})`);
   let maxBefore = 0;
@@ -104,7 +104,7 @@ ok(f1.w.wave >= 3, `Wellen laufen durch (jetzt Welle ${f1.w.wave})`);
   let allMagnet = true;
   for (const c of w.crystals) if (c.alive && !c.magnet) allMagnet = false;
   ok(allMagnet, 'Wellenende: Kristalle fliegen zum Spieler');
-  for (let t = 0; t < Math.round(WELLEN.pause / DT); t++) w.step([{ mx: 0, mz: 0, dash: false }]);
+  for (let t = 0; t < Math.round(WELLEN.pause / DT) + 2; t++) w.step([{ mx: 0, mz: 0, dash: false }]);
   ok(w.phase === 'welle' && w.wave === 2, `danach startet Welle 2 (jetzt ${w.phase} ${w.wave})`);
 }
 
@@ -173,7 +173,7 @@ ok(f1.w.wave >= 3, `Wellen laufen durch (jetzt Welle ${f1.w.wave})`);
 
 // Tod beendet den Run, reset() startet neu
 {
-  const w = new World(11, 1);
+  const w = new World(11, 1, { autoShop: true });
   for (let t = 0; t < 30 * 240 && w.phase !== 'ende'; t++) w.step([{ mx: 0, mz: 0, dash: false }]);
   ok(w.phase === 'ende' && !w.players[0].alive, `Stillstehen ist tödlich (Ende in Welle ${w.wave})`);
   w.reset();
@@ -193,6 +193,132 @@ ok(f1.w.wave >= 3, `Wellen laufen durch (jetzt Welle ${f1.w.wave})`);
   for (let t = 0; t < N; t++) w.step([bot(t)]);
   const ms = (performance.now() - t0) / N;
   ok(ms < 4 && w.enemyCount > 100, `Tick mit ${w.enemyCount} Gegnern: ${ms.toFixed(3)} ms (Budget 33 ms)`);
+}
+
+/* ------------------------------------------------------------------ */
+/* Phase 3: Shop & Progression                                          */
+/* ------------------------------------------------------------------ */
+
+const idle = { mx: 0, mz: 0, dash: false };
+const runUntil = (w: World, cond: () => boolean, max = 30 * 120) => { for (let t = 0; t < max && !cond(); t++) w.step([idle]); };
+
+// Startwahl
+{
+  const w = new World(21, 1, { choose: true });
+  ok(w.phase === 'wahl' && w.players[0].weapons.length === 0, 'Run beginnt mit der Wahl der Startwaffe');
+  ok(!w.command(0, { type: 'start', weapon: 'minigun' }), 'nur Startwaffen wählbar');
+  ok(w.command(0, { type: 'start', weapon: 'raketenwerfer' }) && w.phase === 'welle' && w.wave === 1, 'Wahl startet Welle 1');
+}
+
+// XP und Level-Up
+{
+  const w = new World(22, 1, { god: true });
+  const p = w.players[0];
+  runUntil(w, () => w.phase === 'shop');
+  ok(w.phase === 'shop', `nach Welle 1 öffnet der Shop (Kristalle ${p.crystals}, Level ${p.level})`);
+  ok(p.level > 1 && p.pendingLevels === p.level - 1 && p.upgradeOffers.length === 4, `Level-Up: ${p.pendingLevels} offene Wahl(en) mit je 4 Angeboten`);
+  ok(!w.command(0, { type: 'ready' }), 'Weiter erst nach Level-Up-Wahl');
+  const before = JSON.stringify(p.stats);
+  while (p.pendingLevels > 0) w.command(0, { type: 'upgrade', index: 0 });
+  ok(JSON.stringify(p.stats) !== before, 'Upgrade verändert die Werte');
+  ok(p.offers.length === 4, 'Shop hat 4 Angebote');
+
+  // Kaufen, Sperren, Reroll
+  p.crystals = 9999;
+  const lockedId = p.offers[1].id;
+  w.command(0, { type: 'lock', index: 1 });
+  ok(w.command(0, { type: 'buy', index: 0 }) && p.offers[0].sold, 'Kaufen klappt');
+  const c0 = p.crystals;
+  ok(w.command(0, { type: 'reroll' }) && p.crystals < c0, `Reroll kostet (${c0 - p.crystals})`);
+  ok(p.offers[1].locked && p.offers[1].id === lockedId, 'gesperrtes Angebot bleibt beim Reroll');
+  const c1 = p.crystals; w.command(0, { type: 'reroll' });
+  ok(c1 - p.crystals > c0 - c1 - 1, 'Reroll-Preis steigt nicht ab');
+
+  // Merge: zwei gleiche Pistolen → Stufe II
+  p.weapons = p.weapons.filter((s) => s.waffe.id !== 'pistole');
+  p.offers[0] = { kind: 'waffe', id: 'pistole', tier: 1, price: 1, locked: false, sold: false };
+  p.offers[2] = { kind: 'waffe', id: 'pistole', tier: 1, price: 1, locked: false, sold: false };
+  w.command(0, { type: 'buy', index: 0 }); w.command(0, { type: 'buy', index: 2 });
+  const slot = p.weapons.findIndex((s) => s.waffe.id === 'pistole');
+  const n0 = p.weapons.length;
+  ok(w.command(0, { type: 'merge', slot }) && p.weapons.length === n0 - 1 && p.weapons.some((s) => s.waffe.id === 'pistole' && s.tier === 2), 'Merge: 2× Pistole I → Pistole II');
+  const c2 = p.crystals;
+  ok(w.command(0, { type: 'sell', slot: 0 }) && p.crystals > c2, 'Verkaufen bringt Kristalle');
+  ok(w.command(0, { type: 'ready' }) && w.phase === 'welle' && w.wave === 2, 'Weiter → Welle 2');
+}
+
+// Waffenstufe erhöht Schaden, Rüstung senkt Treffer
+{
+  const w = new World(23, 1);
+  const p = w.players[0];
+  const s = p.weapons[0];
+  const d1 = (s.waffe.schaden * 1);
+  s.tier = 3;
+  p.stats.schaden = 0;
+  const { weaponDamage } = await import('../src/weapons.ts');
+  ok(weaponDamage(p, s) > d1 * 2, `Stufe III macht mehr Schaden (${weaponDamage(p, s).toFixed(1)} statt ${d1})`);
+  p.stats.ruestung = 15; p.stats.ausweichen = 0;
+  const hp = p.hp; w.hurtPlayer(p, 20, p.x + 1, p.z);
+  ok(hp - p.hp === 10, `Rüstung 15 halbiert Schaden (${hp - p.hp})`);
+}
+
+// Elite-Gegner ab Welle 5
+{
+  const w = new World(24, 1, { god: true, wave: 9, autoShop: true });
+  let elites = 0;
+  for (let t = 0; t < 30 * 40; t++) { w.step([bot(t)]); for (const e of w.enemies) if (e.alive && e.elite && e.age < DT * 1.5) elites++; }
+  ok(elites > 0, `Elite-Gegner tauchen auf (${elites})`);
+}
+
+// Boss auf Welle 10: erscheint, wirft Bomben, Welle endet mit seinem Tod
+{
+  const w = new World(25, 1, { god: true, wave: 10 });
+  const boss = w.enemies[w.boss];
+  ok(w.boss >= 0 && boss.alive && boss.def.id === 'baron', 'Welle 10: Baron von Bumm erscheint');
+  ok(w.waveTime === Infinity, 'Boss-Welle hat keinen Timer');
+  let bombs = 0, phase2 = false;
+  for (let t = 0; t < 30 * 12; t++) {
+    w.step([bot(t)]);
+    for (const p of w.projectiles) if (p.alive && p.geschoss === 'bombe' && p.t > 0 && p.t <= DT + 1e-9) bombs++;
+    if (t === 30 * 4) { w.damageEnemy(boss, boss.hp * 0.6, false, 0, 0); phase2 = w.events.some((e) => e.type === 'bossPhase'); }
+  }
+  ok(bombs >= 3, `Boss wirft Bomben (${bombs})`);
+  ok(phase2 && boss.bossPhase === 2, 'unter 50 % Leben: Phase 2');
+  w.damageEnemy(boss, 1e9, false, 0, 0);
+  ok(!boss.alive && w.phase === 'pause', 'Boss besiegt → Welle vorbei');
+}
+
+// Sieg nach Welle 20, dann optional Endlos
+{
+  const w = new World(26, 1, { god: true, wave: 20 });
+  w.damageEnemy(w.enemies[w.boss], 1e9, false, 0, 0);
+  runUntil(w, () => w.phase !== 'pause');
+  ok(w.phase === 'sieg', 'Welle 20 geschafft → Sieg');
+  ok(w.command(0, { type: 'endless' }) && w.phase === 'shop', 'Endlos-Modus öffnet den Shop');
+  while (w.players[0].pendingLevels) w.command(0, { type: 'upgrade', index: 0 });
+  w.command(0, { type: 'ready' });
+  ok(w.wave === 21 && w.phase === 'welle', 'weiter mit Welle 21');
+}
+
+// MVP-Statistik
+{
+  const w = new World(27, 1, { god: true, autoShop: true });
+  for (let t = 0; t < 30 * 30; t++) w.step([bot(t)]);
+  const ws = Object.entries(w.stats.waffen).sort((a, b) => b[1] - a[1]);
+  ok(ws.length >= 2 && ws[0][1] > 0, `Schaden pro Waffe (MVP: ${ws[0]?.[0]} ${Math.round(ws[0]?.[1] ?? 0)})`);
+}
+
+// Shop-Determinismus: gleiche Befehle → gleicher Zustand
+{
+  const play = () => {
+    const w = new World(28, 1, { god: true });
+    runUntil(w, () => w.phase === 'shop');
+    while (w.players[0].pendingLevels) w.command(0, { type: 'upgrade', index: 1 });
+    w.command(0, { type: 'buy', index: 0 }); w.command(0, { type: 'reroll' }); w.command(0, { type: 'ready' });
+    for (let t = 0; t < 300; t++) w.step([bot(t)]);
+    return w.snapshot();
+  };
+  ok(play() === play(), 'Shop + Kampf deterministisch');
 }
 
 if (fails) { console.log(`\n${fails} Test(s) fehlgeschlagen`); process.exit(1); } else console.log('\nAlle Tests bestanden');

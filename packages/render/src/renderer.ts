@@ -182,6 +182,11 @@ export class GameRenderer {
         case 'hurt': fx.hurt(e.x, e.z); this.heroes[e.player]?.punch(0.6); kick(0.3); stop = Math.max(stop, 0.11); this.lastStop = -1; break;
         case 'death': fx.explosion(e.x, e.z, 2.4); kick(0.45); stop = 0.2; this.lastStop = -1; break;
         case 'waveClear': kick(0.15); break;
+        case 'levelUp': fx.levelUp(e.x, e.z); break;
+        case 'heal': fx.heal(e.x, e.z); break;
+        case 'dodge': fx.dodge(e.x, e.z); break;
+        case 'bossSpawn': fx.explosion(e.x, e.z, 2.5, true); kick(0.45); break;
+        case 'bossPhase': fx.explosion(e.x, e.z, 2, true); kick(0.35); stop = Math.max(stop, 0.15); this.lastStop = -1; break;
       }
     }
     // Hit-Stop nicht im Dauerfeuer: höchstens alle 0,3 s

@@ -1,3 +1,4 @@
 export { Controls, screenToWorld, type ScreenInput } from './controls.ts';
-export { Hud, type HudState, type RunStats } from './hud.ts';
+export { Hud, type HudState } from './hud.ts';
 export { DamageNumbers } from './damage.ts';
+export { Menus, MenuNav, type EndStats } from './menus.ts';

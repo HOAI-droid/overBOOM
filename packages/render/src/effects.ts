@@ -194,6 +194,10 @@ export class Effects {
     this.group.add(lines);
   }
 
+  chance(p: number): boolean {
+    return this.rnd() < p;
+  }
+
   private pick<T>(list: readonly T[]): T {
     return list[Math.floor(this.rnd() * list.length)];
   }
@@ -343,6 +347,48 @@ export class Effects {
     const rnd = this.rnd;
     this.smoke.spawn(x + (rnd() - 0.5) * 0.08, y, z + (rnd() - 0.5) * 0.08, 0, 0.3, 0, 0.35 + rnd() * 0.2, 0.12 + rnd() * 0.06, 0, 0x8a80a8, 1);
     if (rnd() < 0.6) this.fire.spawn(x, y, z, 0, 0, 0, 0.08, 0.1, 0, 0xffb02e);
+  }
+
+  /* ---------------- Statuseffekte & Progression ---------------- */
+
+  burning(x: number, y: number, z: number): void {
+    const rnd = this.rnd;
+    this.fire.spawn(x + (rnd() - 0.5) * 0.4, y, z + (rnd() - 0.5) * 0.4, 0, 1.2 + rnd(), 0, 0.3, 0.12 + rnd() * 0.08, 0, this.pick(FIRE));
+  }
+
+  poisoned(x: number, y: number, z: number): void {
+    const rnd = this.rnd;
+    this.sparks.spawn(x + (rnd() - 0.5) * 0.4, y, z + (rnd() - 0.5) * 0.4, 0, 0.8, 0, 0.5, 0.09, 0, rnd() < 0.5 ? 0x7dff5a : 0x3dbb3a);
+  }
+
+  chilled(x: number, y: number, z: number): void {
+    const rnd = this.rnd;
+    this.sparks.spawn(x + (rnd() - 0.5) * 0.5, y, z + (rnd() - 0.5) * 0.5, 0, -0.3, 0, 0.5, 0.07, 0, 0xa8f6ff);
+  }
+
+  /** Cartoon-Sternchen über betäubten Gegnern */
+  dizzy(x: number, y: number, z: number, time: number): void {
+    const a = time * 8;
+    this.sparks.spawn(x + Math.cos(a) * 0.3, y, z + Math.sin(a) * 0.3, -Math.sin(a) * 1.2, 0, Math.cos(a) * 1.2, 0.25, 0.09, 0, 0xffd23f);
+  }
+
+  levelUp(x: number, z: number): void {
+    this.ring(x, z, 1.6, 0xffd23f, 0.5);
+    const rnd = this.rnd;
+    for (let i = 0; i < 24; i++) {
+      const a = (i / 24) * Math.PI * 2;
+      this.sparks.spawn(x + Math.cos(a) * 0.5, 0.2, z + Math.sin(a) * 0.5, Math.cos(a) * 0.6, 3 + rnd() * 2, Math.sin(a) * 0.6, 0.7, 0.08, -2, rnd() < 0.5 ? 0xffd23f : 0xfff3c4);
+    }
+  }
+
+  heal(x: number, z: number): void {
+    const rnd = this.rnd;
+    for (let i = 0; i < 4; i++) this.sparks.spawn(x + (rnd() - 0.5) * 0.6, 0.4 + rnd() * 0.6, z + (rnd() - 0.5) * 0.6, 0, 1.2, 0, 0.5, 0.08, 0, 0x5dff7a);
+  }
+
+  dodge(x: number, z: number): void {
+    const rnd = this.rnd;
+    for (let i = 0; i < 8; i++) this.dust.spawn(x, 0.5, z, (rnd() - 0.5) * 4, 1 + rnd(), (rnd() - 0.5) * 4, 0.35, 0.08);
   }
 
   hurt(x: number, z: number): void {

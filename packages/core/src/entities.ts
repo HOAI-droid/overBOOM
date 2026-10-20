@@ -42,6 +42,24 @@ export interface Enemy {
   doom: number;
   /** Seitwärts-Richtung beim Umkreisen (±1) */
   strafe: number;
+  elite: boolean;
+  /** Schaden-Multiplikator (Welle, Elite) */
+  dmgMul: number;
+  /** Verlangsamt (s) */
+  slow: number;
+  /** Betäubt (s) – keine Bewegung, keine Angriffe */
+  stun: number;
+  burnT: number;
+  burnDps: number;
+  poisonT: number;
+  poisonDps: number;
+  /** Tick-Uhr für Schaden über Zeit */
+  dotClock: number;
+  /** lässt doppelt Kristalle fallen */
+  lucky: boolean;
+  /** Boss: Phase 1/2 und Abklingzeit für Beschwörungen */
+  bossPhase: number;
+  summonCd: number;
 }
 
 export interface Projectile {
@@ -67,6 +85,13 @@ export interface Projectile {
   sx: number; sz: number;
   tx: number; tz: number;
   r: number;
+  /** Waffe, die geschossen hat (für Statistik/MVP) */
+  src: string;
+  /** Explosionsradius-Multiplikator des Schützen */
+  blastMul: number;
+  /** wie viele Gegner es noch durchschlagen darf */
+  pierce: number;
+  lastHit: number;
 }
 
 export interface Crystal {
@@ -80,7 +105,7 @@ export interface Crystal {
   magnet: boolean;
 }
 
-export type BlastSource = 'waffe' | 'fass' | 'kroete' | 'welle';
+export type BlastSource = 'waffe' | 'fass' | 'kroete' | 'welle' | 'boss' | 'weste';
 
 /** Explosion, die nach `delay` Sekunden zündet (Ketten laufen so sichtbar nacheinander ab). */
 export interface Blast {
@@ -93,6 +118,7 @@ export interface Blast {
   group: number;
   hurtsPlayer: boolean;
   source: BlastSource;
+  src: string;
 }
 
 /** Rotes Kreuz am Boden: hier erscheint gleich ein Gegner. */
@@ -101,10 +127,13 @@ export interface Warning {
   x: number; z: number;
   t: number;
   type: number;
+  elite: boolean;
 }
 
 export interface WeaponSlot {
   waffe: Waffe;
+  /** Stufe 1–5 */
+  tier: number;
   cd: number;
   /** Zielrichtung in Radiant, 0 = +z */
   aim: number;
@@ -119,7 +148,8 @@ export function makeEnemy(slot: number, def: GegnerDef): Enemy {
     slot, id: 0, alive: false, def, type: 0,
     x: 0, z: 0, y: 0, px: 0, pz: 0, py: 0, vx: 0, vz: 0, kbx: 0, kbz: 0,
     r: def.radius, hp: 0, maxHp: 0, facing: 0, flash: 0, age: 0,
-    state: 0, stateT: 0, cd: 0, jx0: 0, jz0: 0, jx1: 0, jz1: 0, doom: -1, strafe: 1
+    state: 0, stateT: 0, cd: 0, jx0: 0, jz0: 0, jx1: 0, jz1: 0, doom: -1, strafe: 1,
+    elite: false, dmgMul: 1, slow: 0, stun: 0, burnT: 0, burnDps: 0, poisonT: 0, poisonDps: 0, dotClock: 0, lucky: false, bossPhase: 1, summonCd: 0
   };
 }
 
@@ -127,7 +157,8 @@ export function makeProjectile(): Projectile {
   return {
     alive: false, hostile: false, player: 0, geschoss: '', antrieb: '', ladung: '',
     x: 0, y: 0, z: 0, px: 0, py: 0, pz: 0, vx: 0, vz: 0, speed: 0, dmg: 0, crit: false,
-    target: -1, targetId: 0, life: 0, t: 0, dur: 0, sx: 0, sz: 0, tx: 0, tz: 0, r: 0.15
+    target: -1, targetId: 0, life: 0, t: 0, dur: 0, sx: 0, sz: 0, tx: 0, tz: 0, r: 0.15,
+    src: '', blastMul: 1, pierce: 0, lastHit: 0
   };
 }
 
@@ -136,9 +167,27 @@ export function makeCrystal(): Crystal {
 }
 
 export function makeBlast(): Blast {
-  return { active: false, x: 0, z: 0, r: 0, dmg: 0, delay: 0, chain: 0, group: 0, hurtsPlayer: false, source: 'waffe' };
+  return { active: false, x: 0, z: 0, r: 0, dmg: 0, delay: 0, chain: 0, group: 0, hurtsPlayer: false, source: 'waffe', src: '' };
 }
 
 export function makeWarning(): Warning {
-  return { active: false, x: 0, z: 0, t: 0, type: 0 };
+  return { active: false, x: 0, z: 0, t: 0, type: 0, elite: false };
+}
+
+/** Ein Angebot im Shop */
+export interface Offer {
+  kind: 'waffe' | 'item';
+  id: string;
+  /** Stufe der Waffe bzw. Seltenheit des Items (1–4) */
+  tier: number;
+  price: number;
+  locked: boolean;
+  sold: boolean;
+}
+
+/** Ein Level-Up-Angebot */
+export interface UpgradeOffer {
+  id: string;
+  /** Seltenheit 1–4 */
+  tier: number;
 }

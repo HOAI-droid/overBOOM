@@ -11,6 +11,9 @@ export class DamageNumbers {
   private value: Float32Array;
   private t: Float32Array;
   private crit: Uint8Array;
+  /** statt Zahl ein Text (z. B. „Ausgewichen!") */
+  private label: (string | null)[] = [];
+  private cls: string[] = [];
   private next = 0;
   private pt = { x: 0, y: 0 };
   enabled = true;
@@ -35,10 +38,22 @@ export class DamageNumbers {
     this.crit = new Uint8Array(cap);
   }
 
+  /** Kurzer Text über der Figur (Level up, Heilung, Ausgewichen) – unabhängig von „Zahlen aus". */
+  text(id: number, x: number, y: number, z: number, str: string, cls: string): void {
+    const i = this.next;
+    this.next = (this.next + 1) % this.cap;
+    this.id[i] = id;
+    this.x[i] = x; this.y[i] = y; this.z[i] = z;
+    this.t[i] = 0;
+    this.label[i] = str;
+    this.cls[i] = cls;
+    this.paint(i);
+  }
+
   add(id: number, x: number, y: number, z: number, dmg: number, crit: boolean): void {
     if (!this.enabled || dmg <= 0) return;
     for (let i = 0; i < this.cap; i++) {
-      if (this.id[i] === id && this.t[i] < 0.35) {
+      if (this.id[i] === id && this.t[i] < 0.35 && !this.label[i]) {
         this.value[i] += dmg;
         this.t[i] = 0;
         this.x[i] = x; this.y[i] = y; this.z[i] = z;
@@ -54,13 +69,20 @@ export class DamageNumbers {
     this.value[i] = dmg;
     this.t[i] = 0;
     this.crit[i] = crit ? 1 : 0;
+    this.label[i] = null;
     this.paint(i);
   }
 
   private paint(i: number): void {
     const el = this.els[i];
-    el.textContent = String(Math.round(this.value[i]));
-    el.className = this.crit[i] ? 'ob-dmg crit' : this.value[i] >= 40 ? 'ob-dmg big' : 'ob-dmg';
+    const label = this.label[i];
+    if (label) {
+      el.textContent = label;
+      el.className = 'ob-dmg ' + this.cls[i];
+    } else {
+      el.textContent = String(Math.round(this.value[i]));
+      el.className = this.crit[i] ? 'ob-dmg crit' : this.value[i] >= 40 ? 'ob-dmg big' : 'ob-dmg';
+    }
     el.style.display = '';
   }
 
@@ -69,8 +91,8 @@ export class DamageNumbers {
   }
 
   update(dt: number, project: (x: number, y: number, z: number, out: { x: number; y: number }) => { x: number; y: number }): void {
-    const LIFE = 0.75;
     for (let i = 0; i < this.cap; i++) {
+      const LIFE = this.label[i] ? 1.1 : 0.75;
       if (this.t[i] >= LIFE) continue;
       this.t[i] += dt;
       const el = this.els[i];

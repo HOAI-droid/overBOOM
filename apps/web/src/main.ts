@@ -1,6 +1,7 @@
-import { World, DT, DASH_COOLDOWN, type InputState } from '@overboom/core';
+import { World, DT, DASH_COOLDOWN, NO_INPUT, type InputState } from '@overboom/core';
+import { LEVEL } from '@overboom/data';
 import { GameRenderer, type PlayerPose } from '@overboom/render';
-import { Controls, DamageNumbers, Hud, screenToWorld } from '@overboom/ui';
+import { Controls, DamageNumbers, Hud, MenuNav, Menus, screenToWorld } from '@overboom/ui';
 import { createWebPlatform } from '@overboom/platform';
 
 const root = document.getElementById('game')!;
@@ -21,8 +22,10 @@ function start() {
   const canvas = document.createElement('canvas');
   root.appendChild(canvas);
 
-  // Debug: ?wave=5 (Startwelle), ?god=1 (unverwundbar)
-  const world = new World(seed, 1, { wave: Math.max(1, Math.floor(num('wave', 1))), god: params.get('god') === '1' });
+  // Debug: ?wave=10 (Startwelle), ?god=1 (unverwundbar), ?gems=500 (Startkristalle)
+  const world = new World(seed, 1, { wave: Math.max(1, Math.floor(num('wave', 1))), god: params.get('god') === '1', choose: true });
+  const startGems = Math.max(0, num('gems', 0));
+  world.players[0].crystals = startGems;
   let renderer: GameRenderer;
   try {
     renderer = new GameRenderer(canvas, world, { internalShort, shadows: params.get('shadows') !== '0', shake: Math.max(0, Math.min(2, num('shake', 1))) });
@@ -31,10 +34,13 @@ function start() {
     throw e;
   }
 
+  const touch = platform.isTouchDevice();
   const hud = new Hud(root, platform, () => `Seed ${seed}`);
   const damage = new DamageNumbers(root);
   damage.enabled = params.get('zahlen') !== '0';
   const controls = new Controls(root, hud.dashButton);
+  const menus = new Menus(root, world, (cmd) => world.command(0, cmd), touch);
+  const nav = new MenuNav(menus.root);
 
   const resize = () => renderer.resize(root.clientWidth, root.clientHeight, devicePixelRatio || 1);
   addEventListener('resize', resize);
@@ -49,49 +55,80 @@ function start() {
   let moving = false;
   /** Hit-Stop: Simulation steht kurz still, Darstellung (Shake) läuft weiter */
   let freeze = 0;
-  let overTimer = -1;
+  let endTimer = -1;
   let runs = 0;
+  let paused = false;
   let lastBoomHaptic = 0;
+  let padStartWas = false;
 
   const restart = () => {
     world.reset();
+    world.players[0].crystals = startGems;
     prev = poses();
     damage.clear();
-    hud.hideGameOver();
-    overTimer = -1;
+    menus.hide();
+    endTimer = -1;
     freeze = 0;
     acc = 0;
+    paused = false;
     runs++;
-    hud.banner(`Welle ${world.wave}`, 'Auf geht’s!', 'gelb');
   };
-  hud.onRestart = restart;
+  const pause = (on: boolean) => {
+    if (on === paused) return;
+    if (on && (menus.open || world.phase !== 'welle')) return;
+    paused = on;
+    if (on) menus.showPause(); else menus.hide();
+  };
+  menus.onRestart = restart;
+  menus.onResume = () => { paused = false; };
+  nav.onBack = () => { if (!menus.back() && paused) pause(false); };
+  hud.pauseButton.addEventListener('click', () => pause(!paused));
   addEventListener('keydown', (e) => {
-    if (hud.gameOverVisible && (e.code === 'Enter' || e.code === 'KeyR')) restart();
+    if (e.code === 'Escape' || e.code === 'KeyP') {
+      if (!menus.back()) pause(!paused);
+    }
   });
+  // Tab im Hintergrund → automatisch pausieren
+  document.addEventListener('visibilitychange', () => { if (document.hidden) pause(true); });
 
   root.addEventListener('pointerdown', () => platform.keepAwake(true), { once: true });
-  hud.banner(`Welle ${world.wave}`, 'Auf geht’s!', 'gelb');
+
+  const endStats = (victory: boolean) => {
+    const p = world.players[0];
+    const ws = Object.entries(world.stats.waffen).sort((a, b) => b[1] - a[1]);
+    return {
+      victory, wave: world.wave, level: p.level, kills: world.stats.kills, damage: world.stats.damage,
+      maxChain: world.stats.maxChain, crystals: world.stats.crystals, mvp: ws[0]?.[0] ?? '', mvpDamage: ws[0]?.[1] ?? 0
+    };
+  };
 
   const frame = (now: number) => {
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
 
     const si = controls.poll();
-    if (si.dash) {
-      if (hud.gameOverVisible) restart();
-      else dashQueued = true;
-    }
+    nav.update(dt);
+    // Gamepad-Start = Pause
+    const pads = navigator.getGamepads?.() ?? [];
+    const startBtn = !!pads.find((p) => p)?.buttons[9]?.pressed;
+    if (startBtn && !padStartWas) pause(!paused);
+    padStartWas = startBtn;
+
+    const inMenu = menus.open || paused;
+    if (si.dash && !inMenu) dashQueued = true;
     if (!moving && (Math.abs(si.x) + Math.abs(si.y) > 0.1 || si.dash)) { moving = true; hud.moved(); }
 
-    if (freeze > 0) freeze -= dt;
-    else acc += dt;
+    if (!paused) {
+      if (freeze > 0) freeze -= dt;
+      else acc += dt;
+    }
 
     // Fester Simulations-Tick (30 Hz), Darstellung interpoliert dazwischen
     let steps = 0;
-    while (acc >= DT && steps < 5 && freeze <= 0) {
+    while (!paused && acc >= DT && steps < 5 && freeze <= 0) {
       prev = poses();
       const w = screenToWorld(si.x, si.y);
-      const input: InputState = { mx: w.mx, mz: w.mz, dash: dashQueued };
+      const input: InputState = world.phase === 'welle' && !inMenu ? { mx: w.mx, mz: w.mz, dash: dashQueued } : NO_INPUT;
       dashQueued = false;
       world.step([input]);
       freeze = Math.max(freeze, renderer.handleEvents(world.events));
@@ -105,9 +142,17 @@ function start() {
             break;
           case 'chain': hud.chain(e.count); break;
           case 'hurt': hud.hurt(); platform.haptic(60); break;
-          case 'waveStart': hud.banner(`Welle ${e.wave}`, e.wave === 1 ? 'Auf geht’s!' : 'Sie kommen wieder!', 'gelb'); break;
+          case 'dodge': damage.text(-e.player - 1, e.x, 1.2, e.z, 'Ausgewichen!', 'dodge'); break;
+          case 'heal': damage.text(-e.player - 100, e.x, 1.1, e.z, `+${e.value}`, 'heal'); break;
+          case 'levelUp': damage.text(-e.player - 200, e.x, 1.6, e.z, 'Level up!', 'lvl'); platform.haptic(30); break;
+          case 'waveStart':
+            if (e.boss) hud.banner('Baron von Bumm!', '„Ich bin nicht dick, ich bin explosiv gebaut!"', 'rot');
+            else hud.banner(`Welle ${e.wave}`, e.wave === 1 ? 'Auf geht’s!' : e.wave === 20 ? 'Die letzte!' : 'Sie kommen wieder!', 'gelb');
+            break;
+          case 'bossPhase': hud.banner('Jetzt wird er sauer!', 'Der Baron ruft Verstärkung', 'rot'); platform.haptic(120); break;
           case 'waveClear': hud.banner('Welle geschafft!', 'Alles fliegt in die Luft', 'cyan'); platform.haptic(80); break;
-          case 'death': platform.haptic(200); overTimer = 1.6; break;
+          case 'victory': endTimer = 1.2; break;
+          case 'death': platform.haptic(200); endTimer = 1.6; break;
         }
       }
       acc -= DT;
@@ -115,22 +160,27 @@ function start() {
     }
     if (steps === 5) acc = 0;
 
-    if (overTimer > 0) {
-      overTimer -= dt;
-      if (overTimer <= 0) hud.showGameOver({ wave: world.wave, ...world.stats }, seed + runs);
+    if (endTimer > 0) {
+      endTimer -= dt;
+      if (endTimer <= 0) menus.showEnd(endStats(world.phase === 'sieg'), seed + runs);
     }
+    if (!paused && menus.current !== 'end') menus.sync();
 
-    const frozen = freeze > 0;
+    const frozen = freeze > 0 || paused;
     renderer.render(prev, world.players, Math.min(1, acc / DT), frozen ? dt * 0.08 : dt, now / 1000);
     damage.update(frozen ? 0 : dt, (x, y, z, out) => renderer.project(x, y, z, out));
     const p = world.players[0];
+    const boss = world.boss >= 0 ? world.enemies[world.boss] : null;
     const { w, h } = renderer.internalSize;
     hud.update(dt, {
       dashReady: 1 - p.dashCooldown / DASH_COOLDOWN,
       info: `${w}×${h} · ${world.enemyCount} Gegner`,
       hp: p.hp, maxHp: p.maxHp, crystals: p.crystals,
-      wave: world.wave, waveTime: world.waveTime, phase: world.phase
+      wave: world.wave, waveTime: world.waveTime, phase: world.phase,
+      level: p.level, xp: p.xp / LEVEL.xpBedarf(p.level),
+      boss: boss && boss.alive ? Math.max(0, boss.hp / boss.maxHp) : -1
     });
+    root.classList.toggle('in-menu', menus.open);
     requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);

@@ -9,28 +9,17 @@ export interface HudState {
   crystals: number;
   wave: number;
   waveTime: number;
-  phase: 'welle' | 'pause' | 'ende';
-}
-
-export interface RunStats {
-  wave: number;
-  kills: number;
-  maxChain: number;
-  crystals: number;
-  explosions: number;
+  phase: string;
+  level: number;
+  /** 0–1 Fortschritt zum nächsten Level */
+  xp: number;
+  /** Boss-Leben 0–1 oder -1 (kein Boss) */
+  boss: number;
 }
 
 const GEM_SVG = '<svg viewBox="0 0 6 8" width="12" height="16" shape-rendering="crispEdges" aria-hidden="true"><path fill="#1aa8d8" d="M1 2h4v4h-1v1h-2v-1h-1z"/><path fill="#3de8ff" d="M2 0h2v1h1v1h-4v-1h1zM2 2h2v3h-2z"/><path fill="#e8fdff" d="M2 1h1v1h-1z"/></svg>';
 
-const SPRUECHE = [
-  'Kawumm! Das war wohl zu viel Kawumm.',
-  'Die Grummelbolde grummeln zufrieden.',
-  'Die Bomben-Kröten quaken ein Siegeslied.',
-  'Der Toastomat toastet auf deinen Untergang.',
-  'Nicht verzagen – nochmal knallen lassen!'
-];
-
-/** HUD: Leben, Kristalle, Welle + Timer, Banner, Ketten-Anzeige, Dash-Button, Run-Ende. */
+/** HUD: Leben, Level/XP, Kristalle, Welle + Timer, Boss-Leiste, Banner, Ketten-Anzeige, Dash-Button. */
 export class Hud {
   readonly root: HTMLDivElement;
   readonly dashButton: HTMLButtonElement;
@@ -44,14 +33,17 @@ export class Hud {
   private bannerEl: HTMLDivElement;
   private chainEl: HTMLDivElement;
   private hurtEl: HTMLDivElement;
-  private over: HTMLDivElement;
+  private lvl: HTMLSpanElement;
+  private xpFill: HTMLDivElement;
+  private bossEl: HTMLDivElement;
+  private bossFill: HTMLDivElement;
+  readonly pauseButton: HTMLButtonElement;
   private hintTimer = -1;
   private frames = 0;
   private acc = 0;
-  private last = { hp: -1, maxHp: -1, crystals: -1, wave: -1, sec: -1, phase: '' };
+  private last = { hp: -1, maxHp: -1, crystals: -1, wave: -1, sec: -1, phase: '', level: -1, xp: -1, boss: -2 };
   private chainShown = 0;
   private chainTimer = 0;
-  onRestart: () => void = () => {};
 
   constructor(parent: HTMLElement, private platform: Platform, info: () => string) {
     const touch = platform.isTouchDevice();
@@ -60,13 +52,17 @@ export class Hud {
     this.root.innerHTML = `
       <div class="ob-hurt"></div>
       <div class="ob-left">
-        <div class="ob-title"><b>OVER</b><b class="boom">BOOM</b><span>Prototyp · Phase 2</span></div>
+        <div class="ob-title"><b>OVER</b><b class="boom">BOOM</b><span>Prototyp · Phase 3</span></div>
         <div class="ob-hp" role="meter" aria-label="Leben"><div class="ob-hp-fill"></div><span class="ob-hp-txt">60 / 60</span></div>
+        <div class="ob-xp"><span class="ob-lvl">Lv 1</span><div class="ob-xp-bar"><div class="ob-xp-fill"></div></div></div>
         <div class="ob-gems">${GEM_SVG}<span>0</span></div>
       </div>
-      <div class="ob-wave"><div class="ob-wave-n">Welle 1</div><div class="ob-wave-t">0:20</div></div>
+      <div class="ob-wave"><div class="ob-wave-n">Welle 1</div><div class="ob-wave-t">0:20</div>
+        <div class="ob-boss hidden"><span>Baron von Bumm</span><div class="ob-boss-bar"><div class="ob-boss-fill"></div></div></div>
+      </div>
       <div class="ob-top-right">
         <span class="ob-fps" aria-live="off">–– FPS</span>
+        <button type="button" class="ob-btn ob-pause" aria-label="Pause">❚❚</button>
         <button type="button" class="ob-btn ob-full" aria-label="Vollbild">⛶</button>
       </div>
       <div class="ob-banner" aria-live="polite"></div>
@@ -76,15 +72,7 @@ export class Hud {
         <svg viewBox="0 0 8 8" width="30" height="30" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M4 0h3v1h-1v1h-1v1h3v1h-1v1h-1v1h-1v1h-1v1h-2v-1h1v-1h1v-1h-3v-1h1v-1h1v-1h1z"></path></svg>
         <span>Dash</span>
       </button>
-      <div class="ob-over hidden">
-        <div class="ob-over-panel">
-          <h2>KAWUMM!</h2>
-          <p class="ob-over-quote"></p>
-          <dl class="ob-over-stats"></dl>
-          <button type="button" class="ob-again">Nochmal!</button>
-          <p class="ob-over-keys">${touch ? '' : 'oder Enter / Leertaste'}</p>
-        </div>
-      </div>`;
+`;
     parent.appendChild(this.root);
     const q = <T extends Element>(s: string) => this.root.querySelector(s) as T;
     this.fps = q('.ob-fps');
@@ -98,20 +86,19 @@ export class Hud {
     this.bannerEl = q('.ob-banner');
     this.chainEl = q('.ob-chain');
     this.hurtEl = q('.ob-hurt');
-    this.over = q('.ob-over');
+    this.lvl = q('.ob-lvl');
+    this.xpFill = q('.ob-xp-fill');
+    this.bossEl = q('.ob-boss');
+    this.bossFill = q('.ob-boss-fill');
+    this.pauseButton = q('.ob-pause');
     if (!touch) this.dashButton.classList.add('desktop');
     q('.ob-full').addEventListener('click', () => this.platform.toggleFullscreen());
-    q('.ob-again').addEventListener('click', () => this.onRestart());
     this.fps.title = info();
   }
 
   /** Nach der ersten Bewegung den Hinweis ausblenden. */
   moved(): void {
     if (this.hintTimer === -1) this.hintTimer = 6;
-  }
-
-  get gameOverVisible(): boolean {
-    return !this.over.classList.contains('hidden');
   }
 
   banner(title: string, sub = '', tone: 'gelb' | 'cyan' | 'rot' = 'gelb'): void {
@@ -154,24 +141,6 @@ export class Hud {
     this.hurtEl.animate([{ opacity: 0.85 }, { opacity: 0 }], { duration: 450, easing: 'ease-out' });
   }
 
-  showGameOver(s: RunStats, seed: number): void {
-    const q = (sel: string) => this.over.querySelector(sel) as HTMLElement;
-    q('.ob-over-quote').textContent = SPRUECHE[seed % SPRUECHE.length];
-    q('.ob-over-stats').innerHTML = [
-      ['Welle', s.wave],
-      ['Besiegt', s.kills],
-      ['Größte Kette', s.maxChain ? `×${s.maxChain}` : '–'],
-      ['Explosionen', s.explosions],
-      ['Kristalle', s.crystals]
-    ].map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
-    this.over.classList.remove('hidden');
-    (q('.ob-again') as HTMLButtonElement).focus({ preventScroll: true });
-  }
-
-  hideGameOver(): void {
-    this.over.classList.add('hidden');
-  }
-
   update(dt: number, s: HudState): void {
     this.frames++;
     this.acc += dt;
@@ -202,12 +171,22 @@ export class Hud {
       L.crystals = s.crystals;
       this.gems.textContent = String(s.crystals);
     }
-    if (s.wave !== L.wave) { L.wave = s.wave; this.waveNum.textContent = `Welle ${s.wave}`; }
-    const sec = s.phase === 'welle' ? Math.max(0, Math.ceil(s.waveTime)) : -1;
+    if (s.wave !== L.wave) { L.wave = s.wave; this.waveNum.textContent = s.wave ? `Welle ${s.wave} / 20` : 'Bereit?'; }
+    const timed = s.phase === 'welle' && Number.isFinite(s.waveTime);
+    const sec = timed ? Math.max(0, Math.ceil(s.waveTime)) : -1;
     if (sec !== L.sec || s.phase !== L.phase) {
       L.sec = sec; L.phase = s.phase;
-      this.waveTimer.textContent = s.phase === 'welle' ? `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}` : s.phase === 'pause' ? 'Pause' : '–';
-      this.waveTimer.classList.toggle('urgent', s.phase === 'welle' && sec <= 5);
+      this.waveTimer.textContent = timed ? `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}` : s.phase === 'welle' ? 'BOSS' : s.phase === 'pause' ? 'Geschafft' : s.phase === 'shop' ? 'Shop' : '–';
+      this.waveTimer.classList.toggle('urgent', (timed && sec <= 5) || (s.phase === 'welle' && !timed));
+    }
+    if (s.level !== L.level) { L.level = s.level; this.lvl.textContent = `Lv ${s.level}`; }
+    const xp = Math.round(s.xp * 50);
+    if (xp !== L.xp) { L.xp = xp; this.xpFill.style.width = `${xp * 2}%`; }
+    const boss = s.boss < 0 ? -1 : Math.ceil(s.boss * 100);
+    if (boss !== L.boss) {
+      L.boss = boss;
+      this.bossEl.classList.toggle('hidden', boss < 0);
+      if (boss >= 0) this.bossFill.style.width = `${boss}%`;
     }
     this.dashButton.style.setProperty('--cd', String(Math.round(s.dashReady * 100)));
     this.dashButton.classList.toggle('ready', s.dashReady >= 1);

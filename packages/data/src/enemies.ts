@@ -5,7 +5,7 @@
  * Werte sind Grundwerte auf Welle 1; die Wellen skalieren HP (siehe balance.ts).
  */
 
-export type Verhalten = 'jagen' | 'kamikaze' | 'fernkampf';
+export type Verhalten = 'jagen' | 'kamikaze' | 'fernkampf' | 'boss';
 
 export interface GegnerDef {
   id: string;
@@ -74,6 +74,18 @@ export const GEGNER: GegnerDef[] = [
     hp: 24, tempo: 1.8, radius: 0.34, beruehrSchaden: 6, kristalle: 3,
     abWelle: 2, gewicht: 1.6, masse: 1.6,
     wunschAbstand: 5, schussIntervall: 2.4, schussSchaden: 9, schussTempo: 6.5
+  },
+  {
+    id: 'baron',
+    name: 'Baron von Bumm',
+    fraktion: 'Bummburg',
+    spruch: '„Ich bin nicht dick, ich bin explosiv gebaut!"',
+    text: 'Runder Bösewicht mit Zylinder, Monokel und Schnurrbart. Auf dem Hut brennt eine Bombe. Hat das Große Kawumm gezündet und ist sehr stolz darauf.',
+    verhalten: 'boss',
+    // Werte für Welle 10; Welle 20 skaliert über BOSS.hpFaktor
+    hp: 2600, tempo: 1.25, radius: 0.85, beruehrSchaden: 18, kristalle: 60,
+    abWelle: 999, gewicht: 0, masse: 25,
+    explosionsRadius: 1.9, explosionsSchaden: 16
   }
 ];
 

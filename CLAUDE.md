@@ -24,6 +24,7 @@ Arena-Roguelite im Stil von Brotato mit 3D-Voxel-Pixel-Grafik (Kamera wie Minecr
 ## Befehle
 - `npm run dev` – Entwicklungsserver (auch im WLAN, zum Testen am Handy)
 - `npm test` – Simulationstests (Node 22+)
+- `npm run balance` – Balancing-Bot spielt komplette Runs
 - `npm run typecheck`
 - `npm run build:web` / `build:single` / `build:artifact`
 
@@ -31,5 +32,8 @@ Arena-Roguelite im Stil von Brotato mit 3D-Voxel-Pixel-Grafik (Kamera wie Minecr
 - Phase 1 (Fundament) fertig: Bewegung, Dash, Kollision, Arena, Held-Animation, Touch/Tastatur/Gamepad.
 - Phase 2 (Kampf-Kern) fertig: Pistole/Raketenwerfer/Tesla-Stab mit Auto-Aim (systemisch aus Antrieb + Ladung, `core/src/weapons.ts`), Grummelbold/Bomben-Kröte/Toastomat (`core/src/enemies.ts`, Daten in `data/src/enemies.ts`), Wellen, Kristalle, Ketten-Explosionen, Fässer, Hit-Stop, Shake, Schadenszahlen, Run-Ende. Balancing zentral in `data/src/balance.ts`.
 - Effekte entstehen nur aus `world.events` (`render/src/effects.ts`); Gegner/Geschosse per Instancing (`render/src/instanced.ts`, `combatView.ts`).
-- Nächster Schritt: **Phase 3 – Shop & Progression** (Level-Up, Shop, Merge, 20 Wellen, Boss, Run-Ende).
+- Phase 3 (Shop & Progression) fertig: Startwaffen-Wahl, XP/Level-Up (`data/src/upgrades.ts`), Shop mit Reroll/Lock/Verkauf/Merge (`core/src/progression.ts`), 24 Items (`data/src/items.ts`), Werte (`data/src/stats.ts`), Waffenstufen I–V, 20 Wellen, Boss Baron von Bumm (Welle 10/20), Elite-Gegner, Sieg/Endlos, Run-Statistik mit MVP-Waffe, Pause. Menüs in `ui/src/menus.ts` (Touch/Tastatur/Gamepad).
+- UI ändert den Zustand nie direkt, sondern schickt Befehle: `world.command(spieler, { type: 'buy', index })` usw. (Koop-tauglich).
+- Phasen: `wahl → welle → pause → shop → welle … → sieg | ende`. Tests ohne Shop: `new World(seed, 1, { autoShop: true })`.
+- Nächster Schritt: **Phase 4 – Waffen-Fusion** (Bauteil-System, Fusions-Amboss, Namensgenerator, zusammengesteckte Modelle, Instabilität, 10 geheime Rezepte).
 - Nach jeder Phase: Tests + Typecheck grün, kurze Änderungsliste, bekannte Probleme, nächster Schritt.
