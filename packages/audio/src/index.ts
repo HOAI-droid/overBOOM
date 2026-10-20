@@ -102,7 +102,7 @@ export class AudioEngine {
     this.musicGain.gain.setTargetAtTime(this.vol.musik * 0.6, t, 0.2);
   }
 
-  /** Musikstil (Rock, Pop, Jazz, Chiptune oder aus) */
+  /** Musikstil (Rock, Pop, Retro, Chiptune oder aus) */
   setMusikStil(stil: MusikWahl): void {
     this.stil = stil;
     this.musik?.setStil(stil);

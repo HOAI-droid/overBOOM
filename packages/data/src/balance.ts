@@ -17,20 +17,25 @@ export const SPIELER = {
   maxWaffen: 6,
   /** Unverwundbarkeit, Rüstung: Schaden × 15 / (15 + Rüstung) */
   ruestungsKonstante: 15,
+  /** Lebensraub heilt höchstens so viel pro Sekunde */
+  lebensraubProSek: 3,
   maxAusweichen: 60,
   /** Abstand der schwebenden Waffen zur Figur */
   waffenAbstand: 0.75
 };
 
+/** Wellen über einer Schwelle (0 davor) – für Zuschläge nur im späten Spiel */
+const spaet = (w: number, ab: number) => Math.max(0, w - ab);
+
 export const WELLEN = {
   /** Wellendauer in s (20 → 60) */
   dauer: (w: number) => Math.min(60, 20 + (w - 1) * 5),
   /** neue Gegner pro Sekunde */
-  spawnRate: (w: number) => 1.1 + 0.42 * (w - 1),
-  /** HP-Multiplikator der Gegner */
-  hpFaktor: (w: number) => 1 + 0.25 * (w - 1) + 0.03 * (w - 1) * (w - 1),
-  /** Schadens-Multiplikator der Gegner */
-  schadenFaktor: (w: number) => 1 + 0.12 * (w - 1),
+  spawnRate: (w: number) => 1.1 + 0.42 * (w - 1) + 0.025 * spaet(w, 10) ** 2,
+  /** HP-Multiplikator der Gegner (ab Welle 9 steiler – frühe Wellen bleiben wie gehabt) */
+  hpFaktor: (w: number) => 1 + 0.25 * (w - 1) + 0.03 * (w - 1) * (w - 1) + 0.16 * spaet(w, 8) ** 2,
+  /** Schadens-Multiplikator der Gegner (ab Welle 9 steiler) */
+  schadenFaktor: (w: number) => 1 + 0.12 * (w - 1) + 0.07 * spaet(w, 8) ** 2,
   /** Wellen pro Run; danach Sieg (optional Endlos) */
   anzahl: 20,
   bossWellen: [10, 20] as readonly number[],
@@ -46,6 +51,8 @@ export const WELLEN = {
 };
 
 export const KAMPF = {
+  /** Grundschaden aller Waffen (v0.10: etwas schwächer) */
+  waffenSchaden: 0.95,
   kritChance: 0.1,
   kritFaktor: 2,
   /** Explosionsschaden am Rand relativ zur Mitte */
@@ -67,7 +74,7 @@ export const KAMPF = {
 
 /** Waffen-Stufen I–V: Merge von 2 gleichen Waffen gleicher Stufe → nächste Stufe */
 export const STUFEN = {
-  schaden: [1, 1.5, 2.2, 3.2, 4.6],
+  schaden: [1, 1.45, 2.05, 2.9, 4],
   feuerrate: [1, 1.1, 1.2, 1.32, 1.45],
   preis: [1, 2, 3.8, 7, 12]
 };
@@ -111,7 +118,7 @@ export function rollSeltenheit(welle: number, glueck: number, r: number): 1 | 2 
 
 export const ELITE = {
   /** Chance pro Spawn, dass ein Elite-Gegner kommt */
-  chance: (w: number) => (w < 5 ? 0 : Math.min(0.08, 0.025 + 0.004 * (w - 5))),
+  chance: (w: number) => (w < 5 ? 0 : Math.min(0.12, 0.025 + 0.006 * (w - 5))),
   hp: 5,
   schaden: 1.5,
   groesse: 1.4,

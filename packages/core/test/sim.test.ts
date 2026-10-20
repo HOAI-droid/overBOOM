@@ -260,7 +260,7 @@ const runUntil = (w: World, cond: () => boolean, max = 30 * 120) => { for (let t
   s.tier = 3;
   p.stats.schaden = 0;
   const { weaponDamage } = await import('../src/weapons.ts');
-  ok(weaponDamage(p, s) > d1 * 2, `Stufe III macht mehr Schaden (${weaponDamage(p, s).toFixed(1)} statt ${d1})`);
+  ok(weaponDamage(p, s) > d1 * 1.8, `Stufe III macht mehr Schaden (${weaponDamage(p, s).toFixed(1)} statt ${d1})`);
   p.stats.ruestung = 15; p.stats.ausweichen = 0;
   const hp = p.hp; w.hurtPlayer(p, 20, p.x + 1, p.z);
   ok(hp - p.hp === 10, `Rüstung 15 halbiert Schaden (${hp - p.hp})`);

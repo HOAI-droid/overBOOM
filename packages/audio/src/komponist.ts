@@ -11,15 +11,15 @@
  */
 
 export type Stimmung = 'menu' | 'kampf' | 'boss' | 'shop';
-export type MusikStil = 'rock' | 'pop' | 'jazz' | 'chip';
-export const MUSIK_STILE: readonly MusikStil[] = ['rock', 'pop', 'jazz', 'chip'];
+export type MusikStil = 'rock' | 'pop' | 'retro' | 'chip';
+export const MUSIK_STILE: readonly MusikStil[] = ['rock', 'pop', 'retro', 'chip'];
 export const STIMMUNGEN: readonly Stimmung[] = ['menu', 'kampf', 'boss', 'shop'];
 
 export type Instrument =
-  | 'kick' | 'snare' | 'ghost' | 'clap' | 'rim' | 'hat' | 'hatOffen' | 'hatFuss' | 'shaker' | 'ride' | 'crash'
-  | 'tomHoch' | 'tomTief' | 'besen'
-  | 'gitarre' | 'gitarreMute' | 'bassRock' | 'bassSynth' | 'bassKontra' | 'leadRock'
-  | 'pad' | 'pluck' | 'leadPop' | 'epiano' | 'vibra'
+  | 'kick' | 'snare' | 'ghost' | 'clap' | 'hat' | 'hatOffen' | 'shaker' | 'ride' | 'crash' | 'tomHoch' | 'tomTief'
+  | 'gitarre' | 'gitarreMute' | 'bassRock' | 'bassSynth' | 'leadRock'
+  | 'pad' | 'pluck' | 'leadPop'
+  | 'retroLead' | 'retroHarm' | 'retroArp' | 'retroBass'
   | 'chipBass' | 'chipLead' | 'chipKick' | 'chipSnare' | 'chipHat';
 
 export interface MusikNote {
@@ -106,30 +106,28 @@ const POP: Record<Stimmung, StimmungDef> = {
   }
 };
 
-// Jazz in F; Boss in d-Moll (relativ zu F: d = 9)
-const JAZZ: Record<Stimmung, StimmungDef> = {
+// Retro (8/16-Bit-Konsolenklang): Kampf/Boss in a-Moll, Shop/Menü in C-Dur
+const RETRO: Record<Stimmung, StimmungDef> = {
   kampf: {
-    bpm: 152, grund: 41, swing: 0.62, maxStufe: 2, minStufe: 0, form: KAMPF_FORM,
-    folgen: [[a(2, 'm7'), a(7, 'dom7'), a(0, 'maj7'), a(9, 'dom7')], [a(0, 'maj7'), a(9, 'dom7'), a(2, 'm7'), a(7, 'dom7')],
-      [a(5, 'maj7'), a(10, 'dom7'), a(0, 'maj7'), a(0, 'maj7')], [a(4, 'm7'), a(9, 'dom7'), a(2, 'm7'), a(7, 'dom7')]]
+    bpm: 150, grund: 45, swing: 0, maxStufe: 2, minStufe: 0, form: KAMPF_FORM,
+    folgen: [[a(0, 'moll'), a(8, 'dur'), a(10, 'dur'), a(0, 'moll')], [a(0, 'moll'), a(5, 'moll'), a(10, 'dur'), a(3, 'dur')],
+      [a(8, 'dur'), a(10, 'dur'), a(0, 'moll'), a(0, 'moll')], [a(0, 'moll'), a(10, 'dur'), a(8, 'dur'), a(10, 'dur')]]
   },
   boss: {
-    bpm: 168, grund: 41, swing: 0.58, maxStufe: 2, minStufe: 1, form: BOSS_FORM,
-    folgen: [[a(9, 'm7'), a(9, 'm7'), a(2, 'm7'), a(4, 'dom7')], [a(9, 'm7'), a(7, 'dom7'), a(2, 'm7'), a(4, 'dom7')], [a(9, 'm7'), a(10, 'dom7'), a(9, 'm7'), a(4, 'dom7')]]
+    bpm: 162, grund: 45, swing: 0, maxStufe: 2, minStufe: 1, form: BOSS_FORM,
+    folgen: [[a(0, 'moll'), a(1, 'dur'), a(0, 'moll'), a(7, 'dur')], [a(0, 'moll'), a(0, 'moll'), a(5, 'moll'), a(7, 'dur')], [a(0, 'moll'), a(8, 'dur'), a(1, 'dur'), a(7, 'dur')]]
   },
-  // Bossa nova (gerade Achtel)
   shop: {
-    bpm: 116, grund: 41, swing: 0, maxStufe: 1, minStufe: 0, form: RUHE_FORM,
-    folgen: [[a(0, 'maj7'), a(0, 'maj7'), a(7, 'dom7'), a(7, 'dom7')], [a(2, 'm7'), a(7, 'dom7'), a(0, 'maj7'), a(9, 'dom7')]]
+    bpm: 116, grund: 48, swing: 0, maxStufe: 1, minStufe: 0, form: RUHE_FORM,
+    folgen: [[a(0, 'dur'), a(9, 'moll'), a(5, 'dur'), a(7, 'dur')], [a(0, 'dur'), a(5, 'dur'), a(0, 'dur'), a(7, 'dur')], [a(5, 'dur'), a(7, 'dur'), a(4, 'moll'), a(9, 'moll')]]
   },
-  // Ballade mit Besen
   menu: {
-    bpm: 84, grund: 41, swing: 0.6, maxStufe: 1, minStufe: 0, form: RUHE_FORM,
-    folgen: [[a(0, 'maj7'), a(9, 'm7'), a(2, 'm7'), a(7, 'dom7')], [a(5, 'maj7'), a(4, 'm7'), a(2, 'm7'), a(7, 'dom7')]]
+    bpm: 100, grund: 48, swing: 0, maxStufe: 1, minStufe: 0, form: RUHE_FORM,
+    folgen: [[a(0, 'dur'), a(7, 'dur'), a(9, 'moll'), a(5, 'dur')], [a(5, 'dur'), a(7, 'dur'), a(0, 'dur'), a(0, 'dur')]]
   }
 };
 
-const STILE: Record<Exclude<MusikStil, 'chip'>, Record<Stimmung, StimmungDef>> = { rock: ROCK, pop: POP, jazz: JAZZ };
+const STILE: Record<Exclude<MusikStil, 'chip'>, Record<Stimmung, StimmungDef>> = { rock: ROCK, pop: POP, retro: RETRO };
 
 const G = (k: string, s: string, h: string, r?: string): Groove => ({ k, s, h, r });
 
@@ -156,18 +154,13 @@ const POP_GROOVES: Groove[][] = [
 ];
 const POP_BOSS: Groove[] = [G('x...x...x...x...', '....x.......x...', 'x.x.x.x.x.x.x.x.'), G('x..xx...x..xx...', '....c.......c...', 'x.o.x.o.x.o.x.o.')];
 
-const JAZZ_SWING: Groove[][] = [
-  [G('................', '................', '....f.......f...', 'x...x.x.x...x.x.')],
-  [G('x...x...x...x...', '................', '....f.......f...', 'x...x.x.x...x.x.')],
-  [G('x...x...x...x...', '................', '....f.......f...', 'x...x.x.x...x.x.')]
+const RETRO_GROOVES: Groove[][] = [
+  [G('x.......x.......', '....x.......x...', 'x.x.x.x.x.x.x.x.')],
+  [G('x.....x.x.......', '....x.......x...', 'x.x.x.x.x.x.x.x.'), G('x..x..x.x.......', '....x.......x.x.', 'x.x.x.x.x.x.x.x.')],
+  [G('x.x...x.x.x...x.', '....x.......x...', 'xxxxxxxxxxxxxxxx'), G('x...x...x...x...', '....x..x....x...', 'x.x.x.x.x.x.x.x.')]
 ];
-const JAZZ_BOSSA = G('x..xx..xx..xx..x', 'r..r..r...r.r...', 'ssssssssssssssss');
-const JAZZ_BALLADE = G('x.......x.......', 'b...b...b...b...', '....f.......f...', 'x.....x.x.....x.');
-
-/** Begleit-Rhythmen (Keys/Comping) */
-const COMP_CHARLESTON = ['x.....x.........', '......x.......x.', 'x.........x.....', '..x.......x.....', '....x.....x.....', 'x...........x...'];
-
-const BOSSA_COMP = ['x..x..x...x..x..', 'x..x..x..x..x...', '..x..x...x..x...', 'x.....x.x.....x.'];
+const RETRO_BOSS = G('x.xx..x.x.xx..x.', '....x.......x...', 'x.x.x.x.x.x.x.x.');
+const RETRO_RUHE = G('x.......x.......', '....x.......x...', '..x...x...x...x.');
 
 /** Melodie-Rhythmen über 2 Takte: x Anschlag, – hält, . Pause */
 const MOTIV_RHYTHMEN = [
@@ -177,8 +170,19 @@ const MOTIV_RHYTHMEN = [
   'x--x--x-x-------x--x--x-x---x---',
   '..x-x-x-x---x---..x-x-x-x-------'
 ];
+/** Retro-Melodien: etwas belebter, mit Sechzehnteln */
+const RETRO_RHYTHMEN = [
+  'x.x.x-x-x.x.x---x.x.x-x-x-x-----',
+  'x-x-x-x-x---x---x-x-x-x-x-------',
+  'x--x--x-x-x-x---x--x--x-x-------',
+  'x-xx-xx-x---x---x-xx-xx-x-x-x---',
+  'x---x-x-x---x-x-x---x-x-x-------'
+];
 const PENTA_MOLL = [0, 3, 5, 7, 10, 12, 15, 17, 19, 22, 24];
 const DUR_SKALA = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24];
+const MOLL_SKALA = [0, 2, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19, 20, 22, 24];
+/** harmonisch Moll (mit Leitton gis) – für den Boss */
+const HARM_MOLL = [0, 2, 3, 5, 7, 8, 11, 12, 14, 15, 17, 19, 20, 23, 24];
 
 /* ---------------- Hilfen ---------------- */
 
@@ -209,8 +213,8 @@ interface Plan {
   zyklus: number;
 }
 
-function neuesMotiv(r: () => number, skalaLaenge: number): Motiv {
-  const rhythmus = waehle(r, MOTIV_RHYTHMEN);
+function neuesMotiv(r: () => number, skalaLaenge: number, rhythmen: readonly string[] = MOTIV_RHYTHMEN): Motiv {
+  const rhythmus = waehle(r, rhythmen);
   const n = [...rhythmus].filter((c) => c === 'x').length;
   const stufen: number[] = [];
   let s = waehle(r, [2, 4, 5]);
@@ -234,17 +238,14 @@ function voicing(grund: number, ak: Akkord, lage: number, extra: number[] = []):
   }).sort((x, y) => x - y);
 }
 
-/** Rootless-Voicing für Jazz-Keys (Terz, Septime, None bzw. Sexte) */
-function jazzVoicing(grund: number, ak: Akkord, variante: number): number[] {
-  const t = ak.t === 'm7' ? [3, 10, 14] : ak.t === 'dom7' ? [4, 10, 14] : ak.t === 'maj7' ? [4, 11, 14] : TOENE[ak.t];
-  // zwei Lagen im Wechsel, damit das Comping nicht immer gleich klingt
-  const lage = variante % 2 ? 57 : 52;
-  return t.map((x) => {
-    let m = grund + ak.s + x;
-    while (m < lage) m += 12;
-    while (m >= lage + 14) m -= 12;
-    return m;
-  }).sort((x, y) => x - y);
+/** nächster Akkordton zu einer Tonhöhe */
+function naechsterAkkordton(ton: number, wurzel: number, ak: Akkord): number {
+  let best = ton, bd = 99;
+  for (const t of TOENE[ak.t]) for (const o of [-24, -12, 0, 12, 24]) {
+    const m = wurzel + t + o, d = Math.abs(m - ton);
+    if (d < bd) { bd = d; best = m; }
+  }
+  return best;
 }
 
 /* ---------------- Komponist ---------------- */
@@ -261,12 +262,6 @@ export class Komponist {
   private stufe = 0;
   private hookFolge = 0;
   private human: () => number;
-  // Jazz: laufender Bass und Solo-Linie
-  private bassTon = 0;
-  private soloTon = 0;
-  private soloAn = false;
-  private compTakt = '';
-  private snareTakt: number[] = [];
 
   constructor(stil: MusikStil, stimmung: Stimmung, seed: number) {
     this.stil = stil;
@@ -283,8 +278,6 @@ export class Komponist {
       this.bpm = this.def.bpm;
       this.swing = this.def.swing;
       this.hookFolge = Math.floor(zufall(mische(seed, 1))() * this.def.folgen.length);
-      this.bassTon = this.def.grund;
-      this.soloTon = 7;
     }
   }
 
@@ -310,7 +303,7 @@ export class Komponist {
     const ctx: Ctx = { def, p, ak, naechster, pos, imAbschnitt, fill, swing, stufe: this.stufe, out };
     if (this.stil === 'rock') this.rock(ctx);
     else if (this.stil === 'pop') this.pop(ctx);
-    else this.jazz(ctx);
+    else this.retro(ctx);
   }
 
   private folgeVon(nr: number): Akkord[] {
@@ -334,12 +327,12 @@ export class Komponist {
       // A und C bleiben pro Seed gleich (Wiedererkennung), alles andere variiert je Durchlauf
       const r = zufall(mische(this.seed, typ === 'A' ? 1 : typ === 'C' ? 3 : 100 + nr));
       r();
-      const skala = this.stil === 'jazz' ? DUR_SKALA.length : PENTA_MOLL.length;
+      const skala = this.stil === 'retro' ? 10 : PENTA_MOLL.length;
       this.plan = {
         nr, typ, start: nr * 4, zyklus,
         folge: this.folgeVon(nr),
         wahl: [Math.floor(r() * 997), Math.floor(r() * 997), Math.floor(r() * 997), Math.floor(r() * 997)],
-        motiv: neuesMotiv(r, Math.min(skala, 8)),
+        motiv: neuesMotiv(r, Math.min(skala, 8), this.stil === 'retro' ? RETRO_RHYTHMEN : MOTIV_RHYTHMEN),
         arp: Math.floor(r() * 3)
       };
     }
@@ -353,14 +346,6 @@ export class Komponist {
     if (typ === 'brk') s = Math.min(s, 1);
     if (typ === 'intro') s = 0;
     this.stufe = Math.max(def.minStufe, Math.min(def.maxStufe, s));
-    // Jazz: Comping und Snare-Akzente pro Takt neu würfeln
-    const r = this.human;
-    this.compTakt = waehle(r, COMP_CHARLESTON);
-    this.snareTakt = [];
-    const anzahl = this.stufe === 0 ? 0 : this.stufe === 1 ? 1 + Math.floor(r() * 2) : 2 + Math.floor(r() * 3);
-    for (let i = 0; i < anzahl; i++) this.snareTakt.push(waehle(r, [2, 6, 7, 10, 11, 14]));
-    // Jazz-Solo: Phrasen von 2 Takten, dazwischen Luft
-    if (this.stil === 'jazz' && takt % 2 === 0) this.soloAn = r() < (this.stufe >= 2 ? 0.75 : this.stimmung === 'menu' ? 0.5 : 0);
   }
 
   private note(out: MusikNote[], inst: Instrument, noten: number[], dauer: number, vel: number, versatz = 0): void {
@@ -370,7 +355,7 @@ export class Komponist {
 
   /* ---------- Schlagzeug (gemeinsam) ---------- */
 
-  private drums(c: Ctx, g: Groove, opt: { crash: boolean; fill: 'rock' | 'pop' | 'jazz' | null; leise?: number }): void {
+  private drums(c: Ctx, g: Groove, opt: { crash: boolean; fill: 'rock' | 'pop' | null; leise?: number }): void {
     const { pos, out, swing } = c;
     const l = opt.leise ?? 1;
     if (c.fill && opt.fill === 'rock') {
@@ -386,15 +371,12 @@ export class Komponist {
     }
     if (pos === 0 && c.imAbschnitt === 0 && opt.crash && c.stufe >= 1) this.note(out, 'crash', [], 16, 0.5 * l);
     const k = g.k[pos], s = g.s[pos], h = g.h[pos], r = g.r?.[pos];
-    if (k === 'x') this.note(out, 'kick', [], 1, (this.stil === 'jazz' ? 0.25 : 0.9) * l, swing);
+    if (k === 'x') this.note(out, 'kick', [], 1, 0.9 * l, swing);
     if (s === 'x') this.note(out, 'snare', [], 1, 0.8 * l, swing);
     else if (s === 'g') this.note(out, 'ghost', [], 1, 0.25 * l, swing);
     else if (s === 'c') this.note(out, 'clap', [], 1, 0.7 * l, swing);
-    else if (s === 'r') this.note(out, 'rim', [], 1, 0.5 * l, swing);
-    else if (s === 'b') this.note(out, 'besen', [], 4, 0.5 * l, swing);
     if (h === 'x') this.note(out, 'hat', [], 1, (pos % 4 === 0 ? 0.55 : 0.4) * l, swing);
     else if (h === 'o') this.note(out, 'hatOffen', [], 2, 0.45 * l, swing);
-    else if (h === 'f') this.note(out, 'hatFuss', [], 1, 0.4 * l, swing);
     else if (h === 's') this.note(out, 'shaker', [], 1, (pos % 2 ? 0.25 : 0.4) * l, swing);
     if (r === 'x') this.note(out, 'ride', [], 4, (pos % 4 === 0 ? 0.55 : 0.4) * l, swing);
   }
@@ -476,90 +458,41 @@ export class Komponist {
     else if (this.stimmung === 'menu' && p.typ === 'A') this.melodie(c, 'leadPop', def.grund + 24, PENTA_MOLL, 0.3);
   }
 
-  /* ---------- Jazz ---------- */
+  /* ---------- Retro (8/16 Bit) ---------- */
 
-  private jazz(c: Ctx): void {
-    const { def, p, ak, naechster, pos, out, stufe, imAbschnitt, swing } = c;
-    const bossa = this.stimmung === 'shop', ballade = this.stimmung === 'menu';
+  private retro(c: Ctx): void {
+    const { def, p, ak, pos, out, stufe, imAbschnitt } = c;
+    const boss = this.stimmung === 'boss', ruhe = this.stimmung === 'shop' || this.stimmung === 'menu';
+    const intro = p.typ === 'intro' && imAbschnitt < 2;
     const brk = p.typ === 'brk' && imAbschnitt < 2;
-    // Schlagzeug
-    if (bossa) this.drums(c, JAZZ_BOSSA, { crash: false, fill: null, leise: 0.6 });
-    else if (ballade) this.drums(c, JAZZ_BALLADE, { crash: false, fill: null, leise: 0.6 });
-    else {
-      const g = JAZZ_SWING[stufe][0];
-      this.drums(c, brk ? G('................', '................', '....f.......f...', 'x...x.x.x...x.x.') : g, { crash: stufe >= 2, fill: null });
-      if (this.snareTakt.includes(pos) && !brk) this.note(out, stufe >= 2 && pos === 14 ? 'snare' : 'ghost', [], 1, stufe >= 2 ? 0.45 : 0.3, swing);
-      if (c.fill && stufe >= 1 && (pos === 14)) this.note(out, 'snare', [], 1, 0.6, swing);
-    }
+    // Rausch-Schlagzeug
+    const g = ruhe ? RETRO_RUHE : boss ? RETRO_BOSS : RETRO_GROOVES[stufe][p.wahl[stufe] % RETRO_GROOVES[stufe].length];
+    if (!brk && (!intro || pos % 4 === 0)) this.drums(c, intro ? G('x.......x.......', '................', 'x...x...x...x...') : g, { crash: false, fill: 'rock', leise: ruhe ? 0.6 : 0.85 });
+    // Dreieck-Bass
     const wurzel = def.grund + ak.s;
-    // Bass
-    if (bossa) {
-      const m = 'x.....x.x.....x.'[pos];
-      if (m === 'x') {
-        const quinte = pos === 6 || pos === 14;
-        this.note(out, 'bassKontra', [this.bassLage(wurzel + (quinte ? 7 : 0))], quinte ? 2 : 6, 0.8);
-      }
-    } else if (pos % 4 === 0 && !(p.typ === 'intro' && imAbschnitt === 0)) {
-      const schlag = pos / 4;
-      if (stufe === 0 && !ballade && (schlag === 1 || schlag === 3)) { /* Two-Feel */ }
-      else if (ballade && (schlag === 1 || schlag === 3)) { /* nur 1 und 3 */ }
-      else this.note(out, 'bassKontra', [this.laufenderBass(schlag, wurzel, ak, def.grund + naechster.s)], stufe === 0 || ballade ? 7 : 3.5, 0.75);
+    // eine Oktave höher als bei Rock/Pop: der Dreieck-Bass soll auch aus Handy-Lautsprechern hörbar sein
+    const bass = wurzel > def.grund + 6 ? wurzel - 12 : wurzel;
+    const bm = ruhe ? (this.stimmung === 'menu' ? 'x.......x...x...' : 'x..x..x.x..x..x.') : stufe === 0 || brk ? 'x...x...x...x...' : boss ? 'x.x.X.x.x.x.X.x.' : 'x.X.x.X.x.X.x.X.';
+    if (!intro) {
+      const b = bm[pos];
+      if (b === 'x') this.note(out, 'retroBass', [bass], ruhe || stufe === 0 ? 3 : 1.6, 0.85);
+      else if (b === 'X') this.note(out, 'retroBass', [bass + 12], 1.6, 0.75);
     }
-    // Keys (E-Piano)
-    const comp = bossa ? BOSSA_COMP[(p.wahl[1] + imAbschnitt) % BOSSA_COMP.length] : ballade ? 'x.......x.......' : stufe === 0 ? 'x...............' : this.compTakt;
-    if (comp[pos] === 'x' && !brk) this.note(out, 'epiano', jazzVoicing(def.grund, ak, imAbschnitt), bossa ? 2 : ballade ? 8 : 4, bossa ? 0.4 : 0.5, swing);
-    // Vibraphon: Solo-Linien (wild) bzw. Thema (Ballade)
-    if (this.soloAn && !brk) this.solo(c, wurzel);
-    else if (bossa && (p.typ === 'A' || p.typ === 'B')) this.melodie(c, 'vibra', def.grund + 24, DUR_SKALA, 0.3);
-  }
-
-  /** Basslage zwischen E1 (28) und G2 (43) */
-  private bassLage(m: number): number {
-    while (m > 43) m -= 12;
-    while (m < 28) m += 12;
-    return m;
-  }
-
-  /** Walking Bass: Schlag 0 Grundton, 1–2 Akkordtöne, 3 Annäherung an den nächsten Grundton */
-  private laufenderBass(schlag: number, wurzel: number, ak: Akkord, ziel: number): number {
-    const r = this.human;
-    let ton: number;
-    if (schlag === 0) ton = wurzel;
-    else if (schlag === 3) ton = this.bassLage(ziel) + (r() < 0.5 ? -1 : 1);
-    else {
-      const t = TOENE[ak.t];
-      ton = wurzel + waehle(r, schlag === 1 ? [t[1], t[2], 2] : [t[2], t[3] ?? 12, t[1]]);
+    // Arpeggio (dünner Puls): gebrochene Akkorde
+    const arpTakt = stufe >= 1 && !ruhe ? 1 : 2;
+    if (pos % arpTakt === 0) {
+      const toene = voicing(def.grund, ak, 60, [12]);
+      const reihe = p.arp === 0 ? toene : p.arp === 1 ? [...toene, ...toene.slice(1, -1).reverse()] : [toene[0], toene[2], toene[1], toene[3] ?? toene[0] + 12];
+      this.note(out, 'retroArp', [reihe[Math.floor(pos / arpTakt) % reihe.length]], arpTakt * 0.9, brk ? 0.6 : 0.5);
     }
-    // nahe am vorigen Ton bleiben
-    let best = this.bassLage(ton);
-    for (const o of [-12, 12]) if (Math.abs(best + o - this.bassTon) < Math.abs(best - this.bassTon) && best + o >= 28 && best + o <= 43) best += o;
-    this.bassTon = best;
-    return best;
-  }
-
-  /** Jazz-Solo: Achtel, auf den Zählzeiten Akkordtöne, dazwischen Skalen-/Durchgangstöne */
-  private solo(c: Ctx, wurzel: number): void {
-    const { pos, out, swing, def } = c;
-    if (pos % 2 !== 0) return;
-    const r = this.human;
-    const ballade = this.stimmung === 'menu';
-    if (r() < (ballade ? 0.55 : 0.18)) return; // Atempausen
-    const basis = def.grund + 24;
-    if (pos % 4 === 0) {
-      // nächster Akkordton zur aktuellen Lage
-      const toene = TOENE[c.ak.t].map((t) => wurzel + t - basis);
-      let best = this.soloTon, bd = 99;
-      for (const t of toene) for (const o of [0, 12, 24]) { const d = Math.abs(t + o - this.soloTon); if (d < bd && t + o >= 0 && t + o <= 22) { bd = d; best = t + o; } }
-      this.soloTon = best;
-    } else {
-      const s = r() < 0.2 ? waehle(r, [-1, 1]) : waehle(r, [-2, 2, -3, 2]);
-      this.soloTon = Math.max(0, Math.min(22, this.soloTon + s));
-    }
-    this.note(out, 'vibra', [basis + this.soloTon], ballade ? 3 : 2, ballade ? 0.35 : 0.42, swing);
+    // Melodie: das Herzstück – in Ruhe-Stimmungen und ab Stufe 1 fast immer, in Stufe 2 zweistimmig
+    const skala = boss ? HARM_MOLL : ruhe ? DUR_SKALA : MOLL_SKALA;
+    const spielen = !intro && !brk && (stufe >= 1 || ruhe || p.typ === 'A');
+    if (spielen) this.melodie(c, 'retroLead', def.grund + 24, skala, stufe === 0 && !ruhe ? 0.4 : 0.55, stufe >= 2 ? 'retroHarm' : undefined, true);
   }
 
   /** Motiv-Melodie (Rock-/Pop-Lead), Skalenstufen relativ zur Tonart */
-  private melodie(c: Ctx, inst: Instrument, basis: number, skala: number[], vel: number): void {
+  private melodie(c: Ctx, inst: Instrument, basis: number, skala: number[], vel: number, harmonie?: Instrument, aufAkkord = false): void {
     const { p, pos, imAbschnitt, out } = c;
     const s = (imAbschnitt % 2) * 16 + pos;
     const rh = p.motiv.rhythmus;
@@ -571,7 +504,12 @@ export class Komponist {
     if (imAbschnitt >= 2 && idx === p.motiv.stufen.length - 1) stufe = Math.min(skala.length - 1, stufe + 2);
     let len = 1;
     while (s + len < 32 && rh[s + len] === '-') len++;
-    this.note(out, inst, [basis + skala[stufe]], len, vel);
+    let ton = basis + skala[stufe];
+    // auf den schweren Zählzeiten (1 und 3) einen Akkordton nehmen – klingt „richtig"
+    if (aufAkkord && pos % 8 === 0) ton = naechsterAkkordton(ton, c.def.grund + c.ak.s, c.ak);
+    this.note(out, inst, [ton], len, vel);
+    // zweite Stimme: zwei Skalenstufen tiefer (meist eine Terz)
+    if (harmonie) this.note(out, harmonie, [basis + skala[Math.max(0, stufe - 2)] - (stufe < 2 ? 12 : 0)], len, vel * 0.6);
   }
 
   /* ---------- Chiptune (die bisherige Musik) ---------- */

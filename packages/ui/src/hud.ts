@@ -62,7 +62,7 @@ export class Hud {
     this.root.innerHTML = `
       <div class="ob-hurt"></div>
       <div class="ob-left">
-        <div class="ob-title"><b>OVER</b><b class="boom">BOOM</b><span>v0.9 · Koop</span></div>
+        <div class="ob-title"><b>OVER</b><b class="boom">BOOM</b><span>v0.10 · Koop</span></div>
         <div class="ob-hp" role="meter" aria-label="Leben"><div class="ob-hp-fill"></div><span class="ob-hp-txt">60 / 60</span></div>
         <div class="ob-xp"><span class="ob-lvl">Lv 1</span><div class="ob-xp-bar"><div class="ob-xp-fill"></div></div></div>
         <div class="ob-ok" role="meter" aria-label="Overkill"><span>Overkill</span><div class="ob-ok-bar"><div class="ob-ok-fill"></div></div></div>

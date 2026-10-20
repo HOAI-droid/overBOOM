@@ -13,18 +13,23 @@ const mtof = (m: number) => 440 * Math.pow(2, (m - 69) / 12);
 
 /** Pegel je Instrument (abgestimmt auf die Lautheit der Effekte) */
 const PEGEL: Partial<Record<Instrument, number>> = {
-  kick: 0.55, snare: 0.55, ghost: 0.5, clap: 0.5, rim: 0.4, hat: 0.18, hatOffen: 0.16, hatFuss: 0.14, shaker: 0.12,
-  ride: 0.13, crash: 0.16, tomHoch: 0.5, tomTief: 0.55, besen: 0.25,
-  gitarre: 0.4, gitarreMute: 0.4, bassRock: 0.1, bassSynth: 0.15, bassKontra: 0.21, leadRock: 0.13,
-  pad: 0.07, pluck: 0.36, leadPop: 0.25, epiano: 0.42, vibra: 0.31
+  kick: 0.55, snare: 0.55, ghost: 0.5, clap: 0.5, hat: 0.18, hatOffen: 0.16, shaker: 0.12,
+  ride: 0.13, crash: 0.16, tomHoch: 0.5, tomTief: 0.55,
+  gitarre: 0.4, gitarreMute: 0.4, bassRock: 0.1, bassSynth: 0.15, leadRock: 0.13,
+  pad: 0.07, pluck: 0.36, leadPop: 0.25,
+  retroLead: 0.35, retroHarm: 0.21, retroArp: 0.25, retroBass: 0.13
 };
 
-const SCHLAGZEUG = new Set<Instrument>(['kick', 'snare', 'ghost', 'clap', 'rim', 'hat', 'hatOffen', 'hatFuss', 'shaker', 'ride', 'crash', 'tomHoch', 'tomTief', 'besen']);
+const SCHLAGZEUG = new Set<Instrument>(['kick', 'snare', 'ghost', 'clap', 'hat', 'hatOffen', 'shaker', 'ride', 'crash', 'tomHoch', 'tomTief']);
+/** Retro-Schlagzeug (Rauschen) relativ zum normalen Pegel */
+const RETRO_DRUMS = 1;
 
 export class Band {
   private ctx: BaseAudioContext;
   private rauschen: AudioBuffer;
   private kurven = new Map<number, Float32Array<ArrayBuffer>>();
+  private wellen = new Map<number, PeriodicWave>();
+  private kurzRauschen: AudioBuffer;
   private mix: GainNode;
   private duckGain: GainNode;
   private busse: Record<'drums' | 'bass' | 'git' | 'keys' | 'lead', GainNode>;
@@ -40,6 +45,10 @@ export class Band {
     const d = this.rauschen.getChannelData(0);
     let s = 7;
     for (let i = 0; i < d.length; i++) { s = (s * 16807) % 2147483647; d[i] = s / 1073741823.5 - 1; }
+
+    this.kurzRauschen = ctx.createBuffer(1, 93, ctx.sampleRate);
+    const kd = this.kurzRauschen.getChannelData(0);
+    for (let i = 0; i < kd.length; i++) { s = (s * 16807) % 2147483647; kd[i] = s > 1073741823 ? 1 : -1; }
 
     this.mix = ctx.createGain();
     const hoehen = ctx.createBiquadFilter();
@@ -106,19 +115,16 @@ export class Band {
   /** Eine Note zum Zeitpunkt `at` spielen; stepLen = Länge einer 16tel in Sekunden */
   spiele(n: MusikNote, at: number, stepLen: number): void {
     const dur = Math.max(0.03, n.dauer * stepLen);
-    const v = n.vel * (PEGEL[n.inst] ?? 1) * (this.stil === 'jazz' && SCHLAGZEUG.has(n.inst) ? 1.6 : 1);
+    const v = n.vel * (PEGEL[n.inst] ?? 1) * (this.stil === 'retro' && SCHLAGZEUG.has(n.inst) ? RETRO_DRUMS : 1);
     switch (n.inst) {
       case 'kick': this.kick(at, v); break;
       case 'snare': this.snare(at, v, 1); break;
       case 'ghost': this.snare(at, v, 0.6); break;
       case 'clap': this.clap(at, v); break;
-      case 'rim': this.rim(at, v); break;
-      case 'hat': this.rauschStoss(at, v, 'highpass', 7500, 0.04, this.busse.drums); break;
+      case 'hat': this.rauschStoss(at, v, 'highpass', 7500, this.stil === 'retro' ? 0.025 : 0.04, this.busse.drums); break;
       case 'hatOffen': this.rauschStoss(at, v, 'highpass', 7000, 0.3, this.busse.drums); break;
-      case 'hatFuss': this.rauschStoss(at, v, 'bandpass', 6000, 0.05, this.busse.drums); break;
       case 'shaker': this.rauschStoss(at, v, 'bandpass', 9000, 0.05, this.busse.drums, 0.012); break;
-      case 'besen': this.rauschStoss(at, v, 'bandpass', 2600, 0.18, this.busse.drums, 0.05); break;
-      case 'ride': this.becken(at, v, this.stil === 'jazz' ? 1.1 : 0.7, 6500); break;
+      case 'ride': this.becken(at, v, 0.7, 6500); break;
       case 'crash': this.rauschStoss(at, v, 'highpass', 4500, 1.6, this.busse.drums, 0.005); this.becken(at, v * 0.6, 1.2, 5000); break;
       case 'tomHoch': this.tom(at, v, 210); break;
       case 'tomTief': this.tom(at, v, 140); break;
@@ -126,13 +132,14 @@ export class Band {
       case 'gitarreMute': this.gitarre(n.noten, at, Math.min(dur, stepLen * 1.2), v, true); break;
       case 'bassRock': this.bass(n.noten[0], at, dur, v, 'sawtooth', 750, 3); break;
       case 'bassSynth': this.bass(n.noten[0], at, dur, v, 'sawtooth', 600, 0, true); break;
-      case 'bassKontra': this.kontrabass(n.noten[0], at, dur, v); break;
       case 'leadRock': this.lead(n.noten[0], at, dur, v, true); break;
       case 'leadPop': this.lead(n.noten[0], at, dur, v, false); break;
       case 'pad': this.pad(n.noten, at, dur, v); break;
       case 'pluck': this.pluck(n.noten[0], at, dur, v); break;
-      case 'epiano': this.epiano(n.noten, at, dur, v); break;
-      case 'vibra': this.vibra(n.noten[0], at, dur, v); break;
+      case 'retroLead': this.puls(n.noten[0], at, dur, v, 0.25, true, this.busse.lead, 0); break;
+      case 'retroHarm': this.puls(n.noten[0], at, dur, v, 0.5, true, this.busse.keys, 0.35); break;
+      case 'retroArp': this.puls(n.noten[0], at, Math.min(dur, stepLen * 1.5), v, 0.125, false, this.busse.keys, -0.35); break;
+      case 'retroBass': this.dreieck(n.noten[0], at, dur, v); break;
       case 'chipBass': case 'chipLead': this.chipTon(n.welle ?? 'square', n.noten[0], at, dur, n.vel); break;
       case 'chipKick': this.chipKick(at); break;
       case 'chipSnare': this.rauschStoss(at, 0.12, 'highpass', 1800, 0.16, this.mix); break;
@@ -196,14 +203,15 @@ export class Band {
   /* ---------------- Schlagzeug ---------------- */
 
   private kick(at: number, v: number): void {
-    const jazz = this.stil === 'jazz', pop = this.stil === 'pop';
-    const o = this.osc('sine', jazz ? 95 : pop ? 140 : 120, at, at + 0.4);
-    o.frequency.exponentialRampToValueAtTime(jazz ? 55 : 45, at + (pop ? 0.11 : 0.08));
+    const retro = this.stil === 'retro', pop = this.stil === 'pop';
+    // Retro: Dreieck mit schnellem Tonabfall (klassischer Konsolen-Bums)
+    const o = this.osc(retro ? 'triangle' : 'sine', retro ? 220 : pop ? 140 : 120, at, at + 0.4);
+    o.frequency.exponentialRampToValueAtTime(retro ? 50 : 45, at + (retro ? 0.07 : pop ? 0.11 : 0.08));
     const g = this.ctx.createGain();
     g.gain.setValueAtTime(v, at);
-    g.gain.exponentialRampToValueAtTime(0.0001, at + (pop ? 0.3 : jazz ? 0.2 : 0.2));
+    g.gain.exponentialRampToValueAtTime(0.0001, at + (pop ? 0.3 : retro ? 0.14 : 0.2));
     o.connect(g).connect(this.busse.drums);
-    if (!jazz) this.rauschStoss(at, v * 0.25, 'highpass', 3000, 0.008, this.busse.drums);
+    if (!retro) this.rauschStoss(at, v * 0.25, 'highpass', 3000, 0.008, this.busse.drums);
     // Pop: Flächen „pumpen" mit der Kick
     if (this.pumpAn) {
       const p = this.pump.gain;
@@ -214,8 +222,12 @@ export class Band {
   }
 
   private snare(at: number, v: number, koerper: number): void {
-    const jazz = this.stil === 'jazz';
-    this.rauschStoss(at, v, 'bandpass', jazz ? 2800 : 1900, jazz ? 0.12 : 0.18, this.busse.drums);
+    if (this.stil === 'retro') {
+      // 8-Bit-Snare: „metallisches" Schleifen-Rauschen, kurz
+      this.retroRauschen(at, v, 0.09);
+      return;
+    }
+    this.rauschStoss(at, v, 'bandpass', 1900, 0.18, this.busse.drums);
     const o = this.osc('triangle', 190, at, at + 0.12);
     o.frequency.exponentialRampToValueAtTime(150, at + 0.08);
     const g = this.ctx.createGain();
@@ -227,14 +239,6 @@ export class Band {
   private clap(at: number, v: number): void {
     for (let i = 0; i < 3; i++) this.rauschStoss(at + i * 0.011, v * 0.7, 'bandpass', 1300, 0.012, this.busse.drums);
     this.rauschStoss(at + 0.033, v, 'bandpass', 1200, 0.14, this.busse.drums);
-  }
-
-  private rim(at: number, v: number): void {
-    const o = this.osc('square', 1700, at, at + 0.05);
-    const g = this.ctx.createGain();
-    g.gain.setValueAtTime(v * 0.5, at);
-    g.gain.exponentialRampToValueAtTime(0.0001, at + 0.03);
-    o.connect(this.filter('bandpass', 1700, 3)).connect(g).connect(this.busse.drums);
   }
 
   /** metallisches Becken aus sechs Rechteck-Oszillatoren (klassischer Drumcomputer-Trick) */
@@ -311,19 +315,6 @@ export class Band {
     g.connect(this.busse.bass);
   }
 
-  private kontrabass(m: number, at: number, dur: number, v: number): void {
-    const ende = at + dur;
-    const o = this.osc('triangle', mtof(m), at, ende + 0.15);
-    const o2 = this.osc('sine', mtof(m) * 2, at, ende + 0.15);
-    const g2 = this.ctx.createGain(); g2.gain.value = 0.25;
-    const lp = this.filter('lowpass', 900, 1);
-    // Zupfen: kurzer Anschlag, dann ruhiges Ausklingen
-    const g = this.huelle(at, v, 0.004, 0.18, 0.45, ende - 0.02, 0.1);
-    o.connect(lp);
-    o2.connect(g2).connect(lp);
-    lp.connect(g).connect(this.busse.bass);
-  }
-
   private lead(m: number, at: number, dur: number, v: number, rock: boolean): void {
     const ende = at + dur;
     const f = mtof(m);
@@ -382,40 +373,69 @@ export class Band {
     }
   }
 
-  /** E-Piano: FM-Glocke (Träger + Modulator 1:1), weiches Ausklingen */
-  private epiano(noten: number[], at: number, dur: number, v: number): void {
-    const ende = at + dur;
-    noten.forEach((m, i) => {
-      const f = mtof(m);
-      const tr = this.osc('sine', f, at, ende + 0.4);
-      const mod = this.osc('sine', f, at, ende + 0.4);
-      const idx = this.ctx.createGain();
-      idx.gain.setValueAtTime(f * 1.8, at);
-      idx.gain.exponentialRampToValueAtTime(f * 0.15, at + 0.35);
-      mod.connect(idx).connect(tr.frequency);
-      const g = this.huelle(at, v / noten.length * 1.6, 0.004, 0.9, 0.35, ende, 0.3);
-      const pan = this.ctx.createStereoPanner();
-      pan.pan.value = (i - (noten.length - 1) / 2) * 0.35;
-      tr.connect(g).connect(pan).connect(this.busse.keys);
-    });
+  /** Pulswelle mit Tastverhältnis (12,5 / 25 / 50 %) – der typische 8-Bit-Klang */
+  private pulsWelle(duty: number): PeriodicWave {
+    let w = this.wellen.get(duty);
+    if (!w) {
+      const n = 48, re = new Float32Array(n), im = new Float32Array(n);
+      for (let k = 1; k < n; k++) re[k] = (2 / (k * Math.PI)) * Math.sin(k * Math.PI * duty);
+      w = this.ctx.createPeriodicWave(re, im);
+      this.wellen.set(duty, w);
+    }
+    return w;
   }
 
-  /** Vibraphon: Sinus mit kurzem Obertonschlag, langes Ausklingen */
-  private vibra(m: number, at: number, dur: number, v: number): void {
+  private puls(m: number, at: number, dur: number, v: number, duty: number, vibrato: boolean, bus: AudioNode, pan: number): void {
+    const ende = at + dur;
     const f = mtof(m);
-    const nach = Math.max(dur, 0.25) + 0.6;
-    const o = this.osc('sine', f, at, at + nach + 0.05);
-    const o4 = this.osc('sine', f * 4, at, at + 0.2);
-    const g4 = this.ctx.createGain();
-    g4.gain.setValueAtTime(v * 0.25, at);
-    g4.gain.exponentialRampToValueAtTime(0.0001, at + 0.15);
+    const o = this.ctx.createOscillator();
+    o.setPeriodicWave(this.pulsWelle(duty));
+    o.frequency.setValueAtTime(f, at);
+    o.start(at);
+    o.stop(ende + 0.12);
+    if (vibrato && dur > 0.18) {
+      // Vibrato erst nach dem Anschlag – wie bei Konsolen-Melodien
+      const lfo = this.osc('sine', 6, at, ende + 0.12);
+      const tiefe = this.ctx.createGain();
+      tiefe.gain.setValueAtTime(0, at);
+      tiefe.gain.setValueAtTime(0, at + 0.12);
+      tiefe.gain.linearRampToValueAtTime(f * 0.01, at + 0.3);
+      lfo.connect(tiefe).connect(o.frequency);
+    }
+    const g = this.huelle(at, v, 0.004, 0.15, 0.7, ende - 0.01, 0.05);
+    if (pan) {
+      const p = this.ctx.createStereoPanner();
+      p.pan.value = pan;
+      o.connect(g).connect(p).connect(bus);
+    } else o.connect(g).connect(bus);
+  }
+
+  /** Dreieck-Bass mit hartem Ein/Aus (8-Bit-Gate) */
+  private dreieck(m: number, at: number, dur: number, v: number): void {
+    const ende = at + dur * 0.92;
+    const o = this.osc('triangle', mtof(m), at, ende + 0.03);
     const g = this.ctx.createGain();
     g.gain.setValueAtTime(0.0001, at);
-    g.gain.linearRampToValueAtTime(v, at + 0.004);
-    g.gain.exponentialRampToValueAtTime(0.0001, at + nach);
-    o.connect(g);
-    o4.connect(g4).connect(this.busse.lead);
-    g.connect(this.busse.lead);
+    g.gain.linearRampToValueAtTime(v, at + 0.003);
+    g.gain.setValueAtTime(v, ende);
+    g.gain.linearRampToValueAtTime(0.0001, ende + 0.02);
+    o.connect(g).connect(this.busse.bass);
+  }
+
+  /** kurzes, schleifendes Rauschen (93 Werte) – klingt „metallisch" wie alte Rauschkanäle */
+  private retroRauschen(at: number, v: number, dauer: number): void {
+    const src = this.ctx.createBufferSource();
+    src.buffer = this.kurzRauschen;
+    src.loop = true;
+    const hp = this.filter('highpass', 1000);
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(v, at);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dauer);
+    src.connect(hp).connect(g).connect(this.busse.drums);
+    src.start(at);
+    src.stop(at + dauer + 0.02);
+    // dazu normales Rauschen für Körper
+    this.rauschStoss(at, v * 0.6, 'bandpass', 2500, dauer * 0.8, this.busse.drums);
   }
 
   /* ---------------- Chiptune (bisheriger Klang) ---------------- */

@@ -195,11 +195,13 @@ async function start() {
   };
 
   /* ---------------- Einstellungen anwenden ---------------- */
-  const QUALI = { hoch: { res: 270, schatten: true, partikel: 1 }, mittel: { res: 216, schatten: true, partikel: 0.7 }, niedrig: { res: 180, schatten: false, partikel: 0.5 } };
+  // Auflösung = kurze Bildseite in Pixeln (Pixel-Look); Max/Ultra feiner für starke Geräte
+  const QUALI = { max: { res: 540, schatten: true, partikel: 1 }, ultra: { res: 405, schatten: true, partikel: 1 }, hoch: { res: 270, schatten: true, partikel: 1 }, mittel: { res: 216, schatten: true, partikel: 0.7 }, niedrig: { res: 180, schatten: false, partikel: 0.5 } };
   /** bei „Automatisch": aktuelle Stufe (wird nach gemessener Bildrate angepasst) */
   // Xbox: konservativ (App-Speicherlimit ~1 GB) – startet und bleibt höchstens auf „mittel"
-  const autoMax: keyof typeof QUALI = platform.name === 'xbox' ? 'mittel' : 'hoch';
-  let autoStufe: keyof typeof QUALI = autoMax;
+  // Automatisch: startet auf „hoch" (Xbox: „mittel") und steigt bei flüssigen 60 fps bis „ultra"
+  const autoMax: keyof typeof QUALI = platform.name === 'xbox' ? 'mittel' : 'ultra';
+  let autoStufe: keyof typeof QUALI = platform.name === 'xbox' ? 'mittel' : 'hoch';
   /** meldet die Hülle knappen Speicher, gilt bis zum Neustart „niedrig" */
   let speicherKnapp = false;
   const qualiStufe = () => (speicherKnapp ? 'niedrig' : einst.qualitaet === 'auto' ? autoStufe : einst.qualitaet);
@@ -454,6 +456,21 @@ async function start() {
     }
   };
 
+  // Datenschutz: vor dem ersten Koop-Raum einmal erklären, was übertragen wird
+  let koopHinweisOk = (await platform.storage.get('koop-hinweis')) === '1';
+  const koopAktion = menus.onCoop;
+  menus.onCoop = async (a) => {
+    if ((a.t === 'erstellen' || a.t === 'beitreten') && !koopHinweisOk) {
+      menus.zeigeKoopHinweis(() => {
+        koopHinweisOk = true;
+        platform.storage.set('koop-hinweis', '1');
+        void koopAktion(a);
+      });
+      return;
+    }
+    return koopAktion(a);
+  };
+
   // Einladungslink ?raum=CODE: gleich beitreten
   if (menus.codeVorgabe.length === 6 && !debugStart) {
     void menus.onCoop({ t: 'beitreten', code: menus.codeVorgabe, name: spielerName });
@@ -699,9 +716,10 @@ async function start() {
       const fps = fpsN / fpsT;
       fpsT = 0; fpsN = 0;
       if (einst.qualitaet === 'auto' && qualiPause <= 0 && menus.screen === 'spiel' && !document.hidden) {
-        const stufen = ['niedrig', 'mittel', 'hoch'] as const;
+        const stufen: (keyof typeof QUALI)[] = ['niedrig', 'mittel', 'hoch', 'ultra'];
         const i = stufen.indexOf(autoStufe);
-        if (fps < 40 && i > 0) { autoStufe = stufen[i - 1]; applyEinstellungen(false); qualiPause = 6; }
+        // „ultra" ist Luxus: schon unter 52 fps wieder zurück auf „hoch"
+        if (fps < (autoStufe === 'ultra' ? 52 : 40) && i > 0) { autoStufe = stufen[i - 1]; applyEinstellungen(false); qualiPause = 6; }
         else if (fps > 57 && i < stufen.indexOf(autoMax)) { autoStufe = stufen[i + 1]; applyEinstellungen(false); qualiPause = 20; }
       }
     }

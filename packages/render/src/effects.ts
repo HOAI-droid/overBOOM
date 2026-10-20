@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { hash2 } from '@overboom/core';
 import { haloTexture } from './arenaView.ts';
 
+/** Größe der Explosionsgrafik relativ zum Wirkungsradius */
+const EXPLOSION_GRAFIK = 0.8;
+
 interface Particle {
   x: number; y: number; z: number;
   vx: number; vy: number; vz: number;
@@ -293,6 +296,9 @@ export class Effects {
   /** Die große Nummer: Feuerball, Rauch, Voxel-Trümmer, Funken, Schockwelle, Lichtblitz, Brandfleck. */
   explosion(x: number, z: number, r: number, small = false): void {
     const rnd = this.rnd;
+    // nur die Grafik 20 % kleiner (v0.10: man soll vor lauter Explosionen noch etwas sehen);
+    // der Wirkungsradius im Spiel bleibt unverändert
+    r *= EXPLOSION_GRAFIK;
     this.load += 1;
     const q = this.density / (1 + this.load * 0.25);
     const n = (base: number) => Math.max(1, Math.round(base * q));

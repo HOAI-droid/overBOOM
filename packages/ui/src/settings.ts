@@ -13,9 +13,9 @@ export interface Einstellungen {
   vibration: boolean;
   /** farbenblind-freundliche Gefahren-Markierungen */
   farbenblind: boolean;
-  qualitaet: 'auto' | 'hoch' | 'mittel' | 'niedrig';
+  qualitaet: 'auto' | 'max' | 'ultra' | 'hoch' | 'mittel' | 'niedrig';
   /** Musikfärbung: prozedural erzeugt, oder aus */
-  musikStil: 'rock' | 'pop' | 'jazz' | 'chip' | 'aus';
+  musikStil: 'rock' | 'pop' | 'retro' | 'chip' | 'aus';
 }
 
 export const STANDARD: Einstellungen = {
@@ -31,6 +31,9 @@ export function ladeEinstellungen(json: string | null): Einstellungen {
       if (d[k] !== undefined && typeof d[k] === typeof STANDARD[k]) (e as Record<string, unknown>)[k] = d[k];
     }
   } catch { /* Standard */ }
+  // nur bekannte Werte übernehmen (z. B. nach Umbenennungen)
+  if (!['rock', 'pop', 'retro', 'chip', 'aus'].includes(e.musikStil)) e.musikStil = STANDARD.musikStil;
+  if (!['auto', 'max', 'ultra', 'hoch', 'mittel', 'niedrig'].includes(e.qualitaet)) e.qualitaet = STANDARD.qualitaet;
   return e;
 }
 
@@ -45,9 +48,9 @@ function toggle(key: keyof Einstellungen, label: string, v: boolean, hint = ''):
 }
 
 export function einstellungenHtml(e: Einstellungen, info: string): string {
-  const q = (['auto', 'hoch', 'mittel', 'niedrig'] as const).map((k) =>
-    `<button type="button" class="ob-tab ${e.qualitaet === k ? 'on' : ''}" data-act="setq" data-q="${k}" data-focus="setq-${k}">${k === 'auto' ? 'Automatisch' : k[0].toUpperCase() + k.slice(1)}</button>`).join('');
-  const stile = ([['rock', 'Rock'], ['pop', 'Pop'], ['jazz', 'Jazz'], ['chip', 'Chiptune'], ['aus', 'Aus']] as const).map(([k, n]) =>
+  const q = ([['auto', 'Automatisch'], ['max', 'Max'], ['ultra', 'Ultra'], ['hoch', 'Hoch'], ['mittel', 'Mittel'], ['niedrig', 'Niedrig']] as const).map(([k, n]) =>
+    `<button type="button" class="ob-tab ${e.qualitaet === k ? 'on' : ''}" data-act="setq" data-q="${k}" data-focus="setq-${k}">${n}</button>`).join('');
+  const stile = ([['rock', 'Rock'], ['pop', 'Pop'], ['retro', 'Retro'], ['chip', 'Chiptune'], ['aus', 'Aus']] as const).map(([k, n]) =>
     `<button type="button" class="ob-tab ${e.musikStil === k ? 'on' : ''}" data-act="setmusik" data-m="${k}" data-focus="setm-${k}">${n}</button>`).join('');
   return `
     <div class="ob-panel ob-wide ob-settings">
@@ -74,5 +77,6 @@ export function einstellungenHtml(e: Einstellungen, info: string): string {
         ${toggle('vibration', 'Vibration', e.vibration)}
         ${toggle('farbenblind', 'Farbenblind-Modus', e.farbenblind, 'Gefahren mit Mustern statt nur Farben')}
       </div>
+      <div class="ob-row"><button type="button" class="ob-btn2" data-act="recht" data-focus="recht">Datenschutz &amp; Lizenzen</button></div>
     </div>`;
 }

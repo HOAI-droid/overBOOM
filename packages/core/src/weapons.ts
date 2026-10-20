@@ -87,7 +87,7 @@ export function weaponDamage(p: Player, s: WeaponSlot): number {
   const stars = 1 + s.stars * STERNE.schadenProStern;
   const instant = w.antrieb === 'strahl' || w.antrieb === 'kegel' || w.antrieb === 'nahkampf' || w.antrieb === 'teleport';
   const mods = (s.modMask & MOD.nachbrenner ? 1.15 : 1) * (s.modMask & MOD.doppelschuss && instant ? 1.6 : 1);
-  return w.schaden * STUFEN.schaden[s.tier - 1] * Math.max(0.1, 1 + p.stats.schaden / 100) * perk * stars * mods;
+  return w.schaden * KAMPF.waffenSchaden * STUFEN.schaden[s.tier - 1] * Math.max(0.1, 1 + p.stats.schaden / 100) * perk * stars * mods;
 }
 export function weaponRate(p: Player, s: WeaponSlot): number {
   return s.waffe.feuerrate * STUFEN.feuerrate[s.tier - 1] * Math.max(0.2, 1 + p.stats.angriff / 100) * (1 + s.stars * STERNE.feuerrateProStern) * (p.boomT > 0 ? OVERKILL.feuerrate : 1);
@@ -444,7 +444,8 @@ function hitEnemy(w: World, c: HitCtx, e: Enemy, dx: number, dz: number, primary
   if (c.mask & SP.kueken && primary && w.rng.chance(0.3)) spawnChick(w, c, e.x, e.z);
 
   w.damageEnemy(e, dmg, c.crit && primary, dx * kb, dz * kb, 0, 0, c.src);
-  if (owner && owner.stats.lebensraub > 0 && w.rng.next() * 100 < owner.stats.lebensraub) w.heal(owner, 1);
+  // Lebensraub: Chance pro Treffer, aber gedeckelt (sonst heilen Flächenexplosionen unbegrenzt)
+  if (owner && owner.stats.lebensraub > 0 && w.rng.next() * 100 < owner.stats.lebensraub && owner.raubBudget >= 1) { owner.raubBudget -= 1; w.heal(owner, 1); }
   if (primary) kawumm(w, c, e);
 }
 

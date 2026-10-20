@@ -52,11 +52,15 @@ for (let r = 0; r < runs; r++) {
   w.command(0, { type: 'start', weapon: ['pistole', 'raketenwerfer', 'teslastab', 'schrotflinte'][r % 4] });
   let t = 0;
   const hpAt: string[] = [];
+  // Gefahr in den späten Wellen: niedrigster Lebensstand (in %) ab Welle 11
+  let minSpaet = 100;
   while (w.phase !== 'ende' && w.phase !== 'sieg' && t < 30 * 60 * 30) {
     if (w.phase === 'shop') { hpAt.push(`${w.wave}:${w.players[0].weapons.map((s) => s.waffe.id.slice(0, 4) + s.tier).join(',')}`); shop(w); }
     w.step([botInput(w, t++)]);
+    const pl = w.players[0];
+    if (w.wave >= 11 && w.phase === 'welle') minSpaet = Math.min(minSpaet, Math.round(100 * pl.hp / pl.maxHp));
   }
   const p = w.players[0];
-  console.log(`Run ${r}: ${w.phase} in Welle ${w.wave}, Level ${p.level}, Kills ${w.stats.kills}, Kette ×${w.stats.maxChain}, Zeit ${(t / 30 / 60).toFixed(1)} min`);
+  console.log(`Run ${r}: ${w.phase} in Welle ${w.wave}, Level ${p.level}, Kills ${w.stats.kills}, Kette ×${w.stats.maxChain}, Zeit ${(t / 30 / 60).toFixed(1)} min${w.wave >= 11 ? `, tiefstes Leben ab Welle 11: ${minSpaet} %` : ''}`);
   console.log('   ' + hpAt.slice(-3).join(' | '));
 }

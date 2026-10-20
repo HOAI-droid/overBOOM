@@ -76,6 +76,8 @@ export interface Player {
   loadout: number;
   /** angesammelter Lebensraub (Ladung) */
   stealAcc: number;
+  /** Lebensraub-Budget: höchstens SPIELER.lebensraubProSek Heilung pro Sekunde */
+  raubBudget: number;
   /** gewählter Held ('' = keiner, z. B. in Tests) */
   held: string;
   /** Macken des Helden als schnelle Abfrage */
@@ -335,7 +337,7 @@ export class World {
       hp: SPIELER.maxHp, maxHp: SPIELER.maxHp, invuln: 0, alive: true, crystals: 0,
       weapons: [],
       level: 1, xp: 0, pendingLevels: 0, upgradeOffers: [], upgrades: [], items: {},
-      stats: baseStats(), offers: [], rerolls: 0, ready: false, regenAcc: 0, loadout: 0, stealAcc: 0,
+      stats: baseStats(), offers: [], rerolls: 0, ready: false, regenAcc: 0, loadout: 0, stealAcc: 0, raubBudget: 0,
       held: '', perk: {}, slowT: 0, perkT: 0, floorT: 0,
       synCount: {}, syn: {}, boomCount: 0, stormT: 0, eggT: 0, modInv: [],
       ausruestung: { helm: null, ruestung: null, stiefel: null, handschuhe: null, amulett: null, ring1: null, ring2: null, rucksack: null }, beute: []
@@ -596,6 +598,7 @@ export class World {
       this.events.push({ type: 'overboom', player: p.id, x: p.x, z: p.z });
     }
     if (p.boomT > 0) p.boomT = Math.max(0, p.boomT - DT);
+    p.raubBudget = Math.min(SPIELER.lebensraubProSek, p.raubBudget + SPIELER.lebensraubProSek * DT);
     if (inp.dash && p.dashCooldown <= 0 && p.dashTime <= 0) {
       let dx = mx, dz = mz;
       if (Math.hypot(dx, dz) < 0.2) { dx = Math.sin(p.facing); dz = Math.cos(p.facing); }

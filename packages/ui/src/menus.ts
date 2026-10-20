@@ -11,6 +11,7 @@ import { STANDARD, einstellungenHtml, type Einstellungen } from './settings.ts';
 import { lobbyHtml, titelHtml, type CoopAktion, type CoopAnsicht } from './lobby.ts';
 import { ALBUM_TABS, albumGrid, albumZaehler, erfolgeHtml, karteGross, kartenListe, type AlbumTab, type KartenKunst } from './album.ts';
 import { PAD_HINWEIS } from './glyphs.ts';
+import { koopHinweisHtml, rechtlichesHtml } from './rechtliches.ts';
 import { TIPPS, GEFAHREN, MAX_GEFAHR, HELD_FREI, KARTEN, KARTE_BY_ID, WELT as WELT_INFO, type Karte } from '@overboom/data';
 
 const GEM = '<i class="ob-gem" aria-hidden="true"></i>';
@@ -87,7 +88,10 @@ export interface EndStats {
  */
 export class Menus {
   readonly root: HTMLDivElement;
-  private mode: 'none' | 'start' | 'shop' | 'end' | 'pause' | 'album' | 'titel' | 'lobby' | 'einst' = 'none';
+  private mode: 'none' | 'start' | 'shop' | 'end' | 'pause' | 'album' | 'titel' | 'lobby' | 'einst' | 'recht' | 'koophinweis' = 'none';
+  /** Koop-Hinweis: was nach „Verstanden“ passiert; von wo „Datenschutz & Lizenzen“ geöffnet wurde */
+  private koopWeiter: (() => void) | null = null;
+  private rechtZurueck: 'einst' | 'koophinweis' = 'einst';
   /** Einstellungen (setzt die App) und Rückmeldung bei Änderung */
   einstellungen: Einstellungen = { ...STANDARD };
   onEinstellungen: (e: Einstellungen) => void = () => {};
@@ -207,7 +211,7 @@ export class Menus {
   /** Wird jedes Frame aufgerufen; baut nur neu, wenn sich der Zustand geändert hat. */
   sync(): void {
     const w = this.world, p = this.p;
-    if (this.mode === 'pause' || this.mode === 'end' || this.mode === 'album' || this.mode === 'einst') return;
+    if (this.mode === 'pause' || this.mode === 'end' || this.mode === 'album' || this.mode === 'einst' || this.mode === 'recht' || this.mode === 'koophinweis') return;
     if (this.screen === 'titel') {
       if (this.mode !== 'titel') this.show('titel', titelHtml(this.name, this.codeVorgabe, this.albumButton(),
         '<button type="button" class="ob-btn2" data-act="einst" data-focus="einst">Einstellungen</button>'
@@ -729,8 +733,32 @@ export class Menus {
     else { this.mode = 'none'; this.sync(); }
   }
 
+  /** Einmaliger Datenschutz-Hinweis vor dem ersten Koop-Raum; `weiter` läuft nach „Verstanden“ */
+  zeigeKoopHinweis(weiter: () => void): void {
+    this.koopWeiter = weiter;
+    this.show('koophinweis', koopHinweisHtml(), '[data-act="khok"]');
+  }
+
+  private zeigeRechtliches(von: 'einst' | 'koophinweis'): void {
+    this.rechtZurueck = von;
+    this.show('recht', rechtlichesHtml(), '[data-act="rechtzu"]');
+  }
+
+  private schliesseRechtliches(): void {
+    if (this.rechtZurueck === 'koophinweis') this.show('koophinweis', koopHinweisHtml(), '[data-act="khok"]');
+    else this.renderEinstellungen();
+  }
+
+  private koopAbbrechen(): void {
+    this.koopWeiter = null;
+    this.mode = 'none';
+    this.sync();
+  }
+
   /** Zurück-Taste (Esc / Gamepad B) */
   back(): boolean {
+    if (this.mode === 'recht') { this.schliesseRechtliches(); return true; }
+    if (this.mode === 'koophinweis') { this.koopAbbrechen(); return true; }
     if (this.mode === 'einst') { this.closeEinstellungen(); return true; }
     if (this.mode === 'start' && !this.startHeld && this.screen === 'solo') { this.screen = 'titel'; this.mode = 'none'; this.sync(); return true; }
     if (this.mode === 'lobby') { this.onCoop({ t: 'verlassen' }); return true; }
@@ -774,6 +802,11 @@ export class Menus {
       case 'stats': this.showStats = !this.showStats; break;
       case 'album': this.openAlbum(); return;
       case 'einst': this.openEinstellungen(); return;
+      case 'recht': this.zeigeRechtliches('einst'); return;
+      case 'rechtzu': this.schliesseRechtliches(); return;
+      case 'khok': { const f = this.koopWeiter; this.koopWeiter = null; this.mode = 'none'; this.sync(); f?.(); return; }
+      case 'khmehr': this.zeigeRechtliches('koophinweis'); return;
+      case 'khab': this.koopAbbrechen(); return;
       case 'setzu': this.closeEinstellungen(); return;
       case 'setmusik': this.einstellungen = { ...this.einstellungen, musikStil: el.dataset.m as Einstellungen['musikStil'] }; this.onEinstellungen(this.einstellungen); this.renderEinstellungen(); return;
       case 'setq': this.einstellungen = { ...this.einstellungen, qualitaet: el.dataset.q as Einstellungen['qualitaet'] }; this.onEinstellungen(this.einstellungen); this.renderEinstellungen(); return;

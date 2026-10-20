@@ -9,7 +9,7 @@ OVERBOOM ist ein actiongeladenes Arena-Roguelite in knalliger 3D-Voxel-Pixel-Opt
   <img src="docs/werbung/kampf2.png" width="300" alt="Kettenexplosionen">
 </p>
 
-## Downloads (Version 0.9.0)
+## Downloads (Version 0.10.0)
 
 **Sofort im Browser spielen:** <https://hoai-droid.github.io/overboom/> – am Handy über *Teilen → Zum Home-Bildschirm* (iPhone) bzw. *App installieren* (Android) wie eine App im Vollbild, solo auch offline.
 
@@ -41,7 +41,8 @@ Die Downloads werden kostenlos und ohne Gewähr bereitgestellt. Solo werden kein
 - **Koop für 1–4 Spieler**, jeder am eigenen Gerät: Raum erstellen, Code oder QR-Code teilen, losspielen. Gefallene Mitspieler werden wiederbelebt.
 - **Sammelkartenalbum** mit 292 Karten, Glanzkarten und Erfolgen – jede Karte auch als Bild speicherbar.
 - **Gefahrenstufen 0–10** für alle, denen es zu leicht wird.
-- Prozeduraler Sound und Chiptune-Musik, Einstellungen für Barrierefreiheit (Wackeln, Lichtblitze, Farbenblind-Modus).
+- **Musik, die mitspielt:** wird live erzeugt, wählbar als Rock, Pop, Retro (8/16 Bit) oder Chiptune, und passt sich dem Kampfgeschehen an.
+- Grafik von „Niedrig“ bis „Max“ (doppelte Auflösung), Einstellungen für Barrierefreiheit (Wackeln, Lichtblitze, Farbenblind-Modus).
 
 ## Steuerung
 
@@ -97,6 +98,20 @@ Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` 
 Phase 10: Tests auf echten Geräten (Handy, Xbox, Koop über Mobilfunk), Signaturen und Store-Einträge.
 
 ## Versionsgeschichte
+
+### Version 0.10.0 – Musik, schärfere Grafik und mehr Herausforderung
+- **Prozedurale Musik** (`packages/audio`):
+  - `komponist.ts` erzeugt endlose Musik aus Bausteinen (Abschnitte, Akkordfolgen, Grooves, Riffs, Motive) mit drei Intensitätsstufen.
+  - `band.ts` spielt sie mit WebAudio-Instrumenten (verzerrte Gitarre, Synth, Pulswellen, Rauschen) – ohne eine einzige Audiodatei (~25 KB Code).
+  - Stile: Rock, Pop, Retro, Chiptune oder aus.
+  - Die Intensität folgt Gegnerzahl, Explosionen und OVERBOOM-Modus; bei großen Explosionen duckt sich die Musik kurz.
+- **Grafik:** neue Stufen „Ultra“ (405 px) und „Max“ (540 px kurze Seite). „Automatisch“ steigt bei flüssigen 60 fps bis „Ultra“.
+- **Balancing:**
+  - Ab Welle 9 steigen Gegnerleben und -schaden stärker, ab Welle 11 kommen mehr Gegner, mehr Elite-Gegner.
+  - Waffen −5 %, flachere Stufen, Lebensraub max. 3/s.
+  - Der Balancing-Bot (`npm run balance`) misst jetzt das tiefste Leben ab Welle 11: vorher immer über 75 %, jetzt typischerweise um 50 %, und rund 30 % der starken Runs scheitern zwischen Welle 12 und 19.
+- **Explosionsgrafik 20 % kleiner** (Wirkung unverändert).
+- **Datenschutz & Lizenzen im Spiel** (Einstellungen) und einmaliger Hinweis vor dem ersten Koop-Raum.
 
 ### Phase 9 – Apps für alle Plattformen (v0.9.0)
 
