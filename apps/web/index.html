@@ -70,6 +70,23 @@
   /* Menüs: Startwahl, Level-Up, Shop, Ende, Pause */
   .ob-menu { position: absolute; inset: 0; z-index: 5; display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: max(14px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); box-sizing: border-box; background: rgba(11, 8, 20, 0.72); overscroll-behavior: contain; touch-action: pan-y; }
   .ob-menu.hidden { display: none; }
+  .on-map .ob-hud { display: none; }
+  .ob-menu.ob-mapmode { background: transparent; padding: 0; overflow: hidden; }
+  .ob-map { position: absolute; inset: 0; pointer-events: none; }
+  .ob-map > * { pointer-events: auto; }
+  .ob-map-head { position: absolute; left: max(10px, env(safe-area-inset-left)); top: max(10px, env(safe-area-inset-top)); display: flex; gap: 12px; align-items: center; }
+  .ob-map-head .ob-h { margin: 0; text-shadow: 0 3px 0 var(--ink); }
+  .ob-map-head small { font-size: 10px; color: #f4ecff; text-shadow: 0 2px 0 var(--ink); }
+  .ob-map-labels { position: absolute; inset: 0; pointer-events: none; }
+  .ob-isle { position: absolute; left: 0; top: 0; pointer-events: auto; padding: 3px 8px; min-height: 32px; border: 3px solid var(--rc); background: var(--panel); color: #f4ecff; font-size: 12px; font-weight: 700; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 0 2px var(--ink), 0 3px 0 var(--ink); }
+  .ob-isle.locked { border-color: #4a3a6a; color: #8a80a8; }
+  .ob-isle.sel { background: var(--rc); color: var(--ink); }
+  .ob-isle.locked.sel { background: #4a3a6a; color: #f4ecff; }
+  .ob-map-info { position: absolute; right: max(10px, env(safe-area-inset-right)); bottom: max(10px, env(safe-area-inset-bottom)); width: min(360px, calc(100% - 20px)); padding: 10px 12px; box-sizing: border-box; background: var(--panel); border: 3px solid var(--rc); box-shadow: 0 0 0 3px var(--ink), 6px 6px 0 var(--ink); display: flex; flex-direction: column; gap: 4px; }
+  .ob-map-info .ob-name { color: var(--rc); }
+  .ob-map-info .ob-part { margin: 0; }
+  @media (orientation: portrait) { .ob-isle { font-size: 10px; min-height: 26px; padding: 2px 6px; } }
+  @media (max-height: 480px) { .ob-map-info { width: min(300px, 46%); } .ob-map-info .ob-part:first-of-type { display: none; } }
   .ob-menu button { font-family: inherit; cursor: pointer; }
   .ob-menu button:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
   .ob-panel { margin: auto; width: min(420px, 100%); padding: 16px; box-sizing: border-box; background: var(--panel); border: 3px solid #3b2b66; box-shadow: 0 0 0 3px var(--ink), 8px 8px 0 var(--ink); }

@@ -95,6 +95,7 @@ async function start() {
     return ok;
   };
   const menus = new Menus(root, world, send, touch, () => (recipes.size === meta.profil.rezepte.length ? recipes : (recipes = new Set(meta.profil.rezepte))));
+  menus.profil = () => meta.profil;
   const nav = new MenuNav(menus.root);
 
   const resize = () => renderer.resize(root.clientWidth, root.clientHeight, devicePixelRatio || 1);
@@ -281,7 +282,11 @@ async function start() {
     if (!paused && menus.current !== 'end') menus.sync();
 
     const frozen = freeze > 0 || paused;
-    renderer.render(prev, world.players, Math.min(1, acc / DT), frozen ? dt * 0.08 : dt, now / 1000);
+    const mapState = menus.mapState();
+    if (mapState) {
+      renderer.renderMap(mapState, dt, now / 1000);
+      menus.updateMapLabels((id, out) => renderer.mapAnchor(id, out));
+    } else renderer.render(prev, world.players, Math.min(1, acc / DT), frozen ? dt * 0.08 : dt, now / 1000);
     damage.update(frozen ? 0 : dt, (x, y, z, out) => renderer.project(x, y, z, out));
     const p = world.players[0];
     const boss = world.boss >= 0 ? world.enemies[world.boss] : null;
@@ -309,6 +314,7 @@ async function start() {
       }));
     }
     root.classList.toggle('in-menu', menus.open);
+    root.classList.toggle('on-map', !!mapState);
     requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);

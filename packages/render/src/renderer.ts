@@ -7,6 +7,7 @@ import { HeroView } from './heroView.ts';
 import { Effects } from './effects.ts';
 import { CombatView } from './combatView.ts';
 import { ENEMY_DEBRIS, shotColor } from './models.ts';
+import { WorldMapView, type MapState } from './worldMap.ts';
 
 export interface RenderOptions {
   /** Pixel auf der kurzen Bildschirmseite (Low-Res-Look). 270 = Standard */
@@ -58,6 +59,9 @@ export class GameRenderer {
   private tmpV = new THREE.Vector3();
   private heroPos: { x: number; z: number; visible: boolean }[] = [];
   private opt: Required<RenderOptions>;
+  private map: WorldMapView | null = null;
+  private mapShown = false;
+  private ndc = { x: 0, y: 0 };
 
   constructor(canvas: HTMLCanvasElement, private world: World, opt: RenderOptions = {}) {
     this.opt = { internalShort: opt.internalShort ?? 270, viewShort: opt.viewShort ?? 11.5, shadows: opt.shadows ?? true, shake: opt.shake ?? 1 };
@@ -255,7 +259,29 @@ export class GameRenderer {
     return out;
   }
 
+  /** Weltkarte statt Arena zeichnen (Startbildschirm) */
+  renderMap(state: MapState, dt: number, time: number): void {
+    if (!this.map) this.map = new WorldMapView();
+    if (!this.mapShown) { this.mapShown = true; this.renderer.setClearColor('#3a2a6a'); }
+    this.map.resize(this.iw + 2, this.ih + 2);
+    this.map.update(state, dt, time);
+    this.post.mat.uniforms.uOffset.value.set(0, 0);
+    this.renderer.setRenderTarget(this.rt);
+    this.renderer.render(this.map.scene, this.map.camera);
+    this.renderer.setRenderTarget(null);
+    this.renderer.render(this.post.scene, this.post.cam);
+  }
+
+  /** Bildschirmposition (CSS-Pixel) des Insel-Ankers auf der Weltkarte */
+  mapAnchor(id: string, out: { x: number; y: number }): boolean {
+    if (!this.map || !this.map.anchor(id, this.ndc)) return false;
+    out.x = (this.ndc.x * 0.5 + 0.5) * this.cssW;
+    out.y = (0.5 - this.ndc.y * 0.5) * this.cssH;
+    return true;
+  }
+
   render(prev: readonly PlayerPose[], players: readonly Player[], alpha: number, dt: number, time: number): void {
+    if (this.mapShown) { this.mapShown = false; this.applyPalette(); }
     let focus: { x: number; z: number; vx: number; vz: number } | null = null;
     if (this.world.arena !== this.arenaSrc) this.rebuildArena();
     for (const p of players) {

@@ -1,10 +1,10 @@
 import {
-  canMerge, fusionPreview, rerollPrice, sellPrice, weaponDamage, weaponRange, weaponRate,
-  type Command, type Player, type World, type WeaponSlot
+  canMerge, fusionPreview, inselFrei, neuesProfil, rerollPrice, sellPrice, weaponDamage, weaponRange, weaponRate,
+  type Command, type Profil, type Player, type World, type WeaponSlot
 } from '@overboom/core';
 import {
-  A, AMBOSS, EVOLUTION, G, GEGNER_BY_ID, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, evoName, HELDEN, HELD_BY_ID, INSELN, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
-  elemente, type StatKey, SIEG_TEXT, SPRUECHE_TOD, PLAETZE, SETS, SET_BY_ID, setBoni, schrottwert, BEUTE, type Ausruestung
+  A, AMBOSS, EVOLUTION, G, GEGNER_BY_ID, INSEL_BY_ID, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, evoName, HELDEN, HELD_BY_ID, INSELN, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
+  elemente, type StatKey, INSEL_LORE, WELT, SIEG_TEXT, SPRUECHE_TOD, PLAETZE, SETS, SET_BY_ID, setBoni, schrottwert, BEUTE, type Ausruestung
 } from '@overboom/data';
 
 const GEM = '<i class="ob-gem" aria-hidden="true"></i>';
@@ -87,7 +87,11 @@ export class Menus {
   private shopWave = -1;
   /** Startauswahl: erst Held, dann Insel */
   private startHeld = '';
+  /** auf der Weltkarte gewählte Insel */
+  private mapSel = '';
   private lastKey = '';
+  /** Meta-Profil (Freischaltungen) – setzt die App */
+  profil: () => Profil = () => neuesProfil();
   onRestart: () => void = () => {};
   onResume: () => void = () => {};
 
@@ -96,6 +100,11 @@ export class Menus {
     this.root.className = 'ob-menu hidden';
     parent.appendChild(this.root);
     this.root.addEventListener('click', (e) => this.onClick(e));
+    // Gamepad/Tastatur: Fokus auf eine Insel wählt sie gleich aus
+    this.root.addEventListener('focusin', (e) => {
+      const el = (e.target as HTMLElement).closest<HTMLElement>('.ob-isle');
+      if (el && el.dataset.id && el.dataset.id !== this.mapSel) { this.mapSel = el.dataset.id; this.renderMap(); }
+    });
   }
 
   get open(): boolean { return this.mode !== 'none'; }
@@ -106,13 +115,15 @@ export class Menus {
   hide(): void {
     this.mode = 'none';
     this.root.classList.add('hidden');
+    this.root.classList.remove('ob-mapmode');
     this.root.innerHTML = '';
     this.lastKey = '';
   }
 
   private show(mode: typeof this.mode, html: string, focusSel?: string): void {
-    const keep = this.mode === mode ? (document.activeElement as HTMLElement | null)?.dataset?.focus : undefined;
+    const keep = this.mode === mode || this.mode === 'none' ? (document.activeElement as HTMLElement | null)?.dataset?.focus : undefined;
     this.mode = mode;
+    this.root.classList.remove('ob-mapmode');
     this.root.classList.remove('hidden');
     this.root.innerHTML = html;
     // Fokus erhalten bzw. sinnvoll setzen (Gamepad/Tastatur)
@@ -140,6 +151,26 @@ export class Menus {
     if (this.mode === 'start' || this.mode === 'shop') this.hide();
   }
 
+  /** Zustand der Weltkarte, solange sie angezeigt wird (sonst null) */
+  mapState(): { inseln: { id: string; frei: boolean; befreit: boolean; erobert: boolean }[]; auswahl: string } | null {
+    if (this.mode !== 'start' || !this.startHeld) return null;
+    const pr = this.profil();
+    return {
+      inseln: INSELN.map((i) => ({ id: i.id, frei: inselFrei(pr, i.id), befreit: pr.befreit.includes(i.id), erobert: pr.erobert.includes(i.id) })),
+      auswahl: this.mapSel
+    };
+  }
+
+  /** Insel-Beschriftungen auf der Karte nachführen (jedes Frame) */
+  updateMapLabels(anchor: (id: string, out: { x: number; y: number }) => boolean): void {
+    if (this.mode !== 'start' || !this.startHeld) return;
+    const pt = { x: 0, y: 0 };
+    for (const el of this.root.querySelectorAll<HTMLElement>('.ob-isle')) {
+      if (!anchor(el.dataset.id!, pt)) continue;
+      el.style.transform = `translate(${Math.round(pt.x)}px, ${Math.round(pt.y)}px) translate(-50%, 0)`;
+    }
+  }
+
   /* ---------------- Startwahl ---------------- */
 
   private renderStart(): void {
@@ -165,24 +196,45 @@ export class Menus {
         </div>`);
       return;
     }
+    this.renderMap();
+  }
+
+  private renderMap(): void {
     const h = HELD_BY_ID[this.startHeld];
-    const cards = INSELN.map((i, k) => `
-      <button type="button" class="ob-card ob-island" style="--rc:${i.farben.spezial[0]}; --bg:${i.farben.boden[2]}" data-act="insel" data-id="${i.id}" data-focus="insel${k}">
-        <span class="ob-kind">${i.fraktion}</span>
-        <span class="ob-name">${i.name}</span>
-        <span class="ob-part">${i.text}</span>
-        <ul class="ob-lines">
-          <li class="ob-part"><b>Gefahr:</b> ${i.gefahrText}</li>
-          <li class="ob-part"><b>Boss:</b> ${GEGNER_BY_ID[i.boss].name} · Welle 20: Baron von Bumm</li>
-        </ul>
-      </button>`).join('');
+    const pr = this.profil();
+    if (!this.mapSel || !INSEL_BY_ID[this.mapSel]) {
+      // zuletzt freigeschaltete Insel vorwählen
+      const frei = INSELN.filter((i) => inselFrei(pr, i.id));
+      this.mapSel = (frei.find((i) => !pr.befreit.includes(i.id)) ?? frei[frei.length - 1] ?? INSELN[0]).id;
+    }
+    const labels = INSELN.map((i, k) => {
+      const frei = inselFrei(pr, i.id), bef = pr.befreit.includes(i.id), ero = pr.erobert.includes(i.id);
+      return `<button type="button" class="ob-isle ${frei ? '' : 'locked'} ${i.id === this.mapSel ? 'sel' : ''}" style="--rc:${i.farben.spezial[0]}" data-act="insel" data-id="${i.id}" data-focus="insel${k}">
+        ${frei ? '' : '🔒︎ '}${i.name}${ero ? ' ♛' : bef ? ' ⚑' : ''}</button>`;
+    }).join('');
+    const i = INSEL_BY_ID[this.mapSel];
+    const frei = inselFrei(pr, i.id), bef = pr.befreit.includes(i.id), ero = pr.erobert.includes(i.id);
+    const lore = INSEL_LORE[i.id];
+    const status = !frei ? `<span class="ob-warn">${lore?.gesperrt ?? 'Noch gesperrt.'}</span>`
+      : ero ? '<span class="ob-hint2">Erobert ♛ – hier wurde der Baron besiegt.</span>'
+      : bef ? `<span class="ob-hint2">Befreit ⚑ – ${lore?.befreit ?? ''}</span>` : '<span class="ob-hint2">Noch nicht befreit: Besiege den Boss auf Welle 10.</span>';
     this.show('start', `
-      <div class="ob-panel ob-wide">
-        <h2 class="ob-h">Wohin, ${h.name}?</h2>
-        <p class="ob-sub">Krawummia schwebt seit dem Großen Kawumm in Brocken durch den Himmel. Jede Insel hat ihre eigene Bande, ihren Boss und ihre Tücken.</p>
-        <div class="ob-cards">${cards}</div>
-        <div class="ob-row"><button type="button" class="ob-btn2" data-act="heldzurueck" data-focus="back">◀ Anderer Held</button></div>
-      </div>`);
+      <div class="ob-map">
+        <div class="ob-map-head">
+          <button type="button" class="ob-btn2" data-act="heldzurueck" data-focus="back">◀ ${h.name}</button>
+          <div><h2 class="ob-h">${WELT.name}</h2><small>${WELT.untertitel} · ${pr.befreit.length}/${INSELN.length} befreit</small></div>
+        </div>
+        <div class="ob-map-labels">${labels}</div>
+        <div class="ob-map-info" style="--rc:${i.farben.spezial[0]}">
+          <span class="ob-kind">${i.fraktion}</span>
+          <span class="ob-name">${i.name}</span>
+          <p class="ob-part">${i.text}</p>
+          <p class="ob-part"><b>Gefahr:</b> ${i.gefahrText} · <b>Boss:</b> ${GEGNER_BY_ID[i.boss].name} · Welle 20: Baron von Bumm</p>
+          ${status}
+          <div class="ob-row"><button type="button" class="ob-go" data-act="go" data-focus="go" ${frei ? '' : 'disabled'}>Los geht’s ▶</button></div>
+        </div>
+      </div>`, '[data-act="go"]:not([disabled])');
+    this.root.classList.add('ob-mapmode');
   }
 
   /* ---------------- Shop & Level-Up ---------------- */
@@ -501,7 +553,8 @@ export class Menus {
     switch (el.dataset.act) {
       case 'held': this.startHeld = el.dataset.id!; this.mode = 'none'; break;
       case 'heldzurueck': this.startHeld = ''; this.mode = 'none'; break;
-      case 'insel': this.send({ type: 'start', held: this.startHeld, insel: el.dataset.id! }); this.startHeld = ''; this.hide(); break;
+      case 'insel': this.mapSel = el.dataset.id!; this.mode = 'none'; break;
+      case 'go': if (inselFrei(this.profil(), this.mapSel)) { this.send({ type: 'start', held: this.startHeld, insel: this.mapSel }); this.startHeld = ''; this.hide(); } return;
       case 'upgrade': this.send({ type: 'upgrade', index: i }); break;
       case 'buy': this.send({ type: 'buy', index: i }); break;
       case 'lock': this.send({ type: 'lock', index: i }); break;
