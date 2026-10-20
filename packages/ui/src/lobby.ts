@@ -1,6 +1,7 @@
 import { HELDEN, HELD_BY_ID, INSELN, INSEL_BY_ID, KOOP, W } from '@overboom/data';
 import type { LobbySpieler } from '@overboom/net';
 import qrcode from 'qrcode-generator';
+import { gefahrWahl } from './gefahr.ts';
 
 /** Was die Lobby anzeigt – die App füllt das aus der Host-/Client-Sitzung */
 export interface CoopAnsicht {
@@ -18,6 +19,9 @@ export interface CoopAnsicht {
   inselnFrei: string[];
   /** freigeschaltete Helden */
   heldenFrei: string[];
+  gefahr: number;
+  /** höchste wählbare Stufe (Host) */
+  gefahrFrei: number;
 }
 
 export type CoopAktion =
@@ -27,6 +31,7 @@ export type CoopAktion =
   | { t: 'held'; id: string }
   | { t: 'bereit'; on: boolean }
   | { t: 'insel'; id: string }
+  | { t: 'gefahr'; n: number }
   | { t: 'start' }
   | { t: 'teilen' }
   | { t: 'verlassen' };
@@ -111,6 +116,7 @@ export function lobbyHtml(c: CoopAnsicht): string {
       <div class="ob-lhelden">${helden}</div>
       <h3 class="ob-h3">Insel <small>${host ? 'wählt der Host' : insel ? insel.name : ''}</small></h3>
       <div class="ob-lhelden">${inseln}</div>
+      ${gefahrWahl(c.gefahr, c.gefahrFrei, host)}
       <div class="ob-row ob-actions">
         ${host
           ? `<button type="button" class="ob-go" data-act="lstart" data-focus="lstart" ${alleBereit ? '' : 'disabled'}>${c.spieler.length < 2 ? 'Warte auf Mitspieler …' : alleBereit ? 'Los geht’s ▶' : 'Warte, bis alle bereit sind …'}</button>`

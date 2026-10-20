@@ -103,7 +103,7 @@ export function karteGross(p: Profil, k: Karte): string {
 const STAT_NAMEN: Record<MetaStat, string> = {
   runs: 'Runs', siege: 'Siege', kills: 'Besiegte Gegner', maxKette: 'Längste Kette', fusionen: 'Fusionen', rezepte: 'Rezepte',
   reaktionen: 'Reaktionen', befreit: 'Befreite Inseln', evolutionen: 'Evolutionen', kristalle: 'Kristalle', sets: 'Komplette Sets',
-  bestWelle: 'Beste Welle', bosse: 'Besiegte Bosse'
+  bestWelle: 'Beste Welle', bosse: 'Besiegte Bosse', gefahr: 'Höchste Gefahr (Sieg)'
 };
 
 /** Erfolge mit Fortschritt, Statistik und Profil-Export */

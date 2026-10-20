@@ -28,6 +28,7 @@ export interface PlayerState {
 
 export interface WorldState {
   insel: string;
+  gefahr: number;
   endless: boolean;
   waffen: Record<string, number>;
   players: PlayerState[];
@@ -43,7 +44,7 @@ export function playerState(p: Player): PlayerState {
 }
 
 export function worldState(w: World): WorldState {
-  return { insel: w.insel.id, endless: w.endless, waffen: w.stats.waffen, players: w.players.map(playerState) };
+  return { insel: w.insel.id, gefahr: w.gefahr, endless: w.endless, waffen: w.stats.waffen, players: w.players.map(playerState) };
 }
 
 const lastWeapons = new WeakMap<Player, string>();
@@ -52,6 +53,7 @@ const lastWeapons = new WeakMap<Player, string>();
 export function applyWorldState(w: World, st: WorldState): void {
   if (st.insel && st.insel !== w.insel.id) w.setIsland(st.insel);
   w.endless = st.endless;
+  if (st.gefahr !== w.gefahr) w.setGefahr(st.gefahr);
   w.stats.waffen = st.waffen;
   st.players.forEach((ps, i) => {
     const p = w.players[i];

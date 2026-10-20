@@ -942,4 +942,34 @@ for (const [el, ids, ev] of [
   ok(!w2.players[0].downed && w2.players[0].alive, 'Nach der Welle wieder auf den Beinen');
 }
 
+// Phase 8: Gefahrenstufen
+{
+  ok(D.GEFAHREN.length === 11 && D.MAX_GEFAHR === 10, '11 Gefahrenstufen (0–10)');
+  const w0 = new World(130, 1, {}), w10 = new World(130, 1, { gefahr: 10 });
+  const e0 = spawnEnemy(w0, 0, 5, 5)!, e10 = spawnEnemy(w10, 0, 5, 5)!;
+  ok(e10.maxHp > e0.maxHp * 1.1 && e10.dmgMul > e0.dmgMul * 1.1, `Gefahr 10: Gegner ×${(e10.maxHp / e0.maxHp).toFixed(2)} Leben, ×${(e10.dmgMul / e0.dmgMul).toFixed(2)} Schaden`);
+  const g = D.gefahrWerte(10);
+  ok(g.preise > 1 && g.heilung < 1 && g.tempo > 1 && g.kristalle < 1 && g.todesBumm && D.gefahrWerte(3).preise === 1, 'Stufen addieren sich (Stufe 3 hat noch keine Preiserhöhung)');
+  // Todes-Bumm
+  for (const warn of w10.warnings) warn.active = false; w10.spawnAcc = -999;
+  w10.events.length = 0;
+  w10.killEnemy(e10, 0, 0, false);
+  let boom = false;
+  for (let i = 0; i < 20 && !boom; i++) { w10.step([idle]); boom = w10.events.some((x) => x.type === 'explosion'); }
+  ok(boom, 'Gefahr 10: Gegner explodieren beim Tod');
+  // Preise im Shop
+  const ws = new World(131, 1, { god: true, gefahr: 4 }), wn = new World(131, 1, { god: true });
+  for (const w of [ws, wn]) { runUntil(w, () => w.phase === 'shop'); }
+  const sum = (w: World) => w.players[0].offers.reduce((a, o) => a + o.price, 0);
+  ok(sum(ws) > sum(wn), `Gefahr 4: Shop teurer (${sum(ws)} statt ${sum(wn)} Kristalle)`);
+  // Freischaltung durch Sieg
+  const prof = Core.neuesProfil();
+  const meta = new Core.MetaTracker(prof);
+  const wg = new World(132, 1, { god: true, gefahr: 0 });
+  wg.step([idle]);
+  meta.runEnde(wg, true);
+  ok(prof.gefahrFrei === 1 && meta.neues.some((n) => n.art === 'gefahr'), 'Sieg auf Gefahr 0 schaltet Stufe 1 frei');
+  ok(Core.heldenFrei(prof).includes('omagranate') && !Core.heldenFrei(Core.neuesProfil()).includes('omagranate'), 'Oma Granate wird durch den ersten Sieg freigeschaltet');
+}
+
 if (fails) { console.log(`\n${fails} Test(s) fehlgeschlagen`); process.exit(1); } else console.log('\nAlle Tests bestanden');

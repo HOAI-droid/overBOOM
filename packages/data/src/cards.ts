@@ -237,7 +237,7 @@ export const KARTEN_SET = { name: WELT.kartenSet, kurz: WELT.kartenSetKurz };
 
 export type MetaStat =
   | 'runs' | 'siege' | 'kills' | 'maxKette' | 'fusionen' | 'rezepte' | 'reaktionen'
-  | 'befreit' | 'evolutionen' | 'kristalle' | 'sets' | 'bestWelle' | 'bosse';
+  | 'befreit' | 'evolutionen' | 'kristalle' | 'sets' | 'bestWelle' | 'bosse' | 'gefahr';
 
 export interface Erfolg {
   id: string;
@@ -267,6 +267,8 @@ export const ERFOLGE: Erfolg[] = [
   { id: 'befreit7', name: 'Befreier von Krawummia', text: 'Befreie alle 7 Inseln.', stat: 'befreit', ziel: 7, karte: 'gegner:koenig_gockel' },
   { id: 'evo1', name: 'Darwin wäre stolz', text: 'Lass eine Waffe evolvieren.', stat: 'evolutionen', ziel: 1, karte: 'waffe:huehnerkanone' },
   { id: 'kristalle5000', name: 'Kristallkönig', text: 'Sammle insgesamt 5.000 Kristalle.', stat: 'kristalle', ziel: 5000, karte: 'item:kristallkrone' },
+  { id: 'gefahr5', name: 'Scharfschmecker', text: 'Gewinne einen Run auf Gefahr 5.', stat: 'gefahr', ziel: 5, karte: 'held:pyromane' },
+  { id: 'gefahr10', name: 'OVERBOOM gemeistert', text: 'Gewinne einen Run auf Gefahr 10.', stat: 'gefahr', ziel: 10, karte: 'waffe:kawummhammer' },
   { id: 'set1', name: 'Gut angezogen', text: 'Trage ein komplettes Ausrüstungs-Set.', stat: 'sets', ziel: 1, karte: 'item:kochtopfhelm' }
 ];
 

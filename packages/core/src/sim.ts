@@ -9,7 +9,7 @@ import {
 import { spawnBoss, spawnEnemy, stepEnemies, stepWaves } from './enemies.ts';
 import { maintainDrones, pull, rainEgg, spawnChickFor, stepProjectiles, stepWeapons, stormStrike } from './weapons.ts';
 import { addWeapon, creditKill, gainXp, openShop, recomputeStats, runCommand, type Command } from './progression.ts';
-import { BEUTE, FINALBOSS, GEGNER, KOOP, GEGNER_INDEX, HELD_BY_ID, INSEL_BY_ID, KAMPF, SPIELER, WELLEN, baseStats, rollAusruestung, type Ausruestung, type Insel, type PlatzId, type Stats } from '../../data/src/index.ts';
+import { BEUTE, FINALBOSS, GEGNER, KOOP, MAX_GEFAHR, gefahrWerte, type GefahrWerte, GEGNER_INDEX, HELD_BY_ID, INSEL_BY_ID, KAMPF, SPIELER, WELLEN, baseStats, rollAusruestung, type Ausruestung, type Insel, type PlatzId, type Stats } from '../../data/src/index.ts';
 
 import { ACCEL, BARREL_RADIUS, DASH_COOLDOWN, DASH_SPEED, DASH_TIME, DT, MOVE_SPEED, PLAYER_COLORS, PLAYER_RADIUS } from './constants.ts';
 export * from './constants.ts';
@@ -167,6 +167,8 @@ export interface WorldOptions {
   insel?: string;
   /** Held (ohne Startwahl) */
   held?: string;
+  /** Gefahrenstufe 0–10 */
+  gefahr?: number;
 }
 
 interface ChainSlot { group: number; count: number; t: number }
@@ -216,6 +218,9 @@ export class World {
   /** Slot des Bosses oder -1 */
   boss = -1;
   readonly stats = { kills: 0, maxChain: 0, explosions: 0, damage: 0, crystals: 0, reactions: 0, waffen: {} as Record<string, number> };
+  /** Gefahrenstufe 0–10 und ihre zusammengerechneten Modifikatoren */
+  gefahr = 0;
+  gw: GefahrWerte = gefahrWerte(0);
   /** Synergie-Effekte aller Spieler zusammen (für Wirkungen am Gegner) */
   synFx: Record<string, boolean> = {};
   private synKey = -1;
@@ -231,8 +236,10 @@ export class World {
     this.playerCount = playerCount;
     this.opt = {
       combat: opt.combat ?? true, wave: opt.wave ?? 1, god: opt.god ?? false, choose: opt.choose ?? false, autoShop: opt.autoShop ?? false,
-      insel: opt.insel ?? 'bummburg', held: opt.held ?? ''
+      insel: opt.insel ?? 'bummburg', held: opt.held ?? '', gefahr: opt.gefahr ?? 0
     };
+    this.gefahr = Math.max(0, Math.min(MAX_GEFAHR, this.opt.gefahr));
+    this.gw = gefahrWerte(this.gefahr);
     this.insel = INSEL_BY_ID[this.opt.insel] ?? INSEL_BY_ID.bummburg;
     this.arena = createArena(seed, this.insel.gefahr as ArenaStyle);
     this.rng = new Rng(seed ^ 0x5eed);
@@ -289,6 +296,11 @@ export class World {
     this.arena = createArena(this.seed, insel.gefahr as ArenaStyle);
     this.barrels = this.arena.props.filter((p) => p.kind === 'barrel' || p.kind === 'heu');
     for (const p of this.players) { p.x = this.arena.spawn.x; p.z = this.arena.spawn.z; }
+  }
+
+  setGefahr(n: number): void {
+    this.gefahr = Math.max(0, Math.min(MAX_GEFAHR, Math.round(n)));
+    this.gw = gefahrWerte(this.gefahr);
   }
 
   /** Held übernehmen: Werte, Macken, Startwaffe */
@@ -522,6 +534,7 @@ export class World {
 
   heal(p: Player, v: number): void {
     if (!p.alive || p.hp >= p.maxHp) return;
+    v *= this.gw.heilung;
     p.hp = Math.min(p.maxHp, p.hp + v);
     this.events.push({ type: 'heal', player: p.id, value: v, x: p.x, z: p.z });
   }
@@ -759,7 +772,11 @@ export class World {
     this.stats.kills++;
     this.events.push({ type: 'kill', id: e.id, enemy: e.def.id, x: e.x, z: e.z, doomed: e.doom >= 0 });
     if (src && e.doom < 0) creditKill(this, src);
-    const n = e.def.kristalle * (e.elite ? 6 : 1) * (e.lucky ? 2 : 1);
+    const n = Math.max(e.doom < 0 ? 1 : 0, Math.round(e.def.kristalle * (e.elite ? 6 : 1) * (e.lucky ? 2 : 1) * this.gw.kristalle));
+    // Gefahr 10: Gegner explodieren beim Tod – auch in Richtung Spieler
+    if (this.gw.todesBumm && e.doom < 0 && e.def.verhalten !== 'kamikaze' && e.def.verhalten !== 'boss' && this.phase === 'welle') {
+      this.queueBlast(e.x, e.z, 1.2, 6 * e.dmgMul, 0.25, 0, this.newGroup(), true, 'kroete');
+    }
     // große Mengen als wertvollere Kristalle (weniger Objekte)
     const big = n > 12 ? Math.ceil(n / 12) : 1;
     for (let i = 0; i < n; i += big) this.spawnCrystal(e.x, e.z, Math.min(big, n - i));

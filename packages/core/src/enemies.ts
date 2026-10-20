@@ -19,7 +19,7 @@ export function stepWaves(w: World): void {
       spawnEnemy(w, warn.type, warn.x, warn.z, warn.elite);
     }
   }
-  w.spawnAcc += WELLEN.spawnRate(w.wave) * (w.isBossWave ? BOSS.spawnAnteil : 1) * w.koop(KOOP.spawnProSpieler) * DT;
+  w.spawnAcc += WELLEN.spawnRate(w.wave) * (w.isBossWave ? BOSS.spawnAnteil : 1) * w.koop(KOOP.spawnProSpieler) * w.gw.spawn * DT;
   while (w.spawnAcc >= 1) {
     w.spawnAcc -= 1;
     trySpawn(w);
@@ -81,7 +81,7 @@ function trySpawn(w: World): void {
       x = w.rng.range(1.5, size - 1.5); z = w.rng.range(1.5, size - 1.5);
     }
     if (!freeSpot(w, x, z)) continue;
-    warn(w, type, x, z, w.rng.chance(ELITE.chance(w.wave)));
+    warn(w, type, x, z, w.rng.chance(ELITE.chance(w.wave) * w.gw.elite));
     // Rudeltiere (Grummelbolde, Funkenkobolde) kommen gern zu mehreren
     const rudel = GEGNER[type].rudel ?? 0;
     if (rudel > 0 && w.rng.chance(WELLEN.rudelChance)) {
@@ -109,7 +109,7 @@ export function spawnBoss(w: World, id: string): void {
   }
   const e = spawnEnemy(w, BOSS_TYPE, bx, bz);
   if (!e) return;
-  e.maxHp = e.hp = e.def.hp * BOSS.hpFaktor(w.wave) * w.koop(KOOP.bossProSpieler);
+  e.maxHp = e.hp = e.def.hp * BOSS.hpFaktor(w.wave) * w.koop(KOOP.bossProSpieler) * w.gw.bossHp;
   e.cd = 2.5;
   e.bossPhase = 1;
   e.summonCd = 0; // Index des nächsten Angriffs
@@ -130,8 +130,8 @@ export function spawnEnemy(w: World, type: number, x: number, z: number, elite =
     e.vx = e.vz = e.kbx = e.kbz = 0;
     e.elite = elite;
     e.r = def.radius * (elite ? ELITE.groesse : 1);
-    e.maxHp = e.hp = def.hp * WELLEN.hpFaktor(w.wave) * (elite ? ELITE.hp : 1) * w.koop(KOOP.hpProSpieler);
-    e.dmgMul = WELLEN.schadenFaktor(w.wave) * (elite ? ELITE.schaden : 1);
+    e.maxHp = e.hp = def.hp * WELLEN.hpFaktor(w.wave) * (elite ? ELITE.hp : 1) * w.koop(KOOP.hpProSpieler) * w.gw.hp;
+    e.dmgMul = WELLEN.schadenFaktor(w.wave) * (elite ? ELITE.schaden : 1) * w.gw.schaden;
     e.slow = e.stun = e.burnT = e.burnDps = e.poisonT = e.poisonDps = e.dotClock = 0;
     e.lucky = false;
     e.bossPhase = 1; e.summonCd = 0;
@@ -358,7 +358,7 @@ export function stepEnemies(w: World): void {
           break;
       }
     }
-    mx *= slowMul; mz *= slowMul;
+    mx *= slowMul * w.gw.tempo; mz *= slowMul * w.gw.tempo;
 
     const acc = Math.min(1, DT * 10);
     e.vx += (mx - e.vx) * acc;

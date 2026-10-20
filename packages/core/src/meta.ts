@@ -23,18 +23,20 @@ export interface Profil {
   erobert: string[];
   erfolge: string[];
   rezepte: string[];
+  /** höchste wählbare Gefahrenstufe */
+  gefahrFrei: number;
   stats: Record<MetaStat, number>;
 }
 
 export interface Neuigkeit {
-  art: 'karte' | 'glanz' | 'erfolg' | 'insel';
+  art: 'karte' | 'glanz' | 'erfolg' | 'insel' | 'gefahr';
   id: string;
 }
 
 export function neuesProfil(): Profil {
   return {
-    v: 1, karten: {}, neu: [], kills: {}, bossKills: {}, befreit: [], erobert: [], erfolge: [], rezepte: [],
-    stats: { runs: 0, siege: 0, kills: 0, maxKette: 0, fusionen: 0, rezepte: 0, reaktionen: 0, befreit: 0, evolutionen: 0, kristalle: 0, sets: 0, bestWelle: 0, bosse: 0 }
+    v: 1, karten: {}, neu: [], kills: {}, bossKills: {}, befreit: [], erobert: [], erfolge: [], rezepte: [], gefahrFrei: 0,
+    stats: { runs: 0, siege: 0, kills: 0, maxKette: 0, fusionen: 0, rezepte: 0, reaktionen: 0, befreit: 0, evolutionen: 0, kristalle: 0, sets: 0, bestWelle: 0, bosse: 0, gefahr: 0 }
   };
 }
 
@@ -55,6 +57,7 @@ export function ladeProfil(json: string | null): Profil {
     p.erobert = arr(d.erobert);
     p.erfolge = arr(d.erfolge);
     p.rezepte = arr(d.rezepte);
+    p.gefahrFrei = typeof d.gefahrFrei === 'number' ? Math.max(0, Math.min(10, d.gefahrFrei)) : 0;
     p.stats = { ...p.stats, ...obj(d.stats, {}) };
   } catch { /* kaputt → neues Profil */ }
   return p;
@@ -236,6 +239,13 @@ export class MetaTracker {
     const pl = w.players[this.spieler];
     if (sieg) {
       this.stat('siege', 1);
+      this.stat('gefahr', w.gefahr, true);
+      // nächste Gefahrenstufe freischalten
+      if (w.gefahr >= this.profil.gefahrFrei && this.profil.gefahrFrei < 10) {
+        this.profil.gefahrFrei = w.gefahr + 1;
+        this.neues.push({ art: 'gefahr', id: String(this.profil.gefahrFrei) });
+        this.dirty = true;
+      }
       if (!this.profil.erobert.includes(w.insel.id)) { this.profil.erobert.push(w.insel.id); this.dirty = true; }
       if (pl?.held) this.karte(`held:${pl.held}`, 2);
       // einzigartige Items glänzen nach einem Sieg
@@ -254,6 +264,7 @@ export class MetaTracker {
   allesFrei(): void {
     for (const id in KARTE_BY_ID) this.profil.karten[id] = 2;
     this.profil.befreit = INSELN.map((i) => i.id);
+    this.profil.gefahrFrei = 10;
     this.dirty = true;
   }
 }

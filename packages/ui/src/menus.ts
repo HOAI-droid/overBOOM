@@ -6,10 +6,11 @@ import {
   A, AMBOSS, EVOLUTION, G, GEGNER_BY_ID, INSEL_BY_ID, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, evoName, HELDEN, HELD_BY_ID, INSELN, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
   elemente, type StatKey, INSEL_LORE, WELT, SIEG_TEXT, SPRUECHE_TOD, PLAETZE, SETS, SET_BY_ID, setBoni, schrottwert, BEUTE, type Ausruestung
 } from '@overboom/data';
+import { gefahrWahl } from './gefahr.ts';
 import { STANDARD, einstellungenHtml, type Einstellungen } from './settings.ts';
 import { lobbyHtml, titelHtml, type CoopAktion, type CoopAnsicht } from './lobby.ts';
 import { ALBUM_TABS, albumGrid, albumZaehler, erfolgeHtml, karteGross, kartenListe, type AlbumTab, type KartenKunst } from './album.ts';
-import { HELD_FREI, KARTEN, KARTE_BY_ID, WELT as WELT_INFO, type Karte } from '@overboom/data';
+import { GEFAHREN, MAX_GEFAHR, HELD_FREI, KARTEN, KARTE_BY_ID, WELT as WELT_INFO, type Karte } from '@overboom/data';
 
 const GEM = '<i class="ob-gem" aria-hidden="true"></i>';
 const LOCK_ON = '<svg viewBox="0 0 8 9" width="16" height="18" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M2 0h4v1h1v3h1v5h-8v-5h1v-3h1zM2 1v3h4v-3zM3 5v2h2v-2z"/></svg>';
@@ -66,6 +67,7 @@ function partName(w: Waffe, part: 'geschoss' | 'antrieb' | 'ladung'): string {
 }
 
 export interface EndStats {
+  gefahr: number;
   victory: boolean;
   wave: number;
   level: number;
@@ -105,6 +107,8 @@ export class Menus {
   codeVorgabe = '';
   /** freigeschaltete Helden (Meta-Progression) */
   heldenFrei: () => string[] = () => HELDEN.map((h) => h.id);
+  /** gewählte Gefahrenstufe (solo) */
+  gefahr = 0;
   private detail = -1;
   private showStats = false;
   private tab: 'shop' | 'amboss' | 'ausruestung' = 'shop';
@@ -304,6 +308,7 @@ export class Menus {
           <p class="ob-part">${i.text}</p>
           <p class="ob-part"><b>Gefahr:</b> ${i.gefahrText} · <b>Boss:</b> ${GEGNER_BY_ID[i.boss].name} · Welle 20: Baron von Bumm</p>
           ${status}
+          ${gefahrWahl(this.gefahr, pr.gefahrFrei, true)}
           <div class="ob-row"><button type="button" class="ob-go" data-act="go" data-focus="go" ${frei ? '' : 'disabled'}>Los geht’s ▶</button></div>
         </div>
       </div>`, '[data-act="go"]:not([disabled])');
@@ -584,7 +589,8 @@ export class Menus {
       ['Gesamtschaden', fmt(Math.round(s.damage))],
       ['Größte Kette', s.maxChain ? `×${s.maxChain}` : '–'],
       ['Kristalle', s.crystals],
-      ['MVP-Waffe', s.mvp ? `${waffeById(s.mvp)?.name ?? s.mvp}` : '–']
+      ['MVP-Waffe', s.mvp ? `${waffeById(s.mvp)?.name ?? s.mvp}` : '–'],
+      ['Gefahr', `${s.gefahr} · ${GEFAHREN[s.gefahr]?.name ?? ''}`]
     ];
     this.show('end', `
       <div class="ob-panel ob-end ${s.victory ? 'win' : ''}">
@@ -732,7 +738,14 @@ export class Menus {
       case 'held': this.startHeld = el.dataset.id!; this.mode = 'none'; break;
       case 'heldzurueck': this.startHeld = ''; this.mode = 'none'; break;
       case 'insel': this.mapSel = el.dataset.id!; this.mode = 'none'; break;
-      case 'go': if (inselFrei(this.profil(), this.mapSel)) { this.send({ type: 'start', held: this.startHeld, insel: this.mapSel }); this.startHeld = ''; this.hide(); } return;
+      case 'go': if (inselFrei(this.profil(), this.mapSel)) { this.send({ type: 'start', held: this.startHeld, insel: this.mapSel, gefahr: Math.min(this.gefahr, this.profil().gefahrFrei) }); this.startHeld = ''; this.hide(); } return;
+      case 'gefahr': {
+        const n = Math.max(0, Math.min(this.profil().gefahrFrei, this.gefahr + Number(el.dataset.d)));
+        if (this.mode === 'lobby') { this.onCoop({ t: 'gefahr', n: Math.max(0, Math.min(this.coop?.gefahrFrei ?? 0, (this.coop?.gefahr ?? 0) + Number(el.dataset.d))) }); return; }
+        this.gefahr = n;
+        this.renderMap();
+        return;
+      }
       case 'upgrade': this.send({ type: 'upgrade', index: i }); break;
       case 'buy': this.send({ type: 'buy', index: i }); break;
       case 'lock': this.send({ type: 'lock', index: i }); break;

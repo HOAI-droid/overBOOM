@@ -43,6 +43,7 @@ export class HostSession {
   world: World | null = null;
   readonly slots: Slot[] = [];
   insel = 'gackerfeld';
+  gefahr = 0;
   private pending: SimEvent[] = [];
   private lastState = '';
   private stateDirty = true;
@@ -73,14 +74,15 @@ export class HostSession {
 
   private broadcastLobby(): void {
     const spieler = this.lobbyList();
-    this.t.send({ t: 'lobby', spieler, insel: this.insel, laeuft: this.laeuft });
+    this.t.send({ t: 'lobby', spieler, insel: this.insel, gefahr: this.gefahr, laeuft: this.laeuft });
     this.hooks.lobby?.(spieler);
   }
 
   /** Host wählt Held/Insel in der Lobby */
-  pick(held: string, insel?: string): void {
+  pick(held: string, insel?: string, gefahr?: number): void {
     this.slots[0].held = held;
     if (insel) this.insel = insel;
+    if (gefahr !== undefined) this.gefahr = gefahr;
     this.broadcastLobby();
   }
 
@@ -163,7 +165,7 @@ export class HostSession {
     this.slots.forEach((s, i) => { w.players[i].name = s.name; s.seq = 0; s.dash = false; });
     this.acks = this.slots.map(() => 0);
     this.t.send({ t: 'start', seed, insel: this.insel, namen: this.slots.map((s) => s.name), helden: this.slots.map((s) => s.held) });
-    this.slots.forEach((s, i) => w.command(i, i === 0 ? { type: 'start', held: s.held, insel: this.insel } : { type: 'start', held: s.held }));
+    this.slots.forEach((s, i) => w.command(i, i === 0 ? { type: 'start', held: s.held, insel: this.insel, gefahr: this.gefahr } : { type: 'start', held: s.held }));
     this.pending.push(...w.events);
     this.stateDirty = true;
     this.lastState = '';
@@ -249,7 +251,7 @@ export class HostSession {
 export interface ClientHooks {
   welcome?: (slot: number) => void;
   reject?: (grund: string) => void;
-  lobby?: (spieler: LobbySpieler[], insel: string, laeuft: boolean) => void;
+  lobby?: (spieler: LobbySpieler[], insel: string, laeuft: boolean, gefahr: number) => void;
   start?: (world: World) => void;
   lobbyzurueck?: () => void;
   bye?: (grund: string) => void;
@@ -315,7 +317,7 @@ export class ClientSession {
     switch (m.t) {
       case 'welcome': this.hostId = from; this.slot = m.slot; this.stopHello(); this.hooks.welcome?.(m.slot); return;
       case 'reject': this.stopHello(); this.hooks.reject?.(m.grund); return;
-      case 'lobby': if (from === this.hostId || !this.hostId) this.hooks.lobby?.(m.spieler, m.insel, m.laeuft); return;
+      case 'lobby': if (from === this.hostId || !this.hostId) this.hooks.lobby?.(m.spieler, m.insel, m.laeuft, m.gefahr); return;
       case 'start': {
         if (from !== this.hostId) return;
         const w = new World(m.seed, m.namen.length, { choose: true });

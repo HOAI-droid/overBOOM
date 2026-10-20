@@ -24,7 +24,7 @@ export type Msg =
   | { t: 'hello'; token: string; name: string; proto: number }
   | { t: 'welcome'; slot: number }
   | { t: 'reject'; grund: string }
-  | { t: 'lobby'; spieler: LobbySpieler[]; insel: string; laeuft: boolean }
+  | { t: 'lobby'; spieler: LobbySpieler[]; insel: string; gefahr: number; laeuft: boolean }
   | { t: 'pick'; held: string; bereit: boolean }
   | { t: 'start'; seed: number; insel: string; namen: string[]; helden: string[] }
   | { t: 'input'; seq: number; mx: number; mz: number; dash: boolean; boom: boolean }

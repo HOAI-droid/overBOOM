@@ -1,14 +1,62 @@
 import type { Platform } from './index.ts';
 
+/* IndexedDB: Spielstand dauerhaft speichern (größer und robuster als localStorage) */
+let dbPromise: Promise<IDBDatabase | null> | null = null;
+function db(): Promise<IDBDatabase | null> {
+  dbPromise ??= new Promise((resolve) => {
+    try {
+      const req = indexedDB.open('overboom', 1);
+      req.onupgradeneeded = () => req.result.createObjectStore('kv');
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => resolve(null);
+      req.onblocked = () => resolve(null);
+    } catch { resolve(null); }
+  });
+  return dbPromise;
+}
+async function idbGet(key: string): Promise<string | undefined> {
+  const d = await db();
+  if (!d) return undefined;
+  return new Promise((resolve) => {
+    try {
+      const r = d.transaction('kv', 'readonly').objectStore('kv').get(key);
+      r.onsuccess = () => resolve(typeof r.result === 'string' ? r.result : undefined);
+      r.onerror = () => resolve(undefined);
+    } catch { resolve(undefined); }
+  });
+}
+async function idbSet(key: string, value: string): Promise<void> {
+  const d = await db();
+  if (!d) return;
+  await new Promise<void>((resolve) => {
+    try {
+      const tx = d.transaction('kv', 'readwrite');
+      tx.objectStore('kv').put(value, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+    } catch { resolve(); }
+  });
+}
+
 export function createWebPlatform(): Platform {
+  // Browser bitten, den Speicher nicht automatisch zu leeren
+  try { void navigator.storage?.persist?.(); } catch { /* egal */ }
   let wakeLock: { release(): Promise<void> } | null = null;
   return {
     name: 'web',
     storage: {
       async get(key) {
-        try { return localStorage.getItem('overboom:' + key); } catch { return null; }
+        const v = await idbGet(key);
+        if (v !== undefined) return v;
+        // alter Spielstand aus localStorage → in IndexedDB übernehmen
+        let old: string | null = null;
+        try { old = localStorage.getItem('overboom:' + key); } catch { /* gesperrt */ }
+        if (old !== null) void idbSet(key, old);
+        return old;
       },
       async set(key, value) {
+        await idbSet(key, value);
+        // Sicherheitskopie (Safari löscht beides nach langer Pause – dafür gibt es den Export-Code)
         try { localStorage.setItem('overboom:' + key, value); } catch { /* privater Modus o. Ä. */ }
       }
     },

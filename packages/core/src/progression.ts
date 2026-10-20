@@ -14,7 +14,7 @@ import {
  */
 export type Command =
   /** Run-Start: Held (bestimmt Startwaffe) und Insel; `weapon` nur ohne Held */
-  | { type: 'start'; weapon?: string; held?: string; insel?: string }
+  | { type: 'start'; weapon?: string; held?: string; insel?: string; gefahr?: number }
   | { type: 'upgrade'; index: number }
   | { type: 'buy'; index: number }
   | { type: 'reroll' }
@@ -53,7 +53,7 @@ export function sellPrice(slot: WeaponSlot, wave: number): number {
 
 export function rerollPrice(w: World, p: Player): number {
   if (p.perk.zufall && p.rerolls === 0) return 0;
-  return SHOP.rerollPreis(w.wave, p.rerolls);
+  return Math.round(SHOP.rerollPreis(w.wave, p.rerolls) * w.gw.preise);
 }
 
 /** Stats neu aus Upgrades + Items berechnen. */
@@ -144,7 +144,14 @@ function rollUpgrades(w: World, p: Player): void {
   }
 }
 
+/** Angebot würfeln; Preise mit Gefahren-Aufschlag */
 function rollOffer(w: World, p: Player): Offer {
+  const o = rollOfferRaw(w, p);
+  o.price = Math.max(1, Math.round(o.price * w.gw.preise));
+  return o;
+}
+
+function rollOfferRaw(w: World, p: Player): Offer {
   const r = w.shopRng;
   const tier = rollSeltenheit(w.wave + 1, p.stats.glueck, r.next());
   // Mods: etwa jedes 7. Angebot
@@ -241,6 +248,7 @@ export function runCommand(w: World, p: Player, cmd: Command): boolean {
         weapon = h.startWaffe === 'zufall' ? SHOP_WEAPONS[Math.floor(w.shopRng.next() * SHOP_WEAPONS.length)] : h.startWaffe;
       } else if (!SPIELER.startAuswahl.includes(weapon)) return false;
       if (cmd.insel) w.setIsland(cmd.insel);
+      if (cmd.gefahr !== undefined) w.setGefahr(cmd.gefahr);
       addWeapon(p, weapon, 1);
       recomputeStats(p);
       p.hp = p.maxHp;

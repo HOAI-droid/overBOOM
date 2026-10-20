@@ -280,7 +280,7 @@ async function start() {
   const updateCoop = (patch: Partial<CoopAnsicht> = {}) => {
     if (!coop) return;
     Object.assign(coop, patch);
-    if (host) { coop.spieler = host.lobbyList(); coop.insel = host.insel; }
+    if (host) { coop.spieler = host.lobbyList(); coop.insel = host.insel; coop.gefahr = host.gefahr; coop.gefahrFrei = meta.profil.gefahrFrei; }
     coop.inselnFrei = INSELN.filter((i) => inselFrei(meta.profil, i.id)).map((i) => i.id);
     coop.heldenFrei = heldenFrei(meta.profil);
     menus.coop = { ...coop, spieler: coop.spieler.map((s) => ({ ...s })) };
@@ -336,7 +336,7 @@ async function start() {
         });
         const ersteFreie = INSELN.filter((i) => inselFrei(meta.profil, i.id));
         host.pick(meinHeld, (ersteFreie.find((i) => !meta.profil.befreit.includes(i.id)) ?? ersteFreie[0] ?? INSELN[0]).id);
-        coop = { rolle: 'host', code, link: link(code), spieler: host.lobbyList(), slot: 0, insel: host.insel, status: 'Teile den Code oder Link – bis zu 3 Freunde können beitreten.', fehler: false, inselnFrei: [], heldenFrei: [] };
+        coop = { rolle: 'host', code, link: link(code), spieler: host.lobbyList(), slot: 0, insel: host.insel, status: 'Teile den Code oder Link – bis zu 3 Freunde können beitreten.', fehler: false, inselnFrei: [], heldenFrei: [], gefahr: 0, gefahrFrei: 0 };
         updateCoop();
         menus.screen = 'lobby';
         menus.hide();
@@ -349,7 +349,7 @@ async function start() {
         if (code.length !== 6) { hud.toast('Raumcode?', 'Der Code hat 6 Zeichen.', '#ff3d6a'); return; }
         const t = await makeTransport(code);
         modus = 'client';
-        coop = { rolle: 'client', code, link: link(code), spieler: [], slot: -1, insel: '', status: `Suche Raum ${code} …`, fehler: false, inselnFrei: [], heldenFrei: [] };
+        coop = { rolle: 'client', code, link: link(code), spieler: [], slot: -1, insel: '', status: `Suche Raum ${code} …`, fehler: false, inselnFrei: [], heldenFrei: [], gefahr: 0, gefahrFrei: 0 };
         client = new ClientSession(t, spielerName, token, {
           welcome: (slot) => {
             if (connectTimer) clearTimeout(connectTimer);
@@ -358,7 +358,7 @@ async function start() {
             updateCoop({ slot, status: '', fehler: false });
           },
           reject: (grund) => updateCoop({ status: grund, fehler: true }),
-          lobby: (spieler: LobbySpieler[], insel: string) => updateCoop({ spieler, insel }),
+          lobby: (spieler: LobbySpieler[], insel: string, _l: boolean, gefahr: number) => updateCoop({ spieler, insel, gefahr }),
           start: (w) => startGameView(w, client?.slot ?? 1, 'client'),
           lobbyzurueck: () => { meinBereit = false; client?.pick(meinHeld, false); menus.koop = null; menus.screen = 'lobby'; menus.hide(); updateCoop(); },
           bye: (grund) => { void leaveCoop(grund); }
@@ -382,6 +382,7 @@ async function start() {
         client?.pick(meinHeld, a.on);
         return;
       case 'insel': if (host) { host.pick(meinHeld, a.id); updateCoop(); } return;
+      case 'gefahr': if (host) { host.pick(meinHeld, undefined, Math.max(0, Math.min(meta.profil.gefahrFrei, a.n))); updateCoop(); } return;
       case 'start': {
         if (!host) return;
         const w = host.start((Math.random() * 1e9) | 0);
@@ -410,7 +411,7 @@ async function start() {
     const p = world.players[me];
     const ws = Object.entries(world.stats.waffen).sort((a, b) => b[1] - a[1]);
     return {
-      victory, wave: world.wave, level: p.level, kills: world.stats.kills, damage: world.stats.damage,
+      victory, gefahr: world.gefahr, wave: world.wave, level: p.level, kills: world.stats.kills, damage: world.stats.damage,
       maxChain: world.stats.maxChain, crystals: world.stats.crystals, mvp: ws[0]?.[0] ?? '', mvpDamage: ws[0]?.[1] ?? 0
     };
   };
@@ -486,6 +487,8 @@ async function start() {
       } else if (n.art === 'erfolg') {
         const e = ERFOLGE.find((x) => x.id === n.id);
         if (e) hud.toast('Erfolg', e.name, '#3de8ff', true);
+      } else if (n.art === 'gefahr') {
+        hud.toast('Neue Gefahrenstufe', `Stufe ${n.id} freigeschaltet`, '#ff7a1a', true);
       } else if (n.art === 'insel') {
         const i = INSELN.findIndex((x) => x.id === n.id);
         hud.banner(`${INSELN[i].name} befreit!`, INSEL_LORE[n.id]?.befreit ?? '', 'cyan');
