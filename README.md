@@ -11,7 +11,9 @@ OVERBOOM ist ein actiongeladenes Arena-Roguelite in knalliger 3D-Voxel-Pixel-Opt
 
 ## Downloads (Version 0.9.0)
 
-Immer die neueste Version – einfach anklicken:
+**Sofort im Browser spielen:** <https://hoai-droid.github.io/overboom/> – am Handy über *Teilen → Zum Home-Bildschirm* (iPhone) bzw. *App installieren* (Android) wie eine App im Vollbild, solo auch offline.
+
+Oder als App – immer die neueste Version, einfach anklicken:
 
 | Plattform | Download | Hinweis |
 |---|---|---|
@@ -55,6 +57,8 @@ Gezielt und geschossen wird automatisch. Menüs gehen komplett mit Maus, Touch, 
 ## Für Entwickler
 
 Monorepo mit TypeScript, Three.js und Vite. Die Simulation (`packages/core`) ist deterministisch und läuft auch in Node; Rendering, UI, Netz (Host-autoritativer Koop über WebRTC), Audio und Plattform-Zugriffe sind eigene Pakete. Details: [CLAUDE.md](CLAUDE.md), Spezifikation: [docs/OVERBOOM_Prompt.md](docs/OVERBOOM_Prompt.md), Waffen: [docs/Waffenkatalog.md](docs/Waffenkatalog.md).
+
+**Browser-Version:** Jeder Push auf `main` veröffentlicht den Web-Build auf GitHub Pages (`pages.yml`).
 
 **Releases:** Jeder Push auf `main` baut per GitHub Actions (`release.yml`) alle Apps und legt sie als Release `v<Version aus package.json>` mit festen Dateinamen ab – die Download-Links oben zeigen immer auf den neuesten Stand. Für eine neue Version die Versionsnummer in `package.json` erhöhen.
 

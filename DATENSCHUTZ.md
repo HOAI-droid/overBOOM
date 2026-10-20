@@ -46,8 +46,8 @@ Einige Anbieter sitzen außerhalb der EU, z. B. in den USA. Dort gilt ein andere
 
 Rechtsgrundlage ist Art. 6 Abs. 1 lit. b bzw. f DSGVO: Ohne diese Übertragung ist Koop technisch nicht möglich. Wer das nicht möchte, spielt solo; dann wird nichts übertragen.
 
-## 3. Download über GitHub
-Die Downloads liegen bei GitHub (GitHub, Inc., USA). Beim Aufruf der Projektseite und beim Herunterladen verarbeitet GitHub technische Daten wie die IP-Adresse; es gilt die [Datenschutzerklärung von GitHub](https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement). Der Entwickler erhält davon nur anonyme Download-Zahlen.
+## 3. Download und Browser-Version über GitHub
+Die Downloads und die Browser-Version (<https://hoai-droid.github.io/overboom/>, GitHub Pages) liegen bei GitHub (GitHub, Inc., USA). Beim Aufruf der Projektseite oder der Browser-Version und beim Herunterladen verarbeitet GitHub technische Daten wie die IP-Adresse; es gilt die [Datenschutzerklärung von GitHub](https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement). Der Entwickler erhält davon nur anonyme Download-Zahlen; die Browser-Version enthält keine Analyse- oder Tracking-Dienste. Spielstände der Browser-Version liegen nur im Speicher deines Browsers.
 
 ## 4. App-Berechtigungen
 - **Android/iOS:** Vibration; Teilen-Menü nur, wenn du selbst ein Kartenbild oder einen Einladungslink teilst.
