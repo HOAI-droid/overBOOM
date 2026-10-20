@@ -37,6 +37,14 @@ jobs:
             rust-targets: 'aarch64-apple-darwin,x86_64-apple-darwin'
             bundles: |
               apps/desktop/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+          - name: Linux
+            os: ubuntu-22.04
+            args: ''
+            rust-targets: ''
+            bundles: |
+              apps/desktop/src-tauri/target/release/bundle/appimage/*.AppImage
+              apps/desktop/src-tauri/target/release/bundle/deb/*.deb
+              apps/desktop/src-tauri/target/release/bundle/rpm/*.rpm
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -54,6 +62,12 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: apps/desktop/src-tauri -> target
+
+      - name: Linux-Systembibliotheken (WebKitGTK)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libxdo-dev
 
       - name: Abhängigkeiten
         run: npm ci
