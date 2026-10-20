@@ -1,5 +1,5 @@
 import { HELDEN, HELD_BY_ID, INSELN, INSEL_BY_ID, KOOP, W, t } from '@overboom/data';
-import type { LobbySpieler } from '@overboom/net';
+import { normalizeRoomCode, type LobbySpieler } from '@overboom/net';
 import qrcode from 'qrcode-generator';
 import { gefahrWahl } from './gefahr.ts';
 
@@ -48,22 +48,71 @@ export function qrSvg(text: string): string {
   } catch { return ''; }
 }
 
+/** Länge der Raumcodes (siehe makeRoomCode in packages/net/src/transport.ts) */
+export const RAUMCODE_LAENGE = 6;
+
+export interface RaumcodeEingabe {
+  /** gültige Zeichen, höchstens 6 */
+  code: string;
+  /** mehr als 6 gültige Zeichen eingegeben */
+  zuLang: boolean;
+  /** enthält O, 0, I oder 1 (kommen in Codes nie vor) */
+  verwechselbar: boolean;
+  /** ein ganzer Einladungslink wurde eingefügt */
+  link: boolean;
+}
+
+/**
+ * Eingabe im Codefeld lesen: Einladungslink (…?raum=CODE) erkennen, groß schreiben,
+ * Leerzeichen/Bindestriche ignorieren. Verwechselbare Zeichen werden nicht geraten.
+ */
+export function leseRaumcode(roh: string): RaumcodeEingabe {
+  let s = roh.trim();
+  const m = /raum=([^&#\s]*)/i.exec(s);
+  if (m) {
+    s = m[1];
+    try { s = decodeURIComponent(s); } catch { /* kaputte Kodierung: roh lassen */ }
+  }
+  s = s.toUpperCase().replace(/[\s\-_.·]/g, '');
+  // gültig ist, was normalizeRoomCode stehen lässt (gleiches Alphabet wie im Netz-Paket)
+  const gueltig = [...s].filter((c) => normalizeRoomCode(c) === c).join('');
+  return { code: gueltig.slice(0, RAUMCODE_LAENGE), zuLang: gueltig.length > RAUMCODE_LAENGE, verwechselbar: /[O0I1]/.test(s), link: !!m };
+}
+
+/** Hinweis unter dem Codefeld: Zähler beim Tippen, Fehler nach „Beitreten“ */
+export function codeHinweis(e: RaumcodeEingabe, roh: string, fehler: boolean): { html: string; klasse: string } {
+  const n = e.code.length;
+  const teile: string[] = [];
+  let klasse = fehler ? 'ob-warn' : '';
+  if (e.zuLang) { teile.push(t('Zu viele Zeichen – der Raumcode hat genau {n}.', { n: RAUMCODE_LAENGE })); klasse = 'ob-warn'; }
+  else if (fehler) teile.push(n === 0 ? t('Bitte den 6-stelligen Raumcode eingeben.') : t('Noch {n} Zeichen', { n: RAUMCODE_LAENGE - n }));
+  else if (roh.trim()) {
+    teile.push(t('{n}/{max} Zeichen', { n, max: RAUMCODE_LAENGE }) + (n === RAUMCODE_LAENGE ? ' ✓' : ''));
+    if (n === RAUMCODE_LAENGE && !e.verwechselbar) klasse = 'ob-hint2';
+  }
+  if (e.verwechselbar) { teile.push(t('Codes enthalten kein O, 0, I oder 1 – bitte genau abschreiben.')); klasse = 'ob-warn'; }
+  return { html: teile.map(esc).join(' · '), klasse };
+}
+
 /** Titelbildschirm */
-export function titelHtml(name: string, code: string, albumBtn: string, extra = '', tipp = '', hinweis = ''): string {
+export function titelHtml(name: string, code: string, albumBtn: string, extra = '', tipp = '', hinweis = '', fortsetzen = ''): string {
+  const hinweisCode = codeHinweis(leseRaumcode(code), code, false);
   return `
     <div class="ob-panel ob-titel">
       <h1 class="ob-logo"><b>OVER</b><b class="boom">BOOM</b></h1>
       <p class="ob-sub">${t('Arena-Chaos mit Waffen-Fusion · 1–4 Spieler')}</p>
       <div class="ob-titel-row">
-        <button type="button" class="ob-go ob-big" data-act="tsolo" data-focus="tsolo">${t('Solo spielen')}</button>
+        ${fortsetzen ? `<button type="button" class="ob-go ob-big" data-act="tweiter" data-focus="tweiter">${t('Fortsetzen')}<small style="display:block;font-size:10px;opacity:.8;margin-top:2px">${esc(fortsetzen)}</small></button>` : ''}
+        <button type="button" class="${fortsetzen ? 'ob-btn2' : 'ob-go ob-big'}" data-act="tsolo" data-focus="tsolo">${fortsetzen ? t('Neuer Run') : t('Solo spielen')}</button>
       </div>
       <h3 class="ob-h3">${t('Koop')} <small>${t('bis zu 4 Spieler, jeder am eigenen Gerät')}</small></h3>
       <label class="ob-field"><span>${t('Dein Name')}</span><input type="text" maxlength="16" data-name value="${esc(name)}" autocomplete="nickname"></label>
       <div class="ob-titel-row">
         <button type="button" class="ob-btn2" data-act="terstellen" data-focus="terstellen">${t('Raum erstellen')}</button>
-        <input class="ob-codein" type="text" maxlength="7" placeholder="${t('CODE')}" data-code value="${esc(code)}" autocapitalize="characters" autocomplete="off" aria-label="${t('Raumcode')}">
+        <input class="ob-codein" type="text" maxlength="300" placeholder="${t('CODE')}" data-code value="${esc(code)}" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="${t('Raumcode')}" aria-describedby="ob-codehint">
         <button type="button" class="ob-btn2" data-act="tbeitreten" data-focus="tbeitreten">${t('Beitreten')}</button>
       </div>
+      <p id="ob-codehint" class="ob-codehint ${hinweisCode.klasse}" data-codehint aria-live="polite">${hinweisCode.html}</p>
       <div class="ob-titel-row">${albumBtn}${extra}</div>
       ${tipp ? `<p class="ob-tipp">${t('Tipp: {tipp}', { tipp: esc(tipp) })}</p>` : ''}
       ${hinweis ? `<p class="ob-keys ob-padkeys">${hinweis}</p>` : ''}

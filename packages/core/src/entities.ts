@@ -44,6 +44,10 @@ export interface Enemy {
   /** Seitwärts-Richtung beim Umkreisen (±1) */
   strafe: number;
   elite: boolean;
+  /** gepanzert: nimmt weniger Explosionsschaden (ab Welle 12, Schild-Symbol) */
+  panzer: boolean;
+  /** Elite-Sonderangriff: Uhr bis zum nächsten Kugelring */
+  eliteT: number;
   /** Schaden-Multiplikator (Welle, Elite) */
   dmgMul: number;
   /** Verlangsamt (s) */
@@ -221,7 +225,7 @@ export function makeEnemy(slot: number, def: GegnerDef): Enemy {
     x: 0, z: 0, y: 0, px: 0, pz: 0, py: 0, vx: 0, vz: 0, kbx: 0, kbz: 0,
     r: def.radius, hp: 0, maxHp: 0, facing: 0, flash: 0, age: 0,
     state: 0, stateT: 0, cd: 0, jx0: 0, jz0: 0, jx1: 0, jz1: 0, doom: -1, strafe: 1,
-    elite: false, dmgMul: 1, slow: 0, stun: 0, burnT: 0, burnDps: 0, poisonT: 0, poisonDps: 0, dotClock: 0, lucky: false, bossPhase: 1, summonCd: 0,
+    elite: false, panzer: false, eliteT: 0, dmgMul: 1, slow: 0, stun: 0, burnT: 0, burnDps: 0, poisonT: 0, poisonDps: 0, dotClock: 0, lucky: false, bossPhase: 1, summonCd: 0,
     wet: 0, acid: 0, acidT: 0, frost: 0, confuse: 0, chicken: 0, cdx: 0, cdz: 0, cloud: false, shockT: 0, gravT: 0, reactT: 0, frostT: 0
   };
 }

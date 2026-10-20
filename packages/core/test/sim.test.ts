@@ -4,6 +4,14 @@ import { Tile as T } from '../src/arena.ts';
 import * as D from '../../data/src/index.ts';
 import { Rng } from '../src/rng.ts';
 import * as Core from '../src/index.ts';
+/** Arena leerräumen (nur Mauern bleiben): Tests mit festen Positionen hängen nicht vom Zufallslayout ab */
+function leer(w: World): World {
+  const a = w.arena;
+  for (let i = 0; i < a.tiles.length; i++) if (a.tiles[i] !== T.Wall) { a.tiles[i] = T.Floor; a.heights[i] = 0; }
+  for (const b of w.barrels) b.broken = true;
+  return w;
+}
+
 
 let fails = 0;
 const ok = (cond: boolean, msg: string) => { console.log((cond ? '✓ ' : '✗ ') + msg); if (!cond) fails++; };
@@ -114,7 +122,7 @@ ok(f1.w.wave >= 3, `Wellen laufen durch (jetzt Welle ${f1.w.wave})`);
 
 // Kettenreaktion: Reihe von Bomben-Kröten, die erste wird erschossen
 {
-  const w = new World(3, 1, { combat: true });
+  const w = leer(new World(3, 1, { combat: true }));
   for (const warn of w.warnings) warn.active = false;
   w.spawnAcc = -999;
   const p = w.players[0];
@@ -186,7 +194,7 @@ ok(f1.w.wave >= 3, `Wellen laufen durch (jetzt Welle ${f1.w.wave})`);
 
 // Leistung: 140 Gegner + Waffenfeuer
 {
-  const w = new World(8, 1, { god: true, wave: 8 });
+  const w = leer(new World(8, 1, { god: true, wave: 8 }));
   w.spawnAcc = -999;
   for (let i = 0; i < 140; i++) {
     const x = 2 + (i % 12) * 2, z = 2 + Math.floor(i / 12) * 2;
@@ -274,11 +282,11 @@ const runUntil = (w: World, cond: () => boolean, max = 30 * 120) => { for (let t
   ok(elites > 0, `Elite-Gegner tauchen auf (${elites})`);
 }
 
-// Baron von Bumm (Welle 20): erscheint, wirft Bomben, Phase 2, Welle endet mit seinem Tod
+// Inselbaron (letzte Inselwelle, Solo 15): erscheint, wirft Bomben, Phase 2, Welle endet mit seinem Tod
 {
-  const w = new World(25, 1, { god: true, wave: 20 });
+  const w = new World(25, 1, { god: true, wave: 15 });
   const boss = w.enemies[w.boss];
-  ok(w.boss >= 0 && boss.alive && boss.def.id === 'baron', 'Welle 20: Baron von Bumm erscheint');
+  ok(w.boss >= 0 && boss.alive && boss.def.id === 'baron', 'Bummburg, Welle 15: Baron von Bumm erscheint');
   ok(w.waveTime === Infinity, 'Boss-Welle hat keinen Timer');
   let bombs = 0, phase2 = false;
   for (let t = 0; t < 30 * 12; t++) {
@@ -292,16 +300,72 @@ const runUntil = (w: World, cond: () => boolean, max = 30 * 120) => { for (let t
   ok(!boss.alive && w.phase === 'pause', 'Boss besiegt → Welle vorbei');
 }
 
-// Sieg nach Welle 20, dann optional Endlos
+// Finale nach der letzten Insel, Sieg, dann optional Endlos
 {
-  const w = new World(26, 1, { god: true, wave: 20 });
-  w.damageEnemy(w.enemies[w.boss], 1e9, false, 0, 0);
+  const w = new World(26, 1, { god: true, wave: 16 });
+  const boss = w.enemies[w.boss];
+  ok(w.finalWelle === 16 && boss?.def.id === 'kawumm' && w.wellenArt === 'finale', 'Bummburg-Reise: Welle 16 ist das Finale gegen das Große Kawumm');
+  const lavaVorher = [...w.arena.tiles].filter((t) => t === T.Lava).length, arena = w.arena;
+  w.damageEnemy(boss, boss.hp * 0.4, false, 0, 0);
+  ok(boss.bossPhase === 2 && w.arena !== arena && [...w.arena.tiles].filter((t) => t === T.Lava).length > lavaVorher, 'Finale Phase 2: die Arena zerbricht (Rand wird Lava)');
+  w.damageEnemy(boss, boss.maxHp * 0.3, false, 0, 0);
+  ok(boss.bossPhase === 3, 'Finale: Phase 3 unter einem Drittel');
+  w.damageEnemy(boss, 1e9, false, 0, 0);
   runUntil(w, () => w.phase !== 'pause');
-  ok(w.phase === 'sieg', 'Welle 20 geschafft → Sieg');
+  ok(w.phase === 'sieg', 'Finale geschafft → Sieg');
   ok(w.command(0, { type: 'endless' }) && w.phase === 'shop', 'Endlos-Modus öffnet den Shop');
   while (w.players[0].pendingLevels) w.command(0, { type: 'upgrade', index: 0 });
   w.command(0, { type: 'ready' });
-  ok(w.wave === 21 && w.phase === 'welle', 'weiter mit Welle 21');
+  ok(w.wave === 17 && w.phase === 'welle' && w.wellenArt === 'normal', 'weiter mit Welle 17');
+}
+
+// Reise über die Inseln: nach dem Baron geht es auf die nächste Insel, mit neuer Arena
+{
+  const w = new World(31, 1, { god: true, choose: true });
+  w.command(0, { type: 'start', held: 'kawummkid', insel: 'gackerfeld' });
+  ok(w.reise.length === 7 && w.reise[0] === 'gackerfeld' && w.reise[6] === 'bummburg' && w.finalWelle === 7 * 15 + 1, `Reise ab Gackerfeld: 7 Inseln, Finale in Welle ${w.finalWelle}`);
+  ok(w.reisePos(10).art === 'boss' && w.reisePos(15).art === 'baron' && w.reisePos(16).index === 1 && w.reisePos(25).art === 'boss', 'Solo: Boss in Inselwelle 10, Baron in 15, dann nächste Insel');
+  const seed1 = w.arenaSeed, arena1 = w.arena;
+  w.startWave(15);
+  ok(w.enemies[w.boss]?.def.id === 'baronin_gackerella', 'Gackerfeld: Baronin Gackerella in Welle 15');
+  w.damageEnemy(w.enemies[w.boss], 1e9, false, 0, 0);
+  runUntil(w, () => w.phase !== 'pause');
+  ok(w.phase === 'shop' && w.insel.id === 'gackerfeld', 'nach dem Baron: Shop, noch auf Gackerfeld');
+  while (w.players[0].pendingLevels) w.command(0, { type: 'upgrade', index: 0 });
+  w.command(0, { type: 'ready' });
+  ok(w.wave === 16 && w.insel.id === 'funkenschlund' && w.inselWelle === 1 && w.arenaSeed !== seed1 && w.arena !== arena1 && w.arena.style === 'strom', 'Welle 16: weiter auf Funkenschlund mit neuer Arena');
+  const k = new World(32, 2, { god: true, choose: true });
+  k.command(0, { type: 'start', held: 'kawummkid', insel: 'pilzmoor' }); k.command(1, { type: 'start', held: 'kawummkid' });
+  ok(k.reise.length === 4 && k.reisePos(5).art === 'boss' && k.reisePos(8).art === 'baron' && k.reisePos(9).index === 1 && k.finalWelle === 33, `Koop: 8 Wellen pro Insel, Boss in 5, Baron in 8 (Finale ab Pilzmoor: Welle ${k.finalWelle})`);
+  const a = new World(33, 1, {}), b = new World(33, 1, {});
+  a.startWave(16); b.startWave(16);
+  ok(a.arenaSeed === b.arenaSeed && a.arena.tiles.every((t, i) => t === b.arena.tiles[i]), 'gleicher Seed → gleiche Arenen');
+  const c = new World(33, 1, {}); c.reset(99);
+  ok(c.arenaSeed !== a.arenaSeed, 'neuer Run mit neuem Seed → neue Arena');
+}
+
+// Spielstand: nach einer Welle speichern, in einer neuen Welt fortsetzen
+{
+  const w = new World(34, 1, { god: true, choose: true });
+  w.command(0, { type: 'start', held: 'kawummkid', insel: 'gackerfeld' });
+  w.startWave(16);
+  w.waveTime = 0.1;
+  runUntil(w, () => w.phase === 'shop');
+  const p = w.players[0];
+  p.crystals = 123; p.items = { ...p.items, [D.ITEMS[0].id]: 2 }; Core.recomputeStats(p);
+  ok(Core.speicherbar(w), 'Shop nach Welle 16: speicherbar');
+  const st = JSON.parse(JSON.stringify(Core.speichereLauf(w)));
+  ok(Core.istSpielstand(st), 'Spielstand ist gültig');
+  const v = new World(1, 1, { choose: true });
+  Core.ladeLauf(v, st);
+  const q = v.players[0];
+  ok(v.phase === 'shop' && v.wave === 16 && v.insel.id === 'funkenschlund' && v.arenaSeed === w.arenaSeed && q.crystals === 123 && q.items[D.ITEMS[0].id] === 2 && q.weapons.length === p.weapons.length && q.held === 'kawummkid',
+    'Fortsetzen: gleiche Welle, Insel, Arena, Kristalle, Items, Waffen');
+  ok(Math.abs(q.maxHp - p.maxHp) < 1e-6 && q.stats.schaden === p.stats.schaden, 'Fortsetzen: Werte stimmen');
+  while (q.pendingLevels) v.command(0, { type: 'upgrade', index: 0 });
+  v.command(0, { type: 'ready' });
+  ok(v.wave === 17 && v.phase === 'welle', 'nach dem Laden geht es mit Welle 17 weiter');
+  ok(!Core.istSpielstand({ v: 1 }) && !Core.istSpielstand(null), 'kaputte Spielstände werden erkannt');
 }
 
 // MVP-Statistik
@@ -579,8 +643,8 @@ function duel(id: string, opt: { insel?: string; seconds?: number; hp?: number }
   ok(front < 3 && back > 9, `Tesla-Ritter: vorne ${front.toFixed(1)}, hinten ${back.toFixed(1)} Schaden`);
 }
 // Alle Bosse spielen ihre Angriffe
-for (const id of ['koenig_gockel', 'megatoaster', 'morchella', 'baron']) {
-  const w = new World(48, 1, { god: true, wave: 10 });
+for (const id of GEGNER.filter((g) => g.verhalten === 'boss').map((g) => g.id)) {
+  const w = leer(new World(48, 1, { god: true, wave: 10 }));
   for (const warn of w.warnings) warn.active = false;
   for (const e of w.enemies) e.alive = false;
   w.enemyCount = 0;
@@ -639,7 +703,7 @@ for (const id of ['koenig_gockel', 'megatoaster', 'morchella', 'baron']) {
 
 const W2 = await import('../src/weapons.ts');
 function calm(seed = 60, opt = {}) {
-  const w = new World(seed, 1, { god: true, ...opt });
+  const w = leer(new World(seed, 1, { god: true, ...opt }));
   for (const warn of w.warnings) warn.active = false;
   w.spawnAcc = -999;
   w.waveTime = 1e9;
@@ -855,8 +919,11 @@ for (const [el, ids, ev] of [
   ok(prof.karten['gegner:kampfhuhn'] === 1 && prof.kills.kampfhuhn === 50, '50 Kampfhühner → Gegnerkarte');
   const b = spawnEnemy(w, GEGNER_INDEX.koenig_gockel, p.x + 6, p.z)!;
   w.events.length = 0; w.killEnemy(b, 0, 0, false); meta.events(w, w.events);
-  ok(prof.befreit.includes('gackerfeld') && Core.inselFrei(prof, 'funkenschlund') && !Core.inselFrei(prof, 'rostgrat'), 'Insel-Boss besiegt → Gackerfeld befreit, Funkenschlund frei');
-  ok(prof.karten['gegner:koenig_gockel'] === 1 && meta.neues.some((n) => n.art === 'insel'), 'Boss-Karte und Insel-Meldung');
+  ok(!prof.befreit.includes('gackerfeld') && prof.karten['gegner:koenig_gockel'] === 1, 'Inselboss besiegt → Bosskarte, Insel noch nicht befreit');
+  const bn = spawnEnemy(w, GEGNER_INDEX.baronin_gackerella, p.x + 6, p.z)!;
+  w.events.length = 0; w.killEnemy(bn, 0, 0, false); meta.events(w, w.events);
+  ok(prof.befreit.includes('gackerfeld') && Core.inselFrei(prof, 'funkenschlund') && !Core.inselFrei(prof, 'rostgrat'), 'Baronin besiegt → Gackerfeld befreit, Funkenschlund frei');
+  ok(prof.karten['gegner:baronin_gackerella'] === 1 && meta.neues.some((n) => n.art === 'insel'), 'Baronin-Karte und Insel-Meldung');
   // Rezept-Fusion → Karte
   w.events.length = 0;
   w.events.push({ type: 'fusion', player: 0, weapon: 'rezept:huhnageddon', name: 'HUHNAGEDDON', rezept: 'huhnageddon', x: 0, z: 0 });
@@ -880,7 +947,7 @@ for (const [el, ids, ev] of [
   ok(REZEPTE.every((r) => D.REZEPT_ZITATE[r.id] && r.spezial.every((sp) => D.SPEZIAL_INFO[sp])), 'Jedes Rezept hat Zitat und erklärte Sonderwirkung');
   // Jede neue Sonderwirkung muss sichtbar etwas tun
   const probe = (id: string) => {
-    const w = new World(91, 1, { god: true });
+    const w = leer(new World(91, 1, { god: true }));
     for (const warn of w.warnings) warn.active = false;
     w.spawnAcc = -999;
     const p = w.players[0];
@@ -889,11 +956,11 @@ for (const [el, ids, ev] of [
     for (let i = 0; i < 12; i++) { const e = spawnEnemy(w, GEGNER_INDEX.schrottgolem, p.x + 2 + (i % 4) * 0.8, p.z - 1.5 + Math.floor(i / 4) * 0.8)!; e.cd = 99; e.hp = e.maxHp = 1e5; }
     const ev: Record<string, number> = {};
     let lava = 0, gems = 0;
-    for (let t = 0; t < 30 * 8; t++) {
+    for (let t = 0; t < 30 * 16; t++) {
       w.step([idle]);
       for (const x of w.events) ev[x.type] = (ev[x.type] ?? 0) + 1;
       lava = Math.max(lava, w.hazards.filter((h) => h.active && h.kind === 'lava').length);
-      gems = Math.max(gems, w.crystals.filter((c) => c.active).length);
+      gems = Math.max(gems, w.crystals.filter((c) => c.alive).length);
     }
     return { ev, lava, gems };
   };

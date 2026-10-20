@@ -4,8 +4,16 @@ import { EnemyState, JUMP_TIME, type Enemy } from './entities.ts';
 
 /** Ansturm (Sprinter, Pinguin, Boss) */
 const CHARGE = 4;
+/** Boss: Salve über mehrere Ticks (Spirale, Kreuzfeuer) */
+const SALVO = 5;
+/** Boss: Sprung auf den Spieler */
+const LEAP = 6;
+/** Flugzeit eines Boss-Sprungs in s */
+const LEAP_TIME = 0.95;
+/** Vorwarnzeit der Bodenflächen in s */
+const FLAECHE_WARNUNG = 1.15;
 import { Tile } from './arena.ts';
-import { BOSS, ELITE, GEGNER, GEGNER_INDEX, KOOP, WELLEN, type BossAngriff } from '../../data/src/index.ts';
+import { BOSS, ELITE, ELITE_ANGRIFF, GEGNER, GEGNER_INDEX, KOOP, PANZER, VERSTAERKUNG, WELLEN, type BossAngriff, type FlaechenArt } from '../../data/src/index.ts';
 
 const KB_DECAY = Math.pow(0.004, DT);
 
@@ -32,9 +40,20 @@ function pendingWarnings(w: World): number {
   return n;
 }
 
-/** Gegnertyp aus dem Pool der aktuellen Insel */
+/** Gegnertyp aus dem Pool der aktuellen Insel (ab Welle 7 öfter Fernkämpfer/Stürmer) */
 function pickType(w: World): number {
   const pool = w.insel.gegner;
+  if (w.rng.chance(VERSTAERKUNG.chance(w.wave))) {
+    let n = 0;
+    for (const g of pool) if (g.abWelle <= w.wave && VERSTAERKUNG.verhalten.includes(GEGNER[GEGNER_INDEX[g.id]].verhalten)) n++;
+    if (n > 0) {
+      let k = Math.floor(w.rng.next() * n);
+      for (const g of pool) {
+        if (g.abWelle > w.wave || !VERSTAERKUNG.verhalten.includes(GEGNER[GEGNER_INDEX[g.id]].verhalten)) continue;
+        if (k-- === 0) return GEGNER_INDEX[g.id];
+      }
+    }
+  }
   let sum = 0;
   for (const g of pool) if (g.abWelle <= w.wave) sum += g.gewicht;
   if (sum <= 0) return 0;
@@ -109,7 +128,7 @@ export function spawnBoss(w: World, id: string): void {
   }
   const e = spawnEnemy(w, BOSS_TYPE, bx, bz);
   if (!e) return;
-  e.maxHp = e.hp = e.def.hp * BOSS.hpFaktor(w.wave) * w.koop(KOOP.bossProSpieler) * w.gw.bossHp;
+  e.maxHp = e.hp = e.def.hp * BOSS.hpFaktor(w.wave, e.def.rang ?? 'boss') * w.koop(KOOP.bossProSpieler) * w.gw.bossHp;
   e.cd = 2.5;
   e.bossPhase = 1;
   e.summonCd = 0; // Index des nächsten Angriffs
@@ -129,6 +148,8 @@ export function spawnEnemy(w: World, type: number, x: number, z: number, elite =
     e.x = e.px = x; e.z = e.pz = z; e.y = e.py = 0;
     e.vx = e.vz = e.kbx = e.kbz = 0;
     e.elite = elite;
+    e.panzer = def.verhalten !== 'boss' && w.rng.chance(PANZER.chance(w.wave));
+    e.eliteT = ELITE_ANGRIFF.intervall * (0.5 + w.rng.next() * 0.5);
     e.r = def.radius * (elite ? ELITE.groesse : 1);
     e.maxHp = e.hp = def.hp * WELLEN.hpFaktor(w.wave) * (elite ? ELITE.hp : 1) * w.koop(KOOP.hpProSpieler) * w.gw.hp;
     e.dmgMul = WELLEN.schadenFaktor(w.wave) * (elite ? ELITE.schaden : 1) * w.gw.schaden;
@@ -173,6 +194,21 @@ export function stepEnemies(w: World): void {
         e.poisonT = Math.max(0, e.poisonT - 0.5);
         if (e.poisonT <= 0) e.poisonDps = 0;
         if (dmg > 0) { w.damageEnemy(e, dmg, false, 0, 0); if (!e.alive) continue; }
+      }
+    }
+    // Elite-Sonderangriff ab Welle 7: aufleuchten, dann Kugelring
+    if (e.elite && w.wave >= ELITE_ANGRIFF.abWelle && e.stun <= 0 && e.chicken <= 0 && w.phase === 'welle') {
+      const vorher = e.eliteT;
+      e.eliteT -= DT;
+      if (vorher > ELITE_ANGRIFF.warnung && e.eliteT <= ELITE_ANGRIFF.warnung) w.events.push({ type: 'windup', enemy: e.def.id, x: e.x, z: e.z });
+      if (e.eliteT <= 0) {
+        e.eliteT = ELITE_ANGRIFF.intervall * (0.85 + w.rng.next() * 0.3);
+        const n = ELITE_ANGRIFF.kugeln, off = w.rng.next() * Math.PI;
+        for (let i = 0; i < n; i++) {
+          const a = off + (i / n) * Math.PI * 2;
+          hostileShot(w, e, Math.cos(a), Math.sin(a), ELITE_ANGRIFF.tempo, ELITE_ANGRIFF.schaden * e.dmgMul, e.def.schussGeschoss ?? 'toast', 'keine');
+        }
+        w.events.push({ type: 'enemyShot', x: e.x, z: e.z });
       }
     }
     e.slow = Math.max(0, e.slow - DT);
@@ -288,12 +324,20 @@ export function stepEnemies(w: World): void {
           break;
         }
 
-        case 'boss':
+        case 'boss': {
           stepBoss(w, e, dx, dz);
-          mx = dx * def.tempo * (e.bossPhase === 2 ? 1.25 : 1); mz = dz * def.tempo * (e.bossPhase === 2 ? 1.25 : 1);
-          if (e.state === EnemyState.Aim || e.state === EnemyState.Windup) { mx *= 0.15; mz *= 0.15; }
+          const tempo = def.tempo * (e.bossPhase >= 2 ? 1.25 : 1) * (e.bossPhase >= 3 ? 1.1 : 1);
+          mx = dx * tempo; mz = dz * tempo;
+          if (e.state === EnemyState.Aim || e.state === EnemyState.Windup || e.state === SALVO) { mx *= 0.15; mz *= 0.15; }
           if (e.state === CHARGE) { mx = e.cdx * (def.ansturmTempo ?? 9); mz = e.cdz * (def.ansturmTempo ?? 9); }
+          if (e.state === LEAP) {
+            // im Flug: geradewegs zum Landepunkt, Bogen über y
+            const rest = Math.max(DT, e.stateT);
+            mx = (e.cdx - e.x) / rest; mz = (e.cdz - e.z) / rest;
+            e.y = Math.sin(Math.PI * Math.min(1, 1 - e.stateT / LEAP_TIME)) * 2.6;
+          } else if (e.y > 0) e.y = 0;
           break;
+        }
 
         case 'sprinter': case 'rutscher': {
           // Scharren/Anlauf (telegrafiert), dann geradeaus losstürmen
@@ -482,17 +526,33 @@ function dropMine(w: World, e: Enemy): void {
  */
 function stepBoss(w: World, e: Enemy, dx: number, dz: number): void {
   const def = e.def;
-  const list: BossAngriff[] = (e.bossPhase === 2 ? def.angriffe2 : def.angriffe1) ?? ['bomben'];
-  const ph = e.bossPhase === 2 ? BOSS.phase2 : BOSS.phase1;
+  const list: BossAngriff[] = (e.bossPhase >= 3 ? def.angriffe3 ?? def.angriffe2 : e.bossPhase === 2 ? def.angriffe2 : def.angriffe1) ?? ['bomben'];
+  const ph = e.bossPhase >= 2 ? BOSS.phase2 : BOSS.phase1;
+  const tempo = BOSS.rangTempo[def.rang ?? 'boss'] * (e.bossPhase >= 3 ? 0.85 : 1);
   if (e.state === CHARGE) {
     e.stateT -= DT;
-    if (e.stateT <= 0) { e.state = EnemyState.Walk; e.cd = ph.intervall * 0.6; }
+    if (e.stateT <= 0) { e.state = EnemyState.Walk; e.cd = ph.intervall * 0.6 * tempo; }
+    return;
+  }
+  if (e.state === SALVO) {
+    stepSalvo(w, e);
+    if (e.stateT <= 0) { e.state = EnemyState.Walk; e.cd = ph.intervall * 0.7 * tempo; }
+    return;
+  }
+  if (e.state === LEAP) {
+    e.stateT -= DT;
+    if (e.stateT <= 0) {
+      e.state = EnemyState.Walk; e.y = 0;
+      e.cd = ph.intervall * tempo;
+      landen(w, e);
+    }
     return;
   }
   e.cd -= DT;
   if (e.state === EnemyState.Walk && e.cd <= 0) {
     e.state = EnemyState.Aim;
-    e.stateT = list[e.summonCd % list.length] === 'ansturm' ? 0.75 : 0.6;
+    const next = list[e.summonCd % list.length];
+    e.stateT = next === 'ansturm' || next === 'sprung' ? 0.75 : 0.6;
     e.cdx = dx; e.cdz = dz;
     w.events.push({ type: 'windup', enemy: def.id, x: e.x, z: e.z });
   } else if (e.state === EnemyState.Aim) {
@@ -501,12 +561,14 @@ function stepBoss(w: World, e: Enemy, dx: number, dz: number): void {
     const atk = list[e.summonCd % list.length];
     e.summonCd++;
     e.state = EnemyState.Walk;
-    e.cd = ph.intervall;
+    e.cd = ph.intervall * tempo;
     const p = w.nearestPlayer(e.x, e.z);
     if (!p) return;
+    const geschoss = def.schussGeschossBoss ?? def.ringGeschoss ?? 'toast';
+    const ladung = def.flaechenArt === 'eis' ? 'langsam' : 'keine';
     switch (atk) {
       case 'bomben':
-        for (let i = 0; i < ph.salve; i++) {
+        for (let i = 0; i < ph.salve + (e.bossPhase >= 3 ? 2 : 0); i++) {
           // erste Bombe genau auf den Spieler, der Rest drumherum
           const a = w.rng.next() * Math.PI * 2, r = i === 0 ? 0 : 1 + w.rng.next() * 2.4;
           throwBomb(w, e, p.x + p.vx * 0.4 + Math.cos(a) * r, p.z + p.vz * 0.4 + Math.sin(a) * r, i * 0.08, 'explosion');
@@ -519,23 +581,127 @@ function stepBoss(w: World, e: Enemy, dx: number, dz: number): void {
         }
         break;
       case 'ring': {
-        const n = e.bossPhase === 2 ? 18 : 12, off = w.rng.next() * Math.PI;
+        const n = e.bossPhase >= 3 ? 22 : e.bossPhase === 2 ? 18 : 12, off = w.rng.next() * Math.PI;
         for (let i = 0; i < n; i++) {
           const a = off + (i / n) * Math.PI * 2;
-          hostileShot(w, e, Math.cos(a), Math.sin(a), 5.5, 9 * e.dmgMul, def.ringGeschoss ?? 'toast', 'keine');
+          hostileShot(w, e, Math.cos(a), Math.sin(a), 5.5, BOSS.schuss * e.dmgMul, def.ringGeschoss ?? 'toast', ladung);
         }
         w.events.push({ type: 'enemyShot', x: e.x, z: e.z });
         break;
       }
+      case 'faecher': {
+        // gezielter Fächer – Lücken zwischen den Geschossen zum Durchschlüpfen
+        const n = e.bossPhase >= 2 ? 7 : 5, spread = 1.05;
+        const base = Math.atan2(p.z + p.vz * 0.3 - e.z, p.x + p.vx * 0.3 - e.x);
+        for (let i = 0; i < n; i++) {
+          const a = base + (i / (n - 1) - 0.5) * spread;
+          hostileShot(w, e, Math.cos(a), Math.sin(a), 7, BOSS.schuss * 1.1 * e.dmgMul, geschoss, ladung);
+        }
+        w.events.push({ type: 'enemyShot', x: e.x, z: e.z });
+        break;
+      }
+      case 'spirale': case 'kreuz':
+        e.state = SALVO;
+        e.stateT = atk === 'spirale' ? 1.8 : 2.4;
+        e.strafe = atk === 'spirale' ? 0 : 1;
+        e.cdx = w.rng.next() * Math.PI * 2; // Startwinkel
+        e.cd = 0;
+        break;
+      case 'flaechen':
+        flaechen(w, e, p.x + p.vx * 0.5, p.z + p.vz * 0.5, BOSS.flaechen[Math.min(3, e.bossPhase) - 1]);
+        break;
+      case 'sprung': {
+        // Landepunkt dort, wo der Spieler gerade ist – vorher markiert
+        const size = w.arena.size;
+        e.state = LEAP;
+        e.stateT = LEAP_TIME;
+        e.cdx = Math.max(1.6, Math.min(size - 2, p.x));
+        e.cdz = Math.max(1.6, Math.min(size - 2, p.z));
+        w.events.push({ type: 'telegraph', x: e.cdx, z: e.cdz, r: BOSS.sprungRadius, t: LEAP_TIME, art: def.flaechenArt ?? 'explosion' });
+        break;
+      }
+      case 'minen':
+        for (let i = 0; i < (e.bossPhase >= 2 ? 8 : 5); i++) {
+          const a = w.rng.next() * Math.PI * 2, r = 1.6 + w.rng.next() * 4;
+          const x = e.x + Math.cos(a) * r, z = e.z + Math.sin(a) * r;
+          if (!w.solidAt(x, z)) layMine(w, x, z, BOSS.minenSchaden * e.dmgMul);
+        }
+        w.events.push({ type: 'windup', enemy: def.id, x: e.x, z: e.z });
+        break;
       case 'ansturm':
         e.state = CHARGE;
         e.stateT = def.ansturmDauer ?? 0.8;
         e.cdx = dx; e.cdz = dz;
         break;
       case 'beschwoeren':
-        summon(w, e, def.beschwoert ?? 'grummelbold', def.beschwoerAnzahl ?? 3);
+        summon(w, e, def.beschwoert ?? 'grummelbold', (def.beschwoerAnzahl ?? 3) + (e.bossPhase >= 3 ? 2 : 0));
         break;
     }
+  }
+}
+
+/** Spirale/Kreuzfeuer: alle paar Ticks eine gedrehte Salve */
+function stepSalvo(w: World, e: Enemy): void {
+  e.stateT -= DT;
+  e.cd -= DT;
+  if (e.cd > 0) return;
+  const kreuz = e.strafe === 1;
+  e.cd = kreuz ? 0.17 : 0.12;
+  const arme = kreuz ? (e.bossPhase >= 2 ? 8 : 4) : e.bossPhase >= 2 ? 4 : 3;
+  const geschoss = e.def.schussGeschossBoss ?? e.def.ringGeschoss ?? 'toast';
+  const ladung = e.def.flaechenArt === 'eis' ? 'langsam' : 'keine';
+  for (let i = 0; i < arme; i++) {
+    const a = e.cdx + (i / arme) * Math.PI * 2;
+    hostileShot(w, e, Math.cos(a), Math.sin(a), kreuz ? 5 : 4.4, BOSS.schuss * 0.8 * e.dmgMul, geschoss, ladung);
+  }
+  e.cdx += kreuz ? 0.11 : 0.33;
+  w.events.push({ type: 'enemyShot', x: e.x, z: e.z });
+}
+
+/** Bodenflächen: leuchten auf (Telegraph), explodieren nach der Vorwarnzeit */
+function flaechen(w: World, e: Enemy, tx: number, tz: number, n: number): void {
+  const size = w.arena.size;
+  const art: FlaechenArt = e.def.flaechenArt ?? 'explosion';
+  const group = w.newGroup();
+  for (let i = 0; i < n; i++) {
+    const a = w.rng.next() * Math.PI * 2, r = i === 0 ? 0 : 1.8 + w.rng.next() * 4.2;
+    const x = Math.max(1.4, Math.min(size - 1.8, tx + Math.cos(a) * r));
+    const z = Math.max(1.4, Math.min(size - 1.8, tz + Math.sin(a) * r));
+    const delay = FLAECHE_WARNUNG + i * 0.07;
+    w.events.push({ type: 'telegraph', x, z, r: BOSS.flaechenRadius, t: delay, art });
+    w.queueBlast(x, z, BOSS.flaechenRadius, BOSS.flaechenSchaden * e.dmgMul, delay, 0, group, true, 'boss', 'boss:' + art);
+  }
+}
+
+/** Landung nach dem Sprung: Druckwelle, ab Phase 2 zusätzlich ein Kugelring */
+function landen(w: World, e: Enemy): void {
+  const art = e.def.flaechenArt ?? 'explosion';
+  w.queueBlast(e.x, e.z, BOSS.sprungRadius, BOSS.sprungSchaden * e.dmgMul, 0, 0, w.newGroup(), true, 'boss', 'boss:' + art);
+  if (e.bossPhase >= 2) {
+    const n = 14, off = w.rng.next() * Math.PI;
+    for (let i = 0; i < n; i++) {
+      const a = off + (i / n) * Math.PI * 2;
+      hostileShot(w, e, Math.cos(a), Math.sin(a), 5, BOSS.schuss * e.dmgMul, e.def.ringGeschoss ?? 'toast', art === 'eis' ? 'langsam' : 'keine');
+    }
+  }
+}
+
+/** Boss-Mine an einer Stelle */
+function layMine(w: World, x: number, z: number, dmg: number): void {
+  let n = 0;
+  for (const pr of w.projectiles) if (pr.alive && pr.hostile && pr.antrieb === 'ablegen') n++;
+  if (n >= 32) return;
+  for (const pr of w.projectiles) {
+    if (pr.alive) continue;
+    pr.alive = true; pr.hostile = true; pr.player = -1;
+    pr.geschoss = 'mine'; pr.antrieb = 'ablegen'; pr.ladung = 'explosion';
+    pr.x = pr.px = x; pr.z = pr.pz = z; pr.y = pr.py = 0.12;
+    pr.vx = pr.vz = 0; pr.speed = 0;
+    pr.dmg = dmg; pr.crit = false;
+    pr.target = -1; pr.targetId = 0; pr.life = 10; pr.t = 0; pr.dur = 0; pr.r = 0.75;
+    pr.src = ''; pr.blastMul = 1; pr.pierce = 0; pr.lastHit = 0;
+    pr.slot = -1; pr.mask = 0; pr.instabil = 0; pr.bounces = 0; pr.mode = 0; pr.cd = 0.9; pr.rate = 1;
+    return;
   }
 }
 

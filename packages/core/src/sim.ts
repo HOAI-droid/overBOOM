@@ -9,7 +9,7 @@ import {
 import { spawnBoss, spawnEnemy, stepEnemies, stepWaves } from './enemies.ts';
 import { maintainDrones, pull, rainEgg, spawnChickFor, stepProjectiles, stepWeapons, stormStrike } from './weapons.ts';
 import { addWeapon, creditKill, gainXp, openShop, recomputeStats, runCommand, type Command } from './progression.ts';
-import { BEUTE, FINALBOSS, GEGNER, KOOP, OVERKILL, MAX_GEFAHR, gefahrWerte, type GefahrWerte, GEGNER_INDEX, HELD_BY_ID, INSEL_BY_ID, KAMPF, SPIELER, WELLEN, baseStats, rollAusruestung, type Ausruestung, type Insel, type PlatzId, type Stats } from '../../data/src/index.ts';
+import { BEUTE, EXPLOSION, FINALBOSS, PANZER, GEGNER, INSELN, KOOP, REISE, OVERKILL, MAX_GEFAHR, gefahrWerte, type GefahrWerte, GEGNER_INDEX, HELD_BY_ID, INSEL_BY_ID, KAMPF, SPIELER, WELLEN, baseStats, rollAusruestung, type Ausruestung, type Insel, type PlatzId, type Stats } from '../../data/src/index.ts';
 
 import { ACCEL, BARREL_RADIUS, DASH_COOLDOWN, DASH_SPEED, DASH_TIME, DT, MOVE_SPEED, PLAYER_COLORS, PLAYER_RADIUS } from './constants.ts';
 export * from './constants.ts';
@@ -130,6 +130,11 @@ export type SimEvent =
   | { type: 'overkillVoll'; player: number }
   | { type: 'chain'; count: number; x: number; z: number }
   | { type: 'waveStart'; wave: number; boss: boolean }
+  | { type: 'inselWechsel'; insel: string; index: number }
+  /** Boden leuchtet auf: hier knallt es gleich (Boss-Angriff) */
+  | { type: 'telegraph'; x: number; z: number; r: number; t: number; art: string }
+  /** Finale: die Arena zerbricht (Stufe 1, 2) */
+  | { type: 'arenaBricht'; stufe: number }
   | { type: 'waveClear'; wave: number }
   | { type: 'levelUp'; player: number; level: number; x: number; z: number }
   | { type: 'harvest'; player: number; value: number }
@@ -221,8 +226,18 @@ export class World {
   nextGroup = 1;
   /** Kettengruppe für die große Wellenende-Explosion */
   doomGroup = 0;
-  /** nach Welle 20 weiterspielen */
+  /** nach dem Finale weiterspielen */
   endless = false;
+  /** Reise: Insel-IDs von der Startinsel bis Bummburg */
+  reise: string[] = [];
+  /** Index der aktuellen Insel in der Reise */
+  reiseIndex = 0;
+  /** Welle auf der aktuellen Insel (1-basiert) */
+  inselWelle = 0;
+  /** Art der laufenden Welle */
+  wellenArt: WellenArt = 'normal';
+  /** Seed der aktuellen Arena (Clients bauen sie daraus nach) */
+  arenaSeed = 0;
   /** Slot des Bosses oder -1 */
   boss = -1;
   readonly stats = { kills: 0, maxChain: 0, explosions: 0, damage: 0, crystals: 0, reactions: 0, waffen: {} as Record<string, number> };
@@ -236,8 +251,10 @@ export class World {
 
   private chains: ChainSlot[] = [];
   private scratch = new Int32Array(MAX_ENEMIES);
-  private readonly seed: number;
+  private seed: number;
   private readonly playerCount: number;
+  /** Seed des Runs (für Spielstände) */
+  get runSeed(): number { return this.seed; }
 
   constructor(seed = 1337, playerCount = 1, opt: WorldOptions = {}) {
     this.seed = seed;
@@ -249,7 +266,9 @@ export class World {
     this.gefahr = Math.max(0, Math.min(MAX_GEFAHR, this.opt.gefahr));
     this.gw = gefahrWerte(this.gefahr);
     this.insel = INSEL_BY_ID[this.opt.insel] ?? INSEL_BY_ID.bummburg;
-    this.arena = createArena(seed, this.insel.gefahr as ArenaStyle);
+    this.arenaSeed = arenaSeedFor(seed, 0);
+    this.arena = createArena(this.arenaSeed, this.insel.gefahr as ArenaStyle);
+    this.reise = reiseAb(this.insel.id);
     this.rng = new Rng(seed ^ 0x5eed);
     this.shopRng = new Rng(seed ^ 0x5409);
     this.lootRng = new Rng(seed ^ 0x100f);
@@ -265,8 +284,10 @@ export class World {
     this.reset();
   }
 
-  /** Neuer Run in derselben Arena (gleicher Seed → gleicher Ablauf). */
-  reset(): void {
+  /** Neuer Run (gleicher Seed → gleicher Ablauf; mit neuem Seed → neue Arenen und Wellen). */
+  reset(seed?: number): void {
+    if (seed !== undefined && seed !== this.seed) this.seed = seed;
+    this.startReise(this.reise[0] ?? this.insel.id);
     this.rng = new Rng(this.seed ^ 0x5eed);
     this.shopRng = new Rng(this.seed ^ 0x5409);
     this.lootRng = new Rng(this.seed ^ 0x100f);
@@ -297,13 +318,83 @@ export class World {
   }
 
   /** Insel wechseln: Arena wird neu gebaut (der Renderer erkennt das am neuen arena-Objekt). */
-  setIsland(id: string): void {
+  setIsland(id: string, arenaSeed = this.arenaSeed): void {
     const insel = INSEL_BY_ID[id];
-    if (!insel || insel === this.insel) return;
+    if (!insel || (insel === this.insel && arenaSeed === this.arenaSeed && this.arena)) return;
     this.insel = insel;
-    this.arena = createArena(this.seed, insel.gefahr as ArenaStyle);
+    this.arenaSeed = arenaSeed;
+    this.arena = createArena(arenaSeed, insel.gefahr as ArenaStyle);
     this.barrels = this.arena.props.filter((p) => p.kind === 'barrel' || p.kind === 'heu');
     for (const p of this.players) { p.x = this.arena.spawn.x; p.z = this.arena.spawn.z; }
+  }
+
+  /** Reise ab einer Startinsel beginnen (bis Bummburg) */
+  startReise(id: string): void {
+    const start = INSEL_BY_ID[id] ? id : this.insel.id;
+    this.reise = reiseAb(start);
+    this.reiseIndex = 0;
+    this.inselWelle = 0;
+    this.setIsland(start, arenaSeedFor(this.seed, 0));
+  }
+
+  /** Zur n-ten Insel der Reise wechseln (Arena aus dem Reise-Seed; auch für Clients) */
+  geheZuInsel(index: number): void {
+    const id = this.reise[index];
+    if (!id) return;
+    this.reiseIndex = index;
+    this.setIsland(id, arenaSeedFor(this.seed, index));
+  }
+
+  /** Welle n auf der Reise einordnen (Clients: nach jedem Snapshot) */
+  ordneWelleEin(n: number): void {
+    const pos = this.reisePos(Math.max(1, n));
+    this.inselWelle = pos.inselWelle;
+    this.wellenArt = pos.art;
+  }
+
+  /** Regeln der Reise: Solo länger (mit Speichern), Koop kürzer */
+  get reiseRegel(): { wellen: number; boss: number } {
+    return this.playerCount > 1 ? REISE.koop : REISE.solo;
+  }
+
+  /** Welle des Finales (danach Sieg) */
+  get finalWelle(): number {
+    return this.reise.length * this.reiseRegel.wellen + 1;
+  }
+
+  /** Wo liegt Welle n auf der Reise? (rein rechnerisch – Clients und Spielstände nutzen das auch) */
+  reisePos(n: number): { index: number; inselWelle: number; art: WellenArt } {
+    const W = this.reiseRegel.wellen, L = Math.max(1, this.reise.length);
+    if (n <= L * W) {
+      const iw = ((n - 1) % W) + 1;
+      return { index: Math.floor((n - 1) / W), inselWelle: iw, art: iw === W ? 'baron' : iw === this.reiseRegel.boss ? 'boss' : 'normal' };
+    }
+    const fin = L * W + 1;
+    if (n === fin) return { index: L - 1, inselWelle: W + 1, art: 'finale' };
+    // Endlos: auf der letzten Insel, regelmäßig ein Boss (abwechselnd Inselboss/Baron)
+    const k = n - fin;
+    return { index: L - 1, inselWelle: W + 1 + k, art: k % REISE.endlosBoss === 0 ? ((k / REISE.endlosBoss) % 2 ? 'boss' : 'baron') : 'normal' };
+  }
+
+  /** Finale: Ränder der Arena werden zu Lava (Stufe 1: äußerer Ring, Stufe 2: zweiter Ring) – deterministisch, Clients rufen dasselbe auf */
+  zerbrichArena(stufe: number): void {
+    const a = this.arena, n = a.size;
+    const innen = stufe >= 2 ? 6 : 4;
+    for (let z = 1; z < n - 1; z++) for (let x = 1; x < n - 1; x++) {
+      const rand = Math.min(x, z, n - 1 - x, n - 1 - z);
+      if (rand >= innen) continue;
+      const t = a.tiles[z * n + x];
+      if (t === Tile.Wall || t === Tile.Lava) continue;
+      // ausgefranster Rand statt gerader Kante
+      const h = ((x * 73856093) ^ (z * 19349663) ^ (stufe * 83492791)) >>> 0;
+      if (rand >= innen - 1 && h % 3 === 0) continue;
+      a.tiles[z * n + x] = Tile.Lava;
+      a.heights[z * n + x] = 0;
+    }
+    for (const b of this.barrels) if (Math.min(b.x, b.z, n - b.x, n - b.z) < innen) b.broken = true;
+    // neues Objekt → der Renderer baut die Arena neu
+    this.arena = { ...a };
+    this.events.push({ type: 'arenaBricht', stufe });
   }
 
   setGefahr(n: number): void {
@@ -397,7 +488,7 @@ export class World {
   /* ---------------------------------------------------------------- */
 
   get isBossWave(): boolean {
-    return WELLEN.bossWellen.includes(this.wave) || (this.endless && this.wave > WELLEN.anzahl && this.wave % 10 === 0);
+    return this.wellenArt !== 'normal';
   }
 
   startWave(n: number): void {
@@ -419,10 +510,22 @@ export class World {
       p.z = this.arena.spawn.z + (p.id ? Math.sin(p.id * 1.57) * 1.5 : 0);
       p.vx = p.vz = 0;
     }
+    // Reise: neue Insel? Dann neue Arena (Spieler starten in der Mitte)
+    const pos = this.reisePos(n);
+    if (pos.index !== this.reiseIndex && this.reise[pos.index]) {
+      this.geheZuInsel(pos.index);
+      for (const p of this.players) {
+        p.x = this.arena.spawn.x + (p.id ? Math.cos(p.id * 1.57) * 1.5 : 0);
+        p.z = this.arena.spawn.z + (p.id ? Math.sin(p.id * 1.57) * 1.5 : 0);
+      }
+      this.events.push({ type: 'inselWechsel', insel: this.insel.id, index: pos.index });
+    }
+    this.inselWelle = pos.inselWelle;
+    this.wellenArt = pos.art;
     const boss = this.isBossWave;
-    // Boss-Wellen enden erst, wenn der Boss fällt. Welle 10: Inselboss, Welle 20: Baron von Bumm
-    this.waveTime = boss ? Infinity : WELLEN.dauer(n);
-    if (boss) spawnBoss(this, n % 20 === 0 ? FINALBOSS : this.insel.boss);
+    // Boss-Wellen enden erst, wenn der Boss fällt
+    this.waveTime = boss ? Infinity : REISE.dauer(Math.min(pos.inselWelle, this.reiseRegel.wellen), pos.index);
+    if (boss) spawnBoss(this, pos.art === 'finale' ? FINALBOSS : pos.art === 'baron' ? this.insel.baron : this.insel.boss);
     this.shockT = 0;
     this.events.push({ type: 'waveStart', wave: n, boss });
   }
@@ -438,7 +541,7 @@ export class World {
       c.alive = false;
       if (p) this.collect(p, c);
     }
-    if (this.wave >= WELLEN.anzahl && !this.endless) {
+    if (this.wellenArt === 'finale' && !this.endless) {
       this.phase = 'sieg';
       this.events.push({ type: 'victory', wave: this.wave });
       return;
@@ -672,7 +775,7 @@ export class World {
     if (!this.opt.god) p.hp -= dmg;
     p.invuln = SPIELER.schutzzeit;
     if (p.items.dynamitweste) {
-      this.queueBlast(p.x, p.z, 2.4 * (1 + p.stats.explosion / 100), 30 * (1 + p.stats.schaden / 100), 0, 0, this.newGroup(), false, 'weste', 'dynamitweste');
+      this.queueBlast(p.x, p.z, 2.4 * EXPLOSION.radius(1 + p.stats.explosion / 100), 30 * (1 + p.stats.schaden / 100) * EXPLOSION.schaden(1 + p.stats.explosion / 100), 0, 0, this.newGroup(), false, 'weste', 'dynamitweste');
     }
     const dx = p.x - fromX, dz = p.z - fromZ, d = Math.hypot(dx, dz) || 1;
     if (knock) { p.vx += (dx / d) * 7; p.vz += (dz / d) * 7; }
@@ -780,10 +883,16 @@ export class World {
     this.stats.damage += dealt;
     if (src) this.stats.waffen[src] = (this.stats.waffen[src] ?? 0) + dealt;
     this.events.push({ type: 'hit', id: e.id, x: e.x, y: e.y + 0.9 * (e.elite ? 1.4 : 1) + (e.def.verhalten === 'boss' ? 1.4 : 0), z: e.z, dmg: Math.round(dmg), crit });
-    if (e.def.verhalten === 'boss' && e.bossPhase === 1 && e.hp < e.maxHp * 0.5 && e.hp > 0) {
-      e.bossPhase = 2;
-      e.summonCd = 1.5;
-      this.events.push({ type: 'bossPhase', phase: 2, x: e.x, z: e.z });
+    if (e.def.verhalten === 'boss' && e.hp > 0) {
+      // Finale: drei Phasen (Drittel), sonst zwei (Hälfte)
+      const drei = !!e.def.angriffe3;
+      const ziel = e.hp < e.maxHp * (drei ? 1 / 3 : 0) ? 3 : e.hp < e.maxHp * (drei ? 2 / 3 : 0.5) ? 2 : 1;
+      if (ziel > e.bossPhase) {
+        e.bossPhase = ziel;
+        e.summonCd = 1.5;
+        this.events.push({ type: 'bossPhase', phase: ziel, x: e.x, z: e.z });
+        if (e.def.rang === 'finale') this.zerbrichArena(ziel - 1);
+      }
     }
     if (e.hp <= 0) this.killEnemy(e, chain, group, false, src);
   }
@@ -851,8 +960,8 @@ export class World {
     const r = this.lootRng;
     for (const p of this.players) {
       if (!p.alive) continue;
-      const roll = r.next() * 100 + p.stats.glueck * 0.3 + this.wave * 2;
-      const selt = boss ? (roll > 70 ? 4 : 3) : roll > 95 ? 4 : roll > 70 ? 3 : roll > 35 ? 2 : 1;
+      const roll = r.next() * 100 + p.stats.glueck * 0.3 + Math.min(40, this.wave * BEUTE.wellenBonus);
+      const selt = boss ? (roll > BEUTE.bossLegendaer ? 4 : 3) : roll > BEUTE.legendaer ? 4 : roll > BEUTE.episch ? 3 : roll > BEUTE.selten ? 2 : 1;
       const a = rollAusruestung(() => r.next(), this.equipUid++, Math.max(1, this.wave), selt, boss ? 0.45 : 0.1);
       if (p.beute.length >= BEUTE.maxBeute) p.beute.shift();
       p.beute.push(a);
@@ -968,7 +1077,7 @@ export class World {
         const dx = e.x - b.x, dz = e.z - b.z, d = Math.hypot(dx, dz);
         if (d > b.r + e.r) continue;
         const k = Math.min(1, d / b.r);
-        const dmg = b.dmg * (1 - k * (1 - KAMPF.randSchaden));
+        const dmg = b.dmg * (1 - k * (1 - KAMPF.randSchaden)) * (e.panzer && b.source !== 'boss' ? PANZER.explosionsFaktor : 1);
         const push = 3 + 6 * (1 - k);
         const nx = d > 1e-4 ? dx / d : 1, nz = d > 1e-4 ? dz / d : 0;
         this.damageEnemy(e, dmg, false, nx * push, nz * push, b.chain, b.group, b.src);
@@ -979,6 +1088,12 @@ export class World {
     }
     if (b.hurtsPlayer) {
       for (const p of this.players) if (Math.hypot(p.x - b.x, p.z - b.z) < b.r * 0.85 + PLAYER_RADIUS) this.hurtPlayer(p, b.dmg, b.x, b.z);
+    }
+    // Boss-Bodenflächen hinterlassen je nach Art Lava, Gift oder Glätte
+    if (b.source === 'boss' && b.src.startsWith('boss:')) {
+      const art = b.src.slice(5);
+      if (art === 'lava' || art === 'gift') this.addHazard(art, b.x, b.z, b.r * 0.8, 4, b.dmg * 0.25, '', false, 1, 0, true);
+      else if (art === 'eis') for (const p of this.players) if (Math.hypot(p.x - b.x, p.z - b.z) < b.r * 1.3) p.slowT = Math.max(p.slowT, 2);
     }
     // Kristalle fliegen durch die Druckwelle
     for (const c of this.crystals) {
@@ -1133,4 +1248,18 @@ export class World {
       s: this.stats
     });
   }
+}
+
+/** Art einer Welle auf der Reise */
+export type WellenArt = 'normal' | 'boss' | 'baron' | 'finale';
+
+/** Inseln ab der Startinsel bis zum Ende der Kette (Bummburg) */
+export function reiseAb(start: string): string[] {
+  const i = Math.max(0, INSELN.findIndex((x) => x.id === start));
+  return INSELN.slice(i).map((x) => x.id);
+}
+
+/** Seed der Arena für die n-te Insel der Reise */
+export function arenaSeedFor(seed: number, index: number): number {
+  return ((seed ^ 0x2545f491) + Math.imul(index + 1, 0x9e3779b1)) >>> 0;
 }

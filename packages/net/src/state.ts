@@ -28,6 +28,8 @@ export interface PlayerState {
 
 export interface WorldState {
   insel: string;
+  /** Reise: Insel-Index (die Arena entsteht beim Client aus dem Seed) */
+  reiseIndex?: number;
   gefahr: number;
   endless: boolean;
   waffen: Record<string, number>;
@@ -44,14 +46,15 @@ export function playerState(p: Player): PlayerState {
 }
 
 export function worldState(w: World): WorldState {
-  return { insel: w.insel.id, gefahr: w.gefahr, endless: w.endless, waffen: w.stats.waffen, players: w.players.map(playerState) };
+  return { insel: w.insel.id, reiseIndex: w.reiseIndex, gefahr: w.gefahr, endless: w.endless, waffen: w.stats.waffen, players: w.players.map(playerState) };
 }
 
 const lastWeapons = new WeakMap<Player, string>();
 
 /** Client: langsamen Zustand in die Spiegelwelt übernehmen */
 export function applyWorldState(w: World, st: WorldState): void {
-  if (st.insel && st.insel !== w.insel.id) w.setIsland(st.insel);
+  if (st.reiseIndex !== undefined && st.reiseIndex !== w.reiseIndex) w.geheZuInsel(st.reiseIndex);
+  else if (st.insel && st.insel !== w.insel.id) w.setIsland(st.insel);
   w.endless = st.endless;
   if (st.gefahr !== w.gefahr) w.setGefahr(st.gefahr);
   w.stats.waffen = st.waffen;

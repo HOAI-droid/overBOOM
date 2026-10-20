@@ -3,7 +3,7 @@ import { EnemyState, type World } from '@overboom/core';
 import { ELITE, GEGNER, SELTENHEIT, W } from '@overboom/data';
 import { VoxelInstances } from './instanced.ts';
 import { voxelObject } from './voxel.ts';
-import { discMuster, PROJECTILE_IDS, rezeptModell, baron, bombenpinguin, funkenkobold, kampfhuhn, koenigGockel, kultist, lavaklops, megatoaster, minenbot, morchella, pilzling, schleimi, schneemann, schrottgolem, teslaritter, vogelscheuche, chicken, crown, disc, fusionModel, gem, grummel, kroete, projectileModel, spawnMarker, targetRing, toastomat, turret, weaponModel } from './models.ts';
+import { discMuster, panzerSchild, PROJECTILE_IDS, rezeptModell, baron, baronBlitzbirne, baronGlutbauch, baroninFrostine, baroninGackerella, baroninSchraubella, baroninSporella, grossesKawumm, bombenpinguin, funkenkobold, kampfhuhn, koenigGockel, kultist, lavaklops, megatoaster, minenbot, morchella, pilzling, schleimi, schneemann, schrottgolem, teslaritter, vogelscheuche, chicken, crown, disc, fusionModel, gem, grummel, kroete, projectileModel, spawnMarker, targetRing, toastomat, turret, weaponModel } from './models.ts';
 import { FX, type Effects } from './effects.ts';
 
 export const ENEMY_MODELS: Record<string, { vox: () => ReturnType<typeof grummel>; size: number; top: number; cap: number }> = {
@@ -26,7 +26,15 @@ export const ENEMY_MODELS: Record<string, { vox: () => ReturnType<typeof grummel
   bombenpinguin: { vox: bombenpinguin, size: 0.1, top: 1.1, cap: 150 },
   koenig_gockel: { vox: koenigGockel, size: 0.1, top: 2.5, cap: 4 },
   megatoaster: { vox: megatoaster, size: 0.11, top: 2.2, cap: 4 },
-  morchella: { vox: morchella, size: 0.1, top: 1.9, cap: 4 }
+  morchella: { vox: morchella, size: 0.1, top: 1.9, cap: 4 },
+  // Inselbarone/-baroninnen und Finale
+  baronin_gackerella: { vox: baroninGackerella, size: 0.1, top: 3, cap: 4 },
+  baron_blitzbirne: { vox: baronBlitzbirne, size: 0.1, top: 3.4, cap: 4 },
+  baronin_schraubella: { vox: baroninSchraubella, size: 0.1, top: 3.4, cap: 4 },
+  baronin_sporella: { vox: baroninSporella, size: 0.1, top: 2.7, cap: 4 },
+  baron_glutbauch: { vox: baronGlutbauch, size: 0.1, top: 2.4, cap: 4 },
+  baronin_frostine: { vox: baroninFrostine, size: 0.1, top: 3.1, cap: 4 },
+  kawumm: { vox: grossesKawumm, size: 0.11, top: 4.4, cap: 2 }
 };
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -56,6 +64,8 @@ export class CombatView {
   private gems: VoxelInstances;
   private markers: VoxelInstances;
   private crowns: VoxelInstances;
+  /** Schild über gepanzerten Gegnern (halber Explosionsschaden) */
+  private shields: VoxelInstances;
   private rings: VoxelInstances;
   private turrets: VoxelInstances;
   private chickens: VoxelInstances;
@@ -86,6 +96,7 @@ export class CombatView {
     this.gems = new VoxelInstances(gem(), 0.07, 320, { jitter: 0, shadows: false, origin: [1, 0, 1] });
     this.markers = new VoxelInstances(spawnMarker(), 0.1, 48, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] });
     this.crowns = new VoxelInstances(crown(), 0.07, 64, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] });
+    this.shields = new VoxelInstances(panzerSchild(), 0.06, 160, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] });
     this.rings = new VoxelInstances(targetRing(), 1 / 9, 64, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] });
     this.turrets = new VoxelInstances(turret(), 0.09, 32, { jitter: 0.04, origin: [0.5, 0, 0.5] });
     this.chickens = new VoxelInstances(chicken(1), 0.08, 200, { jitter: 0.04, origin: [0.5, 0, 0.5] });
@@ -100,7 +111,7 @@ export class CombatView {
       sog: new VoxelInstances(discMuster('#b05dff', '#ffffff', 'ring'), 1 / 9, 48, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] })
     };
     this.group.add(this.puddlesCb.lava.group, this.puddlesCb.gift.group, this.puddlesCb.sog.group);
-    this.group.add(this.gems.group, this.markers.group, this.crowns.group, this.rings.group, this.turrets.group, this.chickens.group,
+    this.group.add(this.gems.group, this.markers.group, this.crowns.group, this.shields.group, this.rings.group, this.turrets.group, this.chickens.group,
       this.puddles.lava.group, this.puddles.gift.group, this.puddles.sog.group);
   }
 
@@ -164,6 +175,7 @@ export class CombatView {
     // Gegner
     for (const inst of this.enemies) inst.begin();
     this.crowns.begin();
+    this.shields.begin();
     this.chickens.begin();
     for (const e of w.enemies) {
       if (!e.alive) continue;
@@ -208,6 +220,10 @@ export class CombatView {
       }
       this.enemies[e.type].push(this.matrix(x + jx, y + hop, z, e.facing, pitch, roll, sx * pop * big, sy * pop * big, sx * pop * big), flash);
       const info = ENEMY_MODELS[e.def.id] ?? ENEMY_MODELS.grummelbold;
+      if (e.panzer) {
+        // Schild schwebt neben dem Kopf (über der Krone, falls Elite)
+        this.shields.push(this.matrix(x + jx, y + hop + info.top * big * sy * pop + (e.elite ? 0.42 : 0.12), z, 0, 0, 0, 1, 1, 1));
+      }
       if (e.elite) {
         this.crowns.push(this.matrix(x + jx, y + hop + info.top * big * sy * pop + Math.sin(time * 4) * 0.04, z, time * 1.5, 0, 0, 1.2, 1.2, 1.2));
       }
@@ -219,6 +235,7 @@ export class CombatView {
     }
     for (const inst of this.enemies) inst.end();
     this.crowns.end();
+    this.shields.end();
     this.chickens.end();
 
     // Geschosse
@@ -254,7 +271,8 @@ export class CombatView {
       } else if (pr.geschoss === 'toast') {
         pitch = time * 14;
       }
-      let s = pr.crit ? 1.4 : 1;
+      // feindliche Geschosse etwas größer – im Explosions-Getümmel muss man sie erkennen
+      let s = pr.hostile ? 1.3 : pr.crit ? 1.4 : 1;
       if (pr.antrieb === 'ablegen') { s = pr.cd > 0 ? 0.8 : 1 + (Math.sin(time * 12) > 0.6 ? 0.25 : 0); pitch = 0; roll = 0; }
       else if (pr.antrieb === 'orbit' || pr.antrieb === 'spirale') roll = time * 10;
       else if (pr.antrieb === 'rollen') pitch = time * 14;

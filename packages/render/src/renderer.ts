@@ -286,6 +286,8 @@ export class GameRenderer {
         case 'heal': fx.heal(e.x, e.z); break;
         case 'dodge': fx.dodge(e.x, e.z); break;
         case 'bossSpawn': fx.explosion(e.x, e.z, 2.5, true); kick(0.45); break;
+        case 'telegraph': fx.telegraph(e.x, e.z, e.r, e.t, e.art); break;
+        case 'arenaBricht': kick(0.8); break;
         case 'bossPhase': fx.explosion(e.x, e.z, 2, true); kick(0.35); stop = Math.max(stop, 0.15); this.lastStop = -1; break;
       }
     }

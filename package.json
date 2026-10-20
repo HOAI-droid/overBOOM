@@ -18,7 +18,7 @@
     "build:xbox": "npm run build:web && node tools/xbox-web.mjs",
     "build:artifact": "npm run build:single && python3 tools/to-artifact.py dist-single/index.html dist-single/overboom.html",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "node --experimental-strip-types --no-warnings packages/core/test/sim.test.ts && node --experimental-strip-types --no-warnings packages/net/test/net.test.ts && node --experimental-strip-types --no-warnings packages/audio/test/audio.test.ts && node --experimental-strip-types --no-warnings packages/data/test/i18n.test.ts",
+    "test": "node --experimental-strip-types --no-warnings packages/core/test/arena.test.ts && node --experimental-strip-types --no-warnings packages/core/test/sim.test.ts && node --experimental-strip-types --no-warnings packages/net/test/net.test.ts && node --experimental-strip-types --no-warnings packages/audio/test/audio.test.ts && node --experimental-strip-types --no-warnings packages/data/test/i18n.test.ts",
     "balance": "node --experimental-strip-types --no-warnings packages/core/test/balance-bot.ts",
     "i18n": "node --experimental-strip-types --no-warnings tools/i18n.ts"
   },

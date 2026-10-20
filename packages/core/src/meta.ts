@@ -179,7 +179,8 @@ export class MetaTracker {
             const n = p.bossKills[e.enemy] = (p.bossKills[e.enemy] ?? 0) + 1;
             p.stats.bosse++;
             this.karte(`gegner:${e.enemy}`, n >= KARTEN_REGELN.bossGlanz ? 2 : 1);
-            if ((e.enemy === w.insel.boss || e.enemy === 'baron') && !p.befreit.includes(w.insel.id)) {
+            // Insel befreit, wenn ihr Baron (bzw. ihre Baronin) fällt
+            if (e.enemy === w.insel.baron && !p.befreit.includes(w.insel.id)) {
               p.befreit.push(w.insel.id);
               p.stats.befreit = p.befreit.length;
               this.neues.push({ art: 'insel', id: w.insel.id });
@@ -246,7 +247,8 @@ export class MetaTracker {
         this.neues.push({ art: 'gefahr', id: String(this.profil.gefahrFrei) });
         this.dirty = true;
       }
-      if (!this.profil.erobert.includes(w.insel.id)) { this.profil.erobert.push(w.insel.id); this.dirty = true; }
+      // alle Inseln der Reise gelten als erobert
+      for (const id of w.reise) if (!this.profil.erobert.includes(id)) { this.profil.erobert.push(id); this.dirty = true; }
       if (pl?.held) this.karte(`held:${pl.held}`, 2);
       // einzigartige Items glänzen nach einem Sieg
       if (pl) for (const id in pl.items) if (isUnique(id)) this.karte(`item:${id}`, 2);

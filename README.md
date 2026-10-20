@@ -33,7 +33,8 @@ Die Downloads werden kostenlos und ohne Gewähr bereitgestellt. Solo werden kein
 
 ## Was dich erwartet
 
-- **20 Wellen pro Run** auf **7 Inseln** der Welt Krawummia – jede mit eigener Gegner-Fraktion, Bodengefahr und Boss. Am Ende wartet der Baron von Bumm.
+- **Eine Reise über 7 Inseln** der Welt Krawummia – jede mit eigener Gegner-Fraktion, Bodengefahr, Inselboss und einer Inselbaronin bzw. einem Inselbaron. Solo 15 Wellen pro Insel (Spielstand wird nach jeder Welle gespeichert), im Koop 8. Ganz am Ende: das Große Kawumm in drei Phasen.
+- **Jede Arena ist anders:** Säulen, Kisten, Lava, Gift und Eis werden für jeden Run neu verteilt.
 - **13 Helden** mit eigener Startwaffe und Macke, über Erfolge freischaltbar.
 - **60 Waffen**, Stufen I–V, Sterne, Evolutionen und 12 Mods – plus **Waffen-Fusion** und 40 geheime Rezepte.
 - **159 Items** und **Ausrüstung** mit 8 Plätzen und 4 Sets.
@@ -89,7 +90,8 @@ Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` 
 - Ein Host-Tab im Hintergrund läuft über den Worker-Takt weiter, Browser können ihn aber nach einer Weile drosseln. Am besten bleibt der Host im Vordergrund.
 - Snapshots haben noch keine Delta-Kompression; bei sehr vielen Geschossen werden sie größer (gemessen ~1,5 KB, im Extremfall bis ~20 KB).
 - Gegner laufen direkt auf den Spieler zu (noch kein Flow-Field); an Säulen rutschen sie seitlich ab.
-- Balancing grob: Der Balancing-Bot stirbt oft früh, gute Runs gewinnen. Er nutzt weder Mods, Ausrüstung, Evolutionen noch den OVERBOOM-Modus. Koop- und Gefahren-Werte (`KOOP`, `data/src/danger.ts`) sind Schätzungen.
+- Balancing mit dem Bot justiert (8 Reisen: Tode verteilt über alle Inseln, starke Builds erreichen das Finale). Der Bot nutzt weder Mods, Evolutionen noch den OVERBOOM-Modus; ein guter Spieler ist stärker. Koop- und Gefahren-Werte (`KOOP`, `data/src/danger.ts`) sind Schätzungen.
+- Inselbosse wiederholen sich auf der Reise (4 Bossmodelle für 7 Inseln); jede Insel hat aber eine eigene Baronin bzw. einen eigenen Baron.
 - Fusions-Vorschau am Trainings-Dummy (10 s testen) fehlt noch; Fusionen aus Fusionen sind bewusst nicht möglich.
 - Musik ist bewusst schlicht (prozedurale Loops); Soundeffekte sind synthetisch.
 - Auf echten Handys und der Xbox noch nicht gemessen (nur Headless-Chromium mit Software-Rendering getestet).
@@ -99,6 +101,18 @@ Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` 
 Phase 10: Tests auf echten Geräten (Handy, Xbox, Koop über Mobilfunk), Signaturen und Store-Einträge.
 
 ## Versionsgeschichte
+
+### Version 0.12.0 – die große Reise
+- **Inselreise:** Ein Run führt von der Startinsel bis Bummburg (`REISE` in balance.ts, `World.reise`/`reisePos`). Solo 15 Wellen pro Insel (Inselboss in Welle 10, Baron/Baronin in 15), Koop 8 (5/8). Danach das Finale gegen **Das Große Kawumm** (3 Phasen, die Arena zerbricht zu Lava).
+- **7 Inselbarone und -baroninnen** mit neuen Angriffen: Kugelspiralen, Fächer, Kreuzfeuer, Sprung mit Druckwelle, Minen und angekündigte Bodenflächen (Explosion, Lava, Gift, Blitz, Eis).
+- **Fortsetzen (solo):** Spielstand nach jeder Welle (`core/src/spielstand.ts`, gespeichert als 'lauf').
+- **Zufallsarenen:** `createArena` baut jede Arena aus dem Seed im Stil der Insel, mit Erreichbarkeitsprüfung.
+- **Schwieriger ab Welle 7:** mehr Fernkämpfer und Stürmer, Elite-Gegner mit Kugelring, gepanzerte Gegner ab Welle 12 (halber Explosionsschaden), Bosse mit mitwachsendem Leben. Gegnerkurven ab Welle 15 nach Messung der Spielerstärke über die Reise.
+- **Explosionen:** Radius wächst nur noch begrenzt (höchstens ×2,2), der Rest wird zu Überdruck-Schaden; am Rand weniger Schaden.
+- **Beute:** Legendäres seltener, weniger Bonus pro Welle, Elite-Gegner lassen seltener etwas fallen.
+- **Oberfläche:** feste Kartengrößen, Waffenrahmen in Gruppenfarbe mit Stufen-Plakette, Kartenalbum als Shop-Reiter, unterer Bereich passend zum Reiter, „Überspringen“ im Level-Up, Insel und Inselwelle im HUD.
+- **Koop beitreten:** Fehler im Codefeld werden direkt angezeigt; eingefügte Einladungslinks funktionieren.
+- **Xbox:** WebView2-SDK wird mitgeliefert; Fehler werden angezeigt statt abzustürzen.
 
 ### Version 0.11.0 – vier Sprachen
 - **Mehrsprachigkeit** (Englisch, Deutsch, Spanisch, Französisch):

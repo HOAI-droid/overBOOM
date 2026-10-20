@@ -26,19 +26,25 @@ export const SPIELER = {
 
 /** Wellen über einer Schwelle (0 davor) – für Zuschläge nur im späten Spiel */
 const spaet = (w: number, ab: number) => Math.max(0, w - ab);
+/**
+ * Kurven der ersten 15 Wellen (wie v0.11); danach Potenzgesetz – gemessen mit dem Balancing-Bot,
+ * wie schnell Schaden (≈ Welle^2,0–2,4) und Leben (≈ Welle^1,9) des Spielers über die Reise wachsen.
+ */
+const frueh = {
+  spawn: (w: number) => 1.1 + 0.42 * (w - 1) + 0.025 * spaet(w, 10) ** 2,
+  hp: (w: number) => 1 + 0.25 * (w - 1) + 0.03 * (w - 1) * (w - 1) + 0.13 * spaet(w, 8) ** 2,
+  schaden: (w: number) => 1 + 0.12 * (w - 1) + 0.055 * spaet(w, 8) ** 2
+};
 
 export const WELLEN = {
   /** Wellendauer in s (20 → 60) */
   dauer: (w: number) => Math.min(60, 20 + (w - 1) * 5),
-  /** neue Gegner pro Sekunde */
-  spawnRate: (w: number) => 1.1 + 0.42 * (w - 1) + 0.025 * spaet(w, 10) ** 2,
-  /** HP-Multiplikator der Gegner (ab Welle 9 steiler – frühe Wellen bleiben wie gehabt) */
-  hpFaktor: (w: number) => 1 + 0.25 * (w - 1) + 0.03 * (w - 1) * (w - 1) + 0.13 * spaet(w, 8) ** 2,
-  /** Schadens-Multiplikator der Gegner (ab Welle 9 steiler) */
-  schadenFaktor: (w: number) => 1 + 0.12 * (w - 1) + 0.055 * spaet(w, 8) ** 2,
-  /** Wellen pro Run; danach Sieg (optional Endlos) */
-  anzahl: 20,
-  bossWellen: [10, 20] as readonly number[],
+  /** neue Gegner pro Sekunde (die Obergrenze maxGegner bremst später ohnehin) */
+  spawnRate: (w: number) => w <= 15 ? frueh.spawn(w) : frueh.spawn(15) * (w / 15) ** 1.2,
+  /** HP-Multiplikator der Gegner: bis Welle 25 wie gehabt, danach wie die Spielerstärke (Messung des Bots) */
+  hpFaktor: (w: number) => w <= 15 ? frueh.hp(w) : frueh.hp(15) * (w / 15) ** 2.15,
+  /** Schadens-Multiplikator der Gegner: danach etwas langsamer als bisher, damit das Leben mithält */
+  schadenFaktor: (w: number) => w <= 15 ? frueh.schaden(w) : frueh.schaden(15) * (w / 15) ** 2.05,
   maxGegner: 140,
   /** kurze Pause nach der Welle (alles explodiert, Kristalle fliegen ein), dann Shop */
   pause: 2.5,
@@ -50,13 +56,46 @@ export const WELLEN = {
   rudelChance: 0.35
 };
 
+/**
+ * Reise über die Inseln: Ein Run führt von der Startinsel bis Bummburg.
+ * Pro Insel: Inselboss in Welle `boss`, Baron(in) in der letzten Inselwelle; danach geht es weiter.
+ * Nach der letzten Insel folgt das Finale gegen das Große Kawumm.
+ */
+export const REISE = {
+  solo: { wellen: 15, boss: 10 },
+  /** Koop ist kürzer (ohne Speichern) */
+  koop: { wellen: 8, boss: 5 },
+  /** Wellendauer in s: erste Insel wie gehabt (20 → 60), danach kürzer – die Reise ist lang */
+  dauer: (inselWelle: number, inselIndex: number) =>
+    inselIndex === 0 ? Math.min(60, 20 + (inselWelle - 1) * 5) : Math.min(45, 28 + (inselWelle - 1) * 2),
+  /** Endlos nach dem Finale: alle so vielen Wellen ein Boss */
+  endlosBoss: 5
+};
+
+/**
+ * Explosionsgröße: wächst mit „Explosion %" und Großkaliber, aber immer langsamer
+ * (bis ×1,6 voll, darüber halb, höchstens ×2,2). Was darüber hinausgeht, wird zu
+ * Überdruck: mehr Explosionsschaden statt noch größerer Explosionen.
+ */
+export const EXPLOSION = {
+  voll: 1.6,
+  rest: 0.5,
+  max: 2.2,
+  /** Schaden je überzähligem Radius-Faktor */
+  ueberdruck: 0.6,
+  /** roher Faktor → begrenzter Radius-Faktor */
+  radius: (roh: number) => Math.max(0.3, roh <= 1.6 ? roh : Math.min(2.2, 1.6 + (roh - 1.6) * 0.5)),
+  /** roher Faktor → Schadensfaktor aus Überdruck */
+  schaden: (roh: number) => 1 + Math.max(0, roh - EXPLOSION.radius(roh)) * 0.6
+};
+
 export const KAMPF = {
   /** Grundschaden aller Waffen (Stellschraube fürs Balancing) */
   waffenSchaden: 1,
   kritChance: 0.1,
   kritFaktor: 2,
   /** Explosionsschaden am Rand relativ zur Mitte */
-  randSchaden: 0.45,
+  randSchaden: 0.35,
   /** Verzögerung je Kettenglied – macht Ketten sichtbar */
   kettenVerzoegerung: 0.11,
   explosionsRadius: 2,
@@ -125,15 +164,55 @@ export const ELITE = {
   kristalle: 6
 };
 
+/** Ab Welle 7 kommen öfter Fernkämpfer und Stürmer (aus dem Inselpool) – man muss ausweichen */
+export const VERSTAERKUNG = {
+  chance: (w: number) => (w < 7 ? 0 : Math.min(0.35, 0.06 + 0.025 * (w - 7))),
+  verhalten: ['fernkampf', 'sprinter', 'rutscher', 'kamikaze'] as readonly string[]
+};
+
+/** Gepanzerte Gegner: halber Explosionsschaden – wer nur Explosionen kauft, kommt ins Schwitzen */
+export const PANZER = {
+  abWelle: 12,
+  chance: (w: number) => (w < 12 ? 0 : Math.min(0.3, 0.08 + 0.01 * (w - 12))),
+  explosionsFaktor: 0.5
+};
+
+/** Elite-Gegner ab Welle 7: Sonderangriff (angekündigter Kugelring) */
+export const ELITE_ANGRIFF = {
+  abWelle: 7,
+  intervall: 4.5,
+  /** Vorwarnung (Aufleuchten) */
+  warnung: 0.6,
+  kugeln: 8,
+  tempo: 4.2,
+  schaden: 7
+};
+
 export const BOSS = {
-  hpFaktor: (w: number) => (w >= 20 ? 2.6 : 1) * (1 + Math.max(0, w - 20) * 0.3),
+  /**
+   * Boss-Leben wächst wie das der normalen Gegner (vorher fest – Bosse lagen nach Sekunden).
+   * Ziel: Inselboss ~30–60 s, Baron etwas länger, Finale ein langer Kampf in drei Phasen.
+   */
+  hpFaktor: (w: number, rang: 'boss' | 'baron' | 'finale' = 'boss') => WELLEN.hpFaktor(w) * BOSS.rangLeben[rang] * (w < 10 ? 0.6 + 0.04 * w : 1),
+  rangLeben: { boss: 2.2, baron: 2.6, finale: 3 } as Record<'boss' | 'baron' | 'finale', number>,
   /** Spawnrate normaler Gegner in Boss-Wellen */
   spawnAnteil: 0.4,
   bombenSchaden: 16,
   bombenRadius: 1.8,
   flugzeit: 1.1,
   phase1: { intervall: 2.3, salve: 3 },
-  phase2: { intervall: 1.7, salve: 6, kroetenIntervall: 6.5, kroeten: 3 }
+  phase2: { intervall: 1.7, salve: 6, kroetenIntervall: 6.5, kroeten: 3 },
+  /** Pausen zwischen den Angriffen je Rang (Faktor) */
+  rangTempo: { boss: 1, baron: 0.85, finale: 0.75 } as Record<'boss' | 'baron' | 'finale', number>,
+  /** Grundschaden eines Boss-Geschosses */
+  schuss: 9,
+  /** Anzahl Bodenflächen je Phase */
+  flaechen: [4, 6, 8] as readonly number[],
+  flaechenRadius: 1.5,
+  flaechenSchaden: 18,
+  sprungRadius: 2.4,
+  sprungSchaden: 22,
+  minenSchaden: 14
 };
 
 /** Koop (2–4 Spieler): Gegner zäher und zahlreicher, Wiederbeleben über den Revive-Ring */
@@ -143,8 +222,8 @@ export const KOOP = {
   hpProSpieler: 0.35,
   /** Spawnrate +30 % je weiterem Spieler */
   spawnProSpieler: 0.3,
-  /** Boss-Leben +60 % je weiterem Spieler */
-  bossProSpieler: 0.6,
+  /** Boss-Leben +45 % je weiterem Spieler */
+  bossProSpieler: 0.45,
   /** so lange muss ein Mitspieler im Ring stehen (s) */
   reviveZeit: 2.5,
   reviveRadius: 1.5,

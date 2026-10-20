@@ -1,6 +1,6 @@
 import './fonts.css';
-import { World, DT, DASH_COOLDOWN, NO_INPUT, MetaTracker, heldenFrei, inselFrei, ladeProfil, profilAusCode, profilCode, spawnEnemy, type Command, type InputState, type SimEvent } from '@overboom/core';
-import { t, istSprache, type Sprache, ladeWoerterbuch, lokalisiereDaten, setzeWoerterbuch, spracheAus, GEGNER_INDEX, BOSS_LORE, ELEMENT_INFO, ERFOLGE, GEGNER, GEGNER_BY_ID, HELD_BY_ID, INSELN, INSEL_BY_ID, INSEL_LORE, KARTE_BY_ID, LEVEL, SELTENHEIT, SYNERGIEN, WELLEN, WELLEN_SPRUECHE, waffeById, waehle } from '@overboom/data';
+import { World, DT, DASH_COOLDOWN, NO_INPUT, MetaTracker, istSpielstand, ladeLauf, speicherbar, speichereLauf, type Spielstand, heldenFrei, inselFrei, ladeProfil, profilAusCode, profilCode, spawnEnemy, type Command, type InputState, type SimEvent } from '@overboom/core';
+import { t, istSprache, type Sprache, ladeWoerterbuch, lokalisiereDaten, setzeWoerterbuch, spracheAus, GEGNER_INDEX, BOSS_LORE, ELEMENT_INFO, ERFOLGE, GEGNER, GEGNER_BY_ID, HELD_BY_ID, INSELN, INSEL_BY_ID, INSEL_LORE, KARTE_BY_ID, LEVEL, REISE, SELTENHEIT, SYNERGIEN, WELLEN, WELLEN_SPRUECHE, waffeById, waehle } from '@overboom/data';
 import { CardArt, FX, GameRenderer, type PlayerPose } from '@overboom/render';
 import { AudioEngine, renderMusik } from '@overboom/audio';
 import { sprachwahl, Controls, DamageNumbers, DebugMenu, Hud, MenuNav, Menus, NameTags, karteAlsBild, ladeEinstellungen, screenToWorld, type CoopAktion, type CoopAnsicht, type Einstellungen } from '@overboom/ui';
@@ -283,8 +283,37 @@ async function start() {
     endTimer = -1; freeze = 0; acc = 0; paused = false;
   };
 
+  /** Spielstand des Solo-Runs (Fortsetzen); leer = keiner */
+  const laufSpeichern = () => {
+    if (modus !== 'solo' || world !== soloWorld || !speicherbar(world)) return;
+    gespeichert = speichereLauf(world);
+    menus.fortsetzen = laufText(gespeichert);
+    void platform.storage.set('lauf', JSON.stringify(gespeichert));
+  };
+  const laufLoeschen = () => { if (modus === 'solo') { gespeichert = null; menus.fortsetzen = ''; void platform.storage.set('lauf', ''); } };
+  // Gespeicherten Run laden (Titel zeigt dann „Fortsetzen")
+  let gespeichert: Spielstand | null = null;
+  try { const roh = await platform.storage.get('lauf'); const st = roh ? JSON.parse(roh) : null; if (istSpielstand(st)) gespeichert = st; } catch { /* kaputt → ignorieren */ }
+  const laufText = (st: Spielstand) => {
+    // nächste Welle auf der Reise (Solo: REISE.solo.wellen pro Insel)
+    const W = REISE.solo.wellen, start = Math.max(0, INSELN.findIndex((i) => i.id === st.start));
+    const insel = INSELN[Math.min(INSELN.length - 1, start + Math.floor(st.wave / W))];
+    return `${insel.name} · ${t('Welle {n} / {max}', { n: Math.min(W, (st.wave % W) + 1), max: W })}`;
+  };
+  if (gespeichert) menus.fortsetzen = laufText(gespeichert);
+  menus.onFortsetzen = () => {
+    if (!gespeichert || modus !== 'solo') return;
+    ladeLauf(soloWorld, gespeichert);
+    useWorld(soloWorld, 0);
+    runs++;
+    meta.neuerRun();
+    menus.screen = 'spiel';
+    menus.hide();
+  };
+
   const restart = () => {
-    world.reset();
+    // jeder Run mit neuem Seed: neue Arenen, neue Wellen
+    world.reset((seed + (runs + 1) * 7919) >>> 0);
     world.players[0].crystals = startGems;
     giveDebug();
     prev = poses();
@@ -524,16 +553,21 @@ async function start() {
         case 'heal': damage.text(-e.player - 100, e.x, 1.1, e.z, `+${e.value}`, 'heal'); break;
         case 'levelUp': damage.text(-e.player - 200, e.x, 1.6, e.z, t('Level up!'), 'lvl'); if (e.player === me) haptic(30); break;
         case 'waveStart': {
-          const bossId = e.wave >= 20 ? 'baron' : world.insel.boss;
-          if (e.boss) hud.banner(t('{name}!', { name: GEGNER_BY_ID[bossId]?.name ?? t('Boss') }), BOSS_LORE[bossId]?.auftritt ?? '', 'rot');
-          else if (e.wave === 1) hud.banner(world.insel.name, INSEL_LORE[world.insel.id]?.ankunft ?? t('Auf geht’s!'), 'gelb');
-          else hud.banner(t('Welle {n}', { n: e.wave }), e.wave === 20 ? t('Die letzte!') : waehle(WELLEN_SPRUECHE, `${seed}:${runs}:${e.wave}`), 'gelb');
+          // neuer Solo-Run: alter Spielstand ist hinfällig
+          if (e.wave === 1 && modus === 'solo' && gespeichert) laufLoeschen();
+          const pos = world.reisePos(e.wave);
+          const bossId = pos.art === 'finale' ? 'kawumm' : pos.art === 'baron' ? world.insel.baron : world.insel.boss;
+          if (pos.art === 'finale') hud.banner(t('Das Finale!'), BOSS_LORE[bossId]?.auftritt ?? GEGNER_BY_ID[bossId]?.name ?? '', 'rot');
+          else if (e.boss) hud.banner(t('{name}!', { name: GEGNER_BY_ID[bossId]?.name ?? t('Boss') }), BOSS_LORE[bossId]?.auftritt ?? '', 'rot');
+          else if (pos.inselWelle === 1) hud.banner(world.insel.name, `${t('Insel {i}/{n}', { i: pos.index + 1, n: world.reise.length })} · ${INSEL_LORE[world.insel.id]?.ankunft ?? t('Auf geht’s!')}`, 'gelb');
+          else hud.banner(t('Welle {n}', { n: pos.inselWelle }), waehle(WELLEN_SPRUECHE, `${seed}:${runs}:${e.wave}`), 'gelb');
           break;
         }
         case 'bossPhase': {
-          const bossId = world.wave >= 20 ? 'baron' : world.insel.boss;
-          hud.banner(t('Jetzt wird’s ernst!'), BOSS_LORE[bossId]?.wut ?? '', 'rot'); haptic(120); break;
+          const bossId = world.enemies[world.boss]?.def.id ?? world.insel.boss;
+          hud.banner(e.phase >= 3 ? t('Letzte Phase!') : t('Jetzt wird’s ernst!'), e.phase >= 3 ? t('Die Arena zerbricht!') : BOSS_LORE[bossId]?.wut ?? '', 'rot'); haptic(120); break;
         }
+        case 'shopOpen': laufSpeichern(); break;
         case 'waveClear': hud.banner(t('Welle geschafft!'), t('Alles fliegt in die Luft'), 'cyan'); haptic(80); break;
         case 'victory': endTimer = 1.2; break;
         case 'fusion':
@@ -683,6 +717,7 @@ async function start() {
       endTimer -= dt;
       if (endTimer <= 0) {
         meta.runEnde(world, world.phase === 'sieg');
+        laufLoeschen();
         announce();
         save(true);
         menus.showEnd(endStats(world.phase === 'sieg'), seed + runs);
@@ -712,6 +747,7 @@ async function start() {
       info: `${w}×${h} · ${t('{n} Gegner', { n: world.enemyCount })}${modus === 'client' && client ? ` · ${(client.bytes / 1024).toFixed(1)} KB` : ''}`,
       hp: p.hp, maxHp: p.maxHp, crystals: p.crystals,
       wave: world.wave, waveTime: world.waveTime, phase: world.phase,
+      inselWelle: world.inselWelle, inselWellen: world.reiseRegel.wellen, insel: world.insel.name, inselNr: world.reiseIndex + 1, inseln: world.reise.length, finale: world.wellenArt === 'finale',
       level: p.level, xp: p.xp / LEVEL.xpBedarf(p.level),
       boss: boss && boss.alive ? Math.max(0, boss.hp / boss.maxHp) : -1,
       overkill: p.overkill, boomT: p.boomT

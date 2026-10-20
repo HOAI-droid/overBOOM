@@ -86,6 +86,41 @@ export const BOSS_LORE: Record<string, { auftritt: string; wut: string; sieg: st
     auftritt: '„Ich bin nicht dick, ich bin explosiv gebaut!"',
     wut: 'Der Baron ruft Verstärkung',
     sieg: 'Baron von Bumm fliegt im hohen Bogen davon. „Das war noch nicht das letzte KAWUMM!"'
+  },
+  baronin_gackerella: {
+    auftritt: '„Gack! Man verneigt sich vor einer Dame, Federloser!"',
+    wut: 'Die Baronin rümpft den Schnabel – jetzt wird gegackert!',
+    sieg: 'Gackerella rafft die Federn und stolziert beleidigt davon. Ein Ei bleibt liegen. Mit Monogramm.'
+  },
+  baron_blitzbirne: {
+    auftritt: '„Mir geht ein Licht auf – und dir gleich die Puste aus!"',
+    wut: 'Die Birne flackert gefährlich hell!',
+    sieg: 'Plopp. Die Birne ist durch. Irgendwo ruft jemand: „Wer macht das Licht wieder an?"'
+  },
+  baronin_schraubella: {
+    auftritt: '„Ich ziehe dir die Schrauben an. Alle. Gleichzeitig."',
+    wut: 'Schraubella dreht voll auf!',
+    sieg: 'Schraubella zerfällt in ein ordentlich sortiertes Häufchen Schrauben. Gründlich bis zuletzt.'
+  },
+  baronin_sporella: {
+    auftritt: '„Atme tief ein, Schätzchen. Ganz tief."',
+    wut: 'Der Moosschleier bebt – die Luft wird dick!',
+    sieg: 'Sporella sinkt in sich zusammen. Zurück bleibt ein Hut, unter dem bequem ein Dorf Platz hätte.'
+  },
+  baron_glutbauch: {
+    auftritt: '„Heiß? Ich? Ich bin glühend vor Wut!"',
+    wut: 'Glutbauchs Bauch brodelt über!',
+    sieg: 'Zisch! Glutbauch kühlt zu einem sehr beleidigten Stein ab. Der Schnauzbart raucht noch ein bisschen.'
+  },
+  baronin_frostine: {
+    auftritt: '„Wie unhöflich, mir so warm zu kommen."',
+    wut: 'Frostine wird eisig – sogar die Luft klirrt!',
+    sieg: 'Frostine schmilzt dahin. „Das … ist … unter meiner Würde", tropft sie.'
+  },
+  kawumm: {
+    auftritt: '„KA… WUMM… KAAAAWUMMMM!!!"',
+    wut: 'Das Große Kawumm brodelt – die Arena bricht auseinander!',
+    sieg: 'Das Große Kawumm macht ein letztes, winziges „pfff". Über Krawummia geht zum ersten Mal seit Langem die Sonne auf.'
   }
 };
 

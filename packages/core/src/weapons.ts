@@ -1,7 +1,7 @@
 import { DT, PLAYER_RADIUS } from './constants.ts';
 import type { World, Player } from './sim.ts';
 import type { Enemy, Projectile, WeaponSlot } from './entities.ts';
-import { AMBOSS, KAMPF, OVERKILL, LADUNG_ELEMENT, STERNE, STUFEN, elemente, findeReaktion, type Reaktionselement, type Waffe } from '../../data/src/index.ts';
+import { AMBOSS, EXPLOSION, KAMPF, OVERKILL, LADUNG_ELEMENT, STERNE, STUFEN, elemente, findeReaktion, type Reaktionselement, type Waffe } from '../../data/src/index.ts';
 
 /**
  * Waffen feuern automatisch auf den nächsten Gegner in Reichweite.
@@ -58,6 +58,11 @@ interface HitCtx {
   dmg: number;
   crit: boolean;
 }
+/** roher Explosionsfaktor eines Spielers (Radius und Überdruck daraus über EXPLOSION) */
+function explosionsRoh(p: Player, gross: boolean): number {
+  return Math.max(0.3, 1 + p.stats.explosion / 100) * (gross ? 1.5 : 1);
+}
+
 const ctx: HitCtx = { mods: 0, player: 0, ladung: '', geschoss: '', src: '', blastMul: 1, instabil: 0, mask: 0, dmg: 0, crit: false };
 
 function ctxFromShot(pr: Projectile): HitCtx {
@@ -70,7 +75,7 @@ function ctxFromShot(pr: Projectile): HitCtx {
 function ctxFromSlot(p: Player, s: WeaponSlot, dmg: number, crit: boolean): HitCtx {
   const w = s.waffe;
   ctx.player = p.id; ctx.ladung = w.ladung; ctx.geschoss = w.geschoss; ctx.src = w.id;
-  ctx.blastMul = Math.max(0.3, 1 + p.stats.explosion / 100) * (s.mask & SP.gross ? 1.5 : 1); ctx.instabil = w.fusion?.instabil ?? 0;
+  ctx.blastMul = explosionsRoh(p, (s.mask & SP.gross) !== 0); ctx.instabil = w.fusion?.instabil ?? 0;
   ctx.mask = s.mask; ctx.dmg = dmg; ctx.crit = crit;
   ctx.mods = s.modMask;
   return ctx;
@@ -217,7 +222,7 @@ function spawnShot(w: World, p: Player, s: WeaponSlot, slot: number, flight: str
   pr.t = 0;
   pr.r = 0.15;
   pr.src = waffe.id;
-  pr.blastMul = Math.max(0.3, 1 + p.stats.explosion / 100);
+  pr.blastMul = explosionsRoh(p, (s.mask & SP.gross) !== 0);
   pr.pierce = waffe.ladung === 'plasma' ? 3 : 0;
   pr.lastHit = 0;
   pr.slot = -1;
@@ -225,7 +230,7 @@ function spawnShot(w: World, p: Player, s: WeaponSlot, slot: number, flight: str
   pr.instabil = waffe.fusion?.instabil ?? 0;
   pr.bounces = 0; pr.mode = 0; pr.cd = 0; pr.rate = 1;
   pr.mods = s.modMask;
-  if (s.mask & SP.gross) { pr.blastMul *= 1.5; pr.r *= 1.4; }
+  if (s.mask & SP.gross) pr.r *= 1.4;
   pr.ang = Math.atan2(dz, dx); pr.rad = 0;
   pr.life = (range / speed) * 1.25 + 0.1;
 
@@ -338,13 +343,14 @@ function impactAt(w: World, c: HitCtx, x: number, z: number, e: Enemy | null, dx
   switch (c.ladung) {
     case 'explosion': {
       const g = w.newGroup();
-      const r = KAMPF.explosionsRadius * c.blastMul;
+      const r = KAMPF.explosionsRadius * EXPLOSION.radius(c.blastMul);
+      const druck = EXPLOSION.schaden(c.blastMul);
       const owner = w.players[c.player];
       // Explosiv-Synergie 6: jede 10. Explosion ist eine Mini-Nuke
       if (owner?.syn.mininuke && ++owner.boomCount % 10 === 0) {
-        w.queueBlast(x, z, r * 2.2, c.dmg * 3, 0, 0, g, false, 'nuke', c.src);
+        w.queueBlast(x, z, r * 2.2, c.dmg * 3 * druck, 0, 0, g, false, 'nuke', c.src);
         w.events.push({ type: 'nuke', x, z });
-      } else w.queueBlast(x, z, r, c.dmg, 0, 0, g, false, 'waffe', c.src);
+      } else w.queueBlast(x, z, r, c.dmg * druck, 0, 0, g, false, 'waffe', c.src);
       if (owner?.syn.feuerpfuetzen && w.rng.chance(0.35)) w.addHazard('lava', x, z, 0.9, 2.5, c.dmg * 0.25, c.src, false, 1, 0);
       if (c.mask & SP.cluster) {
         for (let k = 0; k < 3; k++) {
@@ -359,7 +365,7 @@ function impactAt(w: World, c: HitCtx, x: number, z: number, e: Enemy | null, dx
       if (e) { zap(w, c, e); kawumm(w, c, e); return; }
       break;
     case 'schwerkraft':
-      w.addHazard('sog', x, z, 2.6, 2, 0, c.src, (c.mask & SP.implosion) !== 0, c.blastMul, c.dmg);
+      w.addHazard('sog', x, z, 2.6, 2, 0, c.src, (c.mask & SP.implosion) !== 0, EXPLOSION.radius(c.blastMul), c.dmg);
       if (e) hitEnemy(w, c, e, dx, dz, true);
       return;
   }
@@ -419,7 +425,7 @@ function hitEnemy(w: World, c: HitCtx, e: Enemy, dx: number, dz: number, primary
   if (c.mask & SP.heilkeks && owner && w.rng.chance(0.15)) w.heal(owner, 1);
   if (primary && c.mask >= SP.minibumm) rezeptTreffer(w, c, e, boss);
   // OVERBOOM-Modus: jeder Treffer explodiert
-  if (primary && owner && owner.boomT > 0 && c.src !== 'overboom') w.queueBlast(e.x, e.z, OVERKILL.bummRadius * c.blastMul, c.dmg * OVERKILL.bummSchaden, 0.04, 1, w.newGroup(), false, 'waffe', 'overboom');
+  if (primary && owner && owner.boomT > 0 && c.src !== 'overboom') w.queueBlast(e.x, e.z, OVERKILL.bummRadius * EXPLOSION.radius(c.blastMul), c.dmg * OVERKILL.bummSchaden, 0.04, 1, w.newGroup(), false, 'waffe', 'overboom');
   // Mods
   const m = c.mods;
   if (m && primary) {
@@ -454,7 +460,7 @@ function kawumm(w: World, c: HitCtx, e: Enemy): void {
   const instabil = w.players[c.player]?.syn.chaosinstabil ? Math.max(40, c.instabil) : c.instabil;
   if (!c.crit || instabil <= 0) return;
   if (w.rng.next() >= (instabil / 100) * AMBOSS.kawummChance) return;
-  w.queueBlast(e.x, e.z, AMBOSS.kawummRadius * c.blastMul, c.dmg * AMBOSS.kawummSchaden, 0.06, 0, w.newGroup(), false, 'kawumm', c.src);
+  w.queueBlast(e.x, e.z, AMBOSS.kawummRadius * EXPLOSION.radius(c.blastMul), c.dmg * AMBOSS.kawummSchaden, 0.06, 0, w.newGroup(), false, 'kawumm', c.src);
   w.events.push({ type: 'kawumm', x: e.x, z: e.z });
 }
 
@@ -958,18 +964,18 @@ function react(w: World, c: HitCtx, e: Enemy, inc: Reaktionselement): void {
   switch (r.id) {
     case 'dampfexplosion':
       e.burnT = 0; e.slow = 0; e.frost = 0; e.frostT = 0;
-      w.queueBlast(x, z, 2 * c.blastMul, dmg * 2.5, 0, 0, w.newGroup(), false, 'reaktion', c.src);
+      w.queueBlast(x, z, 2 * EXPLOSION.radius(c.blastMul), dmg * 2.5, 0, 0, w.newGroup(), false, 'reaktion', c.src);
       break;
     case 'dampfwolke':
       e.wet = 0;
       each(2.2, (o) => { stun(o, 1.4); o.burnT = 0; });
       break;
     case 'stinkbombe':
-      w.queueBlast(x, z, 1.8 * c.blastMul, dmg * 1.5, 0, 0, w.newGroup(), false, 'reaktion', c.src);
+      w.queueBlast(x, z, 1.8 * EXPLOSION.radius(c.blastMul), dmg * 1.5, 0, 0, w.newGroup(), false, 'reaktion', c.src);
       each(2.4, (o) => { o.poisonT = 4; o.poisonDps = Math.max(o.poisonDps, e.poisonDps, dmg * 0.3); });
       break;
     case 'plasmabrand':
-      w.queueBlast(x, z, 1.6 * c.blastMul, dmg * 2, 0, 0, w.newGroup(), false, 'reaktion', c.src);
+      w.queueBlast(x, z, 1.6 * EXPLOSION.radius(c.blastMul), dmg * 2, 0, 0, w.newGroup(), false, 'reaktion', c.src);
       break;
     case 'feuerwirbel':
       w.addHazard('lava', x, z, 1.6, 4, dmg * 0.6, c.src, false, 1, 0);
@@ -1058,7 +1064,7 @@ export function stormStrike(w: World, p: Player, dmg: number): void {
 /** Sonderwirkungen der späteren Rezepte (nur beim Haupttreffer) */
 function rezeptTreffer(w: World, c: HitCtx, e: Enemy, boss: boolean): void {
   const m = c.mask;
-  if (m & SP.minibumm && w.rng.chance(0.22)) w.queueBlast(e.x, e.z, 1.3 * c.blastMul, c.dmg * 0.6, 0.06, 1, w.newGroup(), false, 'waffe', c.src);
+  if (m & SP.minibumm && w.rng.chance(0.22)) w.queueBlast(e.x, e.z, 1.3 * EXPLOSION.radius(c.blastMul), c.dmg * 0.6, 0.06, 1, w.newGroup(), false, 'waffe', c.src);
   if (m & SP.feuerspur && w.rng.chance(0.25)) w.addHazard('lava', e.x, e.z, 0.8, 3, c.dmg * 0.4, c.src, false, 1, 0);
   if (m & SP.goldregen && w.rng.chance(0.15)) w.spawnCrystal(e.x, e.z, 1);
   if (m & SP.frostnova && w.rng.chance(0.12)) {
@@ -1083,7 +1089,7 @@ export function rainEgg(w: World, p: Player, x: number, z: number, dmg: number, 
   const pr = freeProjectile(w);
   if (!pr) return;
   ctx.player = p.id; ctx.ladung = 'explosion'; ctx.geschoss = 'ei'; ctx.src = 'eierregen';
-  ctx.blastMul = Math.max(0.3, 1 + p.stats.explosion / 100); ctx.instabil = 0; ctx.mask = 0; ctx.dmg = dmg; ctx.crit = false;
+  ctx.blastMul = explosionsRoh(p, false); ctx.instabil = 0; ctx.mask = 0; ctx.dmg = dmg; ctx.crit = false;
   initChild(pr, ctx, x, z, 7, 0, 0, 0, dmg);
   pr.antrieb = 'regen'; pr.tx = x; pr.tz = z; pr.dur = 0.55; pr.life = 2 + delay; pr.r = 0.9; pr.t = -delay;
 }

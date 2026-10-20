@@ -129,6 +129,11 @@ function scorchTexture(): THREE.Texture {
  * Alle Partikel- und Explosionseffekte. Entstehen ausschließlich aus Simulations-Ereignissen;
  * eigener Zufall (rnd), damit die Simulation unberührt bleibt.
  */
+/** Farben der Warnflächen je Art des Boss-Angriffs */
+const TELEGRAPH_FARBE: Record<string, string> = {
+  explosion: '#ff7a1a', lava: '#ff3d1a', gift: '#7dff5a', blitz: '#3de8ff', eis: '#a8f6ff'
+};
+
 export class Effects {
   readonly group = new THREE.Group();
   readonly dust: ParticlePool;
@@ -143,6 +148,9 @@ export class Effects {
   private bolts: { pts: Float32Array; n: number; t: number }[] = [];
   private beams: { mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial; t: number; w: number }[] = [];
   private arcs: { mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial; t: number; r: number }[] = [];
+  /** Warnflächen der Boss-Angriffe: Rand blinkt, Füllung wächst bis zum Einschlag */
+  private marks: { rand: THREE.Mesh; fill: THREE.Mesh; randMat: THREE.MeshBasicMaterial; fillMat: THREE.MeshBasicMaterial; t: number; max: number; r: number }[] = [];
+  private markIdx = 0;
   private beamIdx = 0;
   private arcIdx = 0;
   private tmpColor = new THREE.Color();
@@ -218,6 +226,19 @@ export class Effects {
       mesh.visible = false;
       this.group.add(mesh);
       this.arcs.push({ mesh, mat, t: 0, r: 1 });
+    }
+    const markRand = new THREE.RingGeometry(0.86, 1, 32, 1);
+    markRand.rotateX(-Math.PI / 2);
+    const markFill = new THREE.CircleGeometry(1, 32);
+    markFill.rotateX(-Math.PI / 2);
+    for (let i = 0; i < 28; i++) {
+      const randMat = new THREE.MeshBasicMaterial({ color: '#ff7a1a', transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+      const fillMat = new THREE.MeshBasicMaterial({ color: '#ff7a1a', transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+      const rand = new THREE.Mesh(markRand, randMat), fill = new THREE.Mesh(markFill, fillMat);
+      rand.visible = fill.visible = false;
+      rand.renderOrder = fill.renderOrder = 2;
+      this.group.add(rand, fill);
+      this.marks.push({ rand, fill, randMat, fillMat, t: 0, max: 1, r: 1 });
     }
     for (let i = 0; i < 24; i++) this.bolts.push({ pts: new Float32Array(ZAP_POINTS * 3), n: 0, t: 0 });
     this.boltPos = new Float32Array(24 * (ZAP_POINTS - 1) * ZAP_SUB * 2 * 3);
@@ -569,6 +590,17 @@ export class Effects {
     }
   }
 
+  /** Boss-Angriff kündigt sich an: hier schlägt es nach `time` Sekunden ein */
+  telegraph(x: number, z: number, r: number, time: number, art: string): void {
+    const m = this.marks[this.markIdx++ % this.marks.length];
+    const c = TELEGRAPH_FARBE[art] ?? TELEGRAPH_FARBE.explosion;
+    m.t = time; m.max = time; m.r = r;
+    m.randMat.color.set(c); m.fillMat.color.set(c);
+    m.rand.position.set(x, 0.05, z); m.fill.position.set(x, 0.045, z);
+    m.rand.scale.set(r, 1, r);
+    m.rand.visible = m.fill.visible = true;
+  }
+
   private ring(x: number, z: number, r: number, color: number, time: number): void {
     const g = this.rings[this.ringIdx++ % this.rings.length];
     g.t = time; g.max = time; g.r = r;
@@ -610,6 +642,17 @@ export class Effects {
     this.fire.update(dt);
     this.smoke.update(dt);
 
+    for (const m of this.marks) {
+      if (m.t <= 0) continue;
+      m.t -= dt;
+      if (m.t <= 0) { m.rand.visible = m.fill.visible = false; continue; }
+      const k = 1 - m.t / m.max;
+      // Rand blinkt immer schneller, Füllung wächst bis zum Einschlag
+      m.randMat.opacity = 0.55 + 0.45 * Math.abs(Math.sin(k * k * 22));
+      const f = m.r * (0.15 + 0.85 * k);
+      m.fill.scale.set(f, 1, f);
+      m.fillMat.opacity = 0.18 + 0.22 * k;
+    }
     for (const g of this.rings) {
       if (g.t <= 0) continue;
       g.t -= dt;

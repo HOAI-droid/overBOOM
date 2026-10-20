@@ -177,7 +177,7 @@ export function rollAusruestung(next: () => number, uid: number, welle: number, 
   const a = art ?? arten[Math.floor(next() * arten.length)];
   const b = BASIS[a][Math.floor(next() * BASIS[a].length)];
   const r = Math.max(1, Math.min(4, seltenheit));
-  const skala = 1 + Math.max(0, welle - 1) * 0.04;
+  const skala = 1 + Math.max(0, welle - 1) * BEUTE.wellenSkala;
   const werte: Partial<Record<StatKey, number>> = {};
   const add = (k: StatKey, f: number) => { werte[k] = (werte[k] ?? 0) + Math.max(1, Math.round(SPANNE[k][r - 1] * f * skala)); };
   add(b.stat, 1.2);
@@ -210,7 +210,16 @@ export function setBoni(teile: readonly (Ausruestung | null)[]): { set: SetDef; 
 
 export const BEUTE = {
   /** Chance, dass ein Elite-Gegner Ausrüstung fallen lässt */
-  eliteChance: 0.3,
+  eliteChance: 0.2,
+  /** Beute-Wurf (0–100) + Glück × 0,3 + Welle × wellenBonus (höchstens +40): Schwellen der Seltenheit */
+  wellenBonus: 1.2,
+  selten: 40,
+  episch: 75,
+  legendaer: 97,
+  /** Bosse lassen immer Episch oder besser fallen */
+  bossLegendaer: 82,
+  /** Werte der Teile wachsen je Welle um diesen Anteil */
+  wellenSkala: 0.025,
   /** Rucksack für noch nicht angelegte Teile */
   maxBeute: 10,
   /** Anteil Ausrüstung an Shop-Angeboten */

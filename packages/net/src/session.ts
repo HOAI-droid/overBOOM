@@ -321,7 +321,7 @@ export class ClientSession {
       case 'start': {
         if (from !== this.hostId) return;
         const w = new World(m.seed, m.namen.length, { choose: true });
-        w.setIsland(m.insel);
+        w.startReise(m.insel);
         m.namen.forEach((n, i) => { w.players[i].name = n; if (m.helden[i]) w.setHero(w.players[i], m.helden[i]); });
         w.phase = 'welle';
         this.world = w;
@@ -398,11 +398,15 @@ export class ClientSession {
       for (const e of s.events) {
         // eigene Schritte/Dashes zeigt die Vorhersage schon
         if ((e.type === 'dash' || e.type === 'step' || e.type === 'bump') && e.player === this.slot) continue;
+        // Reise und zerbrechende Arena in der Spiegelwelt nachbauen (deterministisch aus dem Seed)
+        if (e.type === 'inselWechsel' && e.index !== w.reiseIndex) w.geheZuInsel(e.index);
+        if (e.type === 'arenaBricht') w.zerbrichArena(e.stufe);
         out.push(e);
       }
     }
     const t = a === b ? 1 : Math.max(0, Math.min(1, (render - a.tick) / (b.tick - a.tick)));
     applySnapshot(w, a, b, t, this.slot);
+    w.ordneWelleEin(w.wave);
     this.reconcile(w, b);
   }
 

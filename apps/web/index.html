@@ -68,10 +68,13 @@
   #game.in-menu .ob-dash, #game.in-menu .ob-hint, #game.in-menu .ob-chain { visibility: hidden; }
 
   /* Menüs: Startwahl, Level-Up, Shop, Ende, Pause */
-  .ob-menu { position: absolute; inset: 0; z-index: 5; display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: max(14px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); box-sizing: border-box; background: rgba(11, 8, 20, 0.72); overscroll-behavior: contain; touch-action: pan-y; }
+  .ob-menu { position: absolute; inset: 0; z-index: 5; display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: max(14px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); box-sizing: border-box; background: rgba(11, 8, 20, 0.72); overscroll-behavior: contain; touch-action: pan-y;
+    /* feste Kartengröße (Shop, Amboss, Ausrüstung, Level-Up, Startwahl) und Höhe des Waffendetails */
+    --kw: 200px; --kh: 276px; --dh: 300px; }
   /* Kartenalbum */
-  .ob-album .ob-tabs { margin: 8px 0 10px; }
-  .ob-album .ob-tab { min-height: 36px; padding: 0 10px; font-size: 12px; }
+  .ob-album .ob-subtabs { margin: 8px 0 10px; }
+  .ob-album .ob-subtabs .ob-tab { min-height: 36px; padding: 0 10px; font-size: 12px; }
+  .ob-shop.ob-album > .ob-sub { display: block; margin: 0 0 4px; }
   .ob-albumbtn { white-space: nowrap; }
   .ob-kgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
   .ob-kc { position: relative; aspect-ratio: 5 / 7; padding: 4px; border: 3px solid var(--rc); background: linear-gradient(170deg, color-mix(in srgb, var(--ec) 35%, #1c1434) 0%, #1c1434 70%); color: #f4ecff; display: flex; flex-direction: column; align-items: stretch; gap: 2px; box-shadow: 0 0 0 2px var(--ink); overflow: hidden; }
@@ -130,6 +133,9 @@
   .ob-field input, .ob-codein { font-family: inherit; font-size: 16px; min-height: 44px; padding: 0 10px; background: #140e24; color: #f4ecff; border: 3px solid #3b2b66; box-sizing: border-box; }
   .ob-codein { width: 7.5em; text-align: center; text-transform: uppercase; letter-spacing: 3px; }
   .ob-field input:focus, .ob-codein:focus { outline: none; border-color: var(--yellow); }
+  .ob-codein.ob-fehler { border-color: var(--red); animation: ob-wackeln 0.3s; }
+  @keyframes ob-wackeln { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+  .ob-codehint { margin: -4px 0 0; min-height: 1.5em; font-size: 11px; line-height: 1.5; text-align: center; text-transform: uppercase; color: #c9bfe8; }
   .ob-lobby-top { display: grid; grid-template-columns: auto auto 1fr; gap: 12px; align-items: start; }
   @media (max-width: 640px) { .ob-lobby-top { grid-template-columns: 1fr 1fr; } .ob-lspieler { grid-column: 1 / -1; } }
   .ob-raum { display: flex; flex-direction: column; gap: 6px; }
@@ -239,13 +245,28 @@
   .ob-h3 { margin: 16px 0 8px; font-size: 13px; text-transform: uppercase; color: #f4ecff; }
   .ob-h3 small { margin-left: 6px; font-size: 9px; color: #8a80a8; }
   .ob-sub { margin: 8px 0 14px; font-size: 11px; line-height: 1.5; color: #c9bfe8; }
-  .ob-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+  .ob-cards { display: grid; grid-template-columns: repeat(auto-fit, var(--kw)); grid-auto-rows: var(--kh); justify-content: center; gap: 10px; }
   .ob-card { position: relative; display: flex; flex-direction: column; gap: 6px; min-height: 44px; padding: 10px; text-align: left; color: #f4ecff; background: #1c1434; border: 3px solid var(--rc, #9a94b0); box-shadow: 0 0 0 2px var(--ink), inset 0 0 0 2px rgba(0,0,0,0.35); font-size: 11px; }
   button.ob-card:hover, button.ob-card:focus-visible { transform: translateY(-2px) rotate(-0.6deg); background: #251b45; }
   .ob-card.locked { box-shadow: 0 0 0 2px var(--ink), 0 0 0 5px var(--cyan); }
   .ob-card.ob-sold { opacity: 0.35; justify-content: center; align-items: center; }
   .ob-kind { font-size: 9px; text-transform: uppercase; color: var(--rc, #9a94b0); }
   .ob-name { font-size: 14px; font-weight: 700; line-height: 1.25; }
+  /* Karte mit fester Größe: Kopf, Inhalt (scrollt innen bei Überlänge), Knöpfe unten */
+  .ob-k { height: var(--kh); min-width: 0; box-sizing: border-box; overflow: hidden; gap: 5px; }
+  .ob-k > .ob-kind { flex: none; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; overflow-wrap: anywhere; }
+  .ob-k > .ob-name { flex: none; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+  .ob-kbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 5px; scrollbar-width: thin; scrollbar-color: #5a4a8a transparent; overflow-wrap: break-word; }
+  .ob-kbody::-webkit-scrollbar { width: 4px; } .ob-kbody::-webkit-scrollbar-thumb { background: #5a4a8a; }
+  .ob-kfuss { flex: none; display: flex; flex-wrap: wrap; gap: 6px; }
+  .ob-kfuss .ob-btn2 { min-height: 36px; padding: 0 8px; font-size: 10px; flex: 1 1 auto; justify-content: center; }
+  .ob-card.ob-leer { border-style: dashed; border-color: #3b2b66; color: #6b6188; }
+  .ob-card.ob-leer .ob-kind { color: #8a80a8; }
+  /* Waffen: Rahmen = Gruppe (--rc), Stufe = Plakette und Namensfarbe (--tc) */
+  .ob-kw > .ob-kind { padding-right: 30px; }
+  .ob-kw .ob-name, .ob-slot .ob-sname { color: var(--tc, #f4ecff); }
+  .ob-plak { position: absolute; top: 0; right: 0; z-index: 1; min-width: 22px; padding: 2px 4px; box-sizing: border-box; text-align: center; font-size: 10px; font-weight: 700; line-height: 1.2; color: var(--ink); background: var(--tc, #9a94b0); border-left: 2px solid var(--ink); border-bottom: 2px solid var(--ink); }
+  .ob-gr { font-size: 8px; color: #c9bfe8; text-transform: uppercase; }
   .ob-tier { color: var(--rc, #9a94b0); }
   .ob-lines { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; line-height: 1.35; }
   .ob-lines b { color: var(--yellow); font-weight: 400; }
@@ -258,7 +279,7 @@
   .ob-tags span { padding: 2px 5px; font-size: 8px; text-transform: uppercase; background: #3b2b66; }
   .ob-warn { font-size: 9px; color: var(--red); text-transform: uppercase; }
   .ob-hint2 { font-size: 9px; color: var(--cyan); text-transform: uppercase; }
-  .ob-buy { margin-top: auto; display: flex; gap: 6px; }
+  .ob-buy, .ob-kfuss:has(.ob-price) { margin-top: auto; display: flex; flex-wrap: nowrap; gap: 6px; }
   .ob-price { flex: 1; min-height: 44px; border: 3px solid var(--ink); background: var(--yellow); color: var(--ink); font-size: 15px; font-weight: 700; box-shadow: 0 4px 0 #c2410c; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .ob-price:active { transform: translateY(3px); box-shadow: 0 1px 0 #c2410c; }
   .ob-price:disabled { background: #4b3f6e; color: #8a80a8; box-shadow: none; cursor: default; }
@@ -272,18 +293,36 @@
   .ob-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
   .ob-row.ob-center { justify-content: center; }
   .ob-actions .ob-go { margin-left: auto; }
+  /* Aktionsleiste im Shop bleibt beim Scrollen unten sichtbar */
+  .ob-shop .ob-actions { position: sticky; bottom: -16px; z-index: 3; margin: 12px -16px 0; padding: 8px 16px 12px; background: #1e1538; box-shadow: 0 -3px 0 #3b2b66; }
   .ob-btn2 { min-height: 44px; padding: 0 14px; border: 3px solid var(--ink); background: #3b2b66; color: #f4ecff; font-size: 12px; text-transform: uppercase; box-shadow: 0 4px 0 #1c1434; display: inline-flex; align-items: center; gap: 6px; }
   .ob-btn2:disabled { opacity: 0.4; cursor: default; }
   .ob-go { min-height: 48px; padding: 0 20px; border: 3px solid var(--ink); background: var(--yellow); color: var(--ink); font-size: 16px; font-weight: 700; text-transform: uppercase; box-shadow: 0 5px 0 #c2410c, 0 5px 0 3px var(--ink); }
   .ob-go:disabled { background: #4b3f6e; color: #8a80a8; box-shadow: none; cursor: default; }
   .ob-go:active { transform: translateY(3px); box-shadow: 0 2px 0 #c2410c, 0 2px 0 3px var(--ink); }
   .ob-slots { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
-  .ob-slot { position: relative; min-height: 52px; padding: 6px 4px; border: 3px solid var(--rc, #3b2b66); background: #1c1434; color: #f4ecff; font-size: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-align: center; box-shadow: 0 0 0 2px var(--ink); }
-  .ob-slot b { color: var(--rc); font-size: 12px; }
+  .ob-slot { position: relative; height: 64px; min-width: 0; box-sizing: border-box; padding: 6px 4px; border: 3px solid var(--rc, #3b2b66); background: #1c1434; color: #f4ecff; font-size: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-align: center; box-shadow: 0 0 0 2px var(--ink); }
+  .ob-slot .ob-sname { max-width: 100%; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2; }
+  .ob-slot .ob-sgr { max-width: 100%; font-size: 8px; text-transform: uppercase; color: var(--rc); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ob-slot .ob-plak { font-size: 8px; min-width: 16px; padding: 1px 3px; }
+  .ob-slot .ob-warn { font-size: 7px; }
+  .ob-slot.ob-gleich { opacity: 0.6; }
   .ob-slot em { position: absolute; top: -8px; right: -6px; padding: 1px 4px; font-style: normal; font-size: 11px; color: var(--ink); background: var(--cyan); border: 2px solid var(--ink); }
   .ob-slot.empty { border-style: dashed; border-color: #3b2b66; opacity: 0.5; }
+  .ob-slot em.ob-merge { top: auto; bottom: -8px; }
+  .ob-slot em.ob-nr { right: auto; left: -6px; }
   .ob-slot.sel { background: #3b2b66; }
-  .ob-detail { margin-top: 10px; padding: 10px; border: 3px solid var(--rc); background: #1c1434; font-size: 11px; display: flex; flex-direction: column; gap: 6px; }
+  /* Waffendetail mit fester Höhe – Inhalt scrollt innen, nichts springt beim Durchschalten */
+  .ob-detail { position: relative; height: var(--dh); box-sizing: border-box; margin-top: 10px; padding: 10px; border: 3px solid var(--rc); background: #1c1434; font-size: 11px; display: flex; flex-direction: column; gap: 6px; }
+  .ob-dkopf { flex: none; display: flex; align-items: baseline; gap: 10px; padding-right: 30px; min-width: 0; }
+  .ob-dkopf .ob-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 0; }
+  .ob-dkopf .ob-kind { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 0; }
+  .ob-dbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 16px; align-content: start; scrollbar-width: thin; scrollbar-color: #5a4a8a transparent; }
+  .ob-dspalte { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .ob-dspalte p { margin: 0; }
+  .ob-dspalte .ob-row { margin-top: 0; }
+  .ob-dfuss { flex: none; margin-top: 0; }
+  .ob-detail .ob-plak { font-size: 12px; min-width: 28px; padding: 3px 6px; }
   .ob-items { display: flex; flex-wrap: wrap; gap: 6px; }
   .ob-chip { padding: 4px 7px; font-size: 9px; border: 2px solid var(--rc); background: #1c1434; }
   .ob-none { font-size: 10px; color: #8a80a8; }
@@ -296,8 +335,49 @@
   .ob-end-stats { display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; margin: 0 0 6px; font-size: 12px; text-transform: uppercase; text-align: left; }
   .ob-end-stats dd { margin: 0; color: var(--yellow); text-align: right; }
   .ob-keys { margin: 12px 0 0; font-size: 9px; color: #8a80a8; text-transform: uppercase; }
-  @media (max-width: 600px) { .ob-slots { grid-template-columns: repeat(3, minmax(0, 1fr)); } .ob-cards { grid-template-columns: 1fr 1fr; } .ob-card { font-size: 10px; } .ob-name { font-size: 12px; } .ob-actions .ob-go { margin-left: 0; width: 100%; } }
-  @media (max-width: 380px) { .ob-cards { grid-template-columns: 1fr; } }
+  /* Handy quer / kleine Höhe: kleinere Karten, damit 4 nebeneinander passen */
+  @media (max-height: 500px) {
+    .ob-menu { --kw: 176px; --kh: 222px; --dh: 210px; padding-top: max(6px, env(safe-area-inset-top)); padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+    .ob-panel { padding: 10px 12px; }
+    .ob-shop .ob-shop-head { flex-wrap: nowrap; align-items: flex-start; }
+    .ob-shop .ob-shop-head .ob-tabs { flex: 1 1 auto; min-width: 0; gap: 6px; }
+    .ob-shop .ob-tabs small { flex-basis: 100%; font-size: 9px; }
+    .ob-shop .ob-wallet { padding: 3px 8px; font-size: 16px; }
+    .ob-k { padding: 7px 8px; gap: 3px; font-size: 10px; }
+    .ob-k .ob-name { font-size: 12px; line-height: 1.2; }
+    .ob-k .ob-lines { gap: 2px; line-height: 1.3; }
+    .ob-k .ob-part { font-size: 9px; }
+    .ob-k .ob-price, .ob-k .ob-lock { min-height: 38px; }
+    .ob-h3 { margin: 10px 0 6px; }
+    .ob-shop .ob-actions { bottom: -10px; margin: 8px -12px 0; padding: 5px 12px 7px; gap: 6px; }
+    .ob-shop .ob-actions .ob-btn2 { min-height: 36px; font-size: 11px; padding: 0 10px; }
+    .ob-shop .ob-actions .ob-go { min-height: 38px; font-size: 14px; box-shadow: 0 3px 0 #c2410c, 0 3px 0 3px var(--ink); }
+    .ob-tab { min-height: 34px; font-size: 12px; padding: 0 8px; }
+    .ob-shop-head { margin-bottom: 8px; }
+    .ob-detail { font-size: 10px; padding: 8px; }
+  }
+  @media (max-width: 600px) { .ob-menu { --kh: 252px; } .ob-slots { grid-template-columns: repeat(3, minmax(0, 1fr)); } .ob-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ob-card { font-size: 10px; } .ob-name { font-size: 12px; } .ob-actions .ob-go { margin-left: 0; width: 100%; } .ob-dbody { grid-template-columns: minmax(0, 1fr); } .ob-menu { --dh: 340px; } .ob-fuserow > .ob-k { width: calc(50% - 6px); } }
+  @media (max-width: 380px) { .ob-cards { grid-template-columns: minmax(0, 1fr); } }
+  /* großer Bildschirm / TV (1080p): größere Karten und Schrift */
+  @media (min-width: 1600px) and (min-height: 900px) {
+    .ob-menu { --kw: 250px; --kh: 340px; --dh: 360px; }
+    .ob-panel.ob-wide { width: min(1340px, 100%); }
+    .ob-k { padding: 12px; font-size: 13px; gap: 7px; }
+    .ob-k .ob-kind { font-size: 11px; }
+    .ob-k .ob-name { font-size: 17px; }
+    .ob-k .ob-part { font-size: 12px; }
+    .ob-k .ob-flavor { font-size: 11px; }
+    .ob-k .ob-tags span { font-size: 10px; }
+    .ob-k .ob-plak { font-size: 13px; min-width: 28px; }
+    .ob-slot { height: 78px; font-size: 11px; }
+    .ob-slot .ob-sgr { font-size: 9px; }
+    .ob-detail { font-size: 13px; }
+    .ob-detail .ob-part { font-size: 12px; }
+    .ob-detail .ob-flavor { font-size: 11px; }
+    .ob-h3 { font-size: 15px; } .ob-h3 small { font-size: 11px; }
+    .ob-synlist li { font-size: 11px; } .ob-chip { font-size: 11px; }
+    .ob-codehint { font-size: 12px; }
+  }
   .ob-dmg.kawumm { font-size: 15px; color: var(--magenta); text-shadow: 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 2px 0 var(--ink), 0 -2px 0 var(--ink); }
   .ob-hero .ob-name { color: var(--rc); }
   .ob-island { background: linear-gradient(160deg, var(--bg, #1c1434) 0%, #1c1434 60%); }
@@ -311,15 +391,11 @@
   .ob-stars { font-size: 8px; color: var(--yellow); letter-spacing: -1px; }
   .ob-stars.ready { animation: ob-blink 0.6s steps(2) infinite; }
   .ob-evo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ob-evo .ob-card { min-width: 0; }
+  .ob-evo .ob-name { overflow-wrap: anywhere; }
   .ob-tabs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .ob-tabs small { font-size: 10px; color: #c9bfe8; }
   .ob-badge { font-style: normal; margin-left: 4px; padding: 0 4px; background: var(--magenta, #ff3df0); color: var(--ink); font-size: 11px; }
-  .ob-gearslots { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
-  .ob-gear { display: flex; flex-direction: column; gap: 3px; padding: 6px; border: 3px solid var(--rc, #3b2b66); background: #1c1434; color: #f4ecff; font-size: 9px; box-shadow: 0 0 0 2px var(--ink); }
-  .ob-gear.empty { border-style: dashed; color: #6b6188; min-height: 52px; }
-  .ob-gear b { color: var(--rc); font-size: 11px; }
-  .ob-gear .ob-lines { margin: 0; }
-  .ob-gear .ob-btn2 { min-height: 32px; font-size: 10px; }
   .ob-sets li.some b { color: var(--yellow); }
   .ob-sets li b { color: #c9bfe8; }
   .ob-setparts { display: block; color: #6b6188; }
@@ -327,17 +403,19 @@
   .ob-tab.on { background: var(--yellow); color: var(--ink); box-shadow: 0 4px 0 #c2410c; }
   .ob-slot .ob-fz { position: absolute; top: -8px; left: -6px; font-style: normal; font-size: 10px; padding: 0 3px; color: var(--ink); background: var(--magenta); border: 2px solid var(--ink); }
   .ob-slot:disabled { opacity: 0.45; cursor: default; }
-  .ob-slot b { font-size: 8px; }
   .ob-parts { display: flex; flex-direction: column; gap: 6px; }
   .ob-partrow { display: grid; grid-template-columns: 150px repeat(3, minmax(0, 1fr)); gap: 6px; align-items: stretch; }
   .ob-partlabel { font-size: 10px; color: #c9bfe8; text-transform: uppercase; align-self: center; }
   .ob-part-btn { min-width: 0; overflow-wrap: break-word; hyphens: auto; min-height: 44px; padding: 4px 6px; border: 3px solid #3b2b66; background: #1c1434; color: #f4ecff; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
   .ob-part-btn small { font-size: 8px; color: #8a80a8; }
   .ob-part-btn.on { border-color: var(--cyan); background: #173a4a; box-shadow: 0 0 0 2px var(--ink); }
-  .ob-preview { margin-top: 12px; }
+  .ob-fuserow { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-top: 12px; }
+  .ob-fuserow > .ob-k { width: var(--kw); flex: none; }
+  .ob-fuseside { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+  .ob-fuseside .ob-warn { margin: 0; max-width: 320px; }
   .ob-preview.recipe { box-shadow: 0 0 0 2px var(--ink), 0 0 18px 2px rgba(255, 61, 240, 0.5); }
   .ob-preview .ob-name small { font-size: 10px; color: #c9bfe8; }
-  .ob-instabil { position: relative; height: 14px; background: #2a1f45; border: 2px solid var(--ink); }
+  .ob-instabil { display: block; flex: none; position: relative; height: 14px; background: #2a1f45; border: 2px solid var(--ink); }
   .ob-instabil i { position: absolute; inset: 0 auto 0 0; background: repeating-linear-gradient(90deg, var(--magenta) 0 6px, var(--orange) 6px 12px); }
   .ob-instabil span { position: relative; z-index: 1; display: block; font-size: 8px; line-height: 10px; padding-left: 4px; text-shadow: 0 1px 0 var(--ink); }
   .ob-book { margin: 10px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }

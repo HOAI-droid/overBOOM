@@ -3,11 +3,11 @@ import {
   type Command, type Profil, type Player, type World, type WeaponSlot
 } from '@overboom/core';
 import {
-  A, AMBOSS, EVOLUTION, G, GEGNER_BY_ID, INSEL_BY_ID, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, evoName, HELDEN, HELD_BY_ID, INSELN, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
+  A, AMBOSS, EVOLUTION, G, GEGNER_BY_ID, INSEL_BY_ID, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, evoName, HELDEN, HELD_BY_ID, INSELN, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Gruppe, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W,
   elemente, t, type StatKey, INSEL_LORE, WELT, SIEG_TEXT, SPRUECHE_TOD, PLAETZE, SETS, SET_BY_ID, setBoni, schrottwert, BEUTE, type Ausruestung, zahl, ausruestungsName } from '@overboom/data';
 import { gefahrWahl } from './gefahr.ts';
 import { STANDARD, einstellungenHtml, type Einstellungen } from './settings.ts';
-import { lobbyHtml, titelHtml, type CoopAktion, type CoopAnsicht } from './lobby.ts';
+import { RAUMCODE_LAENGE, codeHinweis, leseRaumcode, lobbyHtml, titelHtml, type CoopAktion, type CoopAnsicht } from './lobby.ts';
 import { ALBUM_TABS, albumGrid, albumZaehler, erfolgeHtml, karteGross, kartenListe, type AlbumTab, type KartenKunst } from './album.ts';
 import { PAD_HINWEIS } from './glyphs.ts';
 import { koopHinweisHtml, rechtlichesHtml } from './rechtliches.ts';
@@ -30,8 +30,88 @@ function statLine(k: StatKey, v: number): string {
   return `<li class="${good ? 'up' : 'down'}">${signed(v)}${info.einheit ? ' %' : ''} ${info.name}</li>`;
 }
 
+function seltenheitsFarbe(stufe: number): string {
+  return SELTENHEIT[Math.max(0, Math.min(4, stufe - 1))].farbe;
+}
+
+/** Rahmen in Seltenheitsfarbe (Items, Ausrüstung, Mods, Verbesserungen) */
 function rarity(tier: number): string {
-  return `style="--rc:${SELTENHEIT[Math.max(0, Math.min(4, tier - 1))].farbe}"`;
+  return `style="--rc:${seltenheitsFarbe(tier)}"`;
+}
+
+/** Rahmenfarben der Waffengruppen (Schlüssel = Logik-Wert `gruppe`, Anzeige mit t()) */
+const GRUPPEN_FARBE: Record<Gruppe, string> = {
+  'Feuerwaffen': '#ff7a1a',
+  'Explosiv': '#ff4b5c',
+  'Elementar': '#3de8ff',
+  'Nahkampf': '#ffd23f',
+  'Energie': '#ff3df0',
+  'Drohnen & Türme': '#7dff5a',
+  'Beschwörung': '#a77bff',
+  'Werfer': '#d39a62',
+  'Exotisch': '#2fe0a8',
+  'Support': '#6f9bff'
+};
+
+function gruppenListe(w: Waffe): Gruppe[] {
+  return w.fusion?.gruppen.length ? w.fusion.gruppen : [w.gruppe];
+}
+function gruppenFarbe(g: Gruppe): string {
+  return GRUPPEN_FARBE[g] ?? '#9a94b0';
+}
+/** Gruppenname(n) einer Waffe für die Anzeige */
+function gruppenText(w: Waffe, trenner = ' · '): string {
+  return gruppenListe(w).map((g) => t(g)).join(trenner);
+}
+
+/**
+ * Waffen: Rahmen = Waffengruppe (Fusionen: mehrfarbig), Stufe I–V steckt in
+ * `--tc` (Plakette und Name in Seltenheitsfarbe).
+ */
+function waffenStil(w: Waffe, tier: number): string {
+  const gs = gruppenListe(w);
+  let s = `--rc:${gruppenFarbe(gs[0])};--tc:${seltenheitsFarbe(tier)}`;
+  if (gs.length > 1) {
+    const stops = gs.map((g, i) => `${gruppenFarbe(g)} ${Math.round((i / gs.length) * 100)}% ${Math.round(((i + 1) / gs.length) * 100)}%`).join(',');
+    s += `;border-image:linear-gradient(135deg,${stops}) 1`;
+  }
+  return `style="${s}"`;
+}
+
+/** Stufen-Plakette (römische Zahl auf Seltenheitsfarbe) */
+function plakette(tier: number): string {
+  return `<b class="ob-plak" title="${t('Stufe {n}', { n: TIER_ZAHL[tier - 1] })}">${TIER_ZAHL[tier - 1]}</b>`;
+}
+
+interface KartenInhalt {
+  /** 'button' für wählbare Karten (Level-Up, Held, Evolution) */
+  tag?: 'div' | 'button';
+  cls?: string;
+  /** style-Attribut mit `--rc` (Rahmen) bzw. `--tc` */
+  stil: string;
+  attrs?: string;
+  kind: string;
+  name: string;
+  /** Stufe für die Plakette (nur Waffen) */
+  stufe?: number;
+  body: string;
+  /** Knöpfe am unteren Rand (bleiben immer sichtbar) */
+  fuss?: string;
+}
+
+/**
+ * Einheitliche Karte mit fester Größe: Kopf (Art, Name) oben, Inhalt dazwischen
+ * (scrollt bei Überlänge innen), Knöpfe unten. Größe kommt aus `--kw`/`--kh`.
+ */
+function karte(k: KartenInhalt): string {
+  const tag = k.tag ?? 'div';
+  return `<${tag} ${tag === 'button' ? 'type="button" ' : ''}class="ob-card ob-k ${k.stufe ? 'ob-kw' : ''} ${k.cls ?? ''}" ${k.stil} ${k.attrs ?? ''}>
+    ${k.stufe ? plakette(k.stufe) : ''}
+    <span class="ob-kind">${k.kind}</span>
+    <span class="ob-name">${k.name}</span>
+    <span class="ob-kbody">${k.body}</span>
+    ${k.fuss ? `<span class="ob-kfuss">${k.fuss}</span>` : ''}
+  </${tag}>`;
 }
 
 /** Werte einer Waffe so, wie sie mit den aktuellen Spielerwerten feuern würde */
@@ -45,7 +125,7 @@ function weaponLines(p: Player, w: Waffe, tier: number, real?: WeaponSlot): stri
     <li>${t('Reichweite')} <b>${fmt(weaponRange(p, slot))} m</b></li>
     ${fu}<li class="ob-part"><b>${A[w.antrieb].name}:</b> ${A[w.antrieb].text}</li>
     <li class="ob-part"><b>${L[w.ladung].name}:</b> ${L[w.ladung].text}</li>
-  </ul>${w.fusion ? instabilBar(w.fusion.instabil) : ''}${el.length ? `<div class="ob-tags">${el.map((e) => `<span>${t(e)}</span>`).join('')}</div>` : ''}`;
+  </ul>${w.fusion ? instabilBar(w.fusion.instabil) : ''}${el.length ? `<span class="ob-tags">${el.map((e) => `<span>${t(e)}</span>`).join('')}</span>` : ''}`;
 }
 
 /** Anzeigename der Ausrüstungsart (t() erst zur Laufzeit, weil die Sprache beim Import noch nicht steht) */
@@ -66,11 +146,7 @@ function gearLines(a: Ausruestung): string {
 }
 
 function instabilBar(v: number): string {
-  return `<div class="ob-instabil" title="${t('Bei Krit kann es spontan Kawumm machen')}"><span>${t('Instabil {n} %', { n: v })}</span><i style="width:${v}%"></i></div>`;
-}
-
-function weaponTitle(w: Waffe, tier: number): string {
-  return `${w.name} <span class="ob-tier">${TIER_ZAHL[tier - 1]}</span>`;
+  return `<span class="ob-instabil" title="${t('Bei Krit kann es spontan Kawumm machen')}"><span>${t('Instabil {n} %', { n: v })}</span><i style="width:${v}%"></i></span>`;
 }
 
 /** Name des Bauteils, das eine Waffe beisteuert */
@@ -154,7 +230,9 @@ export class Menus {
   importCode: (code: string) => boolean = () => false;
   private albumTab: AlbumTab = 'alle';
   private albumKarte = '';
-  private albumBack: 'start' | 'pause' | 'end' = 'start';
+  private albumBack: 'start' | 'pause' | 'end' | 'shop' = 'start';
+  /** Fokus nach dem nächsten show() (z. B. Reiter nach Wechsel Album ↔ Shop) */
+  private fokusWunsch = '';
   private albumScroll = 0;
   private importFehler = false;
   private lastEnd: [EndStats, number] | null = null;
@@ -164,6 +242,14 @@ export class Menus {
   controller = false;
   /** App beenden (nur auf Plattformen, die das erlauben – sonst null) */
   onBeenden: (() => void) | null = null;
+  /** gespeicherter Solo-Run: Beschreibung für den Knopf „Fortsetzen" (leer = keiner) */
+  private fortsetzenText = '';
+  onFortsetzen: (() => void) | null = null;
+  set fortsetzen(text: string) {
+    if (text === this.fortsetzenText) return;
+    this.fortsetzenText = text;
+    if (this.mode === 'titel') this.mode = 'none';
+  }
 
   world: World;
 
@@ -175,6 +261,7 @@ export class Menus {
     this.root.addEventListener('click', (e) => this.onClick(e));
     this.root.addEventListener('input', (e) => {
       const el = e.target as HTMLInputElement;
+      if (el.matches?.('input.ob-codein')) { this.codeLive(el, false); return; }
       const key = el.dataset?.set as keyof Einstellungen | undefined;
       if (!key) return;
       const v = Number(el.value);
@@ -182,6 +269,11 @@ export class Menus {
       const label = el.parentElement?.querySelector('b');
       if (label) label.textContent = `${Math.round(v * 100)} %`;
       this.onEinstellungen(this.einstellungen);
+    });
+    // Enter im Raumcode-Feld = Beitreten
+    this.root.addEventListener('keydown', (e) => {
+      const el = e.target as HTMLInputElement;
+      if (e.key === 'Enter' && el.matches?.('input.ob-codein') && !el.readOnly) { e.preventDefault(); this.klick('klick'); this.beitreten(); }
     });
     // Glanzkarten kippen mit dem Zeiger (holografischer Schimmer)
     this.root.addEventListener('pointermove', (e) => {
@@ -218,7 +310,10 @@ export class Menus {
     this.root.classList.remove('hidden');
     this.root.innerHTML = html;
     // Fokus erhalten bzw. sinnvoll setzen (Gamepad/Tastatur)
-    const el = (keep && this.root.querySelector<HTMLElement>(`[data-focus="${keep}"]:not([disabled])`))
+    const wunsch = this.fokusWunsch;
+    this.fokusWunsch = '';
+    const el = (wunsch && this.root.querySelector<HTMLElement>(`[data-focus="${wunsch}"]:not([disabled])`))
+      || (keep && this.root.querySelector<HTMLElement>(`[data-focus="${keep}"]:not([disabled])`))
       || (focusSel ? this.root.querySelector<HTMLElement>(focusSel) : null)
       || this.root.querySelector<HTMLElement>('button:not([disabled])');
     el?.focus({ preventScroll: true });
@@ -227,12 +322,17 @@ export class Menus {
   /** Wird jedes Frame aufgerufen; baut nur neu, wenn sich der Zustand geändert hat. */
   sync(): void {
     const w = this.world, p = this.p;
+    // Album als Shop-Reiter: endet mit der Shop-Phase (z. B. Koop-Host startet) oder bei Level-Up
+    if (this.mode === 'album' && this.albumBack === 'shop' && (w.phase !== 'shop' || p.pendingLevels > 0 || this.screen === 'titel' || this.screen === 'lobby')) {
+      this.albumKarte = '';
+      this.hide();
+    }
     if (this.mode === 'pause' || this.mode === 'end' || this.mode === 'album' || this.mode === 'einst' || this.mode === 'recht' || this.mode === 'koophinweis' || this.mode === 'abbruch') return;
     if (this.screen === 'titel') {
       if (this.mode !== 'titel') this.show('titel', titelHtml(this.name, this.codeVorgabe, this.albumButton(),
         '<button type="button" class="ob-btn2" data-act="einst" data-focus="einst">' + t('Einstellungen') + '</button>'
         + (this.onBeenden ? '<button type="button" class="ob-btn2" data-act="tbeenden" data-focus="tbeenden">' + t('Beenden') + '</button>' : ''),
-        TIPPS[Math.floor(Date.now() / 1000) % TIPPS.length], this.controller ? PAD_HINWEIS.menue : ''), '[data-act="tsolo"]');
+        TIPPS[Math.floor(Date.now() / 1000) % TIPPS.length], this.controller ? PAD_HINWEIS.menue : '', this.fortsetzenText), this.fortsetzenText ? '[data-act="tweiter"]' : '[data-act="tsolo"]');
       return;
     }
     if (this.screen === 'lobby' && this.coop) {
@@ -280,17 +380,18 @@ export class Menus {
     if (!this.startHeld) {
       const cards = HELDEN.map((h, i) => {
         const wf = h.startWaffe === 'zufall' ? null : W[h.startWaffe];
-        if (!this.heldenFrei().includes(h.id)) return `<button type="button" class="ob-card ob-hero ob-locked" disabled data-focus="held${i}"><span class="ob-kind">${t('Gesperrt')}</span><span class="ob-name">???</span><span class="ob-part">${heldHinweis(h.id)}</span></button>`;
-        return `<button type="button" class="ob-card ob-hero" style="--rc:${h.farbe}" data-act="held" data-id="${h.id}" data-focus="held${i}">
-          <span class="ob-kind">${h.titel}</span>
-          <span class="ob-name">${h.name}</span>
-          <ul class="ob-lines">
-            <li>${t('Startwaffe')} <b>${wf ? wf.name : t('zufällig')}</b></li>
+        if (!this.heldenFrei().includes(h.id)) return karte({ tag: 'button', cls: 'ob-hero ob-locked', stil: '', attrs: `disabled data-focus="held${i}"`, kind: t('Gesperrt'), name: '???', body: `<span class="ob-part">${heldHinweis(h.id)}</span>` });
+        const waffe = wf ? `<b style="color:${gruppenFarbe(wf.gruppe)}">${wf.name}</b> <small class="ob-gr">${t(wf.gruppe)}</small>` : `<b>${t('zufällig')}</b>`;
+        return karte({
+          tag: 'button', cls: 'ob-hero', stil: `style="--rc:${h.farbe}"`, attrs: `data-act="held" data-id="${h.id}" data-focus="held${i}"`,
+          kind: h.titel, name: h.name,
+          body: `<ul class="ob-lines">
+            <li>${t('Startwaffe')} ${waffe}</li>
             ${(Object.keys(h.werte) as StatKey[]).map((k) => statLine(k, h.werte[k]!)).join('')}
           </ul>
           <span class="ob-part">${h.text}</span>
-          <span class="ob-flavor">${h.spruch}</span>
-        </button>`;
+          <span class="ob-flavor">${h.spruch}</span>`
+        });
       }).join('');
       this.show('start', `
         <div class="ob-panel ob-wide">
@@ -298,7 +399,7 @@ export class Menus {
           <p class="ob-sub">${t('Jeder Held hat eine Startwaffe und eine Macke. Waffen feuern von selbst – du läufst, weichst aus und kaufst nach jeder Welle nach.')}</p>
           <div class="ob-cards">${cards}</div>
           <div class="ob-row ob-center">${this.beendenKnopf()}</div>
-        </div>`, '.ob-up');
+        </div>`, '[data-act="held"]');
       return;
     }
     this.renderMap();
@@ -351,30 +452,36 @@ export class Menus {
     if (p.pendingLevels > 0) {
       const cards = p.upgradeOffers.map((o, i) => {
         const u = UPGRADE_BY_ID[o.id];
-        return `<button type="button" class="ob-card ob-up" ${rarity(o.tier)} data-act="upgrade" data-i="${i}" data-focus="up${i}">
-          <span class="ob-kind">${SELTENHEIT[o.tier - 1].name}</span>
-          <span class="ob-name">${u.name}</span>
-          <ul class="ob-lines">${statLine(u.stat, u.werte[o.tier - 1])}</ul>
-          <span class="ob-flavor">${STAT_INFO[u.stat].text}</span>
-        </button>`;
+        return karte({
+          tag: 'button', cls: 'ob-up', stil: rarity(o.tier), attrs: `data-act="upgrade" data-i="${i}" data-focus="up${i}"`,
+          kind: SELTENHEIT[o.tier - 1].name, name: u.name,
+          body: `<ul class="ob-lines">${statLine(u.stat, u.werte[o.tier - 1])}</ul><span class="ob-flavor">${STAT_INFO[u.stat].text}</span>`
+        });
       }).join('');
       this.show('shop', `
         <div class="ob-panel ob-wide">
           <h2 class="ob-h ob-gold">${t('Level {n}!', { n: p.level - p.pendingLevels + 1 })}</h2>
           <p class="ob-sub">${t('Wähle eine Verbesserung')}${p.pendingLevels > 1 ? ` · ${t('noch {n}', { n: p.pendingLevels })}` : ''}</p>
           <div class="ob-cards">${cards}</div>
-        </div>`, '.ob-hero:not([disabled])');
+          <div class="ob-row ob-center">
+            <button type="button" class="ob-btn2" data-act="upskip" data-focus="upskip">${t('Überspringen (zufällig)')}</button>
+            ${this.beendenKnopf()}
+          </div>
+        </div>`, '[data-act="upgrade"]');
       return;
     }
 
     const offers = p.offers.map((o, i) => {
-      if (o.sold) return `<div class="ob-card ob-sold" ${rarity(o.tier)}><span class="ob-name">${t('Verkauft')}</span></div>`;
+      if (o.sold) return `<div class="ob-card ob-k ob-sold" ${rarity(o.tier)}><span class="ob-name">${t('Verkauft')}</span></div>`;
       const afford = p.crystals >= o.price;
-      let body: string, kind: string, title: string;
+      let body: string, kind: string, title: string, stil = rarity(o.tier), stufe = 0;
       if (o.kind === 'waffe') {
-        kind = `${t('Waffe')} · ${t(W[o.id].gruppe)}`;
-        title = weaponTitle(W[o.id], o.tier);
-        body = weaponLines(p, W[o.id], o.tier);
+        const wf = W[o.id];
+        kind = `${t('Waffe')} · ${gruppenText(wf)}`;
+        title = wf.name;
+        stil = waffenStil(wf, o.tier);
+        stufe = o.tier;
+        body = weaponLines(p, wf, o.tier);
         if (p.weapons.length >= SPIELER.maxWaffen && !p.weapons.some((s) => s.waffe.id === o.id && s.tier === o.tier && s.tier < 5)) body += `<span class="ob-warn">${t('Kein Platz mehr')}</span>`;
         else if (p.weapons.some((s) => s.waffe.id === o.id && s.tier === o.tier)) body += `<span class="ob-hint2">${t('Gleiche Waffe da – verschmelzbar!')}</span>`;
       } else if (o.kind === 'mod') {
@@ -394,37 +501,123 @@ export class Menus {
         title = it.name;
         body = `<ul class="ob-lines">${(Object.keys(it.werte) as StatKey[]).map((k) => statLine(k, it.werte[k]!)).join('')}${it.spezial ? `<li class="ob-part">${t('Explodiert, wenn du getroffen wirst')}</li>` : ''}</ul><span class="ob-flavor">${it.text}</span>`;
       }
-      return `<div class="ob-card ${o.locked ? 'locked' : ''}" ${rarity(o.tier)}>
-        <span class="ob-kind">${kind}</span>
-        <span class="ob-name">${title}</span>
-        ${body}
-        <div class="ob-buy">
-          <button type="button" class="ob-price" data-act="buy" data-i="${i}" data-focus="buy${i}" ${afford ? '' : 'disabled'}>${GEM}${o.price}</button>
-          <button type="button" class="ob-lock ${o.locked ? 'on' : ''}" data-act="lock" data-i="${i}" data-focus="lock${i}" aria-label="${o.locked ? t('Entsperren') : t('Sperren')}" title="${t('Sperren: bleibt beim Reroll und in der nächsten Runde')}">${o.locked ? LOCK_ON : LOCK_OFF}</button>
-        </div>
-      </div>`;
+      return karte({
+        cls: o.locked ? 'locked' : '', stil, stufe, kind, name: title, body,
+        fuss: `<button type="button" class="ob-price" data-act="buy" data-i="${i}" data-focus="buy${i}" ${afford ? '' : 'disabled'}>${GEM}${o.price}</button>
+          <button type="button" class="ob-lock ${o.locked ? 'on' : ''}" data-act="lock" data-i="${i}" data-focus="lock${i}" aria-label="${o.locked ? t('Entsperren') : t('Sperren')}" title="${t('Sperren: bleibt beim Reroll und in der nächsten Runde')}">${o.locked ? LOCK_ON : LOCK_OFF}</button>`
+      });
     }).join('');
 
+    const inhalt = this.tab === 'shop' ? `<div class="ob-cards">${offers}</div>`
+      : this.tab === 'amboss' ? this.renderAnvil() : this.renderGear();
+    // unterer Bereich: nur im Shop-Reiter (Amboss und Ausrüstung zeigen ihre Sachen schon selbst)
+    const unten = this.tab === 'shop' ? this.shopUnten() : '';
+    this.show('shop', `
+      <div class="ob-panel ob-wide ob-shop">
+        ${this.shopKopf(this.tab)}
+        ${inhalt}
+        ${this.shopAktionen(this.tab)}
+        ${unten}
+        ${this.werteListe()}
+      </div>`, this.detail >= 0 ? '[data-act="merge"]:not([disabled]), [data-act="sell"]:not([disabled])' : '[data-act="buy"]:not([disabled]), [data-act="ready"]');
+  }
+
+  /** Reiterleiste des Shops (auch über dem Kartenalbum) */
+  private shopKopf(on: 'shop' | 'amboss' | 'ausruestung' | 'album'): string {
+    const w = this.world, p = this.p;
+    const neu = this.profil().neu.filter((id) => KARTE_BY_ID[id]).length;
+    const tab = (id: string, focus: string, label: string) =>
+      `<button type="button" class="ob-tab ${on === id ? 'on' : ''}" data-act="tab" data-tab="${id}" data-focus="${focus}">${label}</button>`;
+    const reise = w.reise.length > 1 ? ` · ${w.insel.name} · ${t('Insel {i}/{n}', { i: w.reiseIndex + 1, n: w.reise.length })}` : ` · ${w.insel.name}`;
+    return `<div class="ob-shop-head">
+      <div class="ob-tabs">
+        ${tab('shop', 'tabshop', t('Shop'))}
+        ${tab('amboss', 'tabamboss', `⚒ ${t('Amboss')}`)}
+        ${tab('ausruestung', 'tabgear', `${t('Ausrüstung')}${p.beute.length ? ` <em class="ob-badge">${p.beute.length}</em>` : ''}`)}
+        ${tab('album', 'tabalbum', `${t('Kartenalbum')}${neu ? ` <em class="ob-badge">${neu}</em>` : ''}`)}
+        <small>${t('Welle {n} geschafft', { n: w.wave })}${reise}</small>
+      </div>
+      <div class="ob-wallet">${GEM}<b>${p.crystals}</b></div>
+    </div>`;
+  }
+
+  /** Aktionsleiste: Neu würfeln (nur Shop), Werte, Beenden, nächste Welle – in allen Reitern */
+  private shopAktionen(on: 'shop' | 'amboss' | 'ausruestung' | 'album'): string {
+    const w = this.world, p = this.p;
+    const reroll = rerollPrice(w, p);
+    const naechste = w.reisePos(w.wave + 1);
+    let los: string;
+    if (naechste.index !== w.reiseIndex && w.reise[naechste.index]) {
+      los = t('Auf nach {insel}!', { insel: INSEL_BY_ID[w.reise[naechste.index]]?.name ?? '' });
+    } else {
+      los = t('Welle {n}', { n: w.wave + 1 });
+      if (naechste.art === 'boss') los += ` · ${t('Inselboss!')}`;
+      else if (naechste.art === 'finale') los += ` · ${t('Finale!')}`;
+      else if (naechste.art === 'baron') {
+        const name = GEGNER_BY_ID[w.insel.baron]?.name ?? '';
+        los += ` · ${name && name.length <= 18 ? name : t('Baron!')}`;
+      }
+    }
+    return `<div class="ob-row ob-actions">
+      ${on === 'shop' ? `<button type="button" class="ob-btn2" data-act="reroll" data-focus="reroll" ${p.crystals >= reroll ? '' : 'disabled'}>${t('Neu würfeln')} ${GEM}${reroll}</button>` : ''}
+      <button type="button" class="ob-btn2" data-act="stats" data-focus="stats">${this.showStats ? t('Werte ausblenden') : t('Werte')}</button>
+      ${this.beendenKnopf()}
+      <button type="button" class="ob-go" data-act="ready" data-focus="ready">${los} ▶</button>
+    </div>`;
+  }
+
+  /** Werte-Übersicht (Knopf „Werte“) */
+  private werteListe(): string {
+    if (!this.showStats) return '';
+    const p = this.p;
+    return `<ul class="ob-stats">${STAT_KEYS.map((k) => {
+      const v = k === 'maxHp' ? p.maxHp : p.stats[k];
+      const cls = k === 'maxHp' ? '' : v > 0 ? 'up' : v < 0 ? 'down' : '';
+      return `<li class="${cls}"><span>${STAT_INFO[k].name}</span><b>${fmt(v)}${STAT_INFO[k].einheit ? ' %' : ''}</b></li>`;
+    }).join('')}</ul>`;
+  }
+
+  /** Waffenplatz als Kachel: Rahmen = Gruppe, Plakette = Stufe */
+  private waffenKachel(s: WeaponSlot, i: number, act: 'slot' | 'pick', extra: string, cls: string, attrs = ''): string {
+    return `<button type="button" class="ob-slot ${cls}" ${waffenStil(s.waffe, s.tier)} data-act="${act}" data-i="${i}" data-focus="${act}${i}" ${attrs}>
+      ${plakette(s.tier)}
+      <span class="ob-sname">${s.waffe.name}</span>
+      <small class="ob-sgr">${gruppenText(s.waffe, ' + ')}</small>
+      ${extra}
+    </button>`;
+  }
+
+  /** Shop-Reiter unten: Waffenplätze mit Detail, Synergien, Items */
+  private shopUnten(): string {
+    const w = this.world, p = this.p;
     const slots = Array.from({ length: SPIELER.maxWaffen }, (_, i) => {
       const s = p.weapons[i];
       if (!s) return `<div class="ob-slot empty"></div>`;
       const m = canMerge(p, i);
-      return `<button type="button" class="ob-slot ${this.detail === i ? 'sel' : ''}" ${rarity(s.tier)} data-act="slot" data-i="${i}" data-focus="slot${i}">
-        <span>${s.waffe.name}</span><b>${TIER_ZAHL[s.tier - 1]}</b>${m ? '<em>⇧</em>' : ''}${s.waffe.fusion ? '<i class="ob-fz">⚒</i>' : ''}
-        <small class="ob-stars ${s.stars >= 5 && !s.waffe.evo ? 'ready' : ''}">${'★'.repeat(s.stars)}${'☆'.repeat(5 - s.stars)}${s.mods.length ? ` · ${t('{n} Mod', { n: s.mods.length })}` : ''}</small>
-      </button>`;
+      return this.waffenKachel(s, i, 'slot',
+        `${m ? '<em class="ob-merge">⇧</em>' : ''}${s.waffe.fusion ? '<i class="ob-fz">⚒</i>' : ''}
+        <small class="ob-stars ${s.stars >= 5 && !s.waffe.evo ? 'ready' : ''}">${'★'.repeat(s.stars)}${'☆'.repeat(5 - s.stars)}${s.mods.length ? ` · ${t('{n} Mod', { n: s.mods.length })}` : ''}</small>`,
+        this.detail === i ? 'sel' : '');
     }).join('');
 
     let detail = '';
     const ds = p.weapons[this.detail];
     if (ds) {
       const dmg = w.stats.waffen[ds.waffe.id] ?? 0;
-      detail = `<div class="ob-detail" ${rarity(ds.tier)}>
-        <div class="ob-name">${weaponTitle(ds.waffe, ds.tier)}</div>
-        ${weaponLines(p, ds.waffe, ds.tier, ds)}
-        <p class="ob-flavor">${ds.waffe.text}${dmg ? ` · ${t('bisher {n} Schaden', { n: fmt(dmg) })}` : ''}</p>
-        ${this.detailExtras(ds)}
-        <div class="ob-row">
+      detail = `<div class="ob-detail ob-kw" ${waffenStil(ds.waffe, ds.tier)}>
+        <div class="ob-dkopf">
+          <span class="ob-name">${ds.waffe.name}</span>
+          <span class="ob-kind">${t('Waffe')} · ${gruppenText(ds.waffe)}</span>
+          ${plakette(ds.tier)}
+        </div>
+        <div class="ob-dbody">
+          <div class="ob-dspalte">
+            ${weaponLines(p, ds.waffe, ds.tier, ds)}
+            <p class="ob-flavor">${ds.waffe.text}${dmg ? ` · ${t('bisher {n} Schaden', { n: fmt(dmg) })}` : ''}</p>
+          </div>
+          <div class="ob-dspalte">${this.detailExtras(ds)}</div>
+        </div>
+        <div class="ob-row ob-dfuss">
           <button type="button" class="ob-btn2" data-act="merge" data-i="${this.detail}" data-focus="merge" ${canMerge(p, this.detail) ? '' : 'disabled'}>${t('Verschmelzen')} ⇧</button>
           <button type="button" class="ob-btn2" data-act="sell" data-i="${this.detail}" data-focus="sell" ${p.weapons.length > 1 ? '' : 'disabled'}>${t('Verkaufen +{preis}', { preis: sellPrice(ds, w.wave + 1) })}</button>
           <button type="button" class="ob-btn2" data-act="close" data-focus="close">${t('Schließen')}</button>
@@ -434,43 +627,17 @@ export class Menus {
 
     const items = Object.entries(p.items).map(([id, n]) => `<span class="ob-chip" ${rarity(ITEM_BY_ID[id].seltenheit)} title="${ITEM_BY_ID[id].text}">${ITEM_BY_ID[id].name}${n > 1 ? ` ×${n}` : ''}</span>`).join('') || `<span class="ob-none">${t('noch keine')}</span>`;
 
-    const stats = this.showStats ? `<ul class="ob-stats">${STAT_KEYS.map((k) => {
-      const v = k === 'maxHp' ? p.maxHp : p.stats[k];
-      const cls = k === 'maxHp' ? '' : v > 0 ? 'up' : v < 0 ? 'down' : '';
-      return `<li class="${cls}"><span>${STAT_INFO[k].name}</span><b>${fmt(v)}${STAT_INFO[k].einheit ? ' %' : ''}</b></li>`;
-    }).join('')}</ul>` : '';
-
-    const reroll = rerollPrice(w, p);
-    this.show('shop', `
-      <div class="ob-panel ob-wide ob-shop">
-        <div class="ob-shop-head">
-          <div class="ob-tabs">
-            <button type="button" class="ob-tab ${this.tab === 'shop' ? 'on' : ''}" data-act="tab" data-tab="shop" data-focus="tabshop">${t('Shop')}</button>
-            <button type="button" class="ob-tab ${this.tab === 'amboss' ? 'on' : ''}" data-act="tab" data-tab="amboss" data-focus="tabamboss">⚒ ${t('Amboss')}</button>
-            <button type="button" class="ob-tab ${this.tab === 'ausruestung' ? 'on' : ''}" data-act="tab" data-tab="ausruestung" data-focus="tabgear">${t('Ausrüstung')}${p.beute.length ? ` <em class="ob-badge">${p.beute.length}</em>` : ''}</button>
-            <small>${t('Welle {n} geschafft', { n: w.wave })}</small>
-          </div>
-          <div class="ob-wallet">${GEM}<b>${p.crystals}</b></div>
-        </div>
-        ${this.tab === 'shop' ? `<div class="ob-cards">${offers}</div>` : this.tab === 'amboss' ? this.renderAnvil() : this.renderGear()}
-        <div class="ob-row ob-actions">
-          ${this.tab === 'shop' ? `<button type="button" class="ob-btn2" data-act="reroll" data-focus="reroll" ${p.crystals >= reroll ? '' : 'disabled'}>${t('Neu würfeln')} ${GEM}${reroll}</button>` : ''}
-          <button type="button" class="ob-btn2" data-act="stats" data-focus="stats">${this.showStats ? t('Werte ausblenden') : t('Werte')}</button>
-          ${this.beendenKnopf()}
-          <button type="button" class="ob-go" data-act="ready" data-focus="ready">${t('Welle {n}', { n: w.wave + 1 })}${WELLEN.bossWellen.includes(w.wave + 1) ? ` · ${t('Boss!')}` : ''} ▶</button>
-        </div>
-        <h3 class="ob-h3">${t('Waffen {n}/{max}', { n: p.weapons.length, max: SPIELER.maxWaffen })} <small>${t('antippen: verschmelzen / verkaufen / Mods / Evolution')}${p.modInv.length ? ` · ${t('{n} Mod(s) im Rucksack', { n: p.modInv.length })}` : ''}</small></h3>
-        <div class="ob-slots">${slots}</div>
-        ${detail}
-        <h3 class="ob-h3">${t('Synergien')} <small>${t('Elemente deiner Waffen – Boni ab 2 / 4 / 6')}</small></h3>
-        <ul class="ob-synlist">${SYNERGIEN.map((sy) => {
-          const n = p.synCount[sy.element] ?? 0;
-          return `<li style="--c:${sy.farbe}"><b>${t(sy.element)} ${n}</b>${sy.stufen.map((st) => `<div class="${n >= st.ab ? 'on' : ''}">${st.ab}: ${st.text}</div>`).join('')}</li>`;
-        }).join('')}</ul>
-        <h3 class="ob-h3">${t('Items')}</h3>
-        <div class="ob-items">${items}</div>
-        ${stats}
-      </div>`, this.detail >= 0 ? '[data-act="merge"]:not([disabled]), [data-act="sell"]:not([disabled])' : '[data-act="buy"]:not([disabled]), [data-act="ready"]');
+    return `
+      <h3 class="ob-h3">${t('Waffen {n}/{max}', { n: p.weapons.length, max: SPIELER.maxWaffen })} <small>${t('antippen: verschmelzen / verkaufen / Mods / Evolution')}${p.modInv.length ? ` · ${t('{n} Mod(s) im Rucksack', { n: p.modInv.length })}` : ''}</small></h3>
+      <div class="ob-slots">${slots}</div>
+      ${detail}
+      <h3 class="ob-h3">${t('Synergien')} <small>${t('Elemente deiner Waffen – Boni ab 2 / 4 / 6')}</small></h3>
+      <ul class="ob-synlist">${SYNERGIEN.map((sy) => {
+        const n = p.synCount[sy.element] ?? 0;
+        return `<li style="--c:${sy.farbe}"><b>${t(sy.element)} ${n}</b>${sy.stufen.map((st) => `<div class="${n >= st.ab ? 'on' : ''}">${st.ab}: ${st.text}</div>`).join('')}</li>`;
+      }).join('')}</ul>
+      <h3 class="ob-h3">${t('Items')}</h3>
+      <div class="ob-items">${items}</div>`;
   }
 
   /** Sterne, Evolution und Mods im Waffendetail */
@@ -500,11 +667,13 @@ export class Menus {
     const w = this.world, p = this.p;
     const slots = PLAETZE.map((pl) => {
       const a = p.ausruestung[pl.id];
-      if (!a) return `<div class="ob-gear empty"><small>${pl.name}</small><span>${t('leer')}</span></div>`;
-      return `<div class="ob-gear" ${rarity(a.seltenheit)}>
-        <small>${pl.name}${a.set ? ` · ${t('Set')}` : ''}</small><b>${ausruestungsName(a)}</b>${gearLines(a)}
-        <button type="button" class="ob-btn2" data-act="unequip" data-platz="${pl.id}" data-focus="un${pl.id}" ${p.beute.length < BEUTE.maxBeute ? '' : 'disabled'}>${t('Ablegen')}</button>
-      </div>`;
+      if (!a) return `<div class="ob-card ob-k ob-leer"><span class="ob-kind">${pl.name}</span><span class="ob-name">${t('leer')}</span></div>`;
+      return karte({
+        stil: rarity(a.seltenheit),
+        kind: `${pl.name} · ${SELTENHEIT[a.seltenheit - 1].name}${a.set ? ` · ${SET_BY_ID[a.set].name}` : ''}`,
+        name: ausruestungsName(a), body: gearLines(a),
+        fuss: `<button type="button" class="ob-btn2" data-act="unequip" data-platz="${pl.id}" data-focus="un${pl.id}" ${p.beute.length < BEUTE.maxBeute ? '' : 'disabled'}>${t('Ablegen')}</button>`
+      });
     }).join('');
     const aktiv = setBoni(Object.values(p.ausruestung));
     const sets = SETS.map((set) => {
@@ -519,17 +688,17 @@ export class Menus {
         ? plaetze.map((pl, j) => `<button type="button" class="ob-btn2" data-act="equip" data-i="${k}" data-platz="${pl.id}" data-focus="eq${k}${j}">→ ${pl.name} ${j + 1}</button>`).join('')
         : `<button type="button" class="ob-btn2" data-act="equip" data-i="${k}" data-focus="eq${k}">${t('Anlegen')}</button>`;
       const alt = plaetze.map((pl) => p.ausruestung[pl.id]).find((x) => x);
-      return `<div class="ob-card" ${rarity(a.seltenheit)}>
-        <span class="ob-kind">${artName(a)} · ${SELTENHEIT[a.seltenheit - 1].name}${a.set ? ` · ${SET_BY_ID[a.set].name}` : ''}</span>
-        <span class="ob-name">${ausruestungsName(a)}</span>
-        ${gearLines(a)}
-        ${alt ? `<span class="ob-flavor">${t('Statt: {name}', { name: alt.name })}</span>` : ''}
-        <div class="ob-row">${anlegen}<button type="button" class="ob-btn2" data-act="scrap" data-i="${k}" data-focus="sc${k}">${t('Schrott +{n}', { n: schrottwert(a, w.wave) })}</button></div>
-      </div>`;
+      return karte({
+        stil: rarity(a.seltenheit),
+        kind: `${artName(a)} · ${SELTENHEIT[a.seltenheit - 1].name}${a.set ? ` · ${SET_BY_ID[a.set].name}` : ''}`,
+        name: ausruestungsName(a),
+        body: `${gearLines(a)}${alt ? `<span class="ob-flavor">${t('Statt: {name}', { name: ausruestungsName(alt) })}</span>` : ''}`,
+        fuss: `${anlegen}<button type="button" class="ob-btn2" data-act="scrap" data-i="${k}" data-focus="sc${k}">${t('Schrott +{n}', { n: schrottwert(a, w.wave) })}</button>`
+      });
     }).join('');
     return `<div class="ob-gearview">
       <h3 class="ob-h3">${t('Angelegt')} <small>${t('8 Plätze – Werte zählen sofort')}</small></h3>
-      <div class="ob-gearslots">${slots}</div>
+      <div class="ob-cards">${slots}</div>
       <h3 class="ob-h3">${t('Beutel {n}/{max}', { n: p.beute.length, max: BEUTE.maxBeute })} <small>${t('Beute von Elite-Gegnern und Bossen, oder aus dem Shop')}</small></h3>
       ${beute ? `<div class="ob-cards">${beute}</div>` : `<p class="ob-none">${t('Noch nichts gefunden. Elite-Gegner und Bosse lassen Ausrüstung fallen.')}</p>`}
       <h3 class="ob-h3">${t('Sets')}</h3>
@@ -558,14 +727,16 @@ export class Menus {
     const w = this.world, p = this.p;
     const known = this.recipes();
     const price = AMBOSS.preis(w.wave);
+    // Gruppen der schon gewählten Waffen: eine zweite Waffe derselben Gruppe passt nicht
+    const gewaehlt = new Set(this.anvilSel.map((i) => p.weapons[i]?.waffe.gruppe));
     const picks = Array.from({ length: SPIELER.maxWaffen }, (_, i) => {
       const s = p.weapons[i];
       if (!s) return `<div class="ob-slot empty"></div>`;
       const k = this.anvilSel.indexOf(i);
       const dis = !!s.waffe.fusion;
-      return `<button type="button" class="ob-slot ${k >= 0 ? 'sel' : ''}" ${rarity(s.tier)} data-act="pick" data-i="${i}" data-focus="pick${i}" ${dis ? `disabled title="${t('Fusionen lassen sich nur mergen')}"` : ''}>
-        <span>${s.waffe.name}</span><b>${t(s.waffe.gruppe)}</b>${k >= 0 ? `<em>${k + 1}</em>` : ''}
-      </button>`;
+      const gleich = k < 0 && !dis && gewaehlt.has(s.waffe.gruppe);
+      return this.waffenKachel(s, i, 'pick', k >= 0 ? `<em class="ob-nr">${k + 1}</em>` : gleich ? `<small class="ob-warn">${t('Gruppe schon gewählt')}</small>` : '',
+        `${k >= 0 ? 'sel' : ''} ${gleich ? 'ob-gleich' : ''}`, dis ? `disabled title="${t('Fusionen lassen sich nur mergen')}"` : '');
     }).join('');
 
     let parts = '', preview = '';
@@ -579,17 +750,20 @@ export class Menus {
       parts = `<h3 class="ob-h3">2 · ${t('Bauteile zuordnen')} <small>${t('jede Waffe liefert mindestens eins')}</small></h3>
         <div class="ob-parts">${row('geschoss', t('Geschoss – was fliegt'))}${row('antrieb', t('Antrieb – wie es fliegt'))}${row('ladung', t('Ladung – was passiert'))}</div>`;
       const v = fusionPreview(w, p, this.fuseCmd());
+      let card = '';
       if (v.waffe) {
         const rz = v.waffe.fusion?.rezept;
         const secret = rz && !known.has(rz);
-        preview = `<div class="ob-card ob-preview ${rz ? 'recipe' : ''}" ${rarity(rz ? 5 : v.tier)}>
-          <span class="ob-kind">${rz ? t('Geheimes Rezept') : t('Fusionswaffe')} · ${v.waffe.fusion!.gruppen.map((g) => t(g)).join(' · ')}</span>
-          <span class="ob-name">${secret ? `??? <small>${t('Was passiert da wohl …')}</small>` : weaponTitle(v.waffe, v.tier)}</span>
-          ${secret ? `<p class="ob-flavor">${t('Diese Zutaten kennt der Amboss. Verschmelze sie, um das Rezept zu entdecken!')}</p>` : `${weaponLines(p, v.waffe, v.tier)}<span class="ob-flavor">${v.waffe.text}</span>`}
-        </div>`;
+        card = karte({
+          cls: `ob-preview ${rz ? 'recipe' : ''}`,
+          stil: waffenStil(v.waffe, rz ? 5 : v.tier), stufe: rz ? 5 : v.tier,
+          kind: `${rz ? t('Geheimes Rezept') : t('Fusionswaffe')} · ${gruppenText(v.waffe)}`,
+          name: secret ? `??? <small>${t('Was passiert da wohl …')}</small>` : v.waffe.name,
+          body: secret ? `<span class="ob-flavor">${t('Diese Zutaten kennt der Amboss. Verschmelze sie, um das Rezept zu entdecken!')}</span>` : `${weaponLines(p, v.waffe, v.tier)}<span class="ob-flavor">${v.waffe.text}</span>`
+        });
       }
       const err = v.error ? `<p class="ob-warn">${t(v.error)}</p>` : '';
-      preview += `${err}<div class="ob-row"><button type="button" class="ob-go" data-act="fuse" data-focus="fuse" ${v.error ? 'disabled' : ''}>${t('Verschmelzen!')} ${GEM}${price}</button></div>`;
+      preview = `<div class="ob-fuserow">${card}<div class="ob-fuseside">${err}<button type="button" class="ob-go" data-act="fuse" data-focus="fuse" ${v.error ? 'disabled' : ''}>${t('Verschmelzen!')} ${GEM}${price}</button></div></div>`;
     } else {
       parts = `<p class="ob-sub">${t('Wähle 2 oder 3 Waffen aus <b>verschiedenen Gruppen</b>. Jede liefert ein Bauteil – Geschoss, Antrieb oder Ladung – und es entsteht eine ganz neue Waffe. Je verschiedener die Gruppen, desto instabiler … und stärker.')}</p>`;
     }
@@ -686,6 +860,38 @@ export class Menus {
     else { this.mode = 'none'; this.lastKey = ''; this.sync(); }
   }
 
+  /** Raumcode-Hinweis unter dem Feld aktualisieren (nur das Hinweis-Element – kein Neu-Rendern, Cursor bleibt) */
+  private codeLive(feld: HTMLInputElement, fehler: boolean): ReturnType<typeof leseRaumcode> {
+    const e = leseRaumcode(feld.value);
+    // eingefügter Einladungslink → nur den Code im Feld lassen
+    if (e.link && !fehler) feld.value = e.code;
+    const h = codeHinweis(e, feld.value, fehler);
+    const el = this.root.querySelector<HTMLElement>('[data-codehint]');
+    if (el) { el.className = `ob-codehint ${h.klasse}`; el.innerHTML = h.html; }
+    feld.classList.toggle('ob-fehler', fehler);
+    return e;
+  }
+
+  /** „Beitreten“: Code erst selbst prüfen, sonst sichtbarer Hinweis direkt unter dem Feld */
+  private beitreten(): void {
+    this.name = this.readName();
+    const feld = this.root.querySelector<HTMLInputElement>('input.ob-codein');
+    if (!feld) return;
+    const e = leseRaumcode(feld.value);
+    if (e.code.length !== RAUMCODE_LAENGE || e.zuLang) {
+      this.klick('nein');
+      this.codeLive(feld, true);
+      // Konsole: Feld schreibgeschützt anspringen (A öffnet die Bildschirmtastatur), wie MenuNav
+      if (this.controller) { feld.dataset.navLock = '1'; feld.readOnly = true; }
+      feld.focus({ preventScroll: true });
+      feld.scrollIntoView({ block: 'nearest' });
+      return;
+    }
+    feld.value = e.code;
+    this.codeVorgabe = e.code;
+    this.onCoop({ t: 'beitreten', code: e.code, name: this.name });
+  }
+
   private readName(): string {
     return (this.root.querySelector<HTMLInputElement>('[data-name]')?.value ?? '').trim().slice(0, 16);
   }
@@ -699,7 +905,8 @@ export class Menus {
   }
 
   private openAlbum(): void {
-    this.albumBack = this.mode === 'pause' ? 'pause' : this.mode === 'end' ? 'end' : 'start';
+    this.albumBack = this.mode === 'pause' ? 'pause' : this.mode === 'end' ? 'end' : this.mode === 'shop' ? 'shop' : 'start';
+    if (this.albumBack === 'shop') { this.detail = -1; this.fokusWunsch = 'tabalbum'; }
     this.albumKarte = '';
     this.albumScroll = 0;
     this.renderAlbum();
@@ -709,7 +916,7 @@ export class Menus {
     this.albumKarte = '';
     if (this.albumBack === 'pause') this.showPause();
     else if (this.albumBack === 'end' && this.lastEnd) this.showEnd(this.lastEnd[0], this.lastEnd[1]);
-    else { this.mode = 'none'; this.sync(); }
+    else { if (this.albumBack === 'shop') this.fokusWunsch = 'tabalbum'; this.mode = 'none'; this.lastKey = ''; this.sync(); }
   }
 
   private renderAlbum(): void {
@@ -730,15 +937,29 @@ export class Menus {
     const body = this.albumTab === 'erfolge'
       ? erfolgeHtml(pr, this.profilCode(), this.importFehler)
       : `${this.albumTab === 'rezept' ? `<p class="ob-sub">${t('Das Rezeptbuch: Unentdeckte Rezepte zeigen nur ihren Hinweis – antippen!')}</p>` : ''}<div class="ob-kgrid">${albumGrid(pr, this.albumTab)}</div>`;
-    this.show('album', `
-      <div class="ob-panel ob-wide ob-album">
-        <div class="ob-shop-head">
-          <div><h2 class="ob-h">${t('Kartenalbum')}</h2><small class="ob-sub">${t('Set „{set}" · {n}/{max} gefunden · ✦ {glanz} Glanz', { set: WELT_INFO.kartenSet, n: z.gefunden, max: KARTEN.length, glanz: z.glanz })}</small></div>
-          <button type="button" class="ob-go" data-act="albumzu" data-focus="albumzu">${t('Zurück')}</button>
-        </div>
-        <div class="ob-tabs">${tabs}</div>
-        ${body}
-      </div>`, `[data-focus="atab${this.albumTab}"]`);
+    const zaehler = t('Set „{set}" · {n}/{max} gefunden · ✦ {glanz} Glanz', { set: WELT_INFO.kartenSet, n: z.gefunden, max: KARTEN.length, glanz: z.glanz });
+    if (this.albumBack === 'shop') {
+      // als vierter Shop-Reiter: Reiterleiste und Aktionsleiste bleiben
+      this.show('album', `
+        <div class="ob-panel ob-wide ob-shop ob-album">
+          ${this.shopKopf('album')}
+          <small class="ob-sub">${zaehler}</small>
+          <div class="ob-tabs ob-subtabs">${tabs}</div>
+          ${this.shopAktionen('album')}
+          ${this.werteListe()}
+          ${body}
+        </div>`, `[data-focus="atab${this.albumTab}"]`);
+    } else {
+      this.show('album', `
+        <div class="ob-panel ob-wide ob-album">
+          <div class="ob-shop-head">
+            <div><h2 class="ob-h">${t('Kartenalbum')}</h2><small class="ob-sub">${zaehler}</small></div>
+            <button type="button" class="ob-go" data-act="albumzu" data-focus="albumzu">${t('Zurück')}</button>
+          </div>
+          <div class="ob-tabs ob-subtabs">${tabs}</div>
+          ${body}
+        </div>`, `[data-focus="atab${this.albumTab}"]`);
+    }
     this.root.scrollTop = this.albumScroll;
   }
 
@@ -836,6 +1057,8 @@ export class Menus {
         return;
       }
       case 'upgrade': this.send({ type: 'upgrade', index: i }); break;
+      // Notausgang, falls die Wahl einmal hängt: normaler Befehl mit zufälligem Index
+      case 'upskip': this.send({ type: 'upgrade', index: Math.floor(Math.random() * Math.max(1, this.p.upgradeOffers.length)) }); break;
       case 'buy': this.send({ type: 'buy', index: i }); break;
       case 'lock': this.send({ type: 'lock', index: i }); break;
       case 'reroll': this.send({ type: 'reroll' }); break;
@@ -845,7 +1068,7 @@ export class Menus {
       case 'evolve': this.send({ type: 'evolve', slot: i, variant: el.dataset.v === 'b' ? 'b' : 'a' }); break;
       case 'install': this.send({ type: 'installMod', slot: i, index: Number(el.dataset.k) }); break;
       case 'sell': this.send({ type: 'sell', slot: i }); this.detail = -1; break;
-      case 'stats': this.showStats = !this.showStats; break;
+      case 'stats': this.showStats = !this.showStats; if (this.mode === 'album') { this.renderAlbum(); return; } break;
       case 'album': this.openAlbum(); return;
       case 'einst': this.openEinstellungen(); return;
       case 'recht': this.zeigeRechtliches('einst'); return;
@@ -869,14 +1092,9 @@ export class Menus {
       }
       case 'tsolo': this.screen = 'solo'; this.mode = 'none'; break;
       case 'tbeenden': this.onBeenden?.(); return;
+      case 'tweiter': this.onFortsetzen?.(); return;
       case 'terstellen': this.name = this.readName(); this.onCoop({ t: 'erstellen', name: this.name }); return;
-      case 'tbeitreten': {
-        this.name = this.readName();
-        const code = this.root.querySelector<HTMLInputElement>('[data-code]')?.value ?? '';
-        this.codeVorgabe = code;
-        this.onCoop({ t: 'beitreten', code, name: this.name });
-        return;
-      }
+      case 'tbeitreten': this.beitreten(); return;
       case 'lheld': this.onCoop({ t: 'held', id: el.dataset.id! }); return;
       case 'linsel': this.onCoop({ t: 'insel', id: el.dataset.id! }); return;
       case 'lbereit': { const ich = this.coop?.spieler.find((x) => x.slot === this.coop?.slot); this.onCoop({ t: 'bereit', on: !ich?.bereit }); return; }
@@ -902,7 +1120,14 @@ export class Menus {
         this.renderAlbum();
         return;
       }
-      case 'tab': this.tab = el.dataset.tab === 'amboss' ? 'amboss' : el.dataset.tab === 'ausruestung' ? 'ausruestung' : 'shop'; this.detail = -1; break;
+      case 'tab': {
+        if (el.dataset.tab === 'album') { if (this.mode !== 'album') this.openAlbum(); return; }
+        this.tab = el.dataset.tab === 'amboss' ? 'amboss' : el.dataset.tab === 'ausruestung' ? 'ausruestung' : 'shop';
+        this.detail = -1;
+        // vom Album-Reiter zurück in den Shop
+        if (this.mode === 'album') { this.albumKarte = ''; this.mode = 'none'; this.fokusWunsch = el.dataset.focus ?? ''; }
+        break;
+      }
       case 'equip': this.send({ type: 'equip', index: i, platz: (el.dataset.platz || undefined) as never }); break;
       case 'unequip': this.send({ type: 'unequip', platz: el.dataset.platz as never }); break;
       case 'scrap': this.send({ type: 'scrap', index: i }); break;
@@ -916,7 +1141,7 @@ export class Menus {
       case 'part': this.parts = { ...this.parts, [el.dataset.part as 'geschoss']: i }; break;
       case 'fuse': if (this.send(this.fuseCmd())) this.resetAnvil(); break;
       case 'book': this.book = !this.book; break;
-      case 'ready': this.detail = -1; if (this.send({ type: 'ready' })) this.hide(); break;
+      case 'ready': this.detail = -1; if (this.send({ type: 'ready' })) { this.albumKarte = ''; this.hide(); } break;
       case 'restart': this.hide(); this.onRestart(); return;
       case 'resume': this.hide(); this.onResume(); return;
       case 'endless': if (this.send({ type: 'endless' })) { this.mode = 'none'; this.sync(); } return;

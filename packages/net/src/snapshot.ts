@@ -38,7 +38,7 @@ const ENEMY_FIELDS: Field<Enemy>[] = [
   f('stateT', 'u8', 100, (e) => e.stateT, (e, v) => { e.stateT = v; }),
   f('doom', 'i16', 1000, (e) => e.doom, (e, v) => { e.doom = v; }),
   f('stun', 'u8', 50, (e) => e.stun, (e, v) => { e.stun = v; }),
-  f('flags', 'u8', 1, (e) => (e.elite ? 1 : 0), (e, v) => { e.elite = (v & 1) !== 0; }),
+  f('flags', 'u8', 1, (e) => (e.elite ? 1 : 0) | (e.panzer ? 2 : 0), (e, v) => { e.elite = (v & 1) !== 0; e.panzer = (v & 2) !== 0; }),
   f('chicken', 'u8', 50, (e) => e.chicken, (e, v) => { e.chicken = v; }),
   f('r', 'u8', 100, (e) => e.r, (e, v) => { e.r = v; }),
   f('burnT', 'u8', 50, (e) => e.burnT, (e, v) => { e.burnT = v; }),

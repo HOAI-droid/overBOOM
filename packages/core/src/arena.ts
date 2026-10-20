@@ -48,88 +48,333 @@ export interface Arena {
   isSolidTile(x: number, z: number): boolean;
 }
 
+/** Abstand der Boss-Spawns von der Mitte (siehe enemies.ts spawnBoss) */
+const BOSS_RING = 7;
+
+/**
+ * Baut die Arena einer Insel prozedural aus dem Seed: gleicher Seed → gleiche Arena
+ * (wichtig für Koop – Host und Clients bauen sie nach). Der Stil bestimmt die Gefahren.
+ * Garantien: Mitte frei, alles Begehbare von der Mitte aus erreichbar, zwischen
+ * Hindernissen mindestens 2 Kacheln Platz, genug freie Boss-Spawnpunkte.
+ */
 export function createArena(seed: number, style: ArenaStyle = 'festung', size = 28): Arena {
-  const rng = new Rng(seed);
-  const tiles = new Uint8Array(size * size);
-  const heights = new Uint8Array(size * size);
+  // Stil mit in den Seed mischen, damit verschiedene Inseln mit gleichem Seed nicht gleich aussehen
+  let mix = seed >>> 0;
+  for (let k = 0; k < style.length; k++) mix = Math.imul(mix ^ style.charCodeAt(k), 0x9e3779b1) >>> 0;
+  const rng = new Rng(mix ^ (mix >>> 15));
+  const N = size * size;
+  const tiles = new Uint8Array(N);
+  const heights = new Uint8Array(N);
   const idx = (x: number, z: number) => z * size + x;
   const c = size / 2;
+  /** feste Hindernisse nur in diesem Bereich: 2 Kacheln Rand zu Mauer und Klippe bleiben frei */
+  const LO = 3, HI = size - 4;
 
   const blocked = (x: number, z: number) => Math.abs(x - c) < 3.5 && Math.abs(z - c) < 3.5;
-  /** Klecks aus Spezialboden (nicht in der Mitte, nicht auf festen Kacheln) */
-  const blob = (cx: number, cz: number, r: number, t: number, fill = 0.85) => {
-    for (let z = Math.floor(cz - r); z <= Math.ceil(cz + r); z++) for (let x = Math.floor(cx - r); x <= Math.ceil(cx + r); x++) {
-      if (x < 2 || z < 2 || x > size - 3 || z > size - 3 || blocked(x, z)) continue;
-      const d = Math.hypot(x + 0.5 - cx, z + 0.5 - cz);
-      if (d < r && (d < r - 1 || rng.chance(fill))) tiles[idx(x, z)] = t;
+  /** Chebyshev-Abstand der Kachelmitte zur Arenamitte */
+  const centerDist = (x: number, z: number) => Math.max(Math.abs(x + 0.5 - c), Math.abs(z + 0.5 - c));
+  /** fest zum Laufen (Lava zählt mit, auch wenn man mit Dash darüber kommt) */
+  const solidI = (i: number) => { const t = tiles[i]; return t === Tile.Wall || t === Tile.Pillar || t === Tile.Crate || t === Tile.Lava; };
+  const isSolid = (x: number, z: number) => solidI(idx(x, z));
+  /** wie isSolidTile: Mauern, Säulen, Kisten und der Klippenrand */
+  const hard = (x: number, z: number) => {
+    if (x < 0 || z < 0 || x >= size - 1 || z >= size - 1) return true;
+    const t = tiles[idx(x, z)];
+    return t === Tile.Wall || t === Tile.Pillar || t === Tile.Crate;
+  };
+  const plain = (x: number, z: number) => { const t = tiles[idx(x, z)]; return t === Tile.Floor || t === Tile.Moss; };
+
+  // --- Prüfungen ---------------------------------------------------------------
+  const seen = new Uint8Array(N);
+  const stack = new Int32Array(N);
+  /** Begehbare Kacheln, die von der Mitte aus nicht erreichbar sind (Flood-Fill, 4er-Nachbarschaft) */
+  const unreachable = (): number[] => {
+    seen.fill(0);
+    let sp = 0;
+    const s0 = idx(Math.floor(c), Math.floor(c));
+    seen[s0] = 1; stack[sp++] = s0;
+    while (sp > 0) {
+      const i = stack[--sp], x = i % size, z = (i - x) / size;
+      for (let d = 0; d < 4; d++) {
+        const nx = x + (d === 0 ? 1 : d === 1 ? -1 : 0), nz = z + (d === 2 ? 1 : d === 3 ? -1 : 0);
+        if (nx < 1 || nz < 1 || nx > size - 2 || nz > size - 2) continue;
+        const j = idx(nx, nz);
+        if (seen[j] || solidI(j)) continue;
+        seen[j] = 1; stack[sp++] = j;
+      }
     }
+    const out: number[] = [];
+    for (let z = 1; z <= size - 2; z++) for (let x = 1; x <= size - 2; x++) {
+      const j = idx(x, z);
+      if (!seen[j] && !solidI(j)) out.push(j);
+    }
+    return out;
+  };
+  /** Mindestens die Hälfte der möglichen Boss-Spawnpunkte (Ring um die Mitte) bleibt frei */
+  const ringOk = () => {
+    let free = 0;
+    const n = 48;
+    for (let k = 0; k < n; k++) {
+      const a = (k / n) * Math.PI * 2;
+      const x = c + Math.cos(a) * BOSS_RING, z = c + Math.sin(a) * BOSS_RING;
+      const tx = Math.floor(x), tz = Math.floor(z), t = tiles[idx(tx, tz)];
+      if (hard(tx, tz) || t === Tile.Lava || t === Tile.Poison) continue;
+      if (hard(Math.floor(x + 0.8), tz) || hard(Math.floor(x - 0.8), tz) || hard(tx, Math.floor(z + 0.8)) || hard(tx, Math.floor(z - 0.8))) continue;
+      free++;
+    }
+    return free >= n / 2;
   };
 
-  // Grundboden mit Moosfleck (auf Gackerfeld: Wiese)
-  for (let z = 0; z < size; z++) {
-    for (let x = 0; x < size; x++) {
-      const mx = x - 5, mz = z - 8;
-      const grass = style === 'heu' ? rng.chance(0.55) : style === 'gift' ? rng.chance(0.25) : false;
-      tiles[idx(x, z)] = grass || (mx * mx + mz * mz < 16 && rng.chance(0.75)) ? Tile.Moss : Tile.Floor;
+  /**
+   * Setzt ein festes Hindernis (Zellen einer Gruppe). Abgelehnt, wenn es in die Mitte/den Rand
+   * ragt, näher als 2 Kacheln an anderen Hindernissen steht oder Bereiche abschneidet.
+   * Kleine Löcher im Hindernis (z. B. in einem Lavaklecks) werden mit aufgefüllt.
+   */
+  const place = (cells: number[], t: TileId, hs: number[]): boolean => {
+    if (cells.length === 0) return false;
+    const own = new Set(cells);
+    if (own.size !== cells.length) return false;
+    let x0 = size, x1 = 0, z0 = size, z1 = 0;
+    for (const i of cells) {
+      const x = i % size, z = (i - x) / size;
+      if (x < LO || z < LO || x > HI || z > HI || blocked(x, z) || solidI(i)) return false;
+      for (let dz = -2; dz <= 2; dz++) for (let dx = -2; dx <= 2; dx++) {
+        const nx = x + dx, nz = z + dz;
+        if (nx < 0 || nz < 0 || nx >= size || nz >= size) continue;
+        const j = idx(nx, nz);
+        if (!own.has(j) && solidI(j)) return false;
+      }
+      x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z);
     }
-  }
+    const changed = cells.slice();
+    const prevT = cells.map((i) => tiles[i]), prevH = cells.map((i) => heights[i]);
+    cells.forEach((i, k) => { tiles[i] = t; heights[i] = hs[k] ?? hs[0]; });
+    let lost = unreachable();
+    if (lost.length > 0 && lost.length <= 4 && lost.every((j) => { const x = j % size, z = (j - x) / size; return x >= x0 && x <= x1 && z >= z0 && z <= z1; })) {
+      for (const j of lost) { changed.push(j); prevT.push(tiles[j]); prevH.push(heights[j]); tiles[j] = t; heights[j] = hs[0]; }
+      lost = unreachable();
+    }
+    if (lost.length > 0 || !ringOk()) {
+      changed.forEach((i, k) => { tiles[i] = prevT[k]; heights[i] = prevH[k]; });
+      return false;
+    }
+    return true;
+  };
 
-  // Hintere Mauern (Norden = z 0, Westen = x 0); vordere Ränder sind Klippen
+  /** Zellen eines runden Kleckses mit ausgefranstem Rand */
+  const blobCells = (cx: number, cz: number, r: number, fill: number, lo: number, hi: number): number[] => {
+    const out: number[] = [];
+    for (let z = Math.floor(cz - r); z <= Math.ceil(cz + r); z++) for (let x = Math.floor(cx - r); x <= Math.ceil(cx + r); x++) {
+      if (x < lo || z < lo || x > hi || z > hi || blocked(x, z)) continue;
+      const d = Math.hypot(x + 0.5 - cx, z + 0.5 - cz);
+      if (d < r && (d < r - 1 || rng.chance(fill))) out.push(idx(x, z));
+    }
+    if (out.length === 0) return out;
+    // nur das zusammenhängende Stück um die Mitte behalten (keine losen Einzelkacheln mit Engstellen)
+    const rest = new Set(out);
+    let best = out[0], bd = Infinity;
+    for (const i of out) { const d = Math.hypot((i % size) + 0.5 - cx, Math.floor(i / size) + 0.5 - cz); if (d < bd) { bd = d; best = i; } }
+    const keep = [best];
+    rest.delete(best);
+    for (let k = 0; k < keep.length; k++) {
+      const i = keep[k];
+      for (const j of [i + 1, i - 1, i + size, i - size]) if (rest.has(j) && Math.abs((j % size) - (i % size)) <= 1) { rest.delete(j); keep.push(j); }
+    }
+    return keep;
+  };
+  /** Spezialboden auf freie Bodenkacheln malen; gibt die gemalten Kacheln zurück */
+  const paint = (cells: number[], t: TileId): number[] => {
+    const done: number[] = [];
+    for (const i of cells) if (tiles[i] === Tile.Floor) { tiles[i] = t; done.push(i); }
+    return done;
+  };
+  const count = (t: TileId) => { let n = 0; for (let i = 0; i < N; i++) if (tiles[i] === t) n++; return n; };
+
+  // --- Hintere Mauern (Norden = z 0, Westen = x 0) mit Türmen; vordere Ränder sind Klippen ---
+  const towers = (): number[] => {
+    const out: number[] = [];
+    for (let i = rng.int(2, 4); i < size; i += rng.int(5, 7)) out.push(i);
+    return out;
+  };
+  const towersN = towers(), towersW = towers();
   for (let i = 0; i < size; i++) {
-    const tower = i % 6 === 3;
-    const h1 = tower ? 4 : rng.int(2, 3);
-    const h2 = tower ? 4 : rng.int(2, 3);
-    tiles[idx(i, 0)] = Tile.Wall; heights[idx(i, 0)] = h1;
-    tiles[idx(0, i)] = Tile.Wall; heights[idx(0, i)] = h2;
+    tiles[idx(i, 0)] = Tile.Wall; heights[idx(i, 0)] = towersN.includes(i) ? 4 : rng.int(2, 3);
+    tiles[idx(0, i)] = Tile.Wall; heights[idx(0, i)] = towersW.includes(i) ? 4 : rng.int(2, 3);
   }
+  heights[idx(0, 0)] = rng.int(2, 3);
 
-  // Inselgefahren
+  // --- Lavagräben (Festung, Lavakessel): gerade, 2 breit, mit Abstand zur Mitte ---
   if (style === 'festung' || style === 'lava') {
-    for (let z = 3; z <= 11; z++) { tiles[idx(20, z)] = Tile.Lava; tiles[idx(21, z)] = Tile.Lava; }
-    for (let x = 3; x <= 9; x++) { tiles[idx(x, 20)] = Tile.Lava; tiles[idx(x, 21)] = Tile.Lava; }
+    let trenches = 0;
+    for (let tries = 0; tries < 200 && trenches < 2; tries++) {
+      const len = rng.int(style === 'festung' ? 6 : 5, 9), horizontal = rng.chance(0.5);
+      const w = horizontal ? len : 2, h = horizontal ? 2 : len;
+      const x0 = rng.int(LO, HI - w + 1), z0 = rng.int(LO, HI - h + 1);
+      const cells: number[] = [];
+      let near = false;
+      for (let z = z0; z < z0 + h; z++) for (let x = x0; x < x0 + w; x++) { cells.push(idx(x, z)); if (centerDist(x, z) < 5) near = true; }
+      if (near) continue;
+      if (place(cells, Tile.Lava, [0])) trenches++;
+    }
   }
-  if (style === 'lava') { blob(6, 6, 2.2, Tile.Lava); blob(22, 22, 2.4, Tile.Lava); blob(15, 4, 1.6, Tile.Lava); }
-  if (style === 'eis') { blob(7, 7, 3.2, Tile.Ice, 0.9); blob(20, 8, 2.8, Tile.Ice, 0.9); blob(8, 20, 3, Tile.Ice, 0.9); blob(20, 20, 3.4, Tile.Ice, 0.9); blob(14, 14, 2.2, Tile.Ice, 1); }
-  if (style === 'gift') { blob(6, 9, 2, Tile.Poison); blob(20, 6, 1.8, Tile.Poison); blob(9, 21, 2.2, Tile.Poison); blob(21, 19, 1.9, Tile.Poison); blob(14, 23, 1.4, Tile.Poison); }
-  if (style === 'strom') {
-    for (const [x, z] of [[5, 5], [20, 5], [5, 20], [21, 21], [12, 8], [8, 13], [18, 13], [13, 19]] as const) {
-      for (let dz = 0; dz < 2; dz++) for (let dx = 0; dx < 2; dx++) if (!blocked(x + dx, z + dz)) tiles[idx(x + dx, z + dz)] = Tile.Shock;
+  // Lavakessel: zusätzliche Lavakleckse
+  if (style === 'lava') {
+    const target = rng.int(58, 70);
+    for (let tries = 0; tries < 200 && count(Tile.Lava) < target; tries++) {
+      const r = rng.range(1.6, 2.5);
+      const cx = rng.range(LO + 1, HI), cz = rng.range(LO + 1, HI);
+      if (centerDist(Math.floor(cx), Math.floor(cz)) < 5) continue;
+      place(blobCells(cx, cz, r, 0.85, LO, HI), Tile.Lava, [0]);
     }
   }
 
-  // Säulen und Kisten, nicht in der Mitte (Rostgrat: zusätzliche Schrotthaufen)
-  const pillars: [number, number, number][] = [[8, 8, 3], [19, 18, 2], [7, 15, 2], [17, 6, 3], [23, 23, 1], [13, 22, 2]];
-  if (style === 'schrott') pillars.push([5, 11, 1], [11, 4, 2], [22, 11, 1], [16, 24, 2], [10, 18, 1], [24, 15, 2]);
-  for (const [x, z, h] of pillars) { tiles[idx(x, z)] = Tile.Pillar; heights[idx(x, z)] = h; }
-  const crates: [number, number, number][] = [[4, 23, 1], [5, 23, 2], [4, 24, 1], [23, 4, 1], [24, 4, 1], [24, 5, 2]];
-  for (const [x, z, h] of crates) if (!blocked(x, z)) { tiles[idx(x, z)] = Tile.Crate; heights[idx(x, z)] = h; }
+  // --- Kistenstapel in kleinen Gruppen ---
+  const CRATE_SHAPES: [number, number][][] = [
+    [[0, 0], [1, 0]], [[0, 0], [0, 1]],
+    [[0, 0], [1, 0], [0, 1]], [[0, 0], [1, 0], [1, 1]], [[0, 0], [0, 1], [1, 1]], [[1, 0], [0, 1], [1, 1]],
+    [[0, 0], [1, 0], [2, 0]], [[0, 0], [0, 1], [0, 2]]
+  ];
+  const groups = rng.int(2, 3) + (style === 'schrott' ? 1 : 0);
+  for (let g = 0, tries = 0; g < groups && tries < 120; tries++) {
+    const shape = rng.pick(CRATE_SHAPES);
+    const x0 = rng.int(LO, HI), z0 = rng.int(LO, HI);
+    if (shape.some(([dx, dz]) => x0 + dx > HI || z0 + dz > HI)) continue;
+    if (place(shape.map(([dx, dz]) => idx(x0 + dx, z0 + dz)), Tile.Crate, shape.map(() => rng.int(1, 2)))) g++;
+  }
 
-  const isSolid = (x: number, z: number) => { const t = tiles[idx(x, z)]; return t === Tile.Wall || t === Tile.Pillar || t === Tile.Crate || t === Tile.Lava; };
+  // --- Säulen (Rostgrat: zusätzliche Schrotthaufen) ---
+  const pillars: number[] = [];
+  const nPillars = rng.int(5, 7), nScrap = style === 'schrott' ? rng.int(5, 7) : 0;
+  for (let k = 0; k < nPillars + nScrap; k++) {
+    for (let tries = 0; tries < 80; tries++) {
+      const x = rng.int(LO, HI), z = rng.int(LO, HI);
+      const i = idx(x, z);
+      // nicht zu dicht an anderen Säulen, damit sie sich über die Arena verteilen
+      if (pillars.some((j) => Math.hypot((j % size) - x, Math.floor(j / size) - z) < 4)) continue;
+      if (place([i], Tile.Pillar, [k < nPillars ? rng.int(1, 3) : rng.int(1, 2)])) { pillars.push(i); break; }
+    }
+  }
+
+  // --- Spezialboden je Stil (nur auf freien Bodenkacheln) ---
+  if (style === 'eis') {
+    const target = rng.int(92, 112);
+    const centers: [number, number, number][] = [];
+    for (let tries = 0; tries < 60 && count(Tile.Ice) < target; tries++) {
+      const r = rng.range(2.4, 3.4);
+      const cx = rng.range(3, size - 3), cz = rng.range(3, size - 3);
+      if (centers.some(([mx, mz, mr]) => Math.hypot(mx - cx, mz - cz) < (mr + r) * 0.8)) continue;
+      paint(blobCells(cx, cz, r, 0.9, 2, size - 3), Tile.Ice);
+      centers.push([cx, cz, r]);
+    }
+  }
+  if (style === 'gift') {
+    const target = rng.int(38, 50);
+    const centers: [number, number, number][] = [];
+    for (let tries = 0; tries < 80 && count(Tile.Poison) < target; tries++) {
+      const r = rng.range(1.4, 2.3);
+      const cx = rng.range(3, size - 3), cz = rng.range(3, size - 3);
+      // Abstand zwischen den Tümpeln, damit Wege dazwischen bleiben
+      if (centers.some(([mx, mz, mr]) => Math.hypot(mx - cx, mz - cz) < mr + r + 2)) continue;
+      const done = paint(blobCells(cx, cz, r, 0.85, 2, size - 3), Tile.Poison);
+      if (!ringOk()) { for (const i of done) tiles[i] = Tile.Floor; continue; }
+      centers.push([cx, cz, r]);
+    }
+  }
+  if (style === 'strom') {
+    const shockNear = (x: number, z: number) => {
+      for (let dz = -2; dz <= 3; dz++) for (let dx = -2; dx <= 3; dx++) {
+        const nx = x + dx, nz = z + dz;
+        if (nx >= 0 && nz >= 0 && nx < size && nz < size && tiles[idx(nx, nz)] === Tile.Shock) return true;
+      }
+      return false;
+    };
+    for (let k = 0, tries = 0; k < 8 && tries < 300; tries++) {
+      const x = rng.int(3, size - 5), z = rng.int(3, size - 5);
+      const cells = [idx(x, z), idx(x + 1, z), idx(x, z + 1), idx(x + 1, z + 1)];
+      if (cells.some((i) => tiles[i] !== Tile.Floor) || blocked(x, z) || blocked(x + 1, z) || blocked(x, z + 1) || blocked(x + 1, z + 1) || shockNear(x, z)) continue;
+      paint(cells, Tile.Shock);
+      k++;
+    }
+  }
+
+  // --- Moosfleck (Gackerfeld: Wiese, Pilzmoor: Grasflecken) ---
+  // Mitte des Flecks auf freiem Boden mit Platz rundherum (dort stehen die Kristalle)
+  let mx = 5, mz = 8;
+  for (let tries = 0; tries < 80; tries++) {
+    const x = rng.int(4, size - 5), z = rng.int(4, size - 5);
+    if (centerDist(x, z) < 5 || tiles[idx(x, z)] !== Tile.Floor) continue;
+    let clear = true;
+    for (let dz = -2; dz <= 2; dz++) for (let dx = -2; dx <= 2; dx++) if (isSolid(x + dx, z + dz)) clear = false;
+    mx = x; mz = z;
+    if (clear) break;
+  }
+  for (let z = 1; z < size - 1; z++) for (let x = 1; x < size - 1; x++) {
+    const i = idx(x, z);
+    if (tiles[i] !== Tile.Floor) continue;
+    const dx = x - mx, dz = z - mz;
+    const grass = style === 'heu' ? rng.chance(0.55) : style === 'gift' ? rng.chance(0.25) : false;
+    if (grass || (dx * dx + dz * dz < 16 && rng.chance(0.75))) tiles[i] = Tile.Moss;
+  }
+
+  // --- Props ---
   const props: Prop[] = [];
   // Fackeln auf den Türmen
-  for (let i = 3; i < size; i += 6) {
-    props.push({ kind: 'torch', x: i + 0.5, z: 0.5, y: 4, r: 0, seed: i });
-    props.push({ kind: 'torch', x: 0.5, z: i + 0.5, y: 4, r: 0, seed: i + 100 });
-  }
-  // Kristalle im Moos
-  props.push({ kind: 'crystal', x: 4.6, z: 8.2, y: 0, r: 0.6, seed: 1 });
-  props.push({ kind: 'crystal', x: 6.3, z: 9.6, y: 0, r: 0.45, seed: 2 });
-  // Explosive Fässer (Rostgrat: viele Ölfässer, Gackerfeld: Heuballen)
-  const barrels: [number, number][] = [[22.5, 15.4], [23.3, 16.2], [10.6, 5.5], [15.5, 24.4]];
-  if (style === 'schrott') barrels.push([6.5, 12.5], [12.5, 5.5], [21.5, 12.5], [17.5, 22.5]);
-  if (style === 'festung') barrels.push([4.5, 16.5], [16.5, 3.5]);
-  if (style !== 'heu' && style !== 'eis') for (const [x, z] of barrels) {
-    if (!isSolid(Math.floor(x), Math.floor(z))) props.push({ kind: 'barrel', x, z, y: 0, r: 0.3, seed: Math.floor(x * 10 + z) });
-  }
-  if (style === 'heu') {
-    for (const [x, z] of [[6.5, 6.5], [7.4, 6.8], [21.5, 6.5], [6.5, 21.5], [21.5, 21.5], [22.4, 21.2], [11.5, 4.5], [4.5, 12.5], [23.5, 13.5], [13.5, 23.5]] as const) {
-      props.push({ kind: 'heu', x, z, y: 0, r: 0.42, seed: Math.floor(x * 10 + z) });
+  for (const i of towersN) props.push({ kind: 'torch', x: i + 0.5, z: 0.5, y: 4, r: 0, seed: i });
+  for (const i of towersW) props.push({ kind: 'torch', x: 0.5, z: i + 0.5, y: 4, r: 0, seed: i + 100 });
+
+  /** freie Stelle für ein festes Objekt: normaler Boden, nicht in der Mitte, Umgebung ohne Hindernisse */
+  const spotOk = (x: number, z: number, r: number, margin: number): boolean => {
+    const tx = Math.floor(x), tz = Math.floor(z);
+    if (tx < 2 || tz < 2 || tx > size - 3 || tz > size - 3 || blocked(tx, tz) || !plain(tx, tz)) return false;
+    for (let dz = -margin; dz <= margin; dz++) for (let dx = -margin; dx <= margin; dx++) if (isSolid(tx + dx, tz + dz)) return false;
+    for (const p of props) if (p.r > 0 && Math.hypot(p.x - x, p.z - z) < p.r + r + 0.1) return false;
+    return true;
+  };
+  // Kristalle im Moos: erst dicht beieinander im Fleck suchen, notfalls irgendwo
+  let kx = mx + 0.5, kz = mz + 0.5;
+  for (const [r, pseed, dMin, dMax] of [[0.6, 1, 0, 1.5], [0.45, 2, 1.5, 2.2]] as const) {
+    for (let tries = 0; tries < 300; tries++) {
+      let x: number, z: number;
+      if (tries < 60) {
+        const a = rng.next() * Math.PI * 2, d = rng.range(dMin, dMax);
+        x = kx + Math.cos(a) * d; z = kz + Math.sin(a) * d;
+      } else {
+        x = rng.range(2.5, size - 2.5); z = rng.range(2.5, size - 2.5);
+      }
+      if (!spotOk(x, z, r, 2)) continue;
+      props.push({ kind: 'crystal', x, z, y: 0, r, seed: pseed });
+      kx = x; kz = z;
+      break;
     }
   }
-  // Geröll
+  /** Fässer/Heuballen verstreut, gern paarweise */
+  const scatter = (kind: 'barrel' | 'heu', n: number, r: number, pair: number) => {
+    let last: Prop | null = null;
+    for (let k = 0, tries = 0; k < n && tries < 400; tries++) {
+      let x: number, z: number;
+      if (last && rng.chance(pair)) {
+        const a = rng.next() * Math.PI * 2, d = rng.range(0.85, 1.0);
+        x = last.x + Math.cos(a) * d; z = last.z + Math.sin(a) * d;
+      } else {
+        x = rng.int(2, size - 3) + rng.range(0.3, 0.7); z = rng.int(2, size - 3) + rng.range(0.3, 0.7);
+      }
+      if (!spotOk(x, z, r, 1)) { last = null; continue; }
+      const p: Prop = { kind, x, z, y: 0, r, seed: Math.floor(x * 10 + z) };
+      props.push(p);
+      last = k % 2 === 0 ? p : null;
+      k++;
+    }
+  };
+  // Explosive Fässer (Rostgrat: viele Ölfässer, Festung: Pulverfässer, Gackerfeld: Heuballen)
+  if (style !== 'heu' && style !== 'eis') {
+    scatter('barrel', rng.int(3, 5) + (style === 'schrott' ? rng.int(3, 5) : 0) + (style === 'festung' ? 2 : 0), 0.3, 0.4);
+  }
+  if (style === 'heu') scatter('heu', rng.int(9, 11), 0.42, 0.3);
+  // Geröll (nur Deko)
   for (let i = 0; i < 26; i++) {
     const x = rng.range(1.5, size - 1.5), z = rng.range(1.5, size - 1.5);
-    if (!blocked(x, z)) props.push({ kind: 'rubble', x, z, y: 0, r: 0, seed: i });
+    const tx = Math.floor(x), tz = Math.floor(z);
+    if (!blocked(x, z) && plain(tx, tz)) props.push({ kind: 'rubble', x, z, y: 0, r: 0, seed: i });
   }
 
   const arena: Arena = {

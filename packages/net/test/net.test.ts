@@ -124,6 +124,17 @@ while (w.players[0].pendingLevels > 0) host.command(0, { type: 'upgrade', index:
 host.command(0, { type: 'ready' });
 ok(w.phase === 'welle', 'Alle bereit → nächste Welle');
 
+// Reise im Koop: nach der Baron-Welle (Koop 8) geht es auf die nächste Insel – der Client baut dieselbe Arena
+{
+  w.startWave(9);
+  for (let i = 0; i < 20; i++) { now += 33; host.tick(NO_INPUT); hub.flush(); client.update(evs); }
+  host.sendState(); hub.flush();
+  for (let i = 0; i < 10; i++) { now += 33; host.tick(NO_INPUT); hub.flush(); client.update(evs); }
+  ok(w.insel.id === 'funkenschlund' && cw.insel.id === 'funkenschlund' && cw.arenaSeed === w.arenaSeed && cw.arena.tiles.every((t, i) => t === w.arena.tiles[i]),
+    'Inselwechsel: Client auf Funkenschlund mit identischer Arena');
+  ok(cw.inselWelle === 1 && cw.wellenArt === 'normal' && cw.reiseRegel.wellen === 8, 'Client kennt Inselwelle und Koop-Regel');
+}
+
 // Verbindungsabbruch und Wiederverbinden
 {
   let info = '';

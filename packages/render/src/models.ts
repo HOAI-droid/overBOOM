@@ -340,6 +340,17 @@ export function baron(): Vox[] {
 }
 
 /** Goldene Krone für Elite-Gegner */
+/** Schild-Symbol für gepanzerte Gegner: kleines Wappenschild, steht aufrecht und zeigt zur Kamera */
+export function panzerSchild(): Vox[] {
+  const r = '#c9ced8', d = '#8d93a3', c = '#3de8ff';
+  const b = new VoxBuilder();
+  for (let y = 0; y < 5; y++) {
+    const w = y === 0 ? 1 : 2;
+    for (let x = -w; x <= w; x++) b.v(x, y, 0, Math.abs(x) === w || y === 4 ? r : d);
+  }
+  return b.v(0, 2, 1, c, 1).v(0, 3, 1, c, 1).list();
+}
+
 export function crown(): Vox[] {
   const g = '#ffd23f';
   return new VoxBuilder()
@@ -395,7 +406,14 @@ export const ENEMY_DEBRIS: Record<string, string[]> = {
   bombenpinguin: ['#24202e', '#ffffff', '#ff9a1a', '#ff7a1a'],
   koenig_gockel: ['#f4ecff', '#ffd23f', '#8a1a3a', '#ff3d3d', '#ff9a1a'],
   megatoaster: ['#c9ced8', '#8d93a3', '#c98a3a', '#ff2a4a', '#2a2e38'],
-  morchella: ['#9a3ab0', '#ffffff', '#f2e2c8', '#7dff5a', '#ffd23f']
+  morchella: ['#9a3ab0', '#ffffff', '#f2e2c8', '#7dff5a', '#ffd23f'],
+  baronin_gackerella: ['#f4ecff', '#c8327e', '#4a2370', '#ffd23f', '#ff3df0', '#3de8ff'],
+  baron_blitzbirne: ['#ffe680', '#fff3c4', '#3b2b66', '#d8a04a', '#3de8ff', '#ff3df0'],
+  baronin_schraubella: ['#c9ced8', '#8d93a3', '#ffd23f', '#d8a04a', '#ff3df0', '#6b707a'],
+  baronin_sporella: ['#1f7a72', '#ffd23f', '#f2e2c8', '#5dbb3a', '#3d8a2a', '#ff3df0'],
+  baron_glutbauch: ['#3a2a2a', '#ff7a1a', '#ffd23f', '#9a90a8', '#c8c0d0', '#2a2140'],
+  baronin_frostine: ['#a8f6ff', '#e8fdff', '#f4f8ff', '#3de8ff', '#6ad0f0', '#d8ecff'],
+  kawumm: ['#ff7a1a', '#ffd23f', '#fff3c4', '#ff5a14', '#6a1e1a', '#2b1440', '#ff3df0']
 };
 
 /* ------------------------------------------------------------------ */
@@ -728,4 +746,487 @@ export function morchella(): Vox[] {
   b.box(-2, 2, 17, 17, -2, 2, '#ffd23f').v(-2, 18, 0, '#ffd23f').v(0, 18, 0, '#7dff5a', 1).v(2, 18, 0, '#ffd23f');
   angryFace(b, 0, 6, 4, { mouth: '#a8505a', tusks: false, gap: 1 });
   return b.v(-1, 3, 4, '#a8505a').v(0, 3, 4, '#a8505a').v(-8, 12, 0, '#7dff5a', 1).v(8, 12, 2, '#7dff5a', 1).list();
+}
+
+/* ------------------------------------------------------------------ */
+/* Inselbarone, -baroninnen und das Große Kawumm                         */
+/* ------------------------------------------------------------------ */
+
+/** VoxBuilder, der weiß, welche Zellen belegt sind (für Gesichter auf runden Formen). */
+class Bau extends VoxBuilder {
+  private belegt = new Set<string>();
+  override v(x: number, y: number, z: number, c: string, glow = 0): this {
+    this.belegt.add(x + ',' + y + ',' + z);
+    return super.v(x, y, z, c, glow);
+  }
+  override box(x0: number, x1: number, y0: number, y1: number, z0: number, z1: number, c: string, glow = 0): this {
+    for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) for (let z = z0; z <= z1; z++) this.v(x, y, z, c, glow);
+    return this;
+  }
+  override del(x: number, y: number, z: number): this {
+    this.belegt.delete(x + ',' + y + ',' + z);
+    return super.del(x, y, z);
+  }
+  hat(x: number, y: number, z: number): boolean {
+    return this.belegt.has(x + ',' + y + ',' + z);
+  }
+  /** Vorderste belegte z-Zelle der Spalte (x, y), sonst NaN */
+  vorne(x: number, y: number): number {
+    for (let z = 40; z >= -40; z--) if (this.hat(x, y, z)) return z;
+    return NaN;
+  }
+  /** Vordersten Voxel der Spalte umfärben (dz = 0) oder davor setzen (dz = 1) */
+  vorn(x: number, y: number, c: string, glow = 0, dz = 0): this {
+    const z = this.vorne(x, y);
+    return Number.isNaN(z) ? this : this.v(x, y, z + dz, c, glow);
+  }
+  /** Ellipsoid; `farbe` liefert Farbe (oder [Farbe, Leuchten]) je Zelle, null = leer */
+  kugel(cx: number, cy: number, cz: number, rx: number, ry: number, rz: number,
+    farbe: (x: number, y: number, z: number) => string | [string, number] | null): this {
+    for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++)
+      for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++)
+        for (let z = Math.floor(cz - rz); z <= Math.ceil(cz + rz); z++) {
+          const dx = (x - cx) / rx, dy = (y - cy) / ry, dz = (z - cz) / rz;
+          if (dx * dx + dy * dy + dz * dz > 1) continue;
+          const f = farbe(x, y, z);
+          if (f === null) continue;
+          if (typeof f === 'string') this.v(x, y, z, f);
+          else this.v(x, y, z, f[0], f[1]);
+        }
+    return this;
+  }
+}
+
+/** kleiner Pseudo-Zufall aus Koordinaten (0..1), für Muster */
+function rausch(x: number, y: number, z: number): number {
+  const n = Math.sin(x * 12.9898 + y * 78.233 + z * 37.719) * 43758.5453;
+  return n - Math.floor(n);
+}
+
+/**
+ * Grimmiges Gesicht auf einer runden Vorderseite: Augen und Mund werden auf die
+ * Oberfläche gemalt, die schrägen Brauen stehen einen Voxel vor (gut lesbar von schräg oben).
+ * `dame`: Wimpern, Lippenstift-Schmollmund und Rouge statt Hauern.
+ */
+function rundGesicht(b: Bau, cx: number, y: number, o: {
+  gap?: number; brow?: string; eye?: string; pupil?: string; eyeGlow?: number; mouth?: string; tusks?: boolean;
+  dame?: { lippen: string; rouge: string; wimpern?: string };
+} = {}): Bau {
+  const g = o.gap ?? 1, brow = o.brow ?? '#2b1d14', eye = o.eye ?? '#ffffff', pup = o.pupil ?? INK, eg = o.eyeGlow ?? 0;
+  const L = cx - g - 1, R = cx + g;
+  b.vorn(L, y, eye, eg).vorn(L + 1, y, pup).vorn(R, y, pup).vorn(R + 1, y, eye, eg);
+  // Augen zwei Voxel hoch: oben weiß, damit sie rund wirken
+  b.vorn(L, y - 1, eye, eg).vorn(L + 1, y - 1, eye, eg).vorn(R, y - 1, eye, eg).vorn(R + 1, y - 1, eye, eg);
+  b.vorn(L - 1, y + 2, brow, 0, 1).vorn(L, y + 2, brow, 0, 1).vorn(L + 1, y + 1, brow, 0, 1)
+    .vorn(R, y + 1, brow, 0, 1).vorn(R + 1, y + 2, brow, 0, 1).vorn(R + 2, y + 2, brow, 0, 1);
+  if (o.dame) {
+    const w = o.dame.wimpern ?? INK;
+    b.vorn(L - 1, y, w).vorn(L - 1, y - 1, w).vorn(R + 2, y, w).vorn(R + 2, y - 1, w);
+    b.vorn(L - 1, y - 3, o.dame.rouge).vorn(R + 2, y - 3, o.dame.rouge);
+    if (o.dame.lippen) {
+      for (let x = L + 1; x <= R; x++) b.vorn(x, y - 4, o.dame.lippen);
+      b.vorn(cx, y - 5, o.dame.lippen);
+      if (g === 1) b.vorn(cx - 1, y - 5, o.dame.lippen);
+    }
+  } else if (o.mouth !== '') {
+    for (let x = L; x <= R + 1; x++) b.vorn(x, y - 4, o.mouth ?? '#5a1a2a');
+    if (o.tusks !== false) b.vorn(L, y - 3, '#fff6d8').vorn(R + 1, y - 3, '#fff6d8');
+  }
+  return b;
+}
+
+/** Baronin Gackerella von Federstein: hochnäsige Riesenhenne im Rüschenkleid, Federhut, Lorgnette. Blick +z. */
+export function baroninGackerella(): Vox[] {
+  const fed = '#f4ecff', fedD = '#ddd2ec', kleid = '#c8327e', kleidD = '#9a2266', gold = '#ffd23f', hut = '#4a2370';
+  const b = new Bau();
+  // Hühnerbeine mit Krallen
+  b.box(-3, -2, 0, 2, 0, 1, '#ff9a1a').box(2, 3, 0, 2, 0, 1, '#ff9a1a').box(-4, -1, 0, 0, 2, 3, '#ff9a1a').box(1, 4, 0, 0, 2, 3, '#ff9a1a');
+  // Rüschenrock (Glocke) mit goldenem Saum
+  b.kugel(0, 3, 0, 7.5, 6, 7.5, (x, y, z) => {
+    if (y < 1 || y > 8) return null;
+    if (y === 1) return gold;
+    const a = Math.atan2(x, z);
+    return Math.floor(a * 2.5 + 10) % 2 ? kleidD : kleid;
+  });
+  b.box(-1, 1, 3, 8, 6, 7, fed); // Schürzchen aus Federn vorne
+  // gefiederter Oberkörper, Brust nach vorne gereckt
+  b.kugel(0, 12, 0.5, 5.5, 4.5, 5.5, (x, y, z) => (z < -2 && (x + y) % 3 === 0 ? fedD : fed));
+  // Perlenkette
+  for (let x = -3; x <= 3; x++) b.vorn(x, 14 - (Math.abs(x) > 2 ? 0 : 1), '#fff6f0', 0, 1);
+  b.vorn(0, 12, '#ff3df0', 1, 1);
+  // Schwanzfedern hinten als Fächer
+  for (let i = -3; i <= 3; i++) for (let k = 0; k < 6 - Math.abs(i); k++) b.v(i * 1, 11 + k, -6 - (k >> 1), i % 2 ? kleid : fed);
+  // Flügel: links angelegt, rechts erhoben mit der Lorgnette
+  b.box(-7, -6, 9, 13, -2, 2, fedD).box(-7, -7, 8, 9, -1, 1, fed);
+  b.box(6, 7, 11, 14, -1, 1, fedD).box(7, 8, 15, 17, 0, 2, fedD);
+  // Lorgnette: goldener Stiel, zwei Gläser vor dem Gesicht
+  b.box(8, 8, 18, 20, 3, 3, gold);
+  // großer Kopf
+  b.kugel(0, 20, 1.5, 5, 5, 5, () => fed);
+  rundGesicht(b, 0, 20, { gap: 1, brow: '#4a1a3a', mouth: '', dame: { lippen: '', rouge: '#ff9ac8' } });
+  // Schnabel hochnäsig nach oben gereckt
+  b.vorn(-1, 17, '#ffb02e', 0, 1).vorn(0, 17, '#ffb02e', 0, 1).vorn(-1, 18, '#ffb02e', 0, 1).vorn(0, 18, '#ffb02e', 0, 1);
+  b.vorn(-1, 18, '#ff9a1a', 0, 1).vorn(0, 18, '#ff9a1a', 0, 1).vorn(0, 19, '#ffb02e', 0, 1);
+  // Kehllappen
+  b.vorn(-1, 16, '#ff3d3d', 0, 1).vorn(0, 16, '#ff3d3d', 0, 1).vorn(0, 15, '#ff3d3d', 0, 1).vorn(-1, 15, '#ff3d3d', 0, 1);
+  // Lorgnette neben dem Gesicht (Goldrahmen, Gläser leuchten)
+  const lz = b.vorne(4, 20) + 1;
+  b.box(4, 7, 22, 22, lz, lz, gold).box(4, 7, 18, 18, lz, lz, gold).box(4, 4, 18, 22, lz, lz, gold).box(7, 7, 18, 22, lz, lz, gold).box(5, 6, 20, 20, lz, lz, gold);
+  b.box(5, 6, 21, 21, lz, lz, '#a8f6ff', 1).box(5, 6, 19, 19, lz, lz, '#a8f6ff', 1);
+  b.box(8, 8, 15, 19, lz - 1, lz - 1, gold);
+  // Federhut, nach hinten gerückt und vorne hochgeklappt, damit das Gesicht frei bleibt
+  for (let x = -6; x <= 6; x++) for (let z = -7; z <= 5; z++) {
+    const d2 = x * x + (z + 1) * (z + 1);
+    if (d2 > 34) continue;
+    b.v(x, 25 + (z > 2 ? 1 : 0) + (z > 4 ? 1 : 0), z, d2 > 24 ? '#2e1450' : hut);
+  }
+  b.kugel(0, 27, -1.5, 3.6, 2.4, 3.6, (x, y) => (y <= 26 ? gold : hut));
+  // Riesenfedern: Magenta, Cyan, Gelb
+  const feder = (x0: number, z0: number, c: string, h: number, dx: number) => {
+    for (let k = 0; k < h; k++) {
+      const x = x0 + Math.round(dx * (k / h) ** 2 * 4), y = 28 + k, z = z0 - Math.round(k * 0.45);
+      const f = k >= h - 2 ? shade(c, 1.15) : c;
+      b.box(x, x + 1, y, y, z, z + 1, f);
+    }
+  };
+  feder(-3, -2, '#ff3df0', 9, -1);
+  feder(1, -3, '#3de8ff', 7, 1);
+  feder(-1, -4, gold, 5, 0);
+  b.v(-3, 27, 2, '#ff3df0', 1).v(-4, 27, 2, '#ffd23f'); // Brosche am Hut
+  return b.list();
+}
+
+/** Baron Blitzbirne: eitler Edelmann im Frack voller Kabel, riesige leuchtende Glühbirne als Kopf. Blick +z. */
+export function baronBlitzbirne(): Vox[] {
+  const frack = '#3b2b66', frackD = '#2a1f45', hemd = '#f4ecff', messing = '#d8a04a', messingD = '#a87828';
+  const b = new Bau();
+  // Lackschuhe und Röhrenhosen
+  b.box(-3, -1, 0, 0, -1, 2, '#141018').box(1, 3, 0, 0, -1, 2, '#141018').v(-2, 0, 2, '#5a5468').v(2, 0, 2, '#5a5468');
+  b.box(-3, -1, 1, 5, -1, 1, frackD).box(1, 3, 1, 5, -1, 1, frackD);
+  // Frack mit Schwalbenschwänzen
+  b.kugel(0, 10, 0, 5, 5, 3.5, (x, y, z) => (y < 6 ? null : z > 1 && Math.abs(x) <= 1 ? hemd : frack));
+  b.box(-4, -1, 3, 8, -4, -3, frack).box(1, 4, 3, 8, -4, -3, frack).box(-4, -2, 2, 2, -4, -4, frackD).box(2, 4, 2, 2, -4, -4, frackD);
+  // Revers, Fliege, Knöpfe
+  b.vorn(-2, 13, frackD, 0, 1).vorn(-2, 12, frackD, 0, 1).vorn(2, 13, frackD, 0, 1).vorn(2, 12, frackD, 0, 1);
+  b.vorn(-2, 14, '#ff3df0', 0, 1).vorn(-1, 14, '#ff3df0', 0, 1).vorn(1, 14, '#ff3df0', 0, 1).vorn(2, 14, '#ff3df0', 0, 1).vorn(0, 14, '#c42a9a', 0, 1);
+  for (const y of [8, 10, 12]) b.vorn(0, y, '#ffd23f');
+  // Kabel winden sich um den Frack (gelb und cyan, mit Funken)
+  for (let a = 0; a < 26; a++) {
+    const w = a / 26 * Math.PI * 2;
+    const x = Math.round(Math.sin(w) * 5.2), z = Math.round(Math.cos(w) * 3.8);
+    b.v(x, 7 + Math.round(a / 9), z, '#ffd23f');
+    b.v(Math.round(Math.sin(w + 2) * 5.2), 11 - Math.round(a / 13), Math.round(Math.cos(w + 2) * 3.8), '#3de8ff');
+  }
+  // Ärmchen mit weißen Handschuhen, ein Kabel als Peitsche
+  b.box(-7, -6, 9, 13, -1, 1, frack).box(-7, -6, 7, 8, -1, 1, hemd);
+  b.box(6, 7, 9, 13, -1, 1, frack).box(6, 7, 7, 8, -1, 1, hemd);
+  b.box(8, 8, 6, 6, 0, 1, '#ffd23f').box(9, 9, 4, 5, 2, 2, '#ffd23f').v(9, 3, 3, '#a8f6ff', 1).v(10, 3, 2, '#3de8ff', 1);
+  // Kabel vom Rücken in die Fassung
+  b.box(-3, -3, 13, 16, -4, -4, '#3de8ff').box(3, 3, 12, 16, -4, -4, '#ffd23f');
+  // Schraubfassung aus Messing mit Gewinderillen
+  for (let y = 15; y <= 18; y++) for (let x = -3; x <= 3; x++) for (let z = -3; z <= 3; z++) {
+    if (x * x + z * z > 10) continue;
+    b.v(x, y, z, y % 2 ? messing : messingD);
+  }
+  // riesige Glühbirne (leuchtet), heller Glanzpunkt
+  b.kugel(0, 25, 0.5, 6.5, 7, 6.5, (x, y, z) => {
+    if (y < 19) return null;
+    if (y <= 20 && x * x + (z - 0.5) * (z - 0.5) > 12) return null;
+    const hell = x < -2 && y > 27;
+    return [hell ? '#fffbe6' : y > 29 ? '#fff3c4' : '#ffe680', 1];
+  });
+  // Glühfaden schimmert durch den Scheitel
+  b.v(-1, 32, 0, '#ff7a1a', 1).v(0, 32, 0, '#ff7a1a', 1).v(1, 32, 0, '#ff7a1a', 1);
+  // Gesicht auf dem Glas: dunkle Augen mit Glanz, dicke Brauen, gezwirbelter Draht-Schnurrbart
+  const d = '#2a1f45';
+  b.vorn(-3, 25, d).vorn(-2, 25, d).vorn(-3, 24, d).vorn(-2, 24, '#ffffff', 1);
+  b.vorn(2, 25, d).vorn(3, 25, d).vorn(3, 24, d).vorn(2, 24, '#ffffff', 1);
+  b.vorn(-5, 28, d, 0, 1).vorn(-4, 28, d, 0, 1).vorn(-3, 27, d, 0, 1).vorn(-2, 27, d, 0, 1).vorn(-1, 26, d, 0, 1);
+  b.vorn(5, 28, d, 0, 1).vorn(4, 28, d, 0, 1).vorn(3, 27, d, 0, 1).vorn(2, 27, d, 0, 1).vorn(1, 26, d, 0, 1);
+  for (let x = -3; x <= 3; x++) b.vorn(x, 22, d, 0, 1);
+  b.vorn(-4, 23, d, 0, 1).vorn(4, 23, d, 0, 1).vorn(-5, 24, d, 0, 1).vorn(5, 24, d, 0, 1);
+  b.vorn(-1, 21, '#7a2a3a').vorn(0, 21, '#7a2a3a').vorn(1, 21, '#7a2a3a');
+  // eitles Zylinderchen schräg auf dem Glas
+  b.box(-2, 3, 33, 33, -2, 3, '#141018').box(-1, 2, 34, 36, -1, 2, '#141018').box(-1, 2, 34, 34, -1, 2, '#ff3df0');
+  return b.list();
+}
+
+/** Baronin Schraubella: elegante Blechdame im Glockenrock, Zahnrad-Krone, Schrauben-Monokel, Aufziehschlüssel. Blick +z. */
+export function baroninSchraubella(): Vox[] {
+  const chrom = '#c9ced8', chromD = '#8d93a3', stahl = '#6b707a', gold = '#ffd23f', goldD = '#d8a04a';
+  const b = new Bau();
+  // Glockenrock mit Nieten und Goldbändern
+  for (let y = 0; y <= 10; y++) {
+    const r = 7.5 - y * 0.33;
+    for (let x = -8; x <= 8; x++) for (let z = -8; z <= 8; z++) {
+      const d = Math.hypot(x, z);
+      if (d > r) continue;
+      const a = Math.atan2(x, z);
+      const bahn = Math.floor(a * 3 + 20) % 2;
+      const c = y === 0 || y === 6 ? goldD : d > r - 1.2 && y % 3 === 1 && bahn ? '#e8ecf2' : bahn ? chrom : chromD;
+      b.v(x, y, z, c);
+    }
+  }
+  // Mieder mit Juwel
+  b.kugel(0, 12.5, 0, 3.2, 2, 3, () => stahl);
+  // Oberkörper
+  b.kugel(0, 15.5, 0, 4, 2.5, 3.2, () => chrom);
+  // Röhrenärmchen, Hände in die Hüfte gestemmt
+  b.box(-6, -5, 13, 16, -1, 0, chromD).box(-6, -5, 10, 12, 0, 1, stahl).box(-4, -4, 10, 10, 0, 1, stahl);
+  b.box(5, 6, 13, 16, -1, 0, chromD).box(5, 6, 10, 12, 0, 1, stahl).box(4, 4, 10, 10, 0, 1, stahl);
+  b.v(-6, 16, 0, gold).v(6, 16, 0, gold);
+  // Aufziehschlüssel im Rücken
+  b.box(0, 0, 16, 16, -4, -5, stahl).box(-3, 3, 15, 17, -6, -6, goldD).box(-2, 2, 16, 16, -6, -6, '#2a2e38');
+  // Hals
+  b.box(-1, 1, 18, 18, -1, 1, stahl);
+  // großer runder Blechkopf
+  b.kugel(0, 23.5, 0.5, 5.5, 5, 5, (x, y, z) => (z < -2 && (x + y) % 4 === 0 ? chromD : '#e2e6ee'));
+  rundGesicht(b, 0, 23, { gap: 1, brow: INK, eye: '#ffffff', eyeGlow: 1, dame: { lippen: '#ff3df0', rouge: '#ff9ac8' } });
+  // Nieten auf den Wangen, Mutter-Ohrringe mit leuchtenden Tropfen
+  b.v(-5, 23, 1, stahl).v(5, 23, 1, stahl).box(-6, -6, 20, 21, 0, 0, gold).box(6, 6, 20, 21, 0, 0, gold).v(-6, 19, 0, '#3de8ff', 1).v(6, 19, 0, '#3de8ff', 1);
+  // Schrauben-Monokel ersetzt das rechte Auge: Goldring, Glas leuchtet, Schraube und Kettchen
+  for (let x = 1; x <= 3; x++) for (let y = 21; y <= 23; y++) if (x !== 2 || y !== 22) b.vorn(x, y, gold, 0, 1);
+  b.vorn(2, 22, '#a8f6ff', 1, 1);
+  b.vorn(4, 22, goldD, 0, 1).vorn(4, 22, gold, 0, 1);
+  b.vorn(3, 20, goldD, 0, 1).vorn(3, 19, goldD, 0, 1).vorn(4, 18, goldD, 0, 1);
+  // Seidenschärpe mit Schleife (Magenta)
+  for (let x = -4; x <= 4; x++) for (let z = -4; z <= 4; z++) if (b.hat(x, 12, z) && !(b.hat(x + 1, 12, z) && b.hat(x - 1, 12, z) && b.hat(x, 12, z + 1) && b.hat(x, 12, z - 1))) b.v(x, 12, z, '#ff3df0');
+  b.vorn(0, 12, '#ffb0f8', 1, 1);
+  b.box(-3, -1, 11, 13, -4, -4, '#ff3df0').box(1, 3, 11, 13, -4, -4, '#ff3df0').v(0, 12, -4, '#c42a9a').box(-1, 1, 8, 10, -4, -4, '#c42a9a');
+  // Zahnrad-Krone: Goldreif und ein stehendes Zahnrad (Ring mit Zähnen und Speichen), Edelstein in der Nabe
+  for (let x = -4; x <= 4; x++) for (let z = -4; z <= 4; z++) {
+    const d = Math.hypot(x, z + 0.5);
+    if (d <= 4.4 && d > 3) b.v(x, 28, z, (Math.round(Math.atan2(x, z) * 2.5) & 1) ? gold : goldD);
+  }
+  for (let x = -6; x <= 6; x++) for (let y = -6; y <= 6; y++) {
+    const d = Math.hypot(x, y), a = Math.atan2(y, x);
+    const zahn = Math.cos(a * 8) > 0.3;
+    const speiche = d < 3.6 && (Math.abs(x) < 0.6 || Math.abs(y) < 0.6);
+    if (!(speiche || (d >= 3.2 && d <= (zahn ? 5.9 : 4.6)))) continue;
+    if (y < -3) continue;
+    b.v(x, 32 + y, -2, gold).v(x, 32 + y, -3, goldD);
+  }
+  b.v(0, 32, -1, '#ff3df0', 1).v(0, 32, -2, '#ff3df0', 1);
+  return b.list();
+}
+
+/** Baronin Sporella: Pilzbaronin, Hut so groß wie ein Gartenteich, Moos-Schleier, Sporen-Kette. Blick +z. */
+export function baroninSporella(): Vox[] {
+  const stiel = '#fff0dc', stielD = '#e8d4b4', kleid = '#a04ac0', kleidH = '#c070e0', hut = '#1f7a72', hutD = '#155a56', punkt = '#ffd23f', moos = ['#5dbb3a', '#3d8a2a', '#7dcc4a'];
+  const b = new Bau();
+  // Rock wie ein Pilzstiel mit Moos-Saum
+  b.kugel(0, 2, 0, 6.5, 8, 6.5, (x, y, z) => {
+    if (y < 0 || y > 9) return null;
+    if (y <= 1) return moos[Math.floor(rausch(x, y, z) * 3)];
+    return Math.floor(Math.atan2(x, z) * 3 + 20) % 2 ? kleid : kleidH;
+  });
+  // Ärmchen mit Moos-Handschuhen
+  b.box(-6, -5, 8, 11, -1, 1, kleid).box(-6, -5, 6, 7, -1, 1, moos[1]);
+  b.box(5, 6, 8, 11, -1, 1, kleid).box(5, 6, 6, 7, -1, 1, moos[1]);
+  // Kopf
+  b.kugel(0, 14, 0.5, 4.5, 4.5, 4.5, () => stiel);
+  rundGesicht(b, 0, 14, { gap: 1, brow: '#2b1440', eyeGlow: 1, dame: { lippen: '#ff3df0', rouge: '#ff9ac8' } });
+  // Kette aus leuchtenden Sporen
+  for (const [x, c] of [[-3, '#ff3df0'], [-1, '#3de8ff'], [1, '#ff3df0'], [3, '#3de8ff']] as [number, string][]) b.vorn(x, 10 - (Math.abs(x) < 2 ? 1 : 0), c, 1, 1);
+  // Riesenhut, nach hinten gekippt (vorne höher), mit goldenen Tupfen
+  const R = 10.5;
+  const kipp = (z: number) => Math.round(z * 0.22);
+  for (let x = -11; x <= 11; x++) for (let z = -11; z <= 11; z++) {
+    const d = Math.hypot(x, z);
+    if (d > R) continue;
+    const h = Math.round(Math.sqrt(1 - (d / R) ** 2) * 6);
+    const y0 = 20 + kipp(z);
+    // Lamellen unten
+    b.v(x, y0, z, d > R - 1.2 ? hutD : '#e8d0b8');
+    for (let y = 1; y <= h; y++) {
+      const tupf = y === h && ((x * 7 + z * 13) & 7) === 0 && d < R - 1.5;
+      b.v(x, y0 + y, z, tupf ? punkt : d > R - 1.6 || ((x + z) & 3) === 0 && y === h ? hutD : hut);
+    }
+    // Moos-Schleier hängt vom Rand – vorne frei fürs Gesicht
+    if (d > R - 1 && Math.abs(Math.atan2(x, z)) > 0.75) {
+      const len = 3 + Math.floor(rausch(x, 0, z) * 6);
+      for (let k = 1; k <= len; k++) b.v(x, y0 - k, z, moos[(k + x) % 3 < 0 ? 0 : (k + x) % 3]);
+    }
+  }
+  // feiner Schleier vor der Stirn
+  for (let x = -4; x <= 4; x += 2) b.vorn(x, 19, moos[2], 0, 1);
+  // Sporenwölkchen über dem Hut
+  b.v(-4, 29, 2, '#c9a0ff', 1).v(3, 30, -2, '#c9a0ff', 1).v(6, 28, 3, '#ff8af0', 1).v(-7, 27, -3, '#c9a0ff', 1);
+  // Stiel-Hals verbindet Kopf und Hut
+  b.box(-2, 2, 19, 20, -2, 1, stielD);
+  return b.list();
+}
+
+/** Baron Glutbauch: kugelrunder Magma-Fürst, glühender Bauch, Rauch-Schnauzbart, Obsidian-Krönchen. Blick +z. */
+export function baronGlutbauch(): Vox[] {
+  const kruste = '#3a2a2a', krusteD = '#2a1f25', glut = '#ff7a1a', hell = '#ffd23f', rauch = '#9a90a8', rauchH = '#c8c0d0';
+  const b = new Bau();
+  // Stummelfüße
+  b.box(-5, -2, 0, 1, -1, 3, krusteD).box(2, 5, 0, 1, -1, 3, krusteD).v(-4, 1, 3, glut, 1).v(3, 1, 3, glut, 1);
+  // Kugelkörper aus Kruste mit glühenden Rissen, vorne der glühende Bauch
+  b.kugel(0, 11, 0, 9.5, 9.5, 9, (x, y, z) => {
+    const bx = x / 6, by = (y - 8) / 5;
+    if (z > 4 && bx * bx + by * by < 1) {
+      const k = bx * bx + by * by;
+      return [k < 0.3 ? '#fff3c4' : k < 0.65 ? hell : glut, 1];
+    }
+    if (z > 3 && bx * bx + by * by < 1.35) return '#5a2a1a';
+    if (z > 4 && y >= 13 && y <= 19 && Math.abs(x) <= 7) return '#a8502e';
+    const riss = Math.abs(Math.sin(x * 0.9 + y * 0.6) + Math.cos(z * 0.8 - y * 0.5)) < 0.18;
+    if (riss) return [glut, 1];
+    return rausch(x, y, z) < 0.3 ? krusteD : kruste;
+  });
+  // Ärmchen mit glühenden Knöcheln
+  b.box(-11, -9, 9, 11, -1, 1, kruste).box(-12, -11, 7, 8, -1, 1, krusteD).v(-12, 8, 1, glut, 1);
+  b.box(9, 11, 9, 11, -1, 1, kruste).box(11, 12, 7, 8, -1, 1, krusteD).v(12, 8, 1, glut, 1);
+  // Gesicht: glühende Augen, Wutbrauen aus Obsidian
+  rundGesicht(b, 0, 16, { gap: 1, brow: '#141018', eye: hell, eyeGlow: 1, pupil: INK, mouth: '' });
+  b.vorn(-4, 18, '#141018', 0, 1).vorn(3, 18, '#141018', 0, 1);
+  // Rauch-Schnauzbart, an den Enden hochgezwirbelt
+  for (let x = -7; x <= 6; x++) {
+    const ax = Math.abs(x + 0.5);
+    const y = ax < 2 ? 13 : ax < 5 ? 13 : 14;
+    b.vorn(x, y, ax > 3 ? rauch : rauchH, 0, 1);
+    if (ax < 4.5) b.vorn(x, 12, rauch, 0, 1);
+  }
+  b.vorn(-8, 15, rauchH, 0, 1).vorn(7, 15, rauchH, 0, 1).vorn(-8, 16, rauch, 0, 1).vorn(7, 16, rauch, 0, 1);
+  // Hauer unterm Bart
+  b.vorn(-2, 10, '#fff6d8', 0, 1).vorn(1, 10, '#fff6d8', 0, 1);
+  // Obsidian-Krönchen mit Lavasteinen
+  for (let x = -3; x <= 3; x++) for (let z = -3; z <= 3; z++) if (x * x + z * z <= 10) b.v(x, 20, z, '#2a2140');
+  for (const [x, z] of [[-3, 0], [3, 0], [0, 3], [0, -3], [-2, 2], [2, 2]]) b.v(x, 21, z, '#2a2140').v(x, 22, z, (x + z) % 2 ? '#ff5a14' : hell, 1);
+  b.v(0, 21, 3, '#ff3df0', 1);
+  // Rauchwölkchen
+  b.box(-6, -5, 22, 23, -3, -2, rauch).v(-5, 24, -3, rauchH).box(5, 6, 23, 24, -4, -3, rauch).v(5, 25, -4, rauchH).v(-2, 25, -5, rauch);
+  return b.list();
+}
+
+/** Baronin Frostine von Bibberstein: Eiskristall-Kleid, Pelzkragen, Schneeflocken-Diadem, Eiszepter. Blick +z. */
+export function baroninFrostine(): Vox[] {
+  const eis = '#7ad8f8', eisD = '#3d9bd8', eisH = '#c8f4ff', pelz = '#ffffff', pelzD = '#dfe6f2', haut = '#f4e8f4';
+  const b = new Bau();
+  // facettiertes Eiskleid (Achteck, nach oben schmaler)
+  for (let y = 0; y <= 11; y++) {
+    const r = 7 - y * 0.33;
+    for (let x = -8; x <= 8; x++) for (let z = -8; z <= 8; z++) {
+      const ax = Math.abs(x), az = Math.abs(z);
+      if (Math.max(ax, az, (ax + az) * 0.72) > r) continue;
+      const facette = (x > 0 ? 1 : 0) + (z > 0 ? 2 : 0);
+      const c = (x * 5 + y * 3 + z * 7) % 11 === 0 ? eisH : facette === 3 ? eis : facette === 2 ? eisH : facette === 1 ? eisD : eis;
+      b.v(x, y, z, c, (x * 5 + y * 3 + z * 7) % 23 === 0 ? 1 : 0);
+    }
+  }
+  // Eiszacken am Saum
+  for (const [x, z] of [[-6, 3], [6, 3], [0, 7], [-5, -4], [5, -4], [0, -7]]) {
+    const sx = Math.sign(x), sz = Math.sign(z);
+    b.v(x, 1, z, '#3de8ff', 1).v(x + sx, 2, z + sz, '#3de8ff', 1).v(x + sx, 3, z + sz, eisH, 1);
+  }
+  // Mieder
+  b.kugel(0, 13, 0, 3.5, 2, 3, (x, y) => (y === 12 ? '#2a3a8a' : eisD));
+  b.vorn(0, 12, '#3de8ff', 1, 1);
+  // Pelzkragen, flauschig
+  b.kugel(0, 16, 0, 6, 2, 5, (x, y, z) => (rausch(x, y, z) < 0.25 ? null : rausch(z, x, y) < 0.35 ? pelzD : pelz));
+  // Ärmel mit Pelzstulpen
+  b.box(-7, -6, 10, 15, -1, 1, eis).box(-7, -6, 9, 10, -1, 1, pelz).box(-7, -6, 8, 8, 0, 1, haut);
+  b.box(6, 7, 10, 15, -1, 1, eis).box(6, 7, 9, 10, -1, 1, pelz).box(6, 7, 8, 8, 0, 1, haut);
+  // Eiszepter mit Schneeflocke
+  b.box(8, 8, 6, 15, 2, 2, eisD).v(8, 16, 2, '#3de8ff', 1).v(8, 17, 2, eisH, 1).v(7, 17, 2, '#3de8ff', 1).v(9, 17, 2, '#3de8ff', 1).v(8, 18, 2, '#3de8ff', 1);
+  // Kopf
+  b.kugel(0, 21, 0.5, 4.5, 4.5, 4.5, () => haut);
+  rundGesicht(b, 0, 21, { gap: 1, brow: '#2a3a6a', pupil: '#1a2a5a', dame: { lippen: '#5a6ad8', rouge: '#f0b8d8', wimpern: '#1a2a5a' } });
+  // Hochsteckfrisur (silberweiß-blau)
+  b.kugel(0, 25, -1, 4.8, 2.5, 4.5, (x, y, z) => (z > 3 && y < 25 ? null : (x + y) % 3 === 0 ? '#5a8ad0' : '#7aa8e8'));
+  b.kugel(0, 28.5, -2, 2.5, 2, 2.5, (x, y) => ((x + y) % 2 ? '#5a8ad0' : '#7aa8e8'));
+  // Schneeflocken-Diadem (leuchtend, steht vor der Frisur)
+  const dz = b.vorne(0, 26) + 1;
+  for (let k = -3; k <= 3; k++) b.v(k, 26 + Math.round(Math.abs(k) * -0.34), dz, '#e8fdff', 1);
+  const fy = 29, fz = dz;
+  b.v(0, fy, fz, '#ffffff', 1);
+  for (let k = 1; k <= 3; k++) {
+    b.v(0, fy + k, fz, '#3de8ff', 1).v(0, fy - k, fz, '#3de8ff', 1).v(k, fy + (k > 2 ? 1 : 0), fz, '#3de8ff', 1).v(-k, fy + (k > 2 ? 1 : 0), fz, '#3de8ff', 1);
+  }
+  b.v(1, fy + 1, fz, '#a8f6ff', 1).v(-1, fy + 1, fz, '#a8f6ff', 1).v(1, fy - 1, fz, '#a8f6ff', 1).v(-1, fy - 1, fz, '#a8f6ff', 1);
+  // Ohrstecker aus Eis
+  b.v(-5, 20, 1, '#3de8ff', 1).v(5, 20, 1, '#3de8ff', 1);
+  return b.list();
+}
+
+/**
+ * Das Große Kawumm (Finale): brodelnder Feuerball mit Wutbrauen, riesigem Maul
+ * und einer Lunte als Haarschopf; Flammenzungen und schwebende Glutbrocken. Blick +z.
+ */
+export function grossesKawumm(): Vox[] {
+  const b = new Bau();
+  const R = 12, cy = 13;
+  // Feuerball: Hülle beleuchtet (gibt Form), glühende Adern und oben lodernde Glut
+  b.kugel(0, cy, 0, R, R, R, (x, y, z) => {
+    const h = (y - cy) / R;
+    const n = rausch(x, y, z);
+    const s = Math.sin(Math.atan2(x, z) * 3 + y * 0.45) + Math.sin(y * 0.3 - x * 0.2) * 0.6;
+    if (s > 1.2) return h < -0.1 ? '#5a1420' : '#8a2a1a';
+    if (Math.abs(s) < 0.12) return [h > 0.3 ? '#fff3c4' : '#ffd23f', 1];
+    if (h > 0.55) return [n < 0.3 ? '#ff9a1a' : '#ffd23f', 1];
+    if (h > 0.25) return n < 0.3 ? ['#ffd23f', 1] : '#ffc02e';
+    if (h > -0.15) return n < 0.25 ? '#ffd23f' : '#ff9a1a';
+    if (h > -0.55) return n < 0.3 ? '#ff9a1a' : '#ff7a1a';
+    return n < 0.4 ? '#ff5a14' : '#d8401a';
+  });
+  // Gesicht frei von Schlieren: vorne glatt ausmalen
+  for (let x = -9; x <= 9; x++) for (let y = 4; y <= 22; y++) {
+    const z = b.vorne(x, y);
+    if (Number.isNaN(z) || z < 6) continue;
+    b.v(x, y, z, y > 17 ? '#ffd23f' : y > 11 ? '#ffb02e' : '#ff9a1a', 1);
+  }
+  // große Augen (3×3) mit Pupillen nach innen
+  const auge = (x0: number, innen: number) => {
+    for (let x = x0; x <= x0 + 2; x++) for (let y = 14; y <= 16; y++) b.vorn(x, y, '#ffffff', 1);
+    b.vorn(innen, 14, INK).vorn(innen, 15, INK).vorn(innen + (innen > x0 + 1 ? -1 : 1), 14, INK).vorn(innen + (innen > x0 + 1 ? -1 : 1), 15, INK);
+  };
+  auge(-6, -4); auge(4, 4);
+  // dicke Wutbrauen (zwei Voxel stark, stehen vor)
+  const braue = '#2b1440';
+  for (let i = 0; i <= 6; i++) {
+    const y = 20 - Math.round(i * 0.55);
+    for (const k of [0, 1, 2]) b.vorn(-8 + i, y - k + 1, braue, 0, 1).vorn(8 - i, y - k + 1, braue, 0, 1);
+  }
+  // riesiges, grimmig gebogenes Maul mit Zähnen, Zunge und zwei knuffigen Hauern
+  for (let x = -7; x <= 7; x++) {
+    const ax = Math.abs(x);
+    const top = 11 - (ax > 5 ? 1 : 0);
+    const bot = 5 + (ax > 3 ? 1 : 0) + (ax > 5 ? 1 : 0);
+    for (let y = bot; y <= top; y++) b.vorn(x, y, y <= bot + 1 && ax <= 2 ? '#ff3d6a' : '#3a0a1a');
+  }
+  for (const x of [-5, -4, -2, -1, 1, 2, 4, 5]) b.vorn(x, 11, '#fff6d8');
+  b.vorn(-6, 7, '#fff6d8', 0, 1).vorn(-6, 8, '#fff6d8', 0, 1).vorn(6, 7, '#fff6d8', 0, 1).vorn(6, 8, '#fff6d8', 0, 1);
+  // Bäckchen
+  b.vorn(-8, 12, '#ff5a6a', 1).vorn(-9, 12, '#ff5a6a', 1).vorn(8, 12, '#ff5a6a', 1).vorn(9, 12, '#ff5a6a', 1);
+  // Flammenzungen am oberen Rand, nach außen lodernd (vorne frei fürs Gesicht)
+  for (let i = 0; i < 16; i++) {
+    const a = (i / 16) * Math.PI * 2 + 0.2;
+    if (Math.cos(a) > 0.75) continue;
+    const rr = R * (0.72 + (i % 3) * 0.06);
+    const h = 4 + ((i * 5) % 4);
+    const base = Math.round(cy + Math.sqrt(Math.max(0, R * R - rr * rr))) - 1;
+    for (let k = 0; k < h; k++) {
+      const r2 = rr + k * 0.45;
+      const fx = Math.round(Math.sin(a) * r2), fz = Math.round(Math.cos(a) * r2);
+      const c = k >= h - 1 ? '#ffd23f' : k >= h - 3 ? '#ff9a1a' : '#ff5a14';
+      b.v(fx, base + k, fz, c, 1);
+      if (k < h - 2) b.v(fx + 1, base + k, fz, c, 1).v(fx, base + k, fz + 1, c, 1).v(fx + 1, base + k, fz + 1, c, 1);
+    }
+  }
+  // Lunte als Haarschopf: steht hoch und kringelt sich nach vorne, mit sprühendem Funken
+  b.box(-2, 1, 25, 25, -3, 0, '#5a5468').box(-1, 0, 25, 25, -2, -1, '#24202e');
+  const lunte: [number, number][] = [[26, -2], [27, -2], [28, -2], [29, -2], [30, -2], [31, -2], [32, -2], [33, -2], [34, -1], [35, -1], [36, 0], [37, 1], [37, 2]];
+  lunte.forEach(([y, z], i) => b.box(-1, 0, y, y, z, z + 1, i % 2 ? '#a87848' : '#6b4b2e'));
+  const fy = 38, fz = 3;
+  b.box(-2, 1, fy, fy + 1, fz - 1, fz + 1, '#fff3c4', 1).box(-1, 0, fy - 1, fy + 2, fz, fz, '#ffffff', 1);
+  for (const [dx, dy, dz, c] of [[-3, 1, 0, '#ffd23f'], [2, 1, 0, '#ffd23f'], [0, 3, 0, '#ffd23f'], [-1, 4, 0, '#ff7a1a'], [-3, 3, 1, '#ff7a1a'], [2, 3, -1, '#ff3df0'], [3, -1, 1, '#ffd23f'], [-4, -1, 0, '#ff3df0'], [0, -2, 2, '#ffd23f'], [1, 2, 2, '#ff7a1a'], [-4, 3, 0, '#ffd23f'], [3, 4, 0, '#ff3df0']] as [number, number, number, string][]) b.v(dx, fy + dy, fz + dz, c, 1);
+  // schwebende Glutbrocken
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2 + 0.5;
+    const x = Math.round(Math.sin(a) * 16), z = Math.round(Math.cos(a) * 15), y = 6 + ((i * 7) % 4) * 3;
+    b.box(x, x + 1, y, y + 1, z, z + 1, '#3a2a2a').v(x, y + 1, z + 1, '#ff7a1a', 1).v(x + 1, y + 1, z, '#ffd23f', 1).v(x + 1, y, z + 1, '#ff5a14', 1);
+  }
+  return b.list();
 }

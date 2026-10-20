@@ -30,7 +30,7 @@ Arena-Roguelite mit Wellen-Runden, 3D-Voxel-Pixel-Grafik (schräge isometrische 
 ## Befehle
 - `npm run dev` – Entwicklungsserver (auch im WLAN, zum Testen am Handy)
 - `npm test` – Simulations-, Netz- und Audio-Tests (Node 22+)
-- `npm run balance` – Balancing-Bot spielt komplette Runs
+- `npm run balance` – Balancing-Bot spielt komplette Reisen (`node --experimental-strip-types packages/core/test/balance-bot.ts [Runs] [Erster] [Insel] [Spieler] [mess]`)
 - `npm run typecheck`
 - `npm run build:web` / `build:single` / `build:artifact`
 - `npm run build:desktop` (Tauri), `build:mobile` (Capacitor sync), `build:xbox` (Web-Build → apps/xbox)
@@ -52,5 +52,6 @@ Arena-Roguelite mit Wellen-Runden, 3D-Voxel-Pixel-Grafik (schräge isometrische 
 - Rechtliches: `LICENSE` (alle Rechte vorbehalten), `DATENSCHUTZ.md`, `DRITTANBIETER.md` – bei neuen Abhängigkeiten oder Servern aktualisieren, ebenso `ui/src/rechtliches.ts` (Seite „Datenschutz & Lizenzen“ in den Einstellungen und einmaliger Koop-Hinweis, gemerkt als 'koop-hinweis' im Speicher).
 - v0.10.1: Koop-Fix (Trystero liefert Binärdaten als Uint8Array → `Reader` nimmt beides; Test-Transport bildet das nach), Snapshots < 16 KB (`SNAPSHOT_MAX`), Beenden aus Shop/Level-Up/Pause, Kristalle im Feld, Klippen-Ecken unter dem Boden, Balancing-Mittelweg.
 - v0.11.0: vier Sprachen (`data/src/i18n.ts`, `lokalisierung.ts`, `i18n/*.json|ts`, `tools/i18n.ts`, `ui/src/sprachwahl.ts`), Sprache gespeichert als 'sprache', Wechsel lädt die App neu (`platform.neuLaden`).
+- v0.12.0: Inselreise (`REISE` in balance.ts; `World.reise`, `reiseIndex`, `inselWelle`, `wellenArt`, `reisePos(n)`, `geheZuInsel`, Arena-Seed je Insel `arenaSeedFor`): Solo 15 Wellen/Insel (Boss 10, Baron 15), Koop 8 (5/8), danach Finale `kawumm` (3 Phasen, `zerbrichArena`). Inselbarone `insel.baron`, neue Boss-Angriffe in `core/src/enemies.ts` (spirale/faecher/flaechen/sprung/kreuz/minen, Telegraph-Ereignis `telegraph`). Insel gilt als befreit, wenn ihr Baron fällt. Spielstand solo `core/src/spielstand.ts` ('lauf', Titel „Fortsetzen“). Zufallsarenen in `createArena` (Seed + Stil). Balancing: Gegnerkurven ab Welle 15 als Potenzgesetz (Bot-Messung, `balance-bot.ts … mess`), `BOSS.hpFaktor(w, rang)`, `EXPLOSION` (Radius-Deckel + Überdruck), `PANZER`, `ELITE_ANGRIFF`, `VERSTAERKUNG`, Beute-Schwellen in `BEUTE`. UI: feste Kartengrößen (`karte()` in menus.ts), Rahmen = Waffengruppe, Album als Shop-Reiter.
 - Nächster Schritt: Phase 10 – Store-Veröffentlichung (Signaturen, Store-Einträge) bzw. Feedback von echten Geräten.
 - Nach jeder Phase: Tests + Typecheck grün, kurze Änderungsliste, bekannte Probleme, nächster Schritt.

@@ -1,5 +1,5 @@
 /**
- * OVERBOOM – Gegner: 16 Typen in 7 Fraktionen + 4 Bosse
+ * OVERBOOM – Gegner: 16 Typen in 7 Fraktionen + 4 Inselbosse, 7 Inselbarone/-baroninnen und das Große Kawumm
  *
  * „Grimmig, aber knuffig": große Köpfe, schräge Wut-Brauen, nie gruselig.
  * Werte sind Grundwerte auf Welle 1; die Wellen skalieren HP (siehe balance.ts).
@@ -10,7 +10,23 @@ export type Verhalten =
   | 'sprinter' | 'heiler' | 'schild' | 'minenleger' | 'spurleger' | 'beschwoerer' | 'rutscher';
 
 /** Boss-Angriffe (werden der Reihe nach gespielt) */
-export type BossAngriff = 'bomben' | 'ansturm' | 'ring' | 'sporen' | 'beschwoeren';
+export type BossAngriff =
+  | 'bomben' | 'ansturm' | 'ring' | 'sporen' | 'beschwoeren'
+  /** Kugelspirale: mehrere gedrehte Salven nacheinander */
+  | 'spirale'
+  /** gezielter Fächer auf den Spieler */
+  | 'faecher'
+  /** Bodenflächen leuchten auf und explodieren kurz danach (Ausweichen!) */
+  | 'flaechen'
+  /** Sprung auf den Spieler, Druckwelle bei der Landung */
+  | 'sprung'
+  /** sich drehendes Kreuzfeuer */
+  | 'kreuz'
+  /** Minen rund um den Boss verteilen */
+  | 'minen';
+
+/** Art der Bodenflächen beim Angriff 'flaechen' */
+export type FlaechenArt = 'explosion' | 'lava' | 'gift' | 'blitz' | 'eis';
 
 export interface GegnerDef {
   id: string;
@@ -81,9 +97,15 @@ export interface GegnerDef {
   beschwoerAnzahl?: number;
   beschwoerIntervall?: number;
 
-  /** Bosse: Angriffe in Phase 1 und 2 (unter 50 % Leben) */
+  /** Bosse: Angriffe in Phase 1 und 2 (unter 50 % Leben); Finalboss mit Phase 3 (Drittel-Schwellen) */
   angriffe1?: BossAngriff[];
   angriffe2?: BossAngriff[];
+  angriffe3?: BossAngriff[];
+  /** Rang: Inselboss (Welle 10), Baron (letzte Inselwelle), Finale */
+  rang?: 'boss' | 'baron' | 'finale';
+  /** Bodenflächen-Art und Geschoss-Aussehen für Spirale/Fächer/Kreuz */
+  flaechenArt?: FlaechenArt;
+  schussGeschossBoss?: string;
   /** Geschoss für Ring-Angriffe */
   ringGeschoss?: string;
   /** Größe des Modells (Bosse) */
@@ -278,13 +300,94 @@ export const GEGNER: GegnerDef[] = [
     fraktion: 'Bummburg',
     spruch: '„Ich bin nicht dick, ich bin explosiv gebaut!"',
     text: 'Runder Bösewicht mit Zylinder, Monokel und Schnurrbart. Auf dem Hut brennt eine Bombe. Hat das Große Kawumm gezündet und ist sehr stolz darauf.',
-    verhalten: 'boss',
-    // Werte für Welle 10; Welle 20 skaliert über BOSS.hpFaktor
+    verhalten: 'boss', groesse: 1.1,
     hp: 2600, tempo: 1.25, radius: 0.85, beruehrSchaden: 18, kristalle: 60,
     abWelle: 999, gewicht: 0, masse: 25,
     explosionsRadius: 1.9, explosionsSchaden: 16,
-    angriffe1: ['bomben'], angriffe2: ['bomben', 'beschwoeren', 'bomben'],
-    beschwoert: 'bombenkroete', beschwoerAnzahl: 3
+    angriffe1: ['bomben', 'flaechen', 'faecher'], angriffe2: ['bomben', 'flaechen', 'beschwoeren', 'spirale', 'bomben'],
+    beschwoert: 'bombenkroete', beschwoerAnzahl: 3,
+    rang: 'baron', flaechenArt: 'explosion', schussGeschossBoss: 'bombe'
+  },
+  // ---------------- Inselbarone und -baroninnen (letzte Welle jeder Insel) ----------------
+  {
+    id: 'baronin_gackerella', name: 'Baronin Gackerella von Federstein', fraktion: 'Hühner-Kult',
+    spruch: '„Gack! Man verneigt sich vor einer Dame, Federloser!"',
+    text: 'Hochnäsige Riesenhenne mit Federhut und Lorgnette. Lässt Eier vom Himmel regnen, rauscht quer übers Feld und ruft ihre Kampfhühner.',
+    verhalten: 'boss', rang: 'baron',
+    hp: 3000, tempo: 1.6, radius: 0.9, beruehrSchaden: 18, kristalle: 80,
+    abWelle: 999, gewicht: 0, masse: 30, groesse: 1.1,
+    ansturmTempo: 11, ansturmDauer: 0.8, flaechenArt: 'explosion', ringGeschoss: 'feder', schussGeschossBoss: 'feder',
+    angriffe1: ['flaechen', 'ansturm', 'faecher'], angriffe2: ['flaechen', 'ansturm', 'ring', 'beschwoeren', 'faecher'],
+    beschwoert: 'kampfhuhn', beschwoerAnzahl: 5
+  },
+  {
+    id: 'baron_blitzbirne', name: 'Baron Blitzbirne', fraktion: 'Funkenbande',
+    spruch: '„Mir geht ein Licht auf – und dir gleich die Puste aus!"',
+    text: 'Eitler Edelmann mit einer riesigen Glühbirne als Kopf und Frack voller Kabel. Lässt Blitze einschlagen und dreht sich im Kreuzfeuer.',
+    verhalten: 'boss', rang: 'baron',
+    hp: 3200, tempo: 1.3, radius: 0.85, beruehrSchaden: 18, kristalle: 80,
+    abWelle: 999, gewicht: 0, masse: 30, groesse: 1.1,
+    flaechenArt: 'blitz', ringGeschoss: 'blitzkugel', schussGeschossBoss: 'blitzkugel',
+    angriffe1: ['flaechen', 'kreuz'], angriffe2: ['flaechen', 'kreuz', 'beschwoeren', 'flaechen', 'ring'],
+    beschwoert: 'funkenkobold', beschwoerAnzahl: 5
+  },
+  {
+    id: 'baronin_schraubella', name: 'Baronin Schraubella', fraktion: 'Blechbrut',
+    spruch: '„Ich ziehe dir die Schrauben an. Alle. Gleichzeitig."',
+    text: 'Elegante Blechdame mit Zahnrad-Krone und Schrauben-Monokel. Feuert Bolzenspiralen, streut Minen und ruft Minenbots.',
+    verhalten: 'boss', rang: 'baron',
+    hp: 3400, tempo: 1.1, radius: 0.9, beruehrSchaden: 18, kristalle: 80,
+    abWelle: 999, gewicht: 0, masse: 32, groesse: 1.1,
+    flaechenArt: 'explosion', ringGeschoss: 'toast', schussGeschossBoss: 'toast',
+    angriffe1: ['spirale', 'minen'], angriffe2: ['spirale', 'minen', 'faecher', 'beschwoeren', 'spirale'],
+    beschwoert: 'minenbot', beschwoerAnzahl: 4
+  },
+  {
+    id: 'baronin_sporella', name: 'Baronin Sporella', fraktion: 'Sumpfbande',
+    spruch: '„Atme tief ein, Schätzchen. Ganz tief."',
+    text: 'Pilzbaronin mit Schleier aus Moos und einem Hut so groß wie ein Gartenteich. Verwandelt den Boden in Gifttümpel und pustet Sporenspiralen.',
+    verhalten: 'boss', rang: 'baron',
+    hp: 3300, tempo: 1.0, radius: 0.9, beruehrSchaden: 16, kristalle: 80,
+    abWelle: 999, gewicht: 0, masse: 30, groesse: 1.1,
+    flaechenArt: 'gift', ringGeschoss: 'spore', schussGeschossBoss: 'spore',
+    angriffe1: ['flaechen', 'spirale'], angriffe2: ['flaechen', 'spirale', 'sporen', 'beschwoeren', 'ring'],
+    beschwoert: 'schleimi', beschwoerAnzahl: 4
+  },
+  {
+    id: 'baron_glutbauch', name: 'Baron Glutbauch', fraktion: 'Glutgesindel',
+    spruch: '„Heiß? Ich? Ich bin glühend vor Wut!"',
+    text: 'Kugelrunder Magma-Fürst mit glühendem Bauch und Schnauzbart aus Rauch. Springt mitten ins Getümmel und lässt Lava aus dem Boden schießen.',
+    verhalten: 'boss', rang: 'baron',
+    hp: 3600, tempo: 1.0, radius: 0.95, beruehrSchaden: 20, kristalle: 80,
+    abWelle: 999, gewicht: 0, masse: 36, groesse: 1.15,
+    flaechenArt: 'lava', ringGeschoss: 'meteor', schussGeschossBoss: 'meteor',
+    angriffe1: ['sprung', 'flaechen', 'ring'], angriffe2: ['sprung', 'flaechen', 'sprung', 'beschwoeren', 'ring'],
+    beschwoert: 'lavaklops', beschwoerAnzahl: 3
+  },
+  {
+    id: 'baronin_frostine', name: 'Baronin Frostine von Bibberstein', fraktion: 'Frostfrieder',
+    spruch: '„Wie unhöflich, mir so warm zu kommen."',
+    text: 'Kühle Adlige im Eiskristall-Kleid mit Pelzkragen und Schneeflocken-Diadem. Wirft Eiszapfen-Fächer, die bremsen, und schlittert in hohem Tempo heran.',
+    verhalten: 'boss', rang: 'baron',
+    hp: 3500, tempo: 1.4, radius: 0.85, beruehrSchaden: 18, kristalle: 80,
+    abWelle: 999, gewicht: 0, masse: 30, groesse: 1.1,
+    ansturmTempo: 12, ansturmDauer: 0.9, flaechenArt: 'eis', ringGeschoss: 'eiszapfen', schussGeschossBoss: 'eiszapfen',
+    angriffe1: ['faecher', 'ansturm', 'spirale'], angriffe2: ['faecher', 'ansturm', 'flaechen', 'beschwoeren', 'spirale'],
+    beschwoert: 'bombenpinguin', beschwoerAnzahl: 3
+  },
+  // ---------------- Finale ----------------
+  {
+    id: 'kawumm', name: 'Das Große Kawumm', fraktion: 'Urknall',
+    spruch: '„KA… WUMM… KAAAAWUMMMM!!!"',
+    text: 'Die Explosion, die Krawummia zerrissen hat – aufgewacht, wütend und so groß wie eine Scheune. Ein brodelnder Feuerball mit grimmigen Brauen und einer Lunte als Haarschopf. Die Arena zerbricht unter ihm.',
+    verhalten: 'boss', rang: 'finale',
+    hp: 9000, tempo: 0.9, radius: 1.3, beruehrSchaden: 24, kristalle: 200,
+    abWelle: 999, gewicht: 0, masse: 80, groesse: 1.6,
+    ansturmTempo: 9, ansturmDauer: 1.0, flaechenArt: 'explosion', ringGeschoss: 'meteor', schussGeschossBoss: 'bombe',
+    angriffe1: ['flaechen', 'ring', 'faecher', 'bomben'],
+    angriffe2: ['spirale', 'flaechen', 'sprung', 'beschwoeren', 'kreuz'],
+    angriffe3: ['flaechen', 'spirale', 'sprung', 'kreuz', 'bomben', 'ring'],
+    beschwoert: 'bombenkroete', beschwoerAnzahl: 4
   }
 ];
 

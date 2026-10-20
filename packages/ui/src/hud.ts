@@ -10,6 +10,14 @@ export interface HudState {
   maxHp: number;
   crystals: number;
   wave: number;
+  /** Welle auf der Insel und Wellen pro Insel (Reise) */
+  inselWelle: number;
+  inselWellen: number;
+  /** Inselname und Fortschritt der Reise (z. B. 2/7); finale = Endkampf */
+  insel: string;
+  inselNr: number;
+  inseln: number;
+  finale: boolean;
   waveTime: number;
   phase: string;
   level: number;
@@ -38,6 +46,8 @@ export class Hud {
   private gems: HTMLSpanElement;
   private waveNum: HTMLDivElement;
   private waveTimer: HTMLDivElement;
+  private waveInsel: HTMLDivElement;
+  private lastInsel = '';
   private bannerEl: HTMLDivElement;
   private chainEl: HTMLDivElement;
   private hurtEl: HTMLDivElement;
@@ -70,7 +80,7 @@ export class Hud {
         <div class="ob-gems">${GEM_SVG}<span>0</span></div>
         <div class="ob-syn"></div>
       </div>
-      <div class="ob-wave"><div class="ob-wave-n">${t('Welle {n}', { n: 1 })}</div><div class="ob-wave-t">0:20</div>
+      <div class="ob-wave"><div class="ob-wave-n">${t('Welle {n}', { n: 1 })}</div><div class="ob-wave-t">0:20</div><div class="ob-wave-i" style="font-size:9px;opacity:.75;letter-spacing:.04em;white-space:nowrap"></div>
         <div class="ob-boss hidden"><span>${t('Baron von Bumm')}</span><div class="ob-boss-bar"><div class="ob-boss-fill"></div></div></div>
       </div>
       <div class="ob-top-right">
@@ -100,6 +110,7 @@ export class Hud {
     this.gems = q('.ob-gems span');
     this.waveNum = q('.ob-wave-n');
     this.waveTimer = q('.ob-wave-t');
+    this.waveInsel = q('.ob-wave-i');
     this.bannerEl = q('.ob-banner');
     this.chainEl = q('.ob-chain');
     this.hurtEl = q('.ob-hurt');
@@ -217,7 +228,12 @@ export class Hud {
       L.crystals = s.crystals;
       this.gems.textContent = String(s.crystals);
     }
-    if (s.wave !== L.wave) { L.wave = s.wave; this.waveNum.textContent = s.wave ? t('Welle {n} / {max}', { n: s.wave, max: 20 }) : t('Bereit?'); }
+    if (s.wave !== L.wave) {
+      L.wave = s.wave;
+      this.waveNum.textContent = !s.wave ? t('Bereit?') : s.finale ? t('FINALE') : s.inselWelle > s.inselWellen ? t('Welle {n}', { n: s.wave }) : t('Welle {n} / {max}', { n: s.inselWelle, max: s.inselWellen });
+    }
+    const inselText = s.wave && !s.finale ? `${s.insel} ${s.inselNr}/${s.inseln}` : '';
+    if (inselText !== this.lastInsel) { this.lastInsel = inselText; this.waveInsel.textContent = inselText; }
     const timed = s.phase === 'welle' && Number.isFinite(s.waveTime) && s.waveTime < 3600;
     const sec = timed ? Math.max(0, Math.ceil(s.waveTime)) : -1;
     if (sec !== L.sec || s.phase !== L.phase) {

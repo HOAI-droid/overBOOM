@@ -2,8 +2,8 @@
  * OVERBOOM – Die Inseln von Krawummia.
  * Seit dem Großen Kawumm schwebt die Welt in Brocken durch den Himmel;
  * auf jedem Brocken hat sich eine andere Bande breitgemacht.
- * Jede Insel = eigene Arena: Look, Gegner-Fraktion, Boss (Welle 10) und Arena-Gefahr.
- * Auf Welle 20 erscheint überall Baron von Bumm persönlich.
+ * Jede Insel = eigene Arena: Look, Gegner-Fraktion, Inselboss, Inselbaron(in) und Arena-Gefahr.
+ * Ein Run ist eine Reise von der Startinsel bis Bummburg; danach wartet das Große Kawumm.
  */
 
 export type Gefahr = 'heu' | 'strom' | 'schrott' | 'gift' | 'lava' | 'eis' | 'festung';
@@ -19,8 +19,10 @@ export interface Insel {
   name: string;
   fraktion: string;
   text: string;
-  /** Boss auf Welle 10 */
+  /** Inselboss (Solo Welle 10, Koop Welle 5) */
   boss: string;
+  /** Inselbaron(in) auf der letzten Inselwelle (Solo 15, Koop 8) */
+  baron: string;
   gefahr: Gefahr;
   gefahrText: string;
   gegner: InselGegner[];
@@ -41,7 +43,7 @@ export const INSELN: Insel[] = [
   {
     id: 'gackerfeld', name: 'Gackerfeld', fraktion: 'Hühner-Kult',
     text: 'Bauernhof-Insel mit Heuballen und Scheunen. Hier verehrt ein Hühner-Kult seinen König Gockel. Perfekt zum Einsteigen.',
-    boss: 'koenig_gockel', gefahr: 'heu', gefahrText: 'Heuballen brennen lichterloh, wenn man sie anschießt.',
+    boss: 'koenig_gockel', baron: 'baronin_gackerella', gefahr: 'heu', gefahrText: 'Heuballen brennen lichterloh, wenn man sie anschießt.',
     gegner: [
       { id: 'grummelbold', abWelle: 1, gewicht: 5 },
       { id: 'kampfhuhn', abWelle: 1, gewicht: 3 },
@@ -58,7 +60,7 @@ export const INSELN: Insel[] = [
   {
     id: 'funkenschlund', name: 'Funkenschlund', fraktion: 'Funkenbande',
     text: 'Eine zerklüftete Schlucht voller Tesla-Türme. Die Funkenbande lädt sich hier täglich auf.',
-    boss: 'megatoaster', gefahr: 'strom', gefahrText: 'Tesla-Platten laden sich auf (Leuchten!) und entladen sich – nicht draufstehen!',
+    boss: 'megatoaster', baron: 'baron_blitzbirne', gefahr: 'strom', gefahrText: 'Tesla-Platten laden sich auf (Leuchten!) und entladen sich – nicht draufstehen!',
     gegner: [
       { id: 'funkenkobold', abWelle: 1, gewicht: 4 },
       { id: 'grummelbold', abWelle: 1, gewicht: 3 },
@@ -75,7 +77,7 @@ export const INSELN: Insel[] = [
   {
     id: 'rostgrat', name: 'Rostgrat', fraktion: 'Blechbrut',
     text: 'Schrottberge und rauchende Fabriken. Die Blechbrut baut hier Toaster, die Toaster bauen.',
-    boss: 'megatoaster', gefahr: 'schrott', gefahrText: 'Schrotthaufen versperren den Weg – und explosive Ölfässer stehen überall.',
+    boss: 'megatoaster', baron: 'baronin_schraubella', gefahr: 'schrott', gefahrText: 'Schrotthaufen versperren den Weg – und explosive Ölfässer stehen überall.',
     gegner: [
       { id: 'toastomat', abWelle: 1, gewicht: 2.5 },
       { id: 'grummelbold', abWelle: 1, gewicht: 3 },
@@ -92,7 +94,7 @@ export const INSELN: Insel[] = [
   {
     id: 'pilzmoor', name: 'Pilzmoor', fraktion: 'Sumpfbande',
     text: 'Riesenpilze, Nebel und blubbernde Tümpel. Hier herrscht Pilzkönigin Morchella über die Sumpfbande.',
-    boss: 'morchella', gefahr: 'gift', gefahrText: 'Gifttümpel verlangsamen und kratzen langsam am Leben.',
+    boss: 'morchella', baron: 'baronin_sporella', gefahr: 'gift', gefahrText: 'Gifttümpel verlangsamen und kratzen langsam am Leben.',
     gegner: [
       { id: 'pilzling', abWelle: 1, gewicht: 3 },
       { id: 'bombenkroete', abWelle: 1, gewicht: 2.5 },
@@ -109,7 +111,7 @@ export const INSELN: Insel[] = [
   {
     id: 'lavakessel', name: 'Lavakessel', fraktion: 'Glutgesindel',
     text: 'Ein brodelnder Vulkan. Das Glutgesindel tanzt um Lavaströme und betet das Große Kawumm an.',
-    boss: 'morchella', gefahr: 'lava', gefahrText: 'Lava verbrennt alles, was hineintritt – dich auch.',
+    boss: 'morchella', baron: 'baron_glutbauch', gefahr: 'lava', gefahrText: 'Lava verbrennt alles, was hineintritt – dich auch.',
     gegner: [
       { id: 'lavaklops', abWelle: 1, gewicht: 2.5 },
       { id: 'bombenkroete', abWelle: 1, gewicht: 2 },
@@ -126,7 +128,7 @@ export const INSELN: Insel[] = [
   {
     id: 'frostfass', name: 'Frostfass', fraktion: 'Frostfrieder',
     text: 'Eiskristalle, Schneestürme und glatter Boden. Die Frostfrieder sind kühl – aber nicht freundlich.',
-    boss: 'koenig_gockel', gefahr: 'eis', gefahrText: 'Eisflächen sind spiegelglatt: Bremsen dauert.',
+    boss: 'koenig_gockel', baron: 'baronin_frostine', gefahr: 'eis', gefahrText: 'Eisflächen sind spiegelglatt: Bremsen dauert.',
     gegner: [
       { id: 'schneemann', abWelle: 1, gewicht: 2 },
       { id: 'bombenpinguin', abWelle: 1, gewicht: 2.5 },
@@ -143,7 +145,7 @@ export const INSELN: Insel[] = [
   {
     id: 'bummburg', name: 'Bummburg', fraktion: 'Bumm-Garde',
     text: 'Die Festung im Zentrum, Sitz von Baron von Bumm. Hier kämpfen alle Banden gemeinsam gegen dich.',
-    boss: 'megatoaster', gefahr: 'festung', gefahrText: 'Lavagräben und Pulverfässer – die Festung ist ein Pulverfass.',
+    boss: 'megatoaster', baron: 'baron', gefahr: 'festung', gefahrText: 'Lavagräben und Pulverfässer – die Festung ist ein Pulverfass.',
     gegner: [
       { id: 'grummelbold', abWelle: 1, gewicht: 3 },
       { id: 'kampfhuhn', abWelle: 1, gewicht: 1.5 },
@@ -165,4 +167,5 @@ export const INSELN: Insel[] = [
 export const INSEL_BY_ID: Record<string, Insel> = Object.fromEntries(INSELN.map((i) => [i.id, i]));
 
 /** Baron von Bumm erscheint auf Welle 20 jeder Insel */
-export const FINALBOSS = 'baron';
+/** Endgegner nach der letzten Insel */
+export const FINALBOSS = 'kawumm';

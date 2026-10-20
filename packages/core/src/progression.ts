@@ -249,7 +249,7 @@ export function runCommand(w: World, p: Player, cmd: Command): boolean {
         // Glückspilz: irgendeine Waffe
         weapon = h.startWaffe === 'zufall' ? SHOP_WEAPONS[Math.floor(w.shopRng.next() * SHOP_WEAPONS.length)] : h.startWaffe;
       } else if (!SPIELER.startAuswahl.includes(weapon)) return false;
-      if (cmd.insel) w.setIsland(cmd.insel);
+      if (cmd.insel) w.startReise(cmd.insel);
       if (cmd.gefahr !== undefined) w.setGefahr(cmd.gefahr);
       addWeapon(p, weapon, 1);
       recomputeStats(p);
