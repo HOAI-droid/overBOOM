@@ -1181,9 +1181,11 @@ export class MenuNav {
       const cur = document.activeElement;
       // im offenen Textfeld bewegen links/rechts den Cursor
       if (dir && istText(cur) && !cur.readOnly && (dir === 'l' || dir === 'r')) return;
-      if (dir) { this.move(dir); e.preventDefault(); return; }
+      if (dir) { this.steuerung(true); this.move(dir); e.preventDefault(); return; }
       if ((e.code === 'Enter' || e.key === 'GamepadA') && istText(cur) && cur.readOnly) { this.bearbeiten(cur); e.preventDefault(); }
     });
+    // Maus oder Touch: Markierung wieder aus (die Xbox hat keinen Zeiger, dort bleibt sie)
+    addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' || e.pointerType === 'touch') this.steuerung(false); });
     // Textfeld verlassen → wieder schreibgeschützt (bis zum nächsten A)
     this.root.addEventListener('focusout', (e) => {
       const el = e.target as Element;
@@ -1191,7 +1193,26 @@ export class MenuNav {
     });
   }
 
+  /** Element mit eigener Fokus-Markierung: :focus greift in manchen Hüllen nicht (Xbox-WebView ohne Fensterfokus) */
+  private markiert: Element | null = null;
+
+  /** eigene Fokus-Markierung dem aktiven Element nachführen (jedes Frame, billig) */
+  private markieren(): void {
+    const a = document.activeElement;
+    const ziel = a && a !== document.body && this.root.contains(a) ? a : null;
+    if (ziel === this.markiert) return;
+    this.markiert?.classList.remove('ob-fokus');
+    ziel?.classList.add('ob-fokus');
+    this.markiert = ziel;
+  }
+
+  /** Steuerung per Controller/Pfeiltasten: Markierung sichtbar; Maus/Touch: aus */
+  private steuerung(an: boolean): void {
+    document.documentElement.classList.toggle('ob-nav', an);
+  }
+
   update(dt: number): void {
+    this.markieren();
     if (this.root.classList.contains('hidden')) { this.aWas = this.bWas = true; return; }
     const pads = navigator.getGamepads?.() ?? [];
     let dir = '', a = false, b = false;
@@ -1206,6 +1227,7 @@ export class MenuNav {
       b = !!p.buttons[1]?.pressed;
       break;
     }
+    if (dir || a || b) this.steuerung(true);
     if (dir) {
       if (dir !== this.held) { this.held = dir; this.repeat = 0.35; this.move(dir); }
       else if ((this.repeat -= dt) <= 0) { this.repeat = istRegler(document.activeElement) ? 0.06 : 0.12; this.move(dir); }

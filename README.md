@@ -9,7 +9,7 @@ OVERBOOM ist ein actiongeladenes Arena-Roguelite in knalliger 3D-Voxel-Pixel-Opt
   <img src="docs/werbung/kampf2.png" width="300" alt="Kettenexplosionen">
 </p>
 
-## Downloads (Version 0.12.0)
+## Downloads (Version 0.12.1)
 
 **Sofort im Browser spielen:** <https://hoai-droid.github.io/overboom/> – am Handy über *Teilen → Zum Home-Bildschirm* (iPhone) bzw. *App installieren* (Android) wie eine App im Vollbild, solo auch offline.
 
@@ -101,6 +101,9 @@ Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` 
 Phase 10: Tests auf echten Geräten (Handy, Xbox, Koop über Mobilfunk), Signaturen und Store-Einträge.
 
 ## Versionsgeschichte
+
+### Version 0.12.1 – Controller-Fokus
+- Menüs zeigen die Auswahl mit Controller/Pfeiltasten jetzt immer deutlich (eigene Markierung `.ob-fokus` statt `:focus` – in der Xbox-Hülle griff `:focus` nicht, weil die WebView keinen Fensterfokus hatte). Die Xbox-Hülle holt den Fokus bei Aktivierung zurück.
 
 ### Version 0.12.0 – die große Reise
 - **Inselreise:** Ein Run führt von der Startinsel bis Bummburg (`REISE` in balance.ts, `World.reise`/`reisePos`). Solo 15 Wellen pro Insel (Inselboss in Welle 10, Baron/Baronin in 15), Koop 8 (5/8). Danach das Finale gegen **Das Große Kawumm** (3 Phasen, die Arena zerbricht zu Lava).

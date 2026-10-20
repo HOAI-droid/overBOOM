@@ -35,6 +35,8 @@ namespace OverboomXbox
             // sondern gibt „Zurück" ans Spiel weiter (Beenden nur über das Titelmenü)
             SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
             MemoryManager.AppMemoryUsageIncreased += OnMemoryIncreased;
+            // Tastaturfokus immer beim WebView halten (sonst zeigt die Seite keinen :focus-Rahmen)
+            Window.Current.Activated += (s2, a2) => Web.Focus(FocusState.Programmatic);
 
             try
             {

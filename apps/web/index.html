@@ -451,6 +451,9 @@
   .ob-xbox .ob-menu { padding: 5vh 5vw; }
   .ob-xbox .ob-full, .ob-xbox .ob-pause { display: none; }
   .ob-xbox .ob-menu :is(button, input, textarea):focus { outline: 3px solid var(--yellow); outline-offset: 2px; }
+  /* Eigene Fokus-Markierung (Controller/Pfeiltasten): weißer Rand + gelber Schein, hebt sich auch von gelben Kartenrahmen ab */
+  :is(.ob-nav, .ob-xbox) .ob-menu .ob-fokus { outline: 3px solid #fff !important; outline-offset: 2px; box-shadow: 0 0 0 6px var(--yellow), 0 0 18px 6px rgba(255, 210, 63, 0.55) !important; position: relative; z-index: 2; }
+  :is(.ob-nav, .ob-xbox) .ob-menu button.ob-card.ob-fokus { transform: translateY(-3px) scale(1.03); }
   .ob-xbox .ob-menu input[type="range"]:focus { outline-offset: 4px; }
   .ob-xbox .ob-menu :is(input, textarea)[readonly]:focus { border-color: var(--yellow); }
 
@@ -468,7 +471,7 @@
   .ob-sprachliste { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
   .ob-sprache { min-width: 180px; }
   .ob-sprache b { display: inline-block; min-width: 2.2em; opacity: 0.7; }
-  .ob-sprache:focus-visible, .ob-sprache:focus { outline: 3px solid var(--yellow); outline-offset: 3px; }
+  .ob-sprache:focus-visible, .ob-sprache:focus, .ob-sprache.ob-fokus { outline: 3px solid var(--yellow); outline-offset: 3px; }
   @media (max-width: 520px) { .ob-sprachliste { grid-template-columns: 1fr; } }
 </style>
 </head>

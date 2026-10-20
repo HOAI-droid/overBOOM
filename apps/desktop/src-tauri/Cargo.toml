@@ -1,6 +1,6 @@
 [package]
 name = "overboom"
-version = "0.12.0"
+version = "0.12.1"
 description = "OVERBOOM – 3D-Voxel-Arena-Roguelite mit Waffen-Fusion"
 authors = ["OVERBOOM"]
 edition = "2021"

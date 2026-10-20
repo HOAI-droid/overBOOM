@@ -26,7 +26,9 @@ export function sprachwahl(parent: HTMLElement, vorschlag: Sprache): Promise<Spr
     parent.appendChild(root);
     const liste = [...root.querySelectorAll<HTMLButtonElement>('[data-sprache]')];
     let i = Math.max(0, liste.findIndex((b) => b.dataset.sprache === vorschlag));
-    liste[i].focus();
+    // eigene Markierung: :focus greift nicht überall (Xbox-WebView ohne Fensterfokus)
+    const markiere = () => { liste.forEach((b, k) => b.classList.toggle('ob-fokus', k === i)); liste[i].focus(); };
+    markiere();
 
     let raf = 0, padWas = true, dirWas = '';
     const waehle = (b: HTMLElement) => {
@@ -35,7 +37,7 @@ export function sprachwahl(parent: HTMLElement, vorschlag: Sprache): Promise<Spr
       root.remove();
       fertig(b.dataset.sprache as Sprache);
     };
-    const bewege = (d: number) => { i = (i + d + liste.length) % liste.length; liste[i].focus(); };
+    const bewege = (d: number) => { i = (i + d + liste.length) % liste.length; markiere(); };
     const taste = (e: KeyboardEvent) => {
       if (e.code === 'ArrowDown' || e.code === 'ArrowRight') { bewege(1); e.preventDefault(); }
       else if (e.code === 'ArrowUp' || e.code === 'ArrowLeft') { bewege(-1); e.preventDefault(); }
