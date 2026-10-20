@@ -905,4 +905,41 @@ for (const [el, ids, ev] of [
   ok((e.ev.storm ?? 0) > 0, `Donnerschlag: ${e.ev.storm}×`);
 }
 
+// Phase 7: Koop-Regeln
+{
+  const w = new World(120, 2, {});
+  ok(w.players.length === 2 && w.players[1].name === 'Spieler 2', 'Zwei Spieler mit Namen');
+  for (const warn of w.warnings) warn.active = false; w.spawnAcc = -999;
+  const [a, b] = w.players;
+  b.x = a.x + 6; b.z = a.z;
+  a.invuln = 0; a.dashTime = 0;
+  w.events.length = 0;
+  w.hurtPlayer(a, 9999, a.x + 1, a.z);
+  ok(!a.alive && a.downed && w.phase === 'welle' && w.events.some((e) => e.type === 'downed'), 'Koop: Spieler wird niedergeschlagen statt Game Over');
+  const step = (n: number, inp = [idle, idle]) => { for (let i = 0; i < n; i++) w.step(inp); };
+  step(30);
+  ok(a.downed && a.reviveT === 0, 'Ohne Helfer kein Fortschritt');
+  b.x = a.x + 0.5; b.z = a.z;
+  let rev = false;
+  for (let i = 0; i < 30 * 3 && !rev; i++) { w.step([idle, idle]); rev = w.events.some((e) => e.type === 'revive'); }
+  ok(rev && a.alive && !a.downed && a.hp === Math.round(a.maxHp * D.KOOP.reviveLeben), `Wiederbelebt mit ${a.hp} Leben nach ~${D.KOOP.reviveZeit} s im Ring`);
+  // beide fallen → Ende
+  a.invuln = b.invuln = 0;
+  w.hurtPlayer(a, 9999, a.x + 1, a.z);
+  w.hurtPlayer(b, 9999, b.x + 1, b.z);
+  ok(w.phase === 'ende' && !a.downed, 'Alle am Boden → Run vorbei');
+  // Gegner-HP skaliert mit Spielerzahl
+  const w1 = new World(121, 1, {}), w3 = new World(121, 3, {});
+  const e1 = spawnEnemy(w1, 0, 5, 5)!, e3 = spawnEnemy(w3, 0, 5, 5)!;
+  ok(Math.abs(e3.maxHp / e1.maxHp - (1 + 2 * D.KOOP.hpProSpieler)) < 1e-6, `Gegner-Leben bei 3 Spielern ×${(e3.maxHp / e1.maxHp).toFixed(2)}`);
+  // Wellenende: Niedergeschlagene stehen wieder auf
+  const w2 = new World(122, 2, { god: false, autoShop: true });
+  for (const warn of w2.warnings) warn.active = false; w2.spawnAcc = -999;
+  w2.players[0].invuln = 0;
+  w2.hurtPlayer(w2.players[0], 9999, 0, 0);
+  w2.clearWave();
+  for (let i = 0; i < 30 * 5 && w2.players[0].downed; i++) w2.step([idle, idle]);
+  ok(!w2.players[0].downed && w2.players[0].alive, 'Nach der Welle wieder auf den Beinen');
+}
+
 if (fails) { console.log(`\n${fails} Test(s) fehlgeschlagen`); process.exit(1); } else console.log('\nAlle Tests bestanden');

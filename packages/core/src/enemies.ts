@@ -5,7 +5,7 @@ import { EnemyState, JUMP_TIME, type Enemy } from './entities.ts';
 /** Ansturm (Sprinter, Pinguin, Boss) */
 const CHARGE = 4;
 import { Tile } from './arena.ts';
-import { BOSS, ELITE, GEGNER, GEGNER_INDEX, WELLEN, type BossAngriff } from '../../data/src/index.ts';
+import { BOSS, ELITE, GEGNER, GEGNER_INDEX, KOOP, WELLEN, type BossAngriff } from '../../data/src/index.ts';
 
 const KB_DECAY = Math.pow(0.004, DT);
 
@@ -19,7 +19,7 @@ export function stepWaves(w: World): void {
       spawnEnemy(w, warn.type, warn.x, warn.z, warn.elite);
     }
   }
-  w.spawnAcc += WELLEN.spawnRate(w.wave) * (w.isBossWave ? BOSS.spawnAnteil : 1) * DT;
+  w.spawnAcc += WELLEN.spawnRate(w.wave) * (w.isBossWave ? BOSS.spawnAnteil : 1) * w.koop(KOOP.spawnProSpieler) * DT;
   while (w.spawnAcc >= 1) {
     w.spawnAcc -= 1;
     trySpawn(w);
@@ -109,7 +109,7 @@ export function spawnBoss(w: World, id: string): void {
   }
   const e = spawnEnemy(w, BOSS_TYPE, bx, bz);
   if (!e) return;
-  e.maxHp = e.hp = e.def.hp * BOSS.hpFaktor(w.wave);
+  e.maxHp = e.hp = e.def.hp * BOSS.hpFaktor(w.wave) * w.koop(KOOP.bossProSpieler);
   e.cd = 2.5;
   e.bossPhase = 1;
   e.summonCd = 0; // Index des nächsten Angriffs
@@ -130,7 +130,7 @@ export function spawnEnemy(w: World, type: number, x: number, z: number, elite =
     e.vx = e.vz = e.kbx = e.kbz = 0;
     e.elite = elite;
     e.r = def.radius * (elite ? ELITE.groesse : 1);
-    e.maxHp = e.hp = def.hp * WELLEN.hpFaktor(w.wave) * (elite ? ELITE.hp : 1);
+    e.maxHp = e.hp = def.hp * WELLEN.hpFaktor(w.wave) * (elite ? ELITE.hp : 1) * w.koop(KOOP.hpProSpieler);
     e.dmgMul = WELLEN.schadenFaktor(w.wave) * (elite ? ELITE.schaden : 1);
     e.slow = e.stun = e.burnT = e.burnDps = e.poisonT = e.poisonDps = e.dotClock = 0;
     e.lucky = false;

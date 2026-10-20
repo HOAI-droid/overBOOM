@@ -128,3 +128,21 @@ export const BOSS = {
   phase1: { intervall: 2.3, salve: 3 },
   phase2: { intervall: 1.7, salve: 6, kroetenIntervall: 6.5, kroeten: 3 }
 };
+
+/** Koop (2–4 Spieler): Gegner zäher und zahlreicher, Wiederbeleben über den Revive-Ring */
+export const KOOP = {
+  maxSpieler: 4,
+  /** Gegner-Leben +35 % je weiterem Spieler */
+  hpProSpieler: 0.35,
+  /** Spawnrate +30 % je weiterem Spieler */
+  spawnProSpieler: 0.3,
+  /** Boss-Leben +60 % je weiterem Spieler */
+  bossProSpieler: 0.6,
+  /** so lange muss ein Mitspieler im Ring stehen (s) */
+  reviveZeit: 2.5,
+  reviveRadius: 1.5,
+  /** Leben nach dem Wiederbeleben (Anteil) */
+  reviveLeben: 0.4,
+  /** Fortschritt verfällt, wenn niemand im Ring steht (pro s) */
+  reviveVerfall: 0.6
+};

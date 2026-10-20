@@ -9,7 +9,7 @@ import {
 import { spawnBoss, spawnEnemy, stepEnemies, stepWaves } from './enemies.ts';
 import { maintainDrones, pull, rainEgg, spawnChickFor, stepProjectiles, stepWeapons, stormStrike } from './weapons.ts';
 import { addWeapon, creditKill, gainXp, openShop, recomputeStats, runCommand, type Command } from './progression.ts';
-import { BEUTE, FINALBOSS, GEGNER, GEGNER_INDEX, HELD_BY_ID, INSEL_BY_ID, KAMPF, SPIELER, WELLEN, baseStats, rollAusruestung, type Ausruestung, type Insel, type PlatzId, type Stats } from '../../data/src/index.ts';
+import { BEUTE, FINALBOSS, GEGNER, KOOP, GEGNER_INDEX, HELD_BY_ID, INSEL_BY_ID, KAMPF, SPIELER, WELLEN, baseStats, rollAusruestung, type Ausruestung, type Insel, type PlatzId, type Stats } from '../../data/src/index.ts';
 
 import { ACCEL, BARREL_RADIUS, DASH_COOLDOWN, DASH_SPEED, DASH_TIME, DT, MOVE_SPEED, PLAYER_COLORS, PLAYER_RADIUS } from './constants.ts';
 export * from './constants.ts';
@@ -27,6 +27,12 @@ export const NO_INPUT: InputState = { mx: 0, mz: 0, dash: false };
 export interface Player {
   id: number;
   color: string;
+  /** Anzeigename (Koop-Namensschild) */
+  name: string;
+  /** im Koop niedergeschlagen: wartet im Revive-Ring auf Hilfe */
+  downed: boolean;
+  /** Fortschritt des Wiederbelebens (s) */
+  reviveT: number;
   x: number;
   z: number;
   vx: number;
@@ -110,6 +116,8 @@ export type SimEvent =
   | { type: 'pickup'; player: number; x: number; z: number; value: number }
   | { type: 'hurt'; player: number; dmg: number; x: number; z: number }
   | { type: 'death'; player: number; x: number; z: number }
+  | { type: 'downed'; player: number; x: number; z: number }
+  | { type: 'revive'; player: number; by: number; x: number; z: number }
   | { type: 'chain'; count: number; x: number; z: number }
   | { type: 'waveStart'; wave: number; boss: boolean }
   | { type: 'waveClear'; wave: number }
@@ -297,6 +305,7 @@ export class World {
     const p: Player = {
       id: i,
       color: PLAYER_COLORS[i % PLAYER_COLORS.length],
+      name: `Spieler ${i + 1}`, downed: false, reviveT: 0,
       x: this.arena.spawn.x + (i ? Math.cos(a) * 1.5 : 0),
       z: this.arena.spawn.z + (i ? Math.sin(a) * 1.5 : 0),
       vx: 0, vz: 0,
@@ -334,6 +343,7 @@ export class World {
     for (const c of this.crystals) if (c.alive) { c.px = c.x; c.pz = c.z; }
 
     for (const p of this.players) if (p.alive) this.stepPlayer(p, inputs[p.id] ?? NO_INPUT);
+    if (this.phase === 'welle') this.stepRevive();
 
     if (this.opt.combat) {
       if (this.phase === 'welle') {
@@ -396,6 +406,8 @@ export class World {
 
   /** Nach der Pause: Sieg, Shop oder (Tests) direkt weiter. */
   private endWave(): void {
+    // Koop: Niedergeschlagene stehen zur Shop-Phase wieder auf
+    for (const p of this.players) if (p.downed) this.revive(p, 1);
     // übrige Kristalle einsammeln
     for (const c of this.crystals) {
       if (!c.alive) continue;
@@ -625,9 +637,46 @@ export class World {
     if (p.hp <= 0) {
       p.hp = 0;
       p.alive = false;
-      this.events.push({ type: 'death', player: p.id, x: p.x, z: p.z });
-      if (!this.players.some((q) => q.alive)) this.phase = 'ende';
+      p.vx = p.vz = 0;
+      if (this.players.some((q) => q.alive)) {
+        // Koop: niedergeschlagen – Mitspieler können wiederbeleben
+        p.downed = true;
+        p.reviveT = 0;
+        this.events.push({ type: 'downed', player: p.id, x: p.x, z: p.z });
+      } else {
+        for (const q of this.players) q.downed = false;
+        this.events.push({ type: 'death', player: p.id, x: p.x, z: p.z });
+        this.phase = 'ende';
+      }
     }
+  }
+
+  /** Koop: Mitspieler im Revive-Ring beleben Niedergeschlagene wieder */
+  private stepRevive(): void {
+    for (const p of this.players) {
+      if (!p.downed) continue;
+      let helper: Player | null = null;
+      for (const q of this.players) {
+        if (q.alive && Math.hypot(q.x - p.x, q.z - p.z) <= KOOP.reviveRadius) { helper = q; break; }
+      }
+      if (helper) p.reviveT += DT;
+      else p.reviveT = Math.max(0, p.reviveT - KOOP.reviveVerfall * DT);
+      if (p.reviveT >= KOOP.reviveZeit) this.revive(p, KOOP.reviveLeben, helper?.id ?? -1);
+    }
+  }
+
+  revive(p: Player, anteil: number, by = -1): void {
+    p.downed = false;
+    p.alive = true;
+    p.reviveT = 0;
+    p.hp = Math.max(1, Math.round(p.maxHp * anteil));
+    p.invuln = 2;
+    this.events.push({ type: 'revive', player: p.id, by, x: p.x, z: p.z });
+  }
+
+  /** Faktor für Gegnerleben/-anzahl nach Spielerzahl */
+  koop(proSpieler: number): number {
+    return 1 + proSpieler * Math.max(0, this.players.length - 1);
   }
 
   nearestPlayer(x: number, z: number): Player | null {
