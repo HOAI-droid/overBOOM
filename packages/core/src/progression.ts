@@ -1,8 +1,9 @@
 import type { Player, World } from './sim.ts';
 import type { Offer, WeaponSlot } from './entities.ts';
+import { spezialMask } from './weapons.ts';
 import {
-  ITEMS, ITEM_BY_ID, LEVEL, SHOP, SPIELER, STUFEN, UPGRADES, UPGRADE_BY_ID, W, WAFFEN,
-  baseStats, rollSeltenheit, type Stats
+  AMBOSS, ITEMS, ITEM_BY_ID, LEVEL, SHOP, SPIELER, STUFEN, UPGRADES, UPGRADE_BY_ID, W, WAFFEN,
+  baseStats, fusionsWaffe, pruefeFusion, rollSeltenheit, waffeById, type Stats
 } from '../../data/src/index.ts';
 
 /**
@@ -19,7 +20,9 @@ export type Command =
   | { type: 'sell'; slot: number }
   | { type: 'merge'; slot: number }
   | { type: 'ready' }
-  | { type: 'endless' };
+  | { type: 'endless' }
+  /** Fusions-Amboss: `slots` = 2–3 Waffenplätze; teile = Index in `slots` je Bauteil */
+  | { type: 'fuse'; slots: number[]; geschoss: number; antrieb: number; ladung: number };
 
 /** Waffen, die der Shop anbieten darf (Antrieb ist schon simuliert). */
 export const SHOP_WEAPONS = WAFFEN.filter((w) => SHOP.antriebe.includes(w.antrieb) || SPIELER.startAuswahl.includes(w.id)).map((w) => w.id);
@@ -74,7 +77,8 @@ export function layoutWeapons(p: Player): void {
 }
 
 export function addWeapon(p: Player, id: string, tier: number): void {
-  p.weapons.push({ waffe: W[id], tier, cd: 0.3 + p.weapons.length * 0.13, aim: 0, ox: 0, oz: 0, target: -1 });
+  const waffe = waffeById(id) ?? W.pistole;
+  p.weapons.push({ waffe, tier, cd: 0.3 + p.weapons.length * 0.13, aim: 0, ox: 0, oz: 0, target: -1, mask: spezialMask(waffe) });
   layoutWeapons(p);
 }
 
@@ -231,6 +235,18 @@ export function runCommand(w: World, p: Player, cmd: Command): boolean {
       if (w.players.every((q) => !q.alive || q.ready)) w.startWave(w.wave + 1);
       return true;
     }
+    case 'fuse': {
+      if (w.phase !== 'shop') return false;
+      const v = fusionPreview(w, p, cmd);
+      if (!v.waffe || v.error || p.crystals < v.price) return false;
+      const tier = v.tier;
+      p.crystals -= v.price;
+      // Eingangswaffen entfernen (von hinten, damit die Indizes stimmen)
+      [...new Set(cmd.slots)].sort((a, b) => b - a).forEach((i) => p.weapons.splice(i, 1));
+      addWeapon(p, v.waffe.id, tier);
+      w.events.push({ type: 'fusion', player: p.id, weapon: v.waffe.id, name: v.waffe.name, rezept: v.waffe.fusion?.rezept ?? '', x: p.x, z: p.z });
+      return true;
+    }
     case 'endless': {
       if (w.phase !== 'sieg') return false;
       w.endless = true;
@@ -245,4 +261,33 @@ export function runCommand(w: World, p: Player, cmd: Command): boolean {
 export function canMerge(p: Player, slot: number): boolean {
   const s = p.weapons[slot];
   return !!s && s.tier < 5 && p.weapons.some((o, i) => i !== slot && o.waffe.id === s.waffe.id && o.tier === s.tier);
+}
+
+export interface FusionPreview {
+  waffe: import('../../data/src/index.ts').Waffe | null;
+  tier: number;
+  price: number;
+  error: string | null;
+}
+
+/** Was käme am Amboss heraus? (für Vorschau und Befehl) */
+export function fusionPreview(w: World, p: Player, cmd: { slots: number[]; geschoss: number; antrieb: number; ladung: number }): FusionPreview {
+  const price = AMBOSS.preis(w.wave);
+  const slots = cmd.slots;
+  if (new Set(slots).size !== slots.length || slots.some((i) => !p.weapons[i])) return { waffe: null, tier: 1, price, error: 'Wähle 2 oder 3 Waffen.' };
+  const ids = slots.map((i) => p.weapons[i].waffe.id);
+  const pick = (k: number) => ids[k] ?? ids[0];
+  const wahl = { geschoss: pick(cmd.geschoss), antrieb: pick(cmd.antrieb), ladung: pick(cmd.ladung) };
+  // Indizes müssen auf gewählte Waffen zeigen
+  const idxOk = [cmd.geschoss, cmd.antrieb, cmd.ladung].every((k) => k >= 0 && k < ids.length);
+  const used = new Set([cmd.geschoss, cmd.antrieb, cmd.ladung]);
+  let error = pruefeFusion(ids, wahl);
+  if (!error && (!idxOk || (used.size < ids.length && !findRecipeIds(ids)))) error = 'Jede Waffe muss mindestens ein Bauteil liefern.';
+  if (error) return { waffe: null, tier: 1, price, error };
+  const tier = Math.max(1, Math.min(5, Math.round(slots.reduce((s, i) => s + p.weapons[i].tier, 0) / slots.length)));
+  return { waffe: fusionsWaffe(wahl, ids), tier, price, error: p.crystals < price ? 'Nicht genug Kristalle.' : null };
+}
+
+function findRecipeIds(ids: string[]): boolean {
+  return fusionsWaffe({ geschoss: ids[0], antrieb: ids[1] ?? ids[0], ladung: ids[2] ?? ids[0] }, ids).fusion?.rezept !== undefined;
 }

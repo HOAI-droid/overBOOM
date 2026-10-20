@@ -1,5 +1,5 @@
 import { World, Tile, DT, spawnEnemy, type InputState } from '../src/index.ts';
-import { GEGNER, WELLEN } from '../../data/src/index.ts';
+import { ANTRIEBE, GEGNER, LADUNGEN, REZEPTE, WAFFEN, WELLEN, fusionsWaffe, waffeById } from '../../data/src/index.ts';
 
 let fails = 0;
 const ok = (cond: boolean, msg: string) => { console.log((cond ? '✓ ' : '✗ ') + msg); if (!cond) fails++; };
@@ -319,6 +319,133 @@ const runUntil = (w: World, cond: () => boolean, max = 30 * 120) => { for (let t
     return w.snapshot();
   };
   ok(play() === play(), 'Shop + Kampf deterministisch');
+}
+
+/* ------------------------------------------------------------------ */
+/* Phase 4: Waffen-Fusion                                               */
+/* ------------------------------------------------------------------ */
+
+ok(fusionsWaffe({ geschoss: 'huehnerkanone', antrieb: 'raketenwerfer', ladung: 'teslastab' }).name === 'Gackernde Blitzrakete', 'Namensgenerator: „Gackernde Blitzrakete"');
+ok(fusionsWaffe({ geschoss: 'bowlingkugel', antrieb: 'bananarang', ladung: 'kuekenkorb' }).name === 'Rollender Kükenbumerang', 'Namensgenerator: „Rollender Kükenbumerang"');
+{
+  const f = fusionsWaffe({ geschoss: 'pistole', antrieb: 'teslastab', ladung: 'raketenwerfer' });
+  ok(waffeById(f.id) === f && f.fusion!.instabil > 0, `Fusion per ID wiederherstellbar, Instabilität ${f.fusion!.instabil} %`);
+}
+
+/** Ein Kampf mit einer bestimmten Waffe gegen eine Gegnertraube */
+function trial(id: string, seconds = 3) {
+  const w = new World(77, 1, { god: true });
+  for (const warn of w.warnings) warn.active = false;
+  w.spawnAcc = -999;
+  const p = w.players[0];
+  p.weapons = [];
+  const { addWeapon } = progression;
+  addWeapon(p, id, 1);
+  for (let i = 0; i < 14; i++) spawnEnemy(w, i % 3, p.x + 2 + (i % 4) * 0.8, p.z - 1.5 + Math.floor(i / 4) * 0.8)!.cd = 99;
+  let nan = false;
+  for (let t = 0; t < 30 * seconds; t++) {
+    w.step([idle]);
+    for (const pr of w.projectiles) if (pr.alive && !(Number.isFinite(pr.x) && Number.isFinite(pr.z) && Number.isFinite(pr.y))) nan = true;
+    for (const e of w.enemies) if (e.alive && !(Number.isFinite(e.x) && Number.isFinite(e.hp))) nan = true;
+  }
+  return { dmg: w.stats.damage, nan };
+}
+const progression = await import('../src/progression.ts');
+
+// Jede Antrieb × Ladung-Kombination (mit wechselnden Geschossen) muss funktionieren
+{
+  const byAntrieb = Object.fromEntries(ANTRIEBE.map((a) => [a.id, WAFFEN.find((w) => w.antrieb === a.id)!.id]));
+  const byLadung = Object.fromEntries(LADUNGEN.map((l) => [l.id, WAFFEN.find((w) => w.ladung === l.id)!.id]));
+  let combos = 0, broken: string[] = [], silent: string[] = [];
+  const t0 = performance.now();
+  ANTRIEBE.forEach((a, ai) => LADUNGEN.forEach((l, li) => {
+    const g = WAFFEN[(ai * 7 + li * 3) % WAFFEN.length].id;
+    const quellen = [...new Set([g, byAntrieb[a.id], byLadung[l.id]])];
+    const f = fusionsWaffe({ geschoss: g, antrieb: byAntrieb[a.id], ladung: byLadung[l.id] }, quellen);
+    if (f.fusion?.rezept) return;
+    combos++;
+    const r = trial(f.id, 2);
+    if (r.nan) broken.push(f.name);
+    if (r.dmg <= 0) silent.push(`${a.id}+${l.id}`);
+  }));
+  ok(broken.length === 0, `${combos} Antrieb×Ladung-Fusionen ohne NaN/Absturz (${((performance.now() - t0) / 1000).toFixed(1)} s)${broken.length ? ': ' + broken.slice(0, 5).join(', ') : ''}`);
+  ok(silent.length === 0, `alle machen Schaden${silent.length ? ' – stumm: ' + silent.slice(0, 8).join(', ') : ''}`);
+}
+
+// 300 zufällige Fusionen aus beliebigen Waffen
+{
+  const r = new (await import('../src/rng.ts')).Rng(5);
+  let bad = 0, zero = 0;
+  for (let i = 0; i < 300; i++) {
+    const pick = () => WAFFEN[Math.floor(r.next() * WAFFEN.length)].id;
+    const g = pick(), a = pick(), l = pick();
+    const f = fusionsWaffe({ geschoss: g, antrieb: a, ladung: l }, [g, a, l]);
+    if (!f.name || !(f.schaden > 0) || !(f.feuerrate > 0)) bad++;
+    if (i < 60) { const t = trial(f.id, 2); if (t.nan) bad++; if (t.dmg <= 0) zero++; }
+  }
+  ok(bad === 0 && zero === 0, `300 Zufallsfusionen haben Namen und Werte, 60 davon im Kampf getestet (${bad} defekt, ${zero} ohne Schaden)`);
+}
+
+// Alle 60 Grundwaffen funktionieren (alle Antriebe sind jetzt simuliert)
+{
+  const silent = WAFFEN.filter((w) => trial(w.id, 3).dmg <= 0).map((w) => w.name);
+  ok(silent.length === 0, `alle 60 Waffen machen Schaden${silent.length ? ' – stumm: ' + silent.join(', ') : ''}`);
+}
+
+// Geheime Rezepte
+{
+  for (const rz of REZEPTE) {
+    const f = fusionsWaffe({ geschoss: rz.zutaten[0], antrieb: rz.zutaten[1], ladung: rz.zutaten[2] }, rz.zutaten);
+    if (f.fusion?.rezept !== rz.id) ok(false, `Rezept ${rz.name} wird nicht erkannt`);
+  }
+  const silent = REZEPTE.filter((rz) => trial(`rezept:${rz.id}`, 3).dmg <= 0).map((rz) => rz.name);
+  ok(silent.length === 0, `alle ${REZEPTE.length} geheimen Rezepte erkannt und kampftauglich${silent.length ? ' – stumm: ' + silent.join(', ') : ''}`);
+}
+
+// Amboss-Befehl
+{
+  const w = new World(31, 1, { god: true });
+  const p = w.players[0];
+  runUntil(w, () => w.phase === 'shop');
+  while (p.pendingLevels) w.command(0, { type: 'upgrade', index: 0 });
+  p.crystals = 500;
+  // Startwaffen: Pistole (Feuerwaffen), Raketenwerfer (Explosiv), Tesla-Stab (Elementar)
+  ok(!w.command(0, { type: 'fuse', slots: [0, 1, 2], geschoss: 0, antrieb: 0, ladung: 0 }), 'Fusion abgelehnt, wenn nicht jede Waffe ein Bauteil liefert');
+  const c0 = p.crystals;
+  ok(w.command(0, { type: 'fuse', slots: [0, 1, 2], geschoss: 0, antrieb: 1, ladung: 2 }), 'Fusion aus 3 Waffen klappt');
+  ok(p.weapons.length === 1 && p.weapons[0].waffe.fusion !== undefined && p.crystals < c0, `Ergebnis: „${p.weapons[0].waffe.name}" (Schmiedelohn ${c0 - p.crystals})`);
+  ok(!w.command(0, { type: 'fuse', slots: [0], geschoss: 0, antrieb: 0, ladung: 0 }), 'eine Waffe allein lässt sich nicht verschmelzen');
+  // Rezept per Befehl
+  p.weapons = [];
+  for (let k = 0; k < 3; k++) progression.addWeapon(p, 'huehnerkanone', 1);
+  w.command(0, { type: 'fuse', slots: [0, 1, 2], geschoss: 0, antrieb: 1, ladung: 2 });
+  ok(p.weapons[0]?.waffe.name === 'HUHNAGEDDON', '3× Hühnerkanone = HUHNAGEDDON');
+  // gleiche Gruppe ohne Rezept: abgelehnt
+  p.weapons = [];
+  progression.addWeapon(p, 'pistole', 1); progression.addWeapon(p, 'minigun', 1);
+  ok(!w.command(0, { type: 'fuse', slots: [0, 1], geschoss: 0, antrieb: 1, ladung: 0 }), 'gleiche Gruppe ohne Rezept wird abgelehnt');
+  w.command(0, { type: 'ready' });
+  for (let t = 0; t < 30 * 8; t++) w.step([bot(t)]);
+  ok(w.phase === 'welle', 'Welle läuft mit Fusionswaffe weiter');
+}
+
+// Instabilität: Krits lösen Bonus-Kawumm aus
+{
+  const w = new World(32, 1, { god: true });
+  for (const warn of w.warnings) warn.active = false;
+  w.spawnAcc = -999;
+  const p = w.players[0];
+  p.weapons = [];
+  progression.addWeapon(p, fusionsWaffe({ geschoss: 'pistole', antrieb: 'teslastab', ladung: 'bowlingkugel' }).id, 1);
+  p.stats.krit = 100;
+  w.waveTime = 1e9;
+  let kawumm = 0;
+  for (let t = 0; t < 30 * 40; t++) {
+    if (w.enemyCount < 6) for (let i = 0; i < 6; i++) { const e = spawnEnemy(w, 0, p.x + 3 + i * 0.3, p.z + 1)!; e.hp = e.maxHp = 1e6; e.cd = 99; }
+    w.step([idle]);
+    kawumm += w.events.filter((e) => e.type === 'kawumm').length;
+  }
+  ok(kawumm > 5, `instabile Fusion: Bonus-Kawumm bei Krits (${kawumm}×)`);
 }
 
 if (fails) { console.log(`\n${fails} Test(s) fehlgeschlagen`); process.exit(1); } else console.log('\nAlle Tests bestanden');

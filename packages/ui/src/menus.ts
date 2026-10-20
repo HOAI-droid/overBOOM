@@ -1,9 +1,9 @@
 import {
-  canMerge, rerollPrice, sellPrice, weaponDamage, weaponRange, weaponRate,
+  canMerge, fusionPreview, rerollPrice, sellPrice, weaponDamage, weaponRange, weaponRate,
   type Command, type Player, type World, type WeaponSlot
 } from '@overboom/core';
 import {
-  A, ITEM_BY_ID, L, SELTENHEIT, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
+  A, AMBOSS, G, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
   elemente, type StatKey
 } from '@overboom/data';
 
@@ -25,21 +25,30 @@ function rarity(tier: number): string {
 }
 
 /** Werte einer Waffe so, wie sie mit den aktuellen Spielerwerten feuern würde */
-function weaponLines(p: Player, id: string, tier: number): string {
-  const slot = { waffe: W[id], tier } as WeaponSlot;
-  const w = W[id];
-  const el = elemente(w);
+function weaponLines(p: Player, w: Waffe, tier: number): string {
+  const slot = { waffe: w, tier } as WeaponSlot;
+  const el = w.fusion ? w.fusion.elemente : elemente(w);
+  const fu = w.fusion ? `<li class="ob-part"><b>Geschoss:</b> ${G[w.geschoss].name}</li>` : '';
   return `<ul class="ob-lines">
     <li>Schaden <b>${fmt(weaponDamage(p, slot))}</b></li>
     <li>Feuerrate <b>${fmt(weaponRate(p, slot))}/s</b></li>
     <li>Reichweite <b>${fmt(weaponRange(p, slot))} m</b></li>
-    <li class="ob-part"><b>${A[w.antrieb].name}:</b> ${A[w.antrieb].text}</li>
+    ${fu}<li class="ob-part"><b>${A[w.antrieb].name}:</b> ${A[w.antrieb].text}</li>
     <li class="ob-part"><b>${L[w.ladung].name}:</b> ${L[w.ladung].text}</li>
-  </ul>${el.length ? `<div class="ob-tags">${el.map((e) => `<span>${e}</span>`).join('')}</div>` : ''}`;
+  </ul>${w.fusion ? instabilBar(w.fusion.instabil) : ''}${el.length ? `<div class="ob-tags">${el.map((e) => `<span>${e}</span>`).join('')}</div>` : ''}`;
 }
 
-function weaponTitle(id: string, tier: number): string {
-  return `${W[id].name} <span class="ob-tier">${TIER_ZAHL[tier - 1]}</span>`;
+function instabilBar(v: number): string {
+  return `<div class="ob-instabil" title="Bei Krit kann es spontan Kawumm machen"><span>Instabil ${v} %</span><i style="width:${v}%"></i></div>`;
+}
+
+function weaponTitle(w: Waffe, tier: number): string {
+  return `${w.name} <span class="ob-tier">${TIER_ZAHL[tier - 1]}</span>`;
+}
+
+/** Name des Bauteils, das eine Waffe beisteuert */
+function partName(w: Waffe, part: 'geschoss' | 'antrieb' | 'ladung'): string {
+  return part === 'geschoss' ? G[w.geschoss].name : part === 'antrieb' ? A[w.antrieb].name : L[w.ladung].name;
 }
 
 export interface EndStats {
@@ -71,11 +80,17 @@ export class Menus {
   private mode: 'none' | 'start' | 'shop' | 'end' | 'pause' = 'none';
   private detail = -1;
   private showStats = false;
+  private tab: 'shop' | 'amboss' = 'shop';
+  /** Amboss: gewählte Waffenplätze und wer welches Bauteil liefert (Index in anvilSel) */
+  private anvilSel: number[] = [];
+  private parts = { geschoss: 0, antrieb: 1, ladung: 2 };
+  private book = false;
+  private shopWave = -1;
   private lastKey = '';
   onRestart: () => void = () => {};
   onResume: () => void = () => {};
 
-  constructor(parent: HTMLElement, private world: World, private send: (cmd: Command) => boolean, private touch: boolean) {
+  constructor(parent: HTMLElement, private world: World, private send: (cmd: Command) => boolean, private touch: boolean, private recipes: () => ReadonlySet<string> = () => new Set()) {
     this.root = document.createElement('div');
     this.root.className = 'ob-menu hidden';
     parent.appendChild(this.root);
@@ -115,7 +130,9 @@ export class Menus {
       return;
     }
     if (w.phase === 'shop') {
-      const key = JSON.stringify([w.wave, p.crystals, p.pendingLevels, p.upgradeOffers, p.offers, p.loadout, p.weapons.map((s) => s.tier), this.detail, this.showStats, p.ready]);
+      if (this.shopWave !== w.wave) { this.shopWave = w.wave; this.tab = 'shop'; this.resetAnvil(); }
+      const key = JSON.stringify([w.wave, p.crystals, p.pendingLevels, p.upgradeOffers, p.offers, p.loadout, p.weapons.map((s) => s.tier), this.detail, this.showStats, p.ready,
+        this.tab, this.anvilSel, this.parts, this.book, this.recipes().size]);
       if (this.mode !== 'shop' || key !== this.lastKey) { this.lastKey = key; this.renderShop(); }
       return;
     }
@@ -130,7 +147,7 @@ export class Menus {
       <button type="button" class="ob-card" ${rarity(1)} data-act="start" data-id="${id}" data-focus="start${i}">
         <span class="ob-kind">Startwaffe · ${W[id].gruppe}</span>
         <span class="ob-name">${W[id].name}</span>
-        ${weaponLines(p, id, 1)}
+        ${weaponLines(p, W[id], 1)}
         <span class="ob-flavor">${W[id].text}</span>
       </button>`).join('');
     this.show('start', `
@@ -170,8 +187,8 @@ export class Menus {
       let body: string, kind: string, title: string;
       if (o.kind === 'waffe') {
         kind = `Waffe · ${W[o.id].gruppe}`;
-        title = weaponTitle(o.id, o.tier);
-        body = weaponLines(p, o.id, o.tier);
+        title = weaponTitle(W[o.id], o.tier);
+        body = weaponLines(p, W[o.id], o.tier);
         if (p.weapons.length >= SPIELER.maxWaffen && !p.weapons.some((s) => s.waffe.id === o.id && s.tier === o.tier && s.tier < 5)) body += '<span class="ob-warn">Kein Platz mehr</span>';
         else if (p.weapons.some((s) => s.waffe.id === o.id && s.tier === o.tier)) body += '<span class="ob-hint2">Gleiche Waffe da – verschmelzbar!</span>';
       } else {
@@ -196,7 +213,7 @@ export class Menus {
       if (!s) return `<div class="ob-slot empty"></div>`;
       const m = canMerge(p, i);
       return `<button type="button" class="ob-slot ${this.detail === i ? 'sel' : ''}" ${rarity(s.tier)} data-act="slot" data-i="${i}" data-focus="slot${i}">
-        <span>${W[s.waffe.id].name}</span><b>${TIER_ZAHL[s.tier - 1]}</b>${m ? '<em>⇧</em>' : ''}
+        <span>${s.waffe.name}</span><b>${TIER_ZAHL[s.tier - 1]}</b>${m ? '<em>⇧</em>' : ''}${s.waffe.fusion ? '<i class="ob-fz">⚒</i>' : ''}
       </button>`;
     }).join('');
 
@@ -205,8 +222,8 @@ export class Menus {
     if (ds) {
       const dmg = w.stats.waffen[ds.waffe.id] ?? 0;
       detail = `<div class="ob-detail" ${rarity(ds.tier)}>
-        <div class="ob-name">${weaponTitle(ds.waffe.id, ds.tier)}</div>
-        ${weaponLines(p, ds.waffe.id, ds.tier)}
+        <div class="ob-name">${weaponTitle(ds.waffe, ds.tier)}</div>
+        ${weaponLines(p, ds.waffe, ds.tier)}
         <p class="ob-flavor">${ds.waffe.text}${dmg ? ` · bisher ${fmt(dmg)} Schaden` : ''}</p>
         <div class="ob-row">
           <button type="button" class="ob-btn2" data-act="merge" data-i="${this.detail}" data-focus="merge" ${canMerge(p, this.detail) ? '' : 'disabled'}>Verschmelzen ⇧</button>
@@ -228,12 +245,16 @@ export class Menus {
     this.show('shop', `
       <div class="ob-panel ob-wide ob-shop">
         <div class="ob-shop-head">
-          <h2 class="ob-h">Shop <small>Welle ${w.wave} geschafft</small></h2>
+          <div class="ob-tabs">
+            <button type="button" class="ob-tab ${this.tab === 'shop' ? 'on' : ''}" data-act="tab" data-tab="shop" data-focus="tabshop">Shop</button>
+            <button type="button" class="ob-tab ${this.tab === 'amboss' ? 'on' : ''}" data-act="tab" data-tab="amboss" data-focus="tabamboss">⚒ Amboss</button>
+            <small>Welle ${w.wave} geschafft</small>
+          </div>
           <div class="ob-wallet">${GEM}<b>${p.crystals}</b></div>
         </div>
-        <div class="ob-cards">${offers}</div>
+        ${this.tab === 'shop' ? `<div class="ob-cards">${offers}</div>` : this.renderAnvil()}
         <div class="ob-row ob-actions">
-          <button type="button" class="ob-btn2" data-act="reroll" data-focus="reroll" ${p.crystals >= reroll ? '' : 'disabled'}>Neu würfeln ${GEM}${reroll}</button>
+          ${this.tab === 'shop' ? `<button type="button" class="ob-btn2" data-act="reroll" data-focus="reroll" ${p.crystals >= reroll ? '' : 'disabled'}>Neu würfeln ${GEM}${reroll}</button>` : ''}
           <button type="button" class="ob-btn2" data-act="stats" data-focus="stats">${this.showStats ? 'Werte ausblenden' : 'Werte'}</button>
           <button type="button" class="ob-go" data-act="ready" data-focus="ready">Welle ${w.wave + 1}${WELLEN.bossWellen.includes(w.wave + 1) ? ' · Boss!' : ''} ▶</button>
         </div>
@@ -246,6 +267,77 @@ export class Menus {
       </div>`, this.detail >= 0 ? '[data-act="merge"]:not([disabled]), [data-act="sell"]:not([disabled])' : '[data-act="buy"]:not([disabled]), [data-act="ready"]');
   }
 
+  /* ---------------- Fusions-Amboss ---------------- */
+
+  private resetAnvil(): void {
+    this.anvilSel = [];
+    this.parts = { geschoss: 0, antrieb: 1, ladung: 2 };
+  }
+
+  /** Bauteil-Zuordnung an die Auswahl anpassen (2 Waffen: die erste liefert 2 Bauteile) */
+  private defaultParts(): void {
+    const n = this.anvilSel.length;
+    this.parts = { geschoss: 0, antrieb: n > 1 ? 1 : 0, ladung: n > 2 ? 2 : 0 };
+  }
+
+  private fuseCmd() {
+    return { type: 'fuse' as const, slots: this.anvilSel, geschoss: this.parts.geschoss, antrieb: this.parts.antrieb, ladung: this.parts.ladung };
+  }
+
+  private renderAnvil(): string {
+    const w = this.world, p = this.p;
+    const known = this.recipes();
+    const price = AMBOSS.preis(w.wave);
+    const picks = Array.from({ length: SPIELER.maxWaffen }, (_, i) => {
+      const s = p.weapons[i];
+      if (!s) return `<div class="ob-slot empty"></div>`;
+      const k = this.anvilSel.indexOf(i);
+      const dis = !!s.waffe.fusion;
+      return `<button type="button" class="ob-slot ${k >= 0 ? 'sel' : ''}" ${rarity(s.tier)} data-act="pick" data-i="${i}" data-focus="pick${i}" ${dis ? 'disabled title="Fusionen lassen sich nur mergen"' : ''}>
+        <span>${s.waffe.name}</span><b>${s.waffe.gruppe}</b>${k >= 0 ? `<em>${k + 1}</em>` : ''}
+      </button>`;
+    }).join('');
+
+    let parts = '', preview = '';
+    if (this.anvilSel.length >= 2) {
+      const ws = this.anvilSel.map((i) => p.weapons[i].waffe);
+      const row = (part: 'geschoss' | 'antrieb' | 'ladung', label: string) => `
+        <div class="ob-partrow"><span class="ob-partlabel">${label}</span>
+          ${ws.map((wf, k) => `<button type="button" class="ob-part-btn ${this.parts[part] === k ? 'on' : ''}" data-act="part" data-part="${part}" data-i="${k}" data-focus="${part}${k}">
+            ${partName(wf, part)}<small>${wf.name}</small></button>`).join('')}
+        </div>`;
+      parts = `<h3 class="ob-h3">2 · Bauteile zuordnen <small>jede Waffe liefert mindestens eins</small></h3>
+        <div class="ob-parts">${row('geschoss', 'Geschoss – was fliegt')}${row('antrieb', 'Antrieb – wie es fliegt')}${row('ladung', 'Ladung – was passiert')}</div>`;
+      const v = fusionPreview(w, p, this.fuseCmd());
+      if (v.waffe) {
+        const rz = v.waffe.fusion?.rezept;
+        const secret = rz && !known.has(rz);
+        preview = `<div class="ob-card ob-preview ${rz ? 'recipe' : ''}" ${rarity(rz ? 5 : v.tier)}>
+          <span class="ob-kind">${rz ? 'Geheimes Rezept' : 'Fusionswaffe'} · ${v.waffe.fusion!.gruppen.join(' · ')}</span>
+          <span class="ob-name">${secret ? '??? <small>Was passiert da wohl …</small>' : weaponTitle(v.waffe, v.tier)}</span>
+          ${secret ? '<p class="ob-flavor">Diese Zutaten kennt der Amboss. Verschmelze sie, um das Rezept zu entdecken!</p>' : `${weaponLines(p, v.waffe, v.tier)}<span class="ob-flavor">${v.waffe.text}</span>`}
+        </div>`;
+      }
+      const err = v.error ? `<p class="ob-warn">${v.error}</p>` : '';
+      preview += `${err}<div class="ob-row"><button type="button" class="ob-go" data-act="fuse" data-focus="fuse" ${v.error ? 'disabled' : ''}>Verschmelzen! ${GEM}${price}</button></div>`;
+    } else {
+      parts = `<p class="ob-sub">Wähle 2 oder 3 Waffen aus <b>verschiedenen Gruppen</b>. Jede liefert ein Bauteil – Geschoss, Antrieb oder Ladung – und es entsteht eine ganz neue Waffe. Je verschiedener die Gruppen, desto instabiler … und stärker.</p>`;
+    }
+
+    const book = this.book ? `<ul class="ob-book">${REZEPTE.map((r) => known.has(r.id)
+      ? `<li class="found"><b>${r.name}</b><span>${r.zutaten.map((z) => W[z].name).join(' + ')}</span></li>`
+      : `<li><b>???</b><span>${r.hinweis}</span></li>`).join('')}</ul>` : '';
+
+    return `<div class="ob-anvil">
+      <h3 class="ob-h3">1 · Waffen wählen <small>Schmiedelohn ${GEM}${price}</small></h3>
+      <div class="ob-slots">${picks}</div>
+      ${parts}
+      ${preview}
+      <div class="ob-row"><button type="button" class="ob-btn2" data-act="book" data-focus="book">Rezeptbuch ${known.size}/${REZEPTE.length}</button></div>
+      ${book}
+    </div>`;
+  }
+
   /* ---------------- Ende & Pause ---------------- */
 
   showEnd(s: EndStats, seed: number): void {
@@ -256,7 +348,7 @@ export class Menus {
       ['Gesamtschaden', fmt(Math.round(s.damage))],
       ['Größte Kette', s.maxChain ? `×${s.maxChain}` : '–'],
       ['Kristalle', s.crystals],
-      ['MVP-Waffe', s.mvp ? `${W[s.mvp]?.name ?? s.mvp}` : '–']
+      ['MVP-Waffe', s.mvp ? `${waffeById(s.mvp)?.name ?? s.mvp}` : '–']
     ];
     this.show('end', `
       <div class="ob-panel ob-end ${s.victory ? 'win' : ''}">
@@ -306,6 +398,17 @@ export class Menus {
       case 'merge': this.send({ type: 'merge', slot: i }); this.detail = -1; break;
       case 'sell': this.send({ type: 'sell', slot: i }); this.detail = -1; break;
       case 'stats': this.showStats = !this.showStats; break;
+      case 'tab': this.tab = el.dataset.tab === 'amboss' ? 'amboss' : 'shop'; this.detail = -1; break;
+      case 'pick': {
+        const k = this.anvilSel.indexOf(i);
+        if (k >= 0) this.anvilSel = this.anvilSel.filter((x) => x !== i);
+        else if (this.anvilSel.length < 3) this.anvilSel = [...this.anvilSel, i];
+        this.defaultParts();
+        break;
+      }
+      case 'part': this.parts = { ...this.parts, [el.dataset.part as 'geschoss']: i }; break;
+      case 'fuse': if (this.send(this.fuseCmd())) this.resetAnvil(); break;
+      case 'book': this.book = !this.book; break;
       case 'ready': this.detail = -1; if (this.send({ type: 'ready' })) this.hide(); break;
       case 'restart': this.hide(); this.onRestart(); return;
       case 'resume': this.hide(); this.onResume(); return;

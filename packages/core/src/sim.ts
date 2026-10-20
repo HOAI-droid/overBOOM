@@ -2,12 +2,12 @@ import { createArena, type Arena, type Prop } from './arena.ts';
 import { Rng } from './rng.ts';
 import { SpatialHash } from './spatial.ts';
 import {
-  MAX_BLASTS, MAX_CRYSTALS, MAX_ENEMIES, MAX_PROJECTILES, MAX_WARNINGS,
-  makeBlast, makeCrystal, makeEnemy, makeProjectile, makeWarning,
-  type Blast, type BlastSource, type Crystal, type Enemy, type Offer, type Projectile, type UpgradeOffer, type Warning, type WeaponSlot
+  MAX_BLASTS, MAX_CRYSTALS, MAX_ENEMIES, MAX_HAZARDS, MAX_PROJECTILES, MAX_WARNINGS,
+  makeBlast, makeCrystal, makeEnemy, makeHazard, makeProjectile, makeWarning,
+  type Blast, type BlastSource, type Crystal, type Enemy, type Hazard, type Offer, type Projectile, type UpgradeOffer, type Warning, type WeaponSlot
 } from './entities.ts';
 import { spawnBoss, stepEnemies, stepWaves } from './enemies.ts';
-import { stepProjectiles, stepWeapons } from './weapons.ts';
+import { pull, stepProjectiles, stepWeapons } from './weapons.ts';
 import { addWeapon, gainXp, openShop, recomputeStats, runCommand, type Command } from './progression.ts';
 import { GEGNER, KAMPF, SPIELER, WELLEN, baseStats, type Stats } from '../../data/src/index.ts';
 
@@ -62,6 +62,8 @@ export interface Player {
   regenAcc: number;
   /** zählt bei jeder Änderung der Waffen hoch (Renderer baut Modelle dann neu) */
   loadout: number;
+  /** angesammelter Lebensraub (Ladung) */
+  stealAcc: number;
 }
 
 /**
@@ -97,6 +99,12 @@ export type SimEvent =
   | { type: 'bossSpawn'; x: number; z: number }
   | { type: 'bossPhase'; phase: number; x: number; z: number }
   | { type: 'shopOpen'; wave: number }
+  | { type: 'beam'; x: number; z: number; x2: number; z2: number; geschoss: string }
+  | { type: 'cone'; x: number; z: number; dirX: number; dirZ: number; range: number; geschoss: string }
+  | { type: 'swing'; x: number; z: number; dirX: number; dirZ: number; range: number; geschoss: string }
+  | { type: 'teleport'; x: number; z: number; geschoss: string }
+  | { type: 'kawumm'; x: number; z: number }
+  | { type: 'fusion'; player: number; weapon: string; name: string; rezept: string; x: number; z: number }
   | { type: 'victory'; wave: number };
 
 
@@ -134,6 +142,7 @@ export class World {
   readonly crystals: Crystal[] = [];
   readonly blasts: Blast[] = [];
   readonly warnings: Warning[] = [];
+  readonly hazards: Hazard[] = [];
   readonly barrels: Prop[];
   readonly hash: SpatialHash;
 
@@ -173,6 +182,7 @@ export class World {
     for (let i = 0; i < MAX_CRYSTALS; i++) this.crystals.push(makeCrystal());
     for (let i = 0; i < MAX_BLASTS; i++) this.blasts.push(makeBlast());
     for (let i = 0; i < MAX_WARNINGS; i++) this.warnings.push(makeWarning());
+    for (let i = 0; i < MAX_HAZARDS; i++) this.hazards.push(makeHazard());
     for (let i = 0; i < 8; i++) this.chains.push({ group: 0, count: 0, t: 99 });
     this.reset();
   }
@@ -191,6 +201,7 @@ export class World {
     for (const c of this.crystals) c.alive = false;
     for (const b of this.blasts) b.active = false;
     for (const w of this.warnings) w.active = false;
+    for (const h of this.hazards) h.active = false;
     for (const c of this.chains) { c.group = 0; c.count = 0; c.t = 99; }
     this.restoreBarrels();
     Object.assign(this.stats, { kills: 0, maxChain: 0, explosions: 0, damage: 0, crystals: 0, waffen: {} });
@@ -219,7 +230,7 @@ export class World {
       hp: SPIELER.maxHp, maxHp: SPIELER.maxHp, invuln: 0, alive: true, crystals: 0,
       weapons: [],
       level: 1, xp: 0, pendingLevels: 0, upgradeOffers: [], upgrades: [], items: {},
-      stats: baseStats(), offers: [], rerolls: 0, ready: false, regenAcc: 0, loadout: 0
+      stats: baseStats(), offers: [], rerolls: 0, ready: false, regenAcc: 0, loadout: 0, stealAcc: 0
     };
     if (this.opt.combat && !this.opt.choose) for (const id of SPIELER.startWaffen) addWeapon(p, id, 1);
     recomputeStats(p);
@@ -251,6 +262,7 @@ export class World {
       stepEnemies(this);
       if (this.phase === 'welle') stepWeapons(this);
       stepProjectiles(this);
+      this.stepHazards();
       this.stepBlasts();
       this.stepCrystals();
       for (const c of this.chains) c.t += DT;
@@ -272,6 +284,9 @@ export class World {
     this.spawnAcc = 1.6;
     this.boss = -1;
     this.restoreBarrels();
+    // Begleiter, Türme, Minen und Pfützen der letzten Welle verschwinden
+    for (const pr of this.projectiles) pr.alive = false;
+    for (const h of this.hazards) h.active = false;
     for (const p of this.players) {
       if (!p.alive) continue;
       p.hp = p.maxHp;
@@ -312,6 +327,12 @@ export class World {
     this.events.push({ type: 'shopOpen', wave: this.wave });
   }
 
+  /** Debug: Waffe direkt geben (URL-Parameter ?waffen=…) */
+  debugGive(player: number, id: string, tier = 1): void {
+    const p = this.players[player];
+    if (p && p.weapons.length < SPIELER.maxWaffen) addWeapon(p, id, tier);
+  }
+
   /** Befehl eines Spielers ausführen (Shop, Level-Up, Startwahl …). */
   command(player: number, cmd: Command): boolean {
     const p = this.players[player];
@@ -325,6 +346,16 @@ export class World {
       const v = Math.floor(p.regenAcc);
       p.regenAcc -= v;
       this.heal(p, v);
+    }
+  }
+
+  /** Lebensraub-Ladung: Bruchteile sammeln, ganze Punkte heilen */
+  lifesteal(p: Player, v: number): void {
+    p.stealAcc += v;
+    if (p.stealAcc >= 1) {
+      const n = Math.floor(p.stealAcc);
+      p.stealAcc -= n;
+      this.heal(p, n);
     }
   }
 
@@ -478,6 +509,7 @@ export class World {
 
   damageEnemy(e: Enemy, dmg: number, crit: boolean, kbx: number, kbz: number, chain = 0, group = 0, src = ''): void {
     if (!e.alive || e.doom >= 0) return;
+    if (e.acid > 0) dmg *= 1 + 0.05 * e.acid;
     const dealt = Math.min(dmg, Math.max(0, e.hp));
     e.hp -= dmg;
     e.flash = 0.12;
@@ -505,6 +537,7 @@ export class World {
     // große Mengen als wertvollere Kristalle (weniger Objekte)
     const big = n > 12 ? Math.ceil(n / 12) : 1;
     for (let i = 0; i < n; i += big) this.spawnCrystal(e.x, e.z, Math.min(big, n - i));
+    if (e.cloud && e.poisonT > 0 && e.doom < 0) this.addHazard('gift', e.x, e.z, 1.3, 3, Math.max(4, e.poisonDps), src, false, 1, 0);
     if (e.def.verhalten === 'kamikaze' && !selfDestruct && e.doom < 0) {
       const g = group || this.newGroup();
       this.queueBlast(e.x, e.z, e.def.explosionsRadius ?? 1.8, (e.def.explosionsSchaden ?? 15) * 1.5 * (e.elite ? 2 : 1), KAMPF.kettenVerzoegerung, group ? chain + 1 : 0, g, false, 'kroete', src);
@@ -545,6 +578,47 @@ export class World {
     b.r = 0;
     const dmg = KAMPF.fassSchaden * (1 + 0.15 * (Math.max(1, this.wave) - 1));
     this.queueBlast(b.x, b.z, KAMPF.fassRadius, dmg, group ? KAMPF.kettenVerzoegerung : 0, group ? chain + 1 : 0, group || this.newGroup(), false, 'fass', src);
+  }
+
+  /** Lava-/Giftpfütze oder Schwerkraft-Sog am Boden */
+  addHazard(kind: Hazard['kind'], x: number, z: number, r: number, t: number, dps: number, src: string, implode: boolean, blastMul: number, blastDmg: number): void {
+    let slot: Hazard | null = null;
+    for (const h of this.hazards) if (!h.active) { slot = h; break; }
+    if (!slot) {
+      // voll: die älteste ersetzen
+      slot = this.hazards[0];
+      for (const h of this.hazards) if (h.t < slot.t) slot = h;
+    }
+    slot.active = true; slot.kind = kind; slot.x = x; slot.z = z; slot.r = r;
+    slot.t = slot.max = t; slot.dps = kind === 'sog' ? blastDmg : dps; slot.clock = 0; slot.src = src;
+    slot.implode = implode; slot.blastMul = blastMul;
+  }
+
+  private stepHazards(): void {
+    for (const h of this.hazards) {
+      if (!h.active) continue;
+      h.t -= DT;
+      if (h.kind === 'sog') {
+        pull(this, h.x, h.z, h.r, true, 22 * DT * 4);
+        if (h.t <= 0) {
+          h.active = false;
+          if (h.implode) this.queueBlast(h.x, h.z, 2.4 * h.blastMul, h.dps * 1.5, 0, 0, this.newGroup(), false, 'waffe', h.src);
+        }
+        continue;
+      }
+      h.clock += DT;
+      if (h.clock >= 0.5) {
+        h.clock -= 0.5;
+        const n = this.hash.query(h.x, h.z, h.r + 0.6);
+        for (let i = 0; i < n; i++) this.scratch[i] = this.hash.result[i];
+        for (let i = 0; i < n; i++) {
+          const e = this.enemies[this.scratch[i]];
+          if (!e.alive || e.doom >= 0 || e.y > 0.3 || Math.hypot(e.x - h.x, e.z - h.z) > h.r + e.r) continue;
+          this.damageEnemy(e, h.dps * 0.5, false, 0, 0, 0, 0, h.src);
+        }
+      }
+      if (h.t <= 0) h.active = false;
+    }
   }
 
   private stepBlasts(): void {

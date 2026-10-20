@@ -130,6 +130,8 @@ export function spawnEnemy(w: World, type: number, x: number, z: number, elite =
     e.slow = e.stun = e.burnT = e.burnDps = e.poisonT = e.poisonDps = e.dotClock = 0;
     e.lucky = false;
     e.bossPhase = 1; e.summonCd = 0;
+    e.wet = e.acid = e.acidT = e.frost = e.confuse = e.chicken = e.cdx = e.cdz = 0;
+    e.cloud = false;
     const p = w.nearestPlayer(x, z);
     e.facing = p ? Math.atan2(p.x - x, p.z - z) : 0;
     e.flash = 0; e.age = 0;
@@ -168,6 +170,26 @@ export function stepEnemies(w: World): void {
       }
     }
     e.slow = Math.max(0, e.slow - DT);
+    e.wet = Math.max(0, e.wet - DT);
+    if (e.acidT > 0 && (e.acidT -= DT) <= 0) e.acid = 0;
+    if ((e.chicken > 0 || e.confuse > 0) && e.state !== EnemyState.Jump) {
+      // verwirrt oder verhühnert: läuft ziellos herum, greift nicht an
+      e.chicken = Math.max(0, e.chicken - DT);
+      e.confuse = Math.max(0, e.confuse - DT);
+      e.state = EnemyState.Walk;
+      if ((e.cdx === 0 && e.cdz === 0) || w.rng.chance(DT * 2)) {
+        const a = w.rng.next() * Math.PI * 2;
+        e.cdx = Math.cos(a); e.cdz = Math.sin(a);
+      }
+      const sp = e.def.tempo * (e.chicken > 0 ? 0.8 : 0.5);
+      e.vx = e.cdx * sp; e.vz = e.cdz * sp;
+      e.kbx *= KB_DECAY; e.kbz *= KB_DECAY;
+      e.x += (e.vx + e.kbx) * DT; e.z += (e.vz + e.kbz) * DT;
+      if (w.collideCircle(e, e.r, true)) { e.cdx = -e.cdx; e.cdz = -e.cdz; }
+      e.facing = Math.atan2(e.cdx, e.cdz);
+      continue;
+    }
+    e.cdx = e.cdz = 0;
     if (e.stun > 0) {
       e.stun -= DT;
       e.kbx *= KB_DECAY; e.kbz *= KB_DECAY;

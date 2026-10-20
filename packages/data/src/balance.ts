@@ -60,7 +60,7 @@ export const KAMPF = {
   blitzAbfall: 0.8,
   rueckstoss: 7,
   /** Geschosstempo je Antrieb in m/s */
-  tempo: { gerade: 16, faecher: 13, zielsuchend: 9, zielbogen: 9 } as Record<string, number>,
+  tempo: { gerade: 16, faecher: 13, zielsuchend: 9, zielbogen: 9, bogen: 9, abprall: 13, bumerang: 11, spirale: 6, rollen: 7, huepfend: 8, schwarm: 9 } as Record<string, number>,
   /** Ab dieser Kettenlänge gibt es ein „CHAIN ×N!" */
   kettenAnzeige: 3
 };
@@ -89,11 +89,9 @@ export const SHOP = {
   inflation: (w: number) => 1 + 0.1 * (w - 1),
   rerollPreis: (w: number, rerolls: number) => 2 + Math.floor(w * 0.6) + rerolls * Math.max(1, Math.floor(w / 3)),
   verkaufsAnteil: 0.4,
-  /**
-   * Nur Waffen, deren Antrieb die Simulation schon kann (Rest kommt in Phase 5).
-   * Startwaffen sind immer dabei.
-   */
-  antriebe: ['gerade', 'faecher', 'zielsuchend', 'zielbogen', 'bogen'] as readonly string[]
+  /** Antriebe, die die Simulation kann – seit Phase 4 alle 19, also sind alle 60 Waffen im Shop */
+  antriebe: ['gerade', 'faecher', 'bogen', 'zielsuchend', 'zielbogen', 'orbit', 'abprall', 'bumerang', 'spirale', 'strahl',
+    'kegel', 'regen', 'huepfend', 'ablegen', 'turm', 'schwarm', 'rollen', 'teleport', 'nahkampf'] as readonly string[]
 };
 
 /**

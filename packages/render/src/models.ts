@@ -232,7 +232,15 @@ const SHOT_COLORS: Record<string, [string, string, number]> = {
   spore: ['#9a6cc2', '#c9a0ff', 1],
   luftballon: ['#ff3df0', '#ffd23f', 0],
   pflaster: ['#f2c08a', '#ffffff', 0],
-  laser: ['#ff3df0', '#ffffff', 1]
+  laser: ['#ff3df0', '#ffffff', 1],
+  flamme: ['#ff7a1a', '#ffd23f', 1],
+  schlaeger: ['#c98a3a', '#e8c88a', 0],
+  hammer: ['#7d8597', '#c9ced8', 0],
+  pfanne: ['#2a2e38', '#5a5f68', 0],
+  grummel: ['#6cc24a', '#7d8597', 0],
+  kuckuck: ['#8a5a2a', '#ffd23f', 0],
+  muenze: ['#ffd23f', '#fff3c4', 1],
+  keks: ['#c98a3a', '#5a3a1e', 0]
 };
 
 /** Geschoss-Modelle nach Geschoss-Bauteil (Flugrichtung +z). */
@@ -254,14 +262,46 @@ export function projectileModel(geschoss: string): Vox[] {
         .v(0, 2, 0, '#6b4b2e').v(0, 3, 0, '#ffd23f', 1).v(0, 1, 1, '#5a5468')
         .list();
     default: {
+      if (SHAPED[geschoss]) return SHAPED[geschoss]();
       const [a, b, g] = SHOT_COLORS[geschoss] ?? SHOT_COLORS.kugel;
       return new VoxBuilder().box(-1, 0, -1, 0, -1, 0, a, g).v(0, 0, 0, b, g).list();
     }
   }
 }
 
+/** Geschosse mit eigener Form */
+const SHAPED: Record<string, () => Vox[]> = {
+  huhn: () => chicken(0),
+  kueken: () => new VoxBuilder().box(-1, 0, 0, 1, -1, 0, '#ffe04a').v(0, 2, 0, '#ffe04a').v(0, 2, 1, '#ff9a1a').v(-1, 2, 0, '#141018').list(),
+  biene: () => new VoxBuilder().box(-1, 0, 0, 0, -1, 1, '#ffd23f').box(-1, 0, 0, 0, 0, 0, '#141018').v(-1, 1, 0, '#e8fdff', 1).v(0, 1, 0, '#e8fdff', 1).v(0, 0, -2, '#141018').list(),
+  gummiente: () => new VoxBuilder().box(-1, 0, 0, 0, -1, 1, '#ffe04a').box(-1, 0, 1, 2, 1, 1, '#ffe04a').v(0, 2, 2, '#ff7a1a').v(-1, 2, 1, '#141018').list(),
+  saege: () => {
+    const b = new VoxBuilder();
+    for (let x = -2; x <= 1; x++) for (let z = -2; z <= 1; z++) if (Math.abs(x + 0.5) + Math.abs(z + 0.5) < 3) b.v(x, 0, z, (x + z) % 2 ? '#c9ced8' : '#9aa3b5');
+    return b.v(-1, 0, -1, '#5a5f68').v(-3, 0, 0, '#e8e2f0').v(2, 0, -1, '#e8e2f0').v(0, 0, 2, '#e8e2f0').v(-1, 0, -3, '#e8e2f0').list();
+  },
+  bowling: () => new VoxBuilder().box(-1, 1, 0, 2, -1, 1, '#2a1f45').del(-1, 0, -1).del(1, 2, 1).del(-1, 2, 1).del(1, 0, -1).v(0, 2, 1, '#141018').v(1, 2, 0, '#141018').list(),
+  banane: () => new VoxBuilder().v(-2, 1, 0, '#ffe04a').v(-1, 0, 0, '#ffe04a').v(0, 0, 0, '#ffe04a').v(1, 0, 0, '#ffe04a').v(2, 1, 0, '#ffe04a').v(-2, 2, 0, '#6b4b2e').list(),
+  axt: () => new VoxBuilder().box(0, 0, -2, 1, 0, 0, '#8a6038').box(-1, 1, 1, 2, 1, 1, '#c9ced8').list(),
+  drohne: () => new VoxBuilder().box(-1, 0, 0, 0, -1, 0, '#5a5f68').v(-2, 1, -2, '#3de8ff', 1).v(1, 1, 1, '#3de8ff', 1).v(-2, 1, 1, '#3de8ff', 1).v(1, 1, -2, '#3de8ff', 1).v(0, 0, 1, '#ff3d3d', 1).list(),
+  mine: () => new VoxBuilder().box(-2, 1, 0, 0, -2, 1, '#3a4426').box(-1, 0, 1, 1, -1, 0, '#5b6b3a').v(0, 2, 0, '#ff3d3d', 1).list()
+};
+
 /** Alle Geschoss-IDs mit eigenem Modell */
-export const PROJECTILE_IDS = ['rakete', 'blitzkugel', 'toast', 'bombe', ...Object.keys(SHOT_COLORS)];
+export const PROJECTILE_IDS = ['rakete', 'blitzkugel', 'toast', 'bombe', ...Object.keys(SHOT_COLORS), ...Object.keys(SHAPED)];
+
+/** Huhn: weiß, roter Kamm, gelber Schnabel. scale 0 = Geschoss, 1 = Riesenhuhn */
+export function chicken(big: number): Vox[] {
+  const b = new VoxBuilder();
+  const s = big ? 2 : 1;
+  b.box(-s, s - 1, 0, 2 * s - 1, -s, s, '#f4ecff');                 // Körper
+  b.box(-Math.ceil(s / 2), Math.floor(s / 2) - (s === 1 ? 1 : 0), 2 * s, 3 * s - 1, s, s + Math.max(0, s - 1), '#f4ecff'); // Kopf
+  b.v(0, 3 * s, s, '#ff3d3d').v(-1 + (s === 1 ? 1 : 0), 3 * s, s + 1, '#ff3d3d');  // Kamm
+  b.v(0, 3 * s - 1, s + s, '#ffb02e');                               // Schnabel
+  b.v(-1, 3 * s - 1, s + s - 1, '#141018');                          // Auge
+  if (big) b.box(-2, 1, 0, 1, -3, -3, '#e8e2f0').v(-1, 0, 0, '#ffb02e').v(0, 0, 0, '#ffb02e');
+  return b.list();
+}
 
 /** Baron von Bumm: rund, Zylinder, Monokel, Schnurrbart, Bombe auf dem Hut. Blick +z. */
 export function baron(): Vox[] {
@@ -339,3 +379,98 @@ export const ENEMY_DEBRIS: Record<string, string[]> = {
   toastomat: ['#c9ced8', '#8d93a3', '#c98a3a', '#ff2a4a', '#2a2e38'],
   baron: ['#6a1f3a', '#ffd23f', '#1c1530', '#f2c08a', '#c42a28']
 };
+
+/* ------------------------------------------------------------------ */
+/* Phase 4: Fusionen                                                    */
+/* ------------------------------------------------------------------ */
+
+/** Leuchtfarbe je Ladung (Kern einer Fusionswaffe, Strahlen, Effekte) */
+export const LADUNG_FARBE: Record<string, string> = {
+  explosion: '#ff7a1a', kettenblitz: '#3de8ff', brand: '#ff5a14', gift: '#7dff5a', frost: '#a8f6ff', wasser: '#3d9bff',
+  schwerkraft: '#b05dff', splitter: '#c9ced8', konfetti: '#ff3df0', rueckstoss: '#ffffff', saeure: '#c8ff3a', kueken: '#ffe04a',
+  ranken: '#5dff7a', magnet: '#ff3d3d', schall: '#ff8af0', verhuehnern: '#fff6d8', glueck: '#ffd23f', lava: '#ff7a1a',
+  kleister: '#d8ffb0', lebensraub: '#ff3d6a', plasma: '#ff3df0', heilung: '#5dff7a'
+};
+
+/** Farbe eines Geschosses (für Strahlen und Kegel) */
+export function shotColor(geschoss: string): string {
+  return SHOT_COLORS[geschoss]?.[0] ?? (geschoss === 'blitzkugel' ? '#3de8ff' : geschoss === 'toast' ? '#ff7a1a' : '#ffd23f');
+}
+
+function shifted(vox: Vox[], dx: number, dy: number, dz: number): Vox[] {
+  return vox.map(([x, y, z, c, g]) => [x + dx, y + dy, z + dz, c, g] as Vox);
+}
+
+/**
+ * Zusammengesteckte Fusionswaffe: Lauf/Körper vom Antriebs-Spender, Aufsatz = Geschoss,
+ * Leuchtkern in der Ladungsfarbe. Je instabiler, desto mehr Funken-Voxel.
+ */
+export function fusionModel(antriebWaffe: string, antriebGruppe: string, geschoss: string, ladung: string, instabil: number, glow: string): Vox[] {
+  const b = new VoxBuilder();
+  for (const v of weaponModel(antriebWaffe, antriebGruppe, glow)) b.v(v[0], v[1], v[2], v[3], v[4]);
+  for (const v of shifted(projectileModel(geschoss), 0, 3, 0)) b.v(v[0], v[1], v[2], v[3], v[4]);
+  const core = LADUNG_FARBE[ladung] ?? '#ffd23f';
+  b.box(-1, 0, 1, 2, -3, -2, core, 1);
+  // Instabilität: lose Funken
+  const n = Math.round(instabil / 18);
+  for (let i = 0; i < n; i++) b.v(i % 2 ? 2 : -2, 1 + (i % 3), -1 + i, i % 2 ? '#ff3df0' : '#ffd23f', 1);
+  return b.list();
+}
+
+/** Eigene Modelle der geheimen Rezepte */
+export const REZEPT_MODELLE: Record<string, () => Vox[]> = {
+  huhnageddon: () => chicken(1),
+  kawummageddon: () => new VoxBuilder()
+    .box(-2, -2, 0, 0, -3, 3, '#5b6b3a').box(0, 0, 1, 1, -3, 3, '#5b6b3a').box(2, 2, 0, 0, -3, 3, '#5b6b3a')
+    .v(-2, 0, 4, '#ff3d3d', 1).v(0, 1, 4, '#ff3d3d', 1).v(2, 0, 4, '#ff3d3d', 1).box(-2, 2, -1, -1, -1, 1, '#3a4426').v(0, 2, -3, '#ff7a1a', 1).list(),
+  donnertoaster: () => new VoxBuilder()
+    .box(-2, 2, 0, 3, -2, 2, '#c9ced8').box(-1, 1, 4, 4, -1, -1, '#c98a3a').box(-1, 1, 4, 4, 1, 1, '#c98a3a')
+    .box(0, 0, 4, 7, 0, 0, '#d8a04a').v(0, 8, 0, '#3de8ff', 1).v(-1, 7, 0, '#3de8ff', 1).v(1, 6, 0, '#3de8ff', 1).v(-1, 2, 3, '#ff2a4a', 1).v(1, 2, 3, '#ff2a4a', 1).list(),
+  schwarzesbuffet: () => {
+    const b = new VoxBuilder();
+    for (let x = -2; x <= 2; x++) for (let y = -2; y <= 2; y++) for (let z = -2; z <= 2; z++) if (x * x + y * y + z * z <= 5) b.v(x, y + 2, z, '#141018');
+    for (let a = 0; a < 12; a++) b.v(Math.round(Math.cos(a / 12 * 6.28) * 3.4), 2, Math.round(Math.sin(a / 12 * 6.28) * 3.4), '#b05dff', 1);
+    return b.v(0, 2, 3, '#ff3df0', 1).list();
+  },
+  omasgeheimrezept: () => new VoxBuilder()
+    .box(-2, 2, 0, 3, -2, 2, '#3d9bff').box(-2, 2, 4, 4, -2, 2, '#e8e2f0').v(0, 5, 0, '#c98a3a').v(-1, 5, 1, '#c98a3a')
+    .box(0, 0, 1, 1, 3, 5, '#2a2e38').v(0, 1, 6, '#5a3a1e').v(1, 2, 3, '#ff3d6a', 1).list(),
+  entensturm: () => new VoxBuilder()
+    .box(-2, 1, 0, 2, -2, 2, '#ffe04a').box(-1, 0, 3, 4, 1, 2, '#ffe04a').v(-1, 4, 3, '#141018').box(-1, 0, 3, 3, 3, 3, '#ff7a1a')
+    .v(0, 5, 0, '#ff7a1a', 1).v(0, 6, 0, '#ffd23f', 1).v(-1, 5, -1, '#ff5a14', 1).list(),
+  frostfeuerwerk: () => new VoxBuilder()
+    .box(0, 0, -3, 1, 0, 0, '#a8f6ff').v(0, 2, 0, '#ffffff', 1).v(-1, 3, 0, '#a8f6ff', 1).v(1, 3, 0, '#a8f6ff', 1).v(0, 4, 0, '#a8f6ff', 1).v(0, 3, 0, '#ffd23f', 1)
+    .v(-2, 4, 0, '#ff3df0', 1).v(2, 2, 0, '#3de8ff', 1).v(1, 5, 0, '#ffd23f', 1).list(),
+  saegenkarussell: () => {
+    const b = new VoxBuilder();
+    for (let a = 0; a < 16; a++) b.v(Math.round(Math.cos(a / 16 * 6.28) * 3), 1, Math.round(Math.sin(a / 16 * 6.28) * 3), a % 2 ? '#e8e2f0' : '#9aa3b5');
+    return b.box(-1, 1, 1, 1, -1, 1, '#ff3d6a').v(0, 2, 0, '#ff3d6a', 1).list();
+  },
+  bienenkoenigin: () => new VoxBuilder()
+    .box(-2, 1, 0, 2, -2, 2, '#ffd23f').box(-2, 1, 1, 1, -2, 2, '#141018').box(-2, 1, 0, 0, -1, 1, '#ffd23f')
+    .v(-3, 3, 0, '#e8fdff', 1).v(2, 3, 0, '#e8fdff', 1).v(-1, 3, 3, '#141018').v(0, 3, 3, '#141018')
+    .box(-1, 0, 3, 3, -1, 1, '#ffd23f').v(-1, 4, 0, '#ffd23f', 1).v(0, 4, 0, '#ff3d6a', 1).v(-1, 4, 1, '#ffd23f', 1).list(),
+  gackerchaos: () => {
+    const b = new VoxBuilder();
+    for (const v of chicken(0)) b.v(v[0] * 2, v[1] * 2, v[2] * 2, v[3], v[4]);
+    return b.v(-2, 4, 4, '#ff3df0', 1).v(-2, 4, 5, '#ff3df0', 1).list();
+  }
+};
+
+/** Turm (Antrieb „Turm"): Sockel + Drehkopf, Blick +z */
+export function turret(): Vox[] {
+  return new VoxBuilder()
+    .box(-2, 1, 0, 0, -2, 1, '#3a3e46').box(-1, 0, 1, 2, -1, 0, '#5a5f68')
+    .box(-2, 1, 3, 4, -2, 1, '#7d8597').box(0, 0, 3, 3, 2, 4, '#2a2e38').v(-1, 5, -1, '#3de8ff', 1)
+    .list();
+}
+
+/** Flache Scheibe am Boden (Pfützen), Radius 1 bei Voxelgröße 1/8 */
+export function disc(color: string, edge: string): Vox[] {
+  const b = new VoxBuilder();
+  for (let x = -8; x <= 8; x++) for (let z = -8; z <= 8; z++) {
+    const d = Math.hypot(x, z);
+    if (d <= 8.2) b.v(x, 0, z, d > 6.8 ? edge : ((x * 3 + z * 7) & 3) === 0 ? edge : color, 1);
+  }
+  return b.list();
+}

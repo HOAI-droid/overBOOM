@@ -4,7 +4,7 @@ import { buildArenaView, type ArenaView } from './arenaView.ts';
 import { HeroView } from './heroView.ts';
 import { Effects } from './effects.ts';
 import { CombatView } from './combatView.ts';
-import { ENEMY_DEBRIS } from './models.ts';
+import { ENEMY_DEBRIS, shotColor } from './models.ts';
 
 export interface RenderOptions {
   /** Pixel auf der kurzen Bildschirmseite (Low-Res-Look). 270 = Standard */
@@ -158,8 +158,9 @@ export class GameRenderer {
         case 'step': fx.step(e.x, e.z); break;
         case 'bump': fx.bump(e.x, e.z); this.heroes[e.player]?.punch(0.5); kick(0.2); break;
         case 'fire': {
+          if (e.slot < 0) { fx.muzzle(e.x, 0.9, e.z, e.dirX, e.dirZ, 0xffe28a); break; }
           const m = this.combat.muzzle(e.player, e.slot, this.tmpV);
-          const color = e.weapon === 'raketenwerfer' ? 0xff9a3a : e.weapon === 'teslastab' ? 0x3de8ff : 0xffe28a;
+          const color = e.weapon === 'raketenwerfer' ? 0xff9a3a : e.weapon === 'teslastab' ? 0x3de8ff : e.weapon.includes(':') ? 0xff3df0 : 0xffe28a;
           fx.muzzle(m.x, m.y, m.z, e.dirX, e.dirZ, color);
           this.combat.kick(e.player, e.slot);
           break;
@@ -183,6 +184,12 @@ export class GameRenderer {
         case 'death': fx.explosion(e.x, e.z, 2.4); kick(0.45); stop = 0.2; this.lastStop = -1; break;
         case 'waveClear': kick(0.15); break;
         case 'levelUp': fx.levelUp(e.x, e.z); break;
+        case 'beam': fx.beam(e.x, e.z, e.x2, e.z2, shotColor(e.geschoss)); break;
+        case 'cone': fx.cone(e.x, e.z, e.dirX, e.dirZ, e.range, shotColor(e.geschoss), e.geschoss === 'flamme'); break;
+        case 'swing': fx.swing(e.x, e.z, e.dirX, e.dirZ, e.range, shotColor(e.geschoss)); kick(0.04); break;
+        case 'teleport': fx.teleport(e.x, e.z, shotColor(e.geschoss)); break;
+        case 'kawumm': kick(0.2); break;
+        case 'fusion': fx.fusion(e.x, e.z, !!e.rezept); break;
         case 'heal': fx.heal(e.x, e.z); break;
         case 'dodge': fx.dodge(e.x, e.z); break;
         case 'bossSpawn': fx.explosion(e.x, e.z, 2.5, true); kick(0.45); break;

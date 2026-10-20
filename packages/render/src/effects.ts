@@ -131,6 +131,11 @@ export class Effects {
   private decals: { mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial; t: number }[] = [];
   private flashes: { sprite: THREE.Sprite; t: number; max: number; size: number }[] = [];
   private bolts: { pts: Float32Array; n: number; t: number }[] = [];
+  private beams: { mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial; t: number; w: number }[] = [];
+  private arcs: { mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial; t: number; r: number }[] = [];
+  private beamIdx = 0;
+  private arcIdx = 0;
+  private tmpColor = new THREE.Color();
   private boltGeo: THREE.BufferGeometry;
   private boltPos: Float32Array;
   private ringIdx = 0;
@@ -183,6 +188,26 @@ export class Effects {
       sprite.visible = false;
       this.group.add(sprite);
       this.flashes.push({ sprite, t: 0, max: 1, size: 1 });
+    }
+    // Strahlen: gestreckte, leuchtende Quader
+    const beamGeo = new THREE.BoxGeometry(1, 1, 1);
+    beamGeo.translate(0, 0, 0.5);
+    for (let i = 0; i < 16; i++) {
+      const mat = new THREE.MeshBasicMaterial({ color: '#ff3df0', transparent: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+      const mesh = new THREE.Mesh(beamGeo, mat);
+      mesh.visible = false;
+      this.group.add(mesh);
+      this.beams.push({ mesh, mat, t: 0, w: 0.12 });
+    }
+    // Rundumschläge: Halbkreis-Bogen
+    const arcGeo = new THREE.RingGeometry(0.55, 1, 20, 1, -Math.PI / 2, Math.PI);
+    arcGeo.rotateX(-Math.PI / 2);
+    for (let i = 0; i < 8; i++) {
+      const mat = new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
+      const mesh = new THREE.Mesh(arcGeo, mat);
+      mesh.visible = false;
+      this.group.add(mesh);
+      this.arcs.push({ mesh, mat, t: 0, r: 1 });
     }
     for (let i = 0; i < 24; i++) this.bolts.push({ pts: new Float32Array(ZAP_POINTS * 3), n: 0, t: 0 });
     this.boltPos = new Float32Array(24 * (ZAP_POINTS - 1) * ZAP_SUB * 2 * 3);
@@ -391,6 +416,74 @@ export class Effects {
     for (let i = 0; i < 8; i++) this.dust.spawn(x, 0.5, z, (rnd() - 0.5) * 4, 1 + rnd(), (rnd() - 0.5) * 4, 0.35, 0.08);
   }
 
+  /* ---------------- Phase 4: neue Antriebe & Fusion ---------------- */
+
+  beam(x: number, z: number, x2: number, z2: number, color: string): void {
+    const b = this.beams[this.beamIdx++ % this.beams.length];
+    const len = Math.hypot(x2 - x, z2 - z) || 0.01;
+    b.t = 0.12; b.w = 0.14;
+    b.mat.color.set(color);
+    b.mesh.position.set(x, 0.7, z);
+    b.mesh.rotation.set(0, Math.atan2(x2 - x, z2 - z), 0);
+    b.mesh.scale.set(b.w, b.w, len);
+    b.mesh.visible = true;
+    const rnd = this.rnd;
+    for (let i = 0; i < 4; i++) this.sparks.spawn(x2, 0.7, z2, (rnd() - 0.5) * 3, rnd() * 2, (rnd() - 0.5) * 3, 0.2, 0.07, -6, color);
+    this.light(x2, z2, 4, 0.1, this.tmpColor.set(color).getHex());
+  }
+
+  cone(x: number, z: number, dx: number, dz: number, range: number, color: string, fire: boolean): void {
+    const rnd = this.rnd, n = Math.round(6 * this.density);
+    for (let i = 0; i < n; i++) {
+      const a = Math.atan2(dx, dz) + (rnd() - 0.5) * 1.0, s = range * (2.2 + rnd() * 1.4);
+      const vx = Math.sin(a) * s, vz = Math.cos(a) * s;
+      if (fire) this.fire.spawn(x + dx * 0.3, 0.7, z + dz * 0.3, vx, 0.6 + rnd(), vz, 0.3 + rnd() * 0.12, 0.12 + rnd() * 0.12, 1, this.pick(FIRE), 2.5);
+      else this.sparks.spawn(x + dx * 0.3, 0.7, z + dz * 0.3, vx, rnd(), vz, 0.3 + rnd() * 0.1, 0.08, -2, color, 2);
+    }
+  }
+
+  swing(x: number, z: number, dx: number, dz: number, range: number, color: string): void {
+    const a = this.arcs[this.arcIdx++ % this.arcs.length];
+    a.t = 0.18; a.r = range;
+    a.mat.color.set(color);
+    a.mesh.position.set(x, 0.5, z);
+    a.mesh.rotation.set(0, Math.atan2(dx, dz) - Math.PI / 2, 0);
+    a.mesh.visible = true;
+    const rnd = this.rnd, base = Math.atan2(dx, dz);
+    for (let i = 0; i < 8; i++) {
+      const ang = base + (i / 7 - 0.5) * Math.PI;
+      this.sparks.spawn(x + Math.sin(ang) * range, 0.5, z + Math.cos(ang) * range, Math.sin(ang) * 2, 0.5 + rnd(), Math.cos(ang) * 2, 0.2, 0.07, -4, color);
+    }
+  }
+
+  teleport(x: number, z: number, color: string): void {
+    const rnd = this.rnd;
+    for (let i = 0; i < 12; i++) {
+      const a = rnd() * Math.PI * 2;
+      this.sparks.spawn(x + Math.cos(a) * 0.5, 0.2 + rnd(), z + Math.sin(a) * 0.5, -Math.cos(a) * 2, 1, -Math.sin(a) * 2, 0.3, 0.08, 0, i % 2 ? color : 0xff3df0);
+    }
+    this.ring(x, z, 0.9, 0xff3df0, 0.2);
+  }
+
+  puddle(x: number, z: number, r: number, lava: boolean): void {
+    const rnd = this.rnd, a = rnd() * Math.PI * 2, d = Math.sqrt(rnd()) * r * 0.8;
+    if (lava) this.fire.spawn(x + Math.cos(a) * d, 0.1, z + Math.sin(a) * d, 0, 1.2, 0, 0.35, 0.12, 0, this.pick(FIRE));
+    else this.sparks.spawn(x + Math.cos(a) * d, 0.1, z + Math.sin(a) * d, 0, 0.9, 0, 0.5, 0.1, 0, rnd() < 0.5 ? 0x7dff5a : 0x3dbb3a);
+  }
+
+  /** Fanfare am Amboss: Konfetti-Fontäne, Ringe, Lichtblitz */
+  fusion(x: number, z: number, recipe: boolean): void {
+    const rnd = this.rnd;
+    for (let i = 0; i < (recipe ? 80 : 40); i++) {
+      const a = rnd() * Math.PI * 2, s = 1 + rnd() * 3;
+      this.sparks.spawn(x, 0.8, z, Math.cos(a) * s, 4 + rnd() * 5, Math.sin(a) * s, 1 + rnd() * 0.8, 0.09, -7, this.pick(CONFETTI), 1.2);
+    }
+    this.ring(x, z, 2.2, 0xffd23f, 0.5);
+    this.ring(x, z, 1.4, recipe ? 0xff3df0 : 0x3de8ff, 0.4);
+    this.light(x, z, recipe ? 30 : 16, 0.5, 0xffd23f);
+    this.flash(x, z, recipe ? 5 : 3, 0.3);
+  }
+
   hurt(x: number, z: number): void {
     this.ring(x, z, 1.2, 0xff3d6a, 0.25);
     const rnd = this.rnd;
@@ -463,6 +556,23 @@ export class Effects {
       const k = f.t / f.max;
       f.sprite.scale.set(f.size * (1.2 - 0.4 * k), f.size * (1.2 - 0.4 * k), 1);
       (f.sprite.material as THREE.SpriteMaterial).opacity = k * 0.55;
+    }
+    for (const b of this.beams) {
+      if (b.t <= 0) continue;
+      b.t -= dt;
+      if (b.t <= 0) { b.mesh.visible = false; continue; }
+      const k = b.t / 0.12;
+      b.mesh.scale.x = b.mesh.scale.y = b.w * (0.4 + 0.6 * k);
+      b.mat.opacity = k;
+    }
+    for (const a of this.arcs) {
+      if (a.t <= 0) continue;
+      a.t -= dt;
+      if (a.t <= 0) { a.mesh.visible = false; continue; }
+      const k = a.t / 0.18;
+      const s = a.r * (1.1 - 0.2 * k);
+      a.mesh.scale.set(s, 1, s);
+      a.mat.opacity = k * 0.9;
     }
     for (const d of this.decals) {
       if (d.t <= 0) continue;

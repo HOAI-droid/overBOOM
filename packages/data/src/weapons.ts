@@ -57,6 +57,22 @@ export interface Waffe {
   feuerrate: number; // Schüsse pro Sekunde
   reichweite: number; // Meter
   text: string;
+  /** nur bei Fusionswaffen gesetzt */
+  fusion?: FusionsInfo;
+  /** Sonderwirkungen geheimer Rezepte (siehe fusion.ts) */
+  spezial?: string[];
+}
+
+export interface FusionsInfo {
+  /** Waffen-IDs, die die drei Bauteile geliefert haben */
+  teile: { geschoss: string; antrieb: string; ladung: string };
+  quellen: string[];
+  gruppen: Gruppe[];
+  elemente: Element[];
+  /** 0–100 */
+  instabil: number;
+  /** ID des geheimen Rezepts, falls eines getroffen wurde */
+  rezept?: string;
 }
 
 /* ------------------------------------------------------------------ */

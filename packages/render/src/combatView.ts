@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { EnemyState, type World } from '@overboom/core';
-import { ELITE, GEGNER, SELTENHEIT } from '@overboom/data';
+import { ELITE, GEGNER, SELTENHEIT, W } from '@overboom/data';
 import { VoxelInstances } from './instanced.ts';
 import { voxelObject } from './voxel.ts';
-import { PROJECTILE_IDS, baron, crown, gem, grummel, kroete, projectileModel, spawnMarker, targetRing, toastomat, weaponModel } from './models.ts';
+import { PROJECTILE_IDS, REZEPT_MODELLE, baron, chicken, crown, disc, fusionModel, gem, grummel, kroete, projectileModel, spawnMarker, targetRing, toastomat, turret, weaponModel } from './models.ts';
 import type { Effects } from './effects.ts';
 
 const ENEMY_MODELS: Record<string, { vox: () => ReturnType<typeof grummel>; size: number; top: number; cap: number }> = {
@@ -41,6 +41,9 @@ export class CombatView {
   private markers: VoxelInstances;
   private crowns: VoxelInstances;
   private rings: VoxelInstances;
+  private turrets: VoxelInstances;
+  private chickens: VoxelInstances;
+  private puddles: Record<string, VoxelInstances>;
   private weapons: WeaponVis[][] = [];
   private loadouts: number[] = [];
   private m = new THREE.Matrix4();
@@ -66,7 +69,15 @@ export class CombatView {
     this.markers = new VoxelInstances(spawnMarker(), 0.1, 48, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] });
     this.crowns = new VoxelInstances(crown(), 0.07, 64, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] });
     this.rings = new VoxelInstances(targetRing(), 1 / 9, 64, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] });
-    this.group.add(this.gems.group, this.markers.group, this.crowns.group, this.rings.group);
+    this.turrets = new VoxelInstances(turret(), 0.09, 32, { jitter: 0.04, origin: [0.5, 0, 0.5] });
+    this.chickens = new VoxelInstances(chicken(1), 0.08, 200, { jitter: 0.04, origin: [0.5, 0, 0.5] });
+    this.puddles = {
+      lava: new VoxelInstances(disc('#ff7a1a', '#ffd23f'), 1 / 8, 48, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] }),
+      gift: new VoxelInstances(disc('#3dbb3a', '#7dff5a'), 1 / 8, 48, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] }),
+      sog: new VoxelInstances(targetRing().map((v) => [v[0], v[1], v[2], '#b05dff', 1] as typeof v), 1 / 9, 48, { jitter: 0, shadows: false, origin: [0.5, 0, 0.5] })
+    };
+    this.group.add(this.gems.group, this.markers.group, this.crowns.group, this.rings.group, this.turrets.group, this.chickens.group,
+      this.puddles.lava.group, this.puddles.gift.group, this.puddles.sog.group);
   }
 
   /** Rückstoß der Waffe nach einem Schuss */
@@ -87,7 +98,12 @@ export class CombatView {
       list = p.weapons.map((s) => {
         const root = new THREE.Group();
         const glow = SELTENHEIT[s.tier - 1]?.farbe ?? '#3de8ff';
-        const m = voxelObject(weaponModel(s.waffe.id, s.waffe.gruppe, glow), 0.07, { origin: [0.5, 0.5, 0.5], jitter: 0.05 });
+        const f = s.waffe.fusion;
+        let vox;
+        if (f?.rezept && REZEPT_MODELLE[f.rezept]) vox = REZEPT_MODELLE[f.rezept]();
+        else if (f) vox = fusionModel(f.teile.antrieb, W[f.teile.antrieb]?.gruppe ?? s.waffe.gruppe, s.waffe.geschoss, s.waffe.ladung, f.instabil, glow);
+        else vox = weaponModel(s.waffe.id, s.waffe.gruppe, glow);
+        const m = voxelObject(vox, f?.rezept ? 0.08 : 0.07, { origin: [0.5, 0.5, 0.5], jitter: 0.05 });
         m.scale.setScalar(1 + (s.tier - 1) * 0.12);
         root.add(m);
         this.group.add(root);
@@ -113,6 +129,7 @@ export class CombatView {
     // Gegner
     for (const inst of this.enemies) inst.begin();
     this.crowns.begin();
+    this.chickens.begin();
     for (const e of w.enemies) {
       if (!e.alive) continue;
       const x = lerp(e.px, e.x, alpha), z = lerp(e.pz, e.z, alpha), y = lerp(e.py, e.y, alpha);
@@ -145,6 +162,12 @@ export class CombatView {
       if (e.stun > 0) { roll = Math.sin(time * 20) * 0.2; hop = 0; }
       const jx = e.doom >= 0 ? Math.sin(time * 70 + e.id) * 0.03 : 0;
       const big = e.elite ? ELITE.groesse : 1;
+      if (e.chicken > 0) {
+        // verhühnert: harmloses Huhn, flattert herum
+        const cs = big * (0.8 + e.r);
+        this.chickens.push(this.matrix(x, Math.abs(Math.sin(time * 12 + e.id)) * 0.15, z, e.facing, 0, Math.sin(time * 20 + e.id) * 0.2, cs, cs, cs), flash);
+        continue;
+      }
       this.enemies[e.type].push(this.matrix(x + jx, y + hop, z, e.facing, pitch, roll, sx * pop * big, sy * pop * big, sx * pop * big), flash);
       const info = ENEMY_MODELS[e.def.id] ?? ENEMY_MODELS.grummelbold;
       if (e.elite) {
@@ -158,12 +181,19 @@ export class CombatView {
     }
     for (const inst of this.enemies) inst.end();
     this.crowns.end();
+    this.chickens.end();
 
     // Geschosse
     for (const inst of this.shots.values()) inst.begin();
     this.rings.begin();
+    this.turrets.begin();
     for (const pr of w.projectiles) {
       if (!pr.alive) continue;
+      if (pr.antrieb === 'turm') {
+        const k = Math.min(1, pr.t / 0.25), fade = pr.life < 0.5 ? pr.life / 0.5 : 1;
+        this.turrets.push(this.matrix(pr.x, 0, pr.z, Math.atan2(pr.vx, pr.vz), 0, 0, k * fade, k * fade, k * fade), pr.cd > pr.rate - 0.08 ? 0.6 : 0);
+        continue;
+      }
       const inst = this.shots.get(pr.geschoss) ?? this.shots.get('kugel')!;
       if (pr.hostile && pr.antrieb === 'zielbogen') {
         // Einschlag-Markierung des Bosses: wird zum Aufprall hin voll
@@ -186,11 +216,28 @@ export class CombatView {
       } else if (pr.geschoss === 'toast') {
         pitch = time * 14;
       }
-      const s = pr.crit ? 1.4 : 1;
+      let s = pr.crit ? 1.4 : 1;
+      if (pr.antrieb === 'ablegen') { s = pr.cd > 0 ? 0.8 : 1 + (Math.sin(time * 12) > 0.6 ? 0.25 : 0); pitch = 0; roll = 0; }
+      else if (pr.antrieb === 'orbit' || pr.antrieb === 'spirale') roll = time * 10;
+      else if (pr.antrieb === 'rollen') pitch = time * 14;
+      else if (pr.antrieb === 'regen') pitch = Math.PI / 2;
+      else if (pr.antrieb === 'kueken' || pr.antrieb === 'schwarm') s = 1.5;
       inst.push(this.matrix(x, y, z, yaw, pitch, roll, s, s, s));
     }
     for (const inst of this.shots.values()) inst.end();
     this.rings.end();
+    this.turrets.end();
+
+    // Pfützen und Sog
+    for (const k in this.puddles) this.puddles[k].begin();
+    for (const h of w.hazards) {
+      if (!h.active) continue;
+      const grow = Math.min(1, (h.max - h.t) / 0.2), fade = Math.min(1, h.t / 0.5);
+      const r = h.r * grow * (h.kind === 'sog' ? 0.6 + 0.4 * Math.abs(Math.sin(time * 6)) : fade);
+      this.puddles[h.kind].push(this.matrix(h.x, 0.02, h.z, h.kind === 'sog' ? -time * 5 : 0, 0, 0, r, 1, r));
+      if (h.kind !== 'sog' && this.fx.chance(dt * 6)) this.fx.puddle(h.x, h.z, h.r, h.kind === 'lava');
+    }
+    for (const k in this.puddles) this.puddles[k].end();
 
     // Kristalle
     this.gems.begin();

@@ -6,6 +6,7 @@ export const MAX_PROJECTILES = 512;
 export const MAX_CRYSTALS = 320;
 export const MAX_BLASTS = 160;
 export const MAX_WARNINGS = 48;
+export const MAX_HAZARDS = 48;
 
 export const EnemyState = { Walk: 0, Windup: 1, Jump: 2, Aim: 3 } as const;
 
@@ -60,6 +61,21 @@ export interface Enemy {
   /** Boss: Phase 1/2 und Abklingzeit für Beschwörungen */
   bossPhase: number;
   summonCd: number;
+  /** nass (s): Kettenblitze springen doppelt so weit */
+  wet: number;
+  /** Säure-Stapel: +5 % Schaden je Stapel */
+  acid: number;
+  acidT: number;
+  /** Frost-Treffer; bei 3 friert der Gegner ein */
+  frost: number;
+  /** verwirrt (s): läuft ziellos, greift nicht an */
+  confuse: number;
+  /** verhühnert (s): harmloses Huhn */
+  chicken: number;
+  /** Laufrichtung, solange verwirrt */
+  cdx: number; cdz: number;
+  /** vergiftet von einer Giftwolken-Waffe → hinterlässt eine Pfütze */
+  cloud: boolean;
 }
 
 export interface Projectile {
@@ -92,6 +108,22 @@ export interface Projectile {
   /** wie viele Gegner es noch durchschlagen darf */
   pierce: number;
   lastHit: number;
+  /** Waffen-Slot des Schützen (-1 = keiner), für Begleiter/Türme */
+  slot: number;
+  /** Sonderwirkungen (Bitmaske, siehe weapons.ts) */
+  mask: number;
+  instabil: number;
+  /** übrige Abpraller/Hüpfer */
+  bounces: number;
+  /** Zustand (Bumerang: hin/zurück, Schwarm: warten/angreifen/zurück) */
+  mode: number;
+  /** Winkel und Radius (Orbit, Spirale, Schwarm) */
+  ang: number;
+  rad: number;
+  /** Abklingzeit (Turm, Schwarm, Orbit-Treffer) */
+  cd: number;
+  /** Feuerintervall des Turms */
+  rate: number;
 }
 
 export interface Crystal {
@@ -105,7 +137,7 @@ export interface Crystal {
   magnet: boolean;
 }
 
-export type BlastSource = 'waffe' | 'fass' | 'kroete' | 'welle' | 'boss' | 'weste';
+export type BlastSource = 'waffe' | 'fass' | 'kroete' | 'welle' | 'boss' | 'weste' | 'kawumm';
 
 /** Explosion, die nach `delay` Sekunden zündet (Ketten laufen so sichtbar nacheinander ab). */
 export interface Blast {
@@ -141,6 +173,28 @@ export interface WeaponSlot {
   ox: number; oz: number;
   /** Ziel-Slot oder -1 */
   target: number;
+  /** Sonderwirkungen (Bitmaske) */
+  mask: number;
+}
+
+/** Bodeneffekt: Lava- oder Giftpfütze, Schwerkraft-Sog */
+export interface Hazard {
+  active: boolean;
+  kind: 'lava' | 'gift' | 'sog';
+  x: number; z: number;
+  r: number;
+  t: number;
+  max: number;
+  dps: number;
+  clock: number;
+  src: string;
+  /** Sog explodiert am Ende */
+  implode: boolean;
+  blastMul: number;
+}
+
+export function makeHazard(): Hazard {
+  return { active: false, kind: 'lava', x: 0, z: 0, r: 1, t: 0, max: 1, dps: 0, clock: 0, src: '', implode: false, blastMul: 1 };
 }
 
 export function makeEnemy(slot: number, def: GegnerDef): Enemy {
@@ -149,7 +203,8 @@ export function makeEnemy(slot: number, def: GegnerDef): Enemy {
     x: 0, z: 0, y: 0, px: 0, pz: 0, py: 0, vx: 0, vz: 0, kbx: 0, kbz: 0,
     r: def.radius, hp: 0, maxHp: 0, facing: 0, flash: 0, age: 0,
     state: 0, stateT: 0, cd: 0, jx0: 0, jz0: 0, jx1: 0, jz1: 0, doom: -1, strafe: 1,
-    elite: false, dmgMul: 1, slow: 0, stun: 0, burnT: 0, burnDps: 0, poisonT: 0, poisonDps: 0, dotClock: 0, lucky: false, bossPhase: 1, summonCd: 0
+    elite: false, dmgMul: 1, slow: 0, stun: 0, burnT: 0, burnDps: 0, poisonT: 0, poisonDps: 0, dotClock: 0, lucky: false, bossPhase: 1, summonCd: 0,
+    wet: 0, acid: 0, acidT: 0, frost: 0, confuse: 0, chicken: 0, cdx: 0, cdz: 0, cloud: false
   };
 }
 
@@ -158,7 +213,7 @@ export function makeProjectile(): Projectile {
     alive: false, hostile: false, player: 0, geschoss: '', antrieb: '', ladung: '',
     x: 0, y: 0, z: 0, px: 0, py: 0, pz: 0, vx: 0, vz: 0, speed: 0, dmg: 0, crit: false,
     target: -1, targetId: 0, life: 0, t: 0, dur: 0, sx: 0, sz: 0, tx: 0, tz: 0, r: 0.15,
-    src: '', blastMul: 1, pierce: 0, lastHit: 0
+    src: '', blastMul: 1, pierce: 0, lastHit: 0, slot: -1, mask: 0, instabil: 0, bounces: 0, mode: 0, ang: 0, rad: 0, cd: 0, rate: 1
   };
 }
 

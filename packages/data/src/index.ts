@@ -4,3 +4,4 @@ export * from './balance.ts';
 export * from './stats.ts';
 export * from './upgrades.ts';
 export * from './items.ts';
+export * from './fusion.ts';

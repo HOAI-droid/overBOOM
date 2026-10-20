@@ -36,11 +36,11 @@
   .ob-wave-n { font-size: 11px; color: #c9bfe8; text-transform: uppercase; }
   .ob-wave-t { font-size: 26px; font-weight: 700; color: #f4ecff; }
   .ob-wave-t.urgent { color: var(--yellow); animation: ob-blink 0.5s steps(2) infinite; }
-  .ob-banner { position: absolute; left: 50%; top: 34%; transform: translate(-50%, -50%); opacity: 0; text-align: center; white-space: nowrap; }
+  .ob-banner { position: absolute; z-index: 7; pointer-events: none; left: 50%; top: 34%; transform: translate(-50%, -50%); opacity: 0; text-align: center; white-space: nowrap; }
   .ob-banner b { display: block; font-size: clamp(28px, 7vw, 52px); font-weight: 700; text-transform: uppercase; color: var(--yellow); text-shadow: 0 4px 0 #c2410c, 0 8px 0 var(--ink); }
   .ob-banner b.cyan { color: var(--cyan); text-shadow: 0 4px 0 #1a6a8a, 0 8px 0 var(--ink); }
   .ob-banner b.rot { color: var(--red); text-shadow: 0 4px 0 #7a1030, 0 8px 0 var(--ink); }
-  .ob-banner span { display: block; margin-top: 6px; font-size: 12px; text-transform: uppercase; color: #f4ecff; text-shadow: 0 2px 0 var(--ink); }
+  .ob-banner span { display: inline-block; padding: 3px 8px; background: var(--panel); margin-top: 6px; font-size: 12px; text-transform: uppercase; color: #f4ecff; text-shadow: 0 2px 0 var(--ink); }
   .ob-chain { position: absolute; left: 50%; top: 17%; opacity: 0; font-size: 26px; font-weight: 700; color: var(--magenta); white-space: nowrap; text-shadow: 0 3px 0 #6a1068, 0 6px 0 var(--ink); transform-origin: center; }
   .ob-hurt { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse at center, transparent 45%, rgba(255, 30, 70, 0.75)); }
   .ob-dmg-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
@@ -110,6 +110,7 @@
   .ob-btn2 { min-height: 44px; padding: 0 14px; border: 3px solid var(--ink); background: #3b2b66; color: #f4ecff; font-size: 12px; text-transform: uppercase; box-shadow: 0 4px 0 #1c1434; display: inline-flex; align-items: center; gap: 6px; }
   .ob-btn2:disabled { opacity: 0.4; cursor: default; }
   .ob-go { min-height: 48px; padding: 0 20px; border: 3px solid var(--ink); background: var(--yellow); color: var(--ink); font-size: 16px; font-weight: 700; text-transform: uppercase; box-shadow: 0 5px 0 #c2410c, 0 5px 0 3px var(--ink); }
+  .ob-go:disabled { background: #4b3f6e; color: #8a80a8; box-shadow: none; cursor: default; }
   .ob-go:active { transform: translateY(3px); box-shadow: 0 2px 0 #c2410c, 0 2px 0 3px var(--ink); }
   .ob-slots { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
   .ob-slot { position: relative; min-height: 52px; padding: 6px 4px; border: 3px solid var(--rc, #3b2b66); background: #1c1434; color: #f4ecff; font-size: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-align: center; box-shadow: 0 0 0 2px var(--ink); }
@@ -132,6 +133,32 @@
   .ob-keys { margin: 12px 0 0; font-size: 9px; color: #8a80a8; text-transform: uppercase; }
   @media (max-width: 600px) { .ob-slots { grid-template-columns: repeat(3, minmax(0, 1fr)); } .ob-cards { grid-template-columns: 1fr 1fr; } .ob-card { font-size: 10px; } .ob-name { font-size: 12px; } .ob-actions .ob-go { margin-left: 0; width: 100%; } }
   @media (max-width: 380px) { .ob-cards { grid-template-columns: 1fr; } }
+  .ob-dmg.kawumm { font-size: 15px; color: var(--magenta); text-shadow: 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 2px 0 var(--ink), 0 -2px 0 var(--ink); }
+  .ob-tabs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .ob-tabs small { font-size: 10px; color: #c9bfe8; }
+  .ob-tab { min-height: 44px; padding: 0 14px; border: 3px solid var(--ink); background: #2a1f45; color: #c9bfe8; font-size: 16px; font-weight: 700; text-transform: uppercase; }
+  .ob-tab.on { background: var(--yellow); color: var(--ink); box-shadow: 0 4px 0 #c2410c; }
+  .ob-slot .ob-fz { position: absolute; top: -8px; left: -6px; font-style: normal; font-size: 10px; padding: 0 3px; color: var(--ink); background: var(--magenta); border: 2px solid var(--ink); }
+  .ob-slot:disabled { opacity: 0.45; cursor: default; }
+  .ob-slot b { font-size: 8px; }
+  .ob-parts { display: flex; flex-direction: column; gap: 6px; }
+  .ob-partrow { display: grid; grid-template-columns: 150px repeat(3, minmax(0, 1fr)); gap: 6px; align-items: stretch; }
+  .ob-partlabel { font-size: 10px; color: #c9bfe8; text-transform: uppercase; align-self: center; }
+  .ob-part-btn { min-width: 0; overflow-wrap: break-word; hyphens: auto; min-height: 44px; padding: 4px 6px; border: 3px solid #3b2b66; background: #1c1434; color: #f4ecff; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+  .ob-part-btn small { font-size: 8px; color: #8a80a8; }
+  .ob-part-btn.on { border-color: var(--cyan); background: #173a4a; box-shadow: 0 0 0 2px var(--ink); }
+  .ob-preview { margin-top: 12px; }
+  .ob-preview.recipe { box-shadow: 0 0 0 2px var(--ink), 0 0 18px 2px rgba(255, 61, 240, 0.5); }
+  .ob-preview .ob-name small { font-size: 10px; color: #c9bfe8; }
+  .ob-instabil { position: relative; height: 14px; background: #2a1f45; border: 2px solid var(--ink); }
+  .ob-instabil i { position: absolute; inset: 0 auto 0 0; background: repeating-linear-gradient(90deg, var(--magenta) 0 6px, var(--orange) 6px 12px); }
+  .ob-instabil span { position: relative; z-index: 1; display: block; font-size: 8px; line-height: 10px; padding-left: 4px; text-shadow: 0 1px 0 var(--ink); }
+  .ob-book { margin: 10px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
+  .ob-book li { padding: 6px 8px; border: 2px dashed #3b2b66; font-size: 10px; display: flex; flex-direction: column; gap: 3px; color: #8a80a8; }
+  .ob-book li b { color: #c9bfe8; }
+  .ob-book li.found { border: 2px solid var(--magenta); color: #c9bfe8; }
+  .ob-book li.found b { color: var(--yellow); }
+  @media (max-width: 600px) { .ob-partrow { grid-template-columns: 1fr 1fr 1fr; } .ob-partlabel { grid-column: 1 / -1; } .ob-part-btn { font-size: 9px; } }
   @keyframes ob-blink { 50% { opacity: 0.45; } }
   .ob-hint { position: absolute; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); transform: translateX(-50%); padding: 8px 14px; max-width: 80vw; box-sizing: border-box; text-align: center; line-height: 1.5; background: var(--panel); border: 3px solid #3b2b66; box-shadow: 0 0 0 3px var(--ink); font-size: 11px; text-transform: uppercase; transition: opacity 0.6s; }
   .ob-hint b { color: var(--yellow); font-weight: 400; }
