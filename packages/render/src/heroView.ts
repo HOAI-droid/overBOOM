@@ -40,8 +40,9 @@ export class HeroView {
   private lean = 0;
   private squash = 0;
 
-  constructor(color: string) {
-    const p = heroParts(color);
+  /** color = Spielerfarbe (Ring, Silhouette), body = Heldenfarbe (Helm, Anzug) */
+  constructor(color: string, body = color) {
+    const p = heroParts(body);
     this.body = partMesh(p.body, [0, 0, 0], color);
     this.legL = partMesh(p.legL, p.pivots.legL, color);
     this.legR = partMesh(p.legR, p.pivots.legR, color);

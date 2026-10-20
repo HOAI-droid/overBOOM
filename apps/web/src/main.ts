@@ -1,5 +1,5 @@
-import { World, DT, DASH_COOLDOWN, NO_INPUT, type Command, type InputState } from '@overboom/core';
-import { LEVEL, SPIELER, waffeById } from '@overboom/data';
+import { World, DT, DASH_COOLDOWN, NO_INPUT, spawnEnemy, type Command, type InputState } from '@overboom/core';
+import { GEGNER, HELD_BY_ID, INSEL_BY_ID, LEVEL, waffeById } from '@overboom/data';
 import { GameRenderer, type PlayerPose } from '@overboom/render';
 import { Controls, DamageNumbers, Hud, MenuNav, Menus, screenToWorld } from '@overboom/ui';
 import { createWebPlatform } from '@overboom/platform';
@@ -26,13 +26,26 @@ function start() {
   const world = new World(seed, 1, { wave: Math.max(1, Math.floor(num('wave', 1))), god: params.get('god') === '1', choose: true });
   const startGems = Math.max(0, num('gems', 0));
   world.players[0].crystals = startGems;
-  // Debug: ?waffen=huehnerkanone,huehnerkanone,huehnerkanone – überspringt die Startwahl
+  // Debug: ?held=pyromane&insel=lavakessel (Schnellstart), ?waffen=a,b,c (Waffen), ?galerie=1 (alle Gegner zum Anschauen)
   const debugWeapons = (params.get('waffen') ?? '').split(',').filter((id) => waffeById(id));
+  const dbgHeld = params.get('held') ?? '', dbgInsel = params.get('insel') ?? '', galerie = params.get('galerie') === '1';
   const giveDebug = () => {
-    if (!debugWeapons.length) return;
-    world.command(0, { type: 'start', weapon: SPIELER.startAuswahl.includes(debugWeapons[0]) ? debugWeapons[0] : 'pistole' });
-    if (!SPIELER.startAuswahl.includes(debugWeapons[0])) world.players[0].weapons.length = 0;
-    for (const id of SPIELER.startAuswahl.includes(debugWeapons[0]) ? debugWeapons.slice(1) : debugWeapons) world.debugGive(0, id);
+    if (!debugWeapons.length && !dbgHeld && !dbgInsel && !galerie) return;
+    world.command(0, { type: 'start', held: HELD_BY_ID[dbgHeld] ? dbgHeld : 'kawummkid', insel: INSEL_BY_ID[dbgInsel] ? dbgInsel : 'bummburg' });
+    if (debugWeapons.length || galerie) { world.players[0].weapons.length = 0; for (const id of debugWeapons) world.debugGive(0, id); }
+    if (galerie) {
+      world.spawnAcc = -1e9;
+      world.waveTime = 1e9;
+      for (const wr of world.warnings) wr.active = false;
+      const p = world.players[0];
+      GEGNER.forEach((g, i) => {
+        const boss = g.verhalten === 'boss';
+        const k = boss ? GEGNER.filter((q, j) => q.verhalten === 'boss' && j < i).length : GEGNER.filter((q, j) => q.verhalten !== 'boss' && j < i).length;
+        const x = boss ? p.x - 4.5 + k * 3 : p.x - 4 + (k % 6) * 1.6, z = boss ? p.z - 4.5 - k * 0.0 + 8 : p.z - 3 + Math.floor(k / 6) * 1.8;
+        const e = spawnEnemy(world, i, x, z);
+        if (e) { e.hp = e.maxHp = 1e9; e.stun = 1e9; e.facing = Math.PI * 0.25; }
+      });
+    }
   };
   giveDebug();
   let renderer: GameRenderer;

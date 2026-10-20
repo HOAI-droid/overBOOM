@@ -1,11 +1,16 @@
 /**
- * OVERBOOM – Gegner (Phase 2: die ersten drei Typen)
+ * OVERBOOM – Gegner: 16 Typen in 7 Fraktionen + 4 Bosse
  *
  * „Grimmig, aber knuffig": große Köpfe, schräge Wut-Brauen, nie gruselig.
  * Werte sind Grundwerte auf Welle 1; die Wellen skalieren HP (siehe balance.ts).
  */
 
-export type Verhalten = 'jagen' | 'kamikaze' | 'fernkampf' | 'boss';
+export type Verhalten =
+  | 'jagen' | 'kamikaze' | 'fernkampf' | 'boss'
+  | 'sprinter' | 'heiler' | 'schild' | 'minenleger' | 'spurleger' | 'beschwoerer' | 'rutscher';
+
+/** Boss-Angriffe (werden der Reihe nach gespielt) */
+export type BossAngriff = 'bomben' | 'ansturm' | 'ring' | 'sporen' | 'beschwoeren';
 
 export interface GegnerDef {
   id: string;
@@ -40,6 +45,49 @@ export interface GegnerDef {
   schussIntervall?: number;
   schussSchaden?: number;
   schussTempo?: number;
+  /** Aussehen des Geschosses (Geschoss-ID) und Zusatzwirkung beim Spieler */
+  schussGeschoss?: string;
+  schussEffekt?: 'langsam';
+
+  /** Rudel: so viele Begleiter erscheinen zusätzlich (0–n) */
+  rudel?: number;
+
+  // Sprinter / Rutscher: Ansturm
+  ansturmTempo?: number;
+  ansturmDauer?: number;
+  ansturmAbstand?: number;
+
+  // Heiler
+  heilRadius?: number;
+  /** Anteil der Max-HP, der geheilt wird */
+  heilMenge?: number;
+  heilIntervall?: number;
+
+  /** Schildträger: Schaden von vorne × Faktor */
+  schildFaktor?: number;
+
+  // Minenleger / Spurleger
+  minenIntervall?: number;
+  minenSchaden?: number;
+  spur?: 'gift' | 'lava';
+  spurIntervall?: number;
+  spurSchaden?: number;
+
+  /** Splitter: beim Tod in kleinere Gegner zerfallen */
+  teiltSich?: { in: string; anzahl: number };
+
+  // Beschwörer und Bosse
+  beschwoert?: string;
+  beschwoerAnzahl?: number;
+  beschwoerIntervall?: number;
+
+  /** Bosse: Angriffe in Phase 1 und 2 (unter 50 % Leben) */
+  angriffe1?: BossAngriff[];
+  angriffe2?: BossAngriff[];
+  /** Geschoss für Ring-Angriffe */
+  ringGeschoss?: string;
+  /** Größe des Modells (Bosse) */
+  groesse?: number;
 }
 
 export const GEGNER: GegnerDef[] = [
@@ -51,7 +99,7 @@ export const GEGNER: GegnerDef[] = [
     text: 'Grüner Kobold mit verbeultem Kochtopf als Helm. Grummelt beim Laufen und kommt nie allein.',
     verhalten: 'jagen',
     hp: 16, tempo: 2.6, radius: 0.32, beruehrSchaden: 8, kristalle: 1,
-    abWelle: 1, gewicht: 6, masse: 1
+    abWelle: 1, gewicht: 6, masse: 1, rudel: 3
   },
   {
     id: 'bombenkroete',
@@ -75,6 +123,155 @@ export const GEGNER: GegnerDef[] = [
     abWelle: 2, gewicht: 1.6, masse: 1.6,
     wunschAbstand: 5, schussIntervall: 2.4, schussSchaden: 9, schussTempo: 6.5
   },
+  // ---------------- Hühner-Kult (Gackerfeld) ----------------
+  {
+    id: 'kampfhuhn', name: 'Kampfhuhn', fraktion: 'Hühner-Kult',
+    spruch: '„BAGAWK!"',
+    text: 'Ein Huhn mit Stirnband und sehr viel Wut. Scharrt kurz – und stürmt dann los wie ein gefiederter Torpedo.',
+    verhalten: 'sprinter',
+    hp: 12, tempo: 2.4, radius: 0.3, beruehrSchaden: 9, kristalle: 1,
+    abWelle: 1, gewicht: 3, masse: 0.8,
+    ansturmTempo: 9, ansturmDauer: 0.55, ansturmAbstand: 5
+  },
+  {
+    id: 'vogelscheuche', name: 'Vogelscheuche Stroh-Udo', fraktion: 'Hühner-Kult',
+    spruch: '„Ich hab ein Herz aus Stroh – und das schlägt für meine Truppe!"',
+    text: 'Hält Abstand und heilt mit wedelnden Armen alle Gegner in der Nähe. Zuerst ausschalten!',
+    verhalten: 'heiler',
+    hp: 30, tempo: 1.6, radius: 0.34, beruehrSchaden: 5, kristalle: 3,
+    abWelle: 4, gewicht: 0.8, masse: 1.4,
+    wunschAbstand: 5.5, heilRadius: 3.2, heilMenge: 0.25, heilIntervall: 3.2
+  },
+  // ---------------- Funkenbande (Funkenschlund) ----------------
+  {
+    id: 'funkenkobold', name: 'Funkenkobold', fraktion: 'Funkenbande',
+    spruch: '„Bzzzt! Hihi!"',
+    text: 'Winzig, flink, statisch aufgeladen. Kommt immer im Schwarm und schießt kleine Funken.',
+    verhalten: 'fernkampf',
+    hp: 8, tempo: 3.2, radius: 0.24, beruehrSchaden: 5, kristalle: 1,
+    abWelle: 1, gewicht: 3, masse: 0.6, rudel: 3,
+    wunschAbstand: 3.5, schussIntervall: 2.8, schussSchaden: 5, schussTempo: 9, schussGeschoss: 'funke'
+  },
+  {
+    id: 'teslaritter', name: 'Tesla-Ritter', fraktion: 'Funkenbande',
+    spruch: '„Mein Schild ist geladen – im wahrsten Sinne!"',
+    text: 'Trägt einen Spulenschild. Treffer von vorne prallen fast wirkungslos ab – also: von der Seite oder mit Explosionen!',
+    verhalten: 'schild',
+    hp: 40, tempo: 1.7, radius: 0.38, beruehrSchaden: 12, kristalle: 4,
+    abWelle: 3, gewicht: 1.2, masse: 2.5, schildFaktor: 0.2
+  },
+  // ---------------- Blechbrut (Rostgrat) ----------------
+  {
+    id: 'schrottgolem', name: 'Schrottgolem', fraktion: 'Blechbrut',
+    spruch: '„KLONK. KLONK. KLONK."',
+    text: 'Ein wandelnder Schrotthaufen mit Kühlschranktür als Brust. Langsam, aber zäh wie Omas Schnitzel.',
+    verhalten: 'jagen',
+    hp: 110, tempo: 1.25, radius: 0.55, beruehrSchaden: 16, kristalle: 8,
+    abWelle: 3, gewicht: 0.9, masse: 6
+  },
+  {
+    id: 'minenbot', name: 'Minenbot', fraktion: 'Blechbrut',
+    spruch: '„Piep. Hier liegt was. Piep."',
+    text: 'Rollt herum und verteilt blinkende Minen. Nicht drauftreten – oder vorher abschießen.',
+    verhalten: 'minenleger',
+    hp: 22, tempo: 1.9, radius: 0.32, beruehrSchaden: 6, kristalle: 3,
+    abWelle: 2, gewicht: 1.2, masse: 1.5,
+    wunschAbstand: 4, minenIntervall: 3, minenSchaden: 14
+  },
+  // ---------------- Sumpfbande (Pilzmoor) ----------------
+  {
+    id: 'pilzling', name: 'Pilzling', fraktion: 'Sumpfbande',
+    spruch: '„Pfff. Riechst du das? Das bin ich."',
+    text: 'Kleiner Stinkepilz mit roter Kappe und Schmollmund. Hinterlässt Giftwolken, wo er langläuft.',
+    verhalten: 'spurleger',
+    hp: 18, tempo: 1.9, radius: 0.3, beruehrSchaden: 6, kristalle: 2,
+    abWelle: 1, gewicht: 2.5, masse: 1, spur: 'gift', spurIntervall: 1.4, spurSchaden: 6
+  },
+  {
+    id: 'schleimi', name: 'Schleimi', fraktion: 'Sumpfbande',
+    spruch: '„Blubb. Blubb blubb."',
+    text: 'Ein grimmiger Glibberklops. Platzt man ihn, werden es zwei kleine. Die sind noch grimmiger.',
+    verhalten: 'jagen',
+    hp: 30, tempo: 1.7, radius: 0.4, beruehrSchaden: 8, kristalle: 2,
+    abWelle: 2, gewicht: 1.6, masse: 1.3, teiltSich: { in: 'schleimchen', anzahl: 2 }
+  },
+  {
+    id: 'schleimchen', name: 'Schleimchen', fraktion: 'Sumpfbande',
+    spruch: '„Blubb!"',
+    text: 'Halber Schleimi, doppelte Laune.',
+    verhalten: 'jagen',
+    hp: 10, tempo: 2.6, radius: 0.24, beruehrSchaden: 5, kristalle: 1,
+    abWelle: 999, gewicht: 0, masse: 0.7
+  },
+  // ---------------- Glutgesindel (Lavakessel) ----------------
+  {
+    id: 'lavaklops', name: 'Lavaklops', fraktion: 'Glutgesindel',
+    spruch: '„Heiß, heißer, ich!"',
+    text: 'Ein brodelnder Klumpen mit Grummelgesicht. Hinterlässt eine glühende Spur – nicht reintreten!',
+    verhalten: 'spurleger',
+    hp: 34, tempo: 1.6, radius: 0.38, beruehrSchaden: 10, kristalle: 3,
+    abWelle: 1, gewicht: 2, masse: 2, spur: 'lava', spurIntervall: 0.9, spurSchaden: 8
+  },
+  {
+    id: 'kultist', name: 'Kawumm-Kultist', fraktion: 'Glutgesindel',
+    spruch: '„Oh großes Kawumm, schick uns Verstärkung!"',
+    text: 'Verehrt das Große Kawumm. Hält Abstand und öffnet Portale, aus denen Grummelbolde purzeln.',
+    verhalten: 'beschwoerer',
+    hp: 26, tempo: 1.6, radius: 0.32, beruehrSchaden: 6, kristalle: 4,
+    abWelle: 3, gewicht: 0.9, masse: 1.2,
+    wunschAbstand: 6, beschwoert: 'grummelbold', beschwoerAnzahl: 3, beschwoerIntervall: 6
+  },
+  // ---------------- Frostfrieder (Frostfass) ----------------
+  {
+    id: 'schneemann', name: 'Schneemann Fritz', fraktion: 'Frostfrieder',
+    spruch: '„Ich bin cool. Eiskalt sogar."',
+    text: 'Wirft pappige Schneebälle, die dich verlangsamen. Möhrennase gerümpft, Kohleaugen zusammengekniffen.',
+    verhalten: 'fernkampf',
+    hp: 28, tempo: 1.5, radius: 0.36, beruehrSchaden: 7, kristalle: 3,
+    abWelle: 1, gewicht: 1.6, masse: 1.6,
+    wunschAbstand: 5.5, schussIntervall: 2.2, schussSchaden: 7, schussTempo: 7.5, schussGeschoss: 'schneeball', schussEffekt: 'langsam'
+  },
+  {
+    id: 'bombenpinguin', name: 'Bombenpinguin', fraktion: 'Frostfrieder',
+    spruch: '„Wiiieeee – KAWUMM!"',
+    text: 'Rutscht auf dem Bauch heran und explodiert beim Aufprall. Nimmt Anlauf: kurz Zeit zum Ausweichen!',
+    verhalten: 'rutscher',
+    hp: 14, tempo: 1.9, radius: 0.32, beruehrSchaden: 5, kristalle: 2,
+    abWelle: 2, gewicht: 2, masse: 1,
+    ansturmTempo: 8.5, ansturmDauer: 0.9, ansturmAbstand: 6, explosionsRadius: 1.7, explosionsSchaden: 15
+  },
+  // ---------------- Bosse ----------------
+  {
+    id: 'koenig_gockel', name: 'König Gockel der Laute', fraktion: 'Hühner-Kult',
+    spruch: '„KIKERIKIIIII! Auf die Knie, Federlose!"',
+    text: 'Riesiger Hahn mit Goldkrone und Umhang. Stürmt los, schleudert Federn im Kreis und ruft seine Kampfhühner.',
+    verhalten: 'boss',
+    hp: 2300, tempo: 1.5, radius: 0.85, beruehrSchaden: 18, kristalle: 60,
+    abWelle: 999, gewicht: 0, masse: 25, groesse: 1,
+    ansturmTempo: 10, ansturmDauer: 0.8,
+    angriffe1: ['ansturm', 'ring'], angriffe2: ['ansturm', 'ring', 'beschwoeren', 'ring'], ringGeschoss: 'feder',
+    beschwoert: 'kampfhuhn', beschwoerAnzahl: 4
+  },
+  {
+    id: 'megatoaster', name: 'Toastomat 3000', fraktion: 'Blechbrut',
+    spruch: '„FRÜHSTÜCK. FÜR. ALLE."',
+    text: 'Der große Bruder aller Toastomaten. Feuert Toast-Salven im Kreis, wirft Brotbomben und ruft Minenbots.',
+    verhalten: 'boss',
+    hp: 2600, tempo: 1.1, radius: 0.9, beruehrSchaden: 18, kristalle: 60,
+    abWelle: 999, gewicht: 0, masse: 25, groesse: 1,
+    angriffe1: ['ring', 'bomben'], angriffe2: ['ring', 'bomben', 'beschwoeren', 'ring'], ringGeschoss: 'toast',
+    beschwoert: 'minenbot', beschwoerAnzahl: 3
+  },
+  {
+    id: 'morchella', name: 'Pilzkönigin Morchella', fraktion: 'Sumpfbande',
+    spruch: '„Ihr seid nur Dünger für mein Reich!"',
+    text: 'Gewaltiger Pilz mit Spitzenkragen und Schmollmund. Lässt Giftsporen regnen und ruft Schleimis.',
+    verhalten: 'boss',
+    hp: 2500, tempo: 1.0, radius: 0.85, beruehrSchaden: 16, kristalle: 60,
+    abWelle: 999, gewicht: 0, masse: 25, groesse: 1,
+    angriffe1: ['sporen', 'ring'], angriffe2: ['sporen', 'ring', 'beschwoeren', 'sporen'], ringGeschoss: 'spore',
+    beschwoert: 'schleimi', beschwoerAnzahl: 3
+  },
   {
     id: 'baron',
     name: 'Baron von Bumm',
@@ -85,8 +282,12 @@ export const GEGNER: GegnerDef[] = [
     // Werte für Welle 10; Welle 20 skaliert über BOSS.hpFaktor
     hp: 2600, tempo: 1.25, radius: 0.85, beruehrSchaden: 18, kristalle: 60,
     abWelle: 999, gewicht: 0, masse: 25,
-    explosionsRadius: 1.9, explosionsSchaden: 16
+    explosionsRadius: 1.9, explosionsSchaden: 16,
+    angriffe1: ['bomben'], angriffe2: ['bomben', 'beschwoeren', 'bomben'],
+    beschwoert: 'bombenkroete', beschwoerAnzahl: 3
   }
 ];
 
 export const GEGNER_BY_ID: Record<string, GegnerDef> = Object.fromEntries(GEGNER.map((g) => [g.id, g]));
+
+export const GEGNER_INDEX: Record<string, number> = Object.fromEntries(GEGNER.map((g, i) => [g.id, i]));

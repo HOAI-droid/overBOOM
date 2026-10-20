@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { Tile, hash2, type Arena, type Prop } from '@overboom/core';
 import { buildVoxels, solidMaterial, voxelObject, VoxBuilder } from './voxel.ts';
-import { barrel, crystal, rubble, torch } from './models.ts';
+import { barrel, crystal, hayBale, rubble, torch } from './models.ts';
+import { INSELN, type Insel } from '@overboom/data';
 
 const PX = 8; // Texturpixel pro Kachel
 
@@ -10,17 +11,29 @@ function rgb(hex: string): [number, number, number] {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-/** Bodentextur: Steinplatten, Moos, Lava – Pixel für Pixel. */
+const STYLE_INSEL: Record<string, Insel> = Object.fromEntries(INSELN.map((i) => [i.gefahr, i]));
+
+/** Farbpalette der Insel zu einer Arena */
+export function paletteOf(a: Arena): Insel['farben'] {
+  return (STYLE_INSEL[a.style] ?? INSELN[INSELN.length - 1]).farben;
+}
+
+/** Bodentextur: Platten, Flecken, Lava, Eis, Gift, Tesla-Platten – Pixel für Pixel. */
 function floorTextures(a: Arena) {
+  const pal = paletteOf(a);
   const S = a.size * PX;
   const color = document.createElement('canvas');
   const glow = document.createElement('canvas');
   color.width = color.height = glow.width = glow.height = S;
   const cg = color.getContext('2d')!, gg = glow.getContext('2d')!;
   const ci = cg.createImageData(S, S), gi = gg.createImageData(S, S);
-  const stone = ['#3a2f5c', '#40345f', '#463a68', '#3d3160', '#4b3f6e'].map(rgb);
-  const moss = ['#1c4a4c', '#1f5a58', '#23645e'].map(rgb);
+  const stone = pal.boden.map(rgb);
+  const moss = pal.fleck.map(rgb);
   const lava = ['#c2300a', '#ff5a0a', '#ff7a1a', '#ffb02e'].map(rgb);
+  const ice = ['#a8e8ff', '#c8f4ff', '#88c8e8', '#e8fcff'].map(rgb);
+  const poison = ['#3d8a2a', '#5dbb3a', '#2e6a20', '#7dff5a'].map(rgb);
+  const plate = ['#4a5068', '#565c78', '#3e4458'].map(rgb);
+  const cyan = rgb('#3de8ff');
   for (let tz = 0; tz < a.size; tz++) {
     for (let tx = 0; tx < a.size; tx++) {
       const t = a.tile(tx, tz);
@@ -40,13 +53,28 @@ function floorTextures(a: Arena) {
             const w = Math.sin(gx * 0.55 + gy * 0.35) + Math.sin(gx * 0.21 - gy * 0.6);
             c = lava[Math.max(0, Math.min(3, Math.floor((w + 2) * 0.9 + n * 0.6)))];
             f = 1; glowV = 255;
+          } else if (t === Tile.Ice) {
+            // Eis: hell mit Glanzstreifen
+            c = ice[Math.floor(hash2(gx >> 1, gy >> 1, 6) * ice.length)];
+            f = (gx + gy) % 9 === 0 ? 1.15 : 0.95 + n * 0.08;
+          } else if (t === Tile.Poison) {
+            const w = Math.sin(gx * 0.7 + gy * 0.4) + Math.sin(gx * 0.3 - gy * 0.8);
+            c = poison[Math.max(0, Math.min(3, Math.floor((w + 2) * 0.9 + n * 0.5)))];
+            f = 1; glowV = 110;
+          } else if (t === Tile.Shock) {
+            // Metallplatte mit Leiterbahnen (leuchten beim Aufladen extra, siehe shockPlates)
+            const line = px === 3 || py === 3 || (px + py) % 7 === 0;
+            c = line ? cyan : plate[(px * 3 + py) % plate.length];
+            f = line ? 0.7 : 1; glowV = line ? 80 : 0;
           } else if (hash2(gx, gy, 11) > 0.985) {
             f *= 1.35; // kleine Kiesel
           }
+          if (glowV && glowV < 255) { gi.data[i] = c[0] * glowV / 255; gi.data[i + 1] = c[1] * glowV / 255; gi.data[i + 2] = c[2] * glowV / 255; gi.data[i + 3] = 255; }
           ci.data[i] = Math.min(255, c[0] * f);
           ci.data[i + 1] = Math.min(255, c[1] * f);
           ci.data[i + 2] = Math.min(255, c[2] * f);
           ci.data[i + 3] = 255;
+          if (glowV !== 0 && glowV < 255) continue;
           gi.data[i] = glowV ? c[0] : 0;
           gi.data[i + 1] = glowV ? c[1] : 0;
           gi.data[i + 2] = glowV ? c[2] : 0;
@@ -74,6 +102,8 @@ export interface ArenaView {
   torches: { light: THREE.PointLight; x: number; z: number; seed: number }[];
   crystals: { group: THREE.Group; light: THREE.PointLight; seed: number }[];
   barrels: { group: THREE.Group; prop: Prop }[];
+  /** leuchtende Tesla-Platten (Deckkraft = Ladezustand) */
+  shock: THREE.MeshBasicMaterial | null;
   halos: THREE.Sprite[];
 }
 
@@ -103,6 +133,7 @@ export function makeHalo(color: string, size: number): THREE.Sprite {
 export function buildArenaView(a: Arena): ArenaView {
   const group = new THREE.Group();
   const S = a.size;
+  const pal = paletteOf(a);
 
   // Boden
   const tex = floorTextures(a);
@@ -115,7 +146,7 @@ export function buildArenaView(a: Arena): ArenaView {
 
   // Klippen unter den vorderen Rändern
   const cliff = new VoxBuilder();
-  const rock = ['#241b38', '#1f1730', '#2a2142', '#181226'];
+  const rock = pal.klippe;
   for (let i = 0; i < S; i++) {
     for (const [x, z] of [[i, S - 1], [S - 1, i]] as const) {
       const depth = 2 + Math.floor(hash2(x, z, 21) * 3);
@@ -127,7 +158,7 @@ export function buildArenaView(a: Arena): ArenaView {
 
   // Mauern, Säulen (Steinquader 0,5) und Kisten (Bretter 0,25)
   const walls = new VoxBuilder();
-  const stones = ['#4b3f6e', '#544777', '#463a66', '#5d4f86', '#4f4273'];
+  const stones = pal.wand;
   const crates = new VoxBuilder();
   for (let z = 0; z < S; z++) {
     for (let x = 0; x < S; x++) {
@@ -189,6 +220,12 @@ export function buildArenaView(a: Arena): ArenaView {
       o.rotation.y = p.seed;
       group.add(o);
       barrels.push({ group: o, prop: p });
+    } else if (p.kind === 'heu') {
+      const o = voxelObject(hayBale(), 0.11, { origin: [0.5, 0, 0.5], jitter: 0.1 });
+      o.position.set(p.x, 0, p.z);
+      o.rotation.y = p.seed * 0.7;
+      group.add(o);
+      barrels.push({ group: o, prop: p });
     } else if (p.kind === 'rubble') {
       const o = voxelObject(rubble(p.seed), 0.16, {}, false);
       o.position.set(p.x, 0, p.z);
@@ -198,10 +235,27 @@ export function buildArenaView(a: Arena): ArenaView {
   }
 
   // Lava-Glühen
-  for (const [x, z] of [[20.5, 5], [21, 9.5], [5, 20.5], [8.5, 21]] as const) {
-    const l = new THREE.PointLight('#ff6a1a', 5, 6, 1.6);
-    l.position.set(x, 0.8, z);
-    group.add(l);
+  if (a.style === 'festung' || a.style === 'lava') {
+    for (const [x, z] of [[20.5, 5], [21, 9.5], [5, 20.5], [8.5, 21]] as const) {
+      const l = new THREE.PointLight('#ff6a1a', 5, 6, 1.6);
+      l.position.set(x, 0.8, z);
+      group.add(l);
+    }
   }
-  return { group, lavaMaterial, torches, crystals, barrels, halos };
+
+  // Tesla-Platten: Overlay, das beim Aufladen hell wird
+  let shock: THREE.MeshBasicMaterial | null = null;
+  if (a.style === 'strom') {
+    shock = new THREE.MeshBasicMaterial({ color: '#3de8ff', transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+    const plane = new THREE.PlaneGeometry(1, 1);
+    plane.rotateX(-Math.PI / 2);
+    let n = 0;
+    for (let z = 0; z < S; z++) for (let x = 0; x < S; x++) if (a.tile(x, z) === Tile.Shock) n++;
+    const inst = new THREE.InstancedMesh(plane, shock, n);
+    const m = new THREE.Matrix4();
+    let k = 0;
+    for (let z = 0; z < S; z++) for (let x = 0; x < S; x++) if (a.tile(x, z) === Tile.Shock) inst.setMatrixAt(k++, m.makeTranslation(x + 0.5, 0.02, z + 0.5));
+    group.add(inst);
+  }
+  return { group, lavaMaterial, torches, crystals, barrels, halos, shock };
 }

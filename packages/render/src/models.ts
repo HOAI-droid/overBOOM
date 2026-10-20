@@ -284,6 +284,8 @@ const SHAPED: Record<string, () => Vox[]> = {
   banane: () => new VoxBuilder().v(-2, 1, 0, '#ffe04a').v(-1, 0, 0, '#ffe04a').v(0, 0, 0, '#ffe04a').v(1, 0, 0, '#ffe04a').v(2, 1, 0, '#ffe04a').v(-2, 2, 0, '#6b4b2e').list(),
   axt: () => new VoxBuilder().box(0, 0, -2, 1, 0, 0, '#8a6038').box(-1, 1, 1, 2, 1, 1, '#c9ced8').list(),
   drohne: () => new VoxBuilder().box(-1, 0, 0, 0, -1, 0, '#5a5f68').v(-2, 1, -2, '#3de8ff', 1).v(1, 1, 1, '#3de8ff', 1).v(-2, 1, 1, '#3de8ff', 1).v(1, 1, -2, '#3de8ff', 1).v(0, 0, 1, '#ff3d3d', 1).list(),
+  feder: () => new VoxBuilder().box(0, 0, 0, 0, -2, 1, '#f4ecff').v(-1, 0, 0, '#e8e2f0').v(1, 0, -1, '#e8e2f0').v(0, 0, 2, '#ff7a1a').list(),
+  funke: () => new VoxBuilder().v(0, 0, 0, '#a8f6ff', 1).v(1, 1, 0, '#3de8ff', 1).v(-1, 0, 1, '#3de8ff', 1).v(0, 0, -1, '#ffd23f', 1).list(),
   mine: () => new VoxBuilder().box(-2, 1, 0, 0, -2, 1, '#3a4426').box(-1, 0, 1, 1, -1, 0, '#5b6b3a').v(0, 2, 0, '#ff3d3d', 1).list()
 };
 
@@ -377,7 +379,23 @@ export const ENEMY_DEBRIS: Record<string, string[]> = {
   grummelbold: ['#6cc24a', '#5aa83c', '#7d8597', '#8a5a2a', '#ffffff'],
   bombenkroete: ['#8a4fd8', '#6a38b0', '#c9a0ff', '#24202e', '#ff7a1a'],
   toastomat: ['#c9ced8', '#8d93a3', '#c98a3a', '#ff2a4a', '#2a2e38'],
-  baron: ['#6a1f3a', '#ffd23f', '#1c1530', '#f2c08a', '#c42a28']
+  baron: ['#6a1f3a', '#ffd23f', '#1c1530', '#f2c08a', '#c42a28'],
+  kampfhuhn: ['#f4ecff', '#ff3d3d', '#ffb02e', '#e8e2f0'],
+  vogelscheuche: ['#e8c860', '#c8a878', '#3a6a9a', '#d8b048'],
+  funkenkobold: ['#ffd23f', '#3de8ff', '#3d4a8a', '#a8f6ff'],
+  teslaritter: ['#c9ced8', '#8d93a3', '#d8a04a', '#3de8ff'],
+  schrottgolem: ['#7a5a3a', '#8d93a3', '#e8e2f0', '#5a4a3e', '#c42a28'],
+  minenbot: ['#5b6b3a', '#2a2e38', '#ff3d3d', '#4a5a2e'],
+  pilzling: ['#c42a28', '#ffffff', '#f2e2c8'],
+  schleimi: ['#5dbb3a', '#7dff5a', '#3d8a2a'],
+  schleimchen: ['#5dbb3a', '#7dff5a'],
+  lavaklops: ['#ff7a1a', '#3a2a2a', '#5a2a1a', '#ffb02e'],
+  kultist: ['#4a1a3a', '#5a2248', '#ff3df0', '#ffd23f'],
+  schneemann: ['#ffffff', '#e8f4ff', '#c42a28', '#ff7a1a'],
+  bombenpinguin: ['#24202e', '#ffffff', '#ff9a1a', '#ff7a1a'],
+  koenig_gockel: ['#f4ecff', '#ffd23f', '#8a1a3a', '#ff3d3d', '#ff9a1a'],
+  megatoaster: ['#c9ced8', '#8d93a3', '#c98a3a', '#ff2a4a', '#2a2e38'],
+  morchella: ['#9a3ab0', '#ffffff', '#f2e2c8', '#7dff5a', '#ffd23f']
 };
 
 /* ------------------------------------------------------------------ */
@@ -473,4 +491,212 @@ export function disc(color: string, edge: string): Vox[] {
     if (d <= 8.2) b.v(x, 0, z, d > 6.8 ? edge : ((x * 3 + z * 7) & 3) === 0 ? edge : color, 1);
   }
   return b.list();
+}
+
+/* ------------------------------------------------------------------ */
+/* Phase 5: Fraktionen und Bosse                                         */
+/* ------------------------------------------------------------------ */
+
+const INK = '#141018';
+
+/**
+ * Grimmiges Gesicht auf der Vorderseite (z): weiße Augen mit Pupillen nach innen,
+ * schräg nach innen abfallende Brauen, Mund mit zwei Hauern (Unterbiss).
+ */
+function angryFace(b: VoxBuilder, cx: number, y: number, z: number, o: { brow?: string; mouth?: string; tusks?: boolean; gap?: number; eye?: string } = {}): VoxBuilder {
+  const g = o.gap ?? 1, brow = o.brow ?? '#2b1d14', eye = o.eye ?? '#ffffff';
+  const L = cx - g - 1, R = cx + g;
+  b.v(L, y, z, eye).v(L + 1, y, z, INK).v(R, y, z, INK).v(R + 1, y, z, eye);
+  b.v(L, y + 2, z, brow).v(L + 1, y + 1, z, brow).v(R, y + 1, z, brow).v(R + 1, y + 2, z, brow);
+  if (o.mouth !== '') {
+    b.box(L + 1, R, y - 2, y - 2, z, z, o.mouth ?? '#5a1a2a');
+    if (o.tusks !== false) b.v(L + 1, y - 1, z, '#fff6d8').v(R, y - 1, z, '#fff6d8');
+  }
+  return b;
+}
+
+export function hayBale(): Vox[] {
+  const b = new VoxBuilder().box(-3, 3, 0, 4, -2, 2, '#e8c860');
+  for (let x = -3; x <= 3; x++) for (let y = 0; y <= 4; y++) if ((x * 3 + y * 5) % 4 === 0) b.v(x, y, 2, '#c89a38');
+  return b.box(-3, 3, 2, 2, -2, 2, '#a87828').list();
+}
+
+/** Kampfhuhn: wütendes Huhn mit rotem Stirnband */
+export function kampfhuhn(): Vox[] {
+  const b = new VoxBuilder()
+    .box(-1, -1, 0, 1, 0, 0, '#ff9a1a').box(1, 1, 0, 1, 0, 0, '#ff9a1a')
+    .box(-2, 2, 2, 5, -3, 1, '#f4ecff').box(-1, 1, 2, 4, -4, -4, '#e8e2f0').v(0, 6, -4, '#d8d2e0')
+    .box(-2, 2, 6, 10, -1, 2, '#f4ecff')
+    .box(-2, 2, 9, 9, -1, 2, '#ff3d3d').v(-3, 9, -1, '#ff3d3d').v(-3, 8, -2, '#ff3d3d')
+    .box(-1, 0, 11, 12, 0, 1, '#ff3d3d').v(1, 11, 1, '#ff3d3d')
+    .box(-1, 0, 6, 7, 3, 4, '#ffb02e').v(-1, 5, 3, '#ff3d3d');
+  return angryFace(b, 0, 8, 3, { mouth: '', gap: 0 }).list();
+}
+
+/** Vogelscheuche: Kürbiskopf? Nein – Sackgesicht mit Strohhut, Arme ausgebreitet */
+export function vogelscheuche(): Vox[] {
+  const b = new VoxBuilder()
+    .box(0, 0, 0, 5, 0, 0, '#6b4b2e')
+    .box(-2, 2, 4, 8, -1, 1, '#3a6a9a').box(-6, 6, 7, 7, 0, 0, '#6b4b2e')
+    .v(-7, 6, 0, '#e8c860').v(-7, 8, 0, '#e8c860').v(7, 6, 0, '#e8c860').v(7, 8, 0, '#e8c860')
+    .box(-3, 3, 9, 13, -2, 2, '#c8a878')
+    .box(-5, 5, 14, 14, -4, 4, '#d8b048').box(-2, 2, 15, 17, -2, 2, '#d8b048').box(-2, 2, 15, 15, -2, 2, '#c42a28')
+    .v(-4, 12, 0, '#e8c860').v(4, 12, 0, '#e8c860').v(-3, 9, 2, '#e8c860').v(3, 10, 2, '#e8c860');
+  angryFace(b, 0, 11, 3, { mouth: '#3b2a1e', tusks: false });
+  return b.box(-1, 1, 5, 6, 2, 2, '#5dff7a', 1).list();
+}
+
+/** Funkenkobold: winzig, gelb, Haare aus Blitzen */
+export function funkenkobold(): Vox[] {
+  const b = new VoxBuilder()
+    .box(-1, -1, 0, 1, 0, 0, '#2a2e38').box(1, 1, 0, 1, 0, 0, '#2a2e38')
+    .box(-2, 2, 2, 3, -1, 1, '#3d4a8a')
+    .box(-3, 3, 4, 8, -2, 2, '#ffd23f')
+    .v(-2, 9, 0, '#3de8ff', 1).v(-1, 10, 0, '#a8f6ff', 1).v(0, 9, 0, '#3de8ff', 1).v(1, 10, 1, '#a8f6ff', 1).v(2, 9, -1, '#3de8ff', 1)
+    .v(-4, 6, 0, '#ffd23f').v(4, 6, 0, '#ffd23f');
+  return angryFace(b, 0, 6, 3, { brow: '#7a4a00' }).list();
+}
+
+/** Tesla-Ritter: Blechrüstung, Spulenschild vorne, Federbusch */
+export function teslaritter(): Vox[] {
+  const b = new VoxBuilder()
+    .box(-2, -1, 0, 2, -1, 0, '#5a5f68').box(1, 2, 0, 2, -1, 0, '#5a5f68')
+    .box(-3, 3, 3, 7, -2, 1, '#8d93a3')
+    .box(-3, 3, 8, 13, -3, 2, '#c9ced8').box(-3, 3, 10, 10, 3, 3, '#2a2e38')
+    .box(-1, 0, 14, 16, -1, 0, '#3de8ff', 1).v(0, 17, -1, '#a8f6ff', 1)
+    // Schild mit Spule
+    .box(-4, 4, 2, 9, 4, 4, '#5a5f68').box(-3, 3, 3, 8, 5, 5, '#d8a04a').box(-1, 1, 5, 6, 6, 6, '#3de8ff', 1).v(0, 7, 6, '#e8fdff', 1);
+  // Visier-Schlitz mit LED-Augen und Brauen
+  return b.v(-2, 11, 3, '#ff2a4a', 1).v(1, 11, 3, '#ff2a4a', 1).v(-2, 12, 3, INK).v(-1, 11, 3, INK).v(1, 12, 3, INK).v(0, 11, 3, INK).list();
+}
+
+/** Schrottgolem: Kühlschranktür-Brust, rostige Arme, kleiner Topf-Kopf */
+export function schrottgolem(): Vox[] {
+  const b = new VoxBuilder()
+    .box(-4, -2, 0, 3, -2, 1, '#5a4a3e').box(2, 4, 0, 3, -2, 1, '#5a4a3e')
+    .box(-5, 5, 4, 12, -3, 3, '#7a5a3a').box(-4, 4, 5, 11, 4, 4, '#e8e2f0').box(3, 3, 7, 9, 5, 5, '#9aa3b5')
+    .box(-8, -6, 5, 11, -1, 1, '#8a6a48').box(6, 8, 5, 11, -1, 1, '#6b707a').box(-8, -6, 3, 4, -1, 1, '#5a5f68').box(6, 8, 3, 4, -1, 1, '#5a5f68')
+    .box(-3, 3, 13, 17, -2, 3, '#8d93a3').box(-4, 4, 18, 18, -3, 4, '#5a5f68')
+    .v(-4, 8, 4, '#c42a28').v(4, 10, 4, '#3d9bff').v(-2, 6, 4, '#ffd23f');
+  return angryFace(b, 0, 15, 4, { eye: '#ffd23f' }).list();
+}
+
+/** Minenbot: runder Roboter auf Kette mit Antenne und Minenschacht */
+export function minenbot(): Vox[] {
+  const b = new VoxBuilder()
+    .box(-3, 3, 0, 1, -3, 3, '#2a2e38').box(-3, 3, 0, 0, -3, 3, '#3a3e46')
+    .box(-3, 3, 2, 6, -2, 2, '#5b6b3a').box(-2, 2, 7, 7, -2, 2, '#4a5a2e')
+    .v(0, 8, 0, '#9aa3b5').v(0, 9, 0, '#ff3d3d', 1)
+    .box(-1, 1, 2, 3, -3, -3, '#141018').v(0, 3, -3, '#ff3d3d', 1);
+  return angryFace(b, 0, 5, 3, { eye: '#ff2a4a', brow: '#ff2a4a', mouth: '#2a2e38', tusks: false }).list();
+}
+
+/** Pilzling: rote Kappe mit Punkten, Schmollmund */
+export function pilzling(): Vox[] {
+  const b = new VoxBuilder()
+    .box(-1, -1, 0, 0, 0, 0, '#e8d8c0').box(1, 1, 0, 0, 0, 0, '#e8d8c0')
+    .box(-2, 2, 1, 5, -2, 2, '#f2e2c8')
+    .box(-4, 4, 6, 7, -4, 4, '#c42a28').box(-3, 3, 8, 8, -3, 3, '#c42a28').box(-1, 1, 9, 9, -1, 1, '#c42a28')
+    .v(-3, 7, 4, '#ffffff').v(2, 7, 4, '#ffffff').v(0, 9, 0, '#ffffff').v(3, 7, -2, '#ffffff').v(-2, 8, -2, '#ffffff');
+  angryFace(b, 0, 4, 3, { mouth: '#a8505a', tusks: false });
+  return b.v(-1, 2, 3, '#a8505a').v(0, 2, 3, '#a8505a').list();
+}
+
+/** Schleimi: grüner Glibber-Würfel, durchscheinend leuchtend */
+export function schleimi(): Vox[] {
+  const b = new VoxBuilder().box(-3, 3, 0, 5, -3, 3, '#5dbb3a').box(-2, 2, 6, 6, -2, 2, '#5dbb3a').del(-3, 5, -3).del(3, 5, 3).del(-3, 5, 3).del(3, 5, -3);
+  b.v(-2, 1, 4, '#7dff5a', 1).v(2, 3, -4, '#7dff5a', 1).v(1, 0, 4, '#3d8a2a');
+  return angryFace(b, 0, 4, 4, { brow: '#1e4a10' }).list();
+}
+
+/** Lavaklops: brodelnder Klumpen mit Grummelgesicht */
+export function lavaklops(): Vox[] {
+  const b = new VoxBuilder();
+  for (let x = -3; x <= 3; x++) for (let y = 0; y <= 6; y++) for (let z = -3; z <= 3; z++) {
+    if (x * x + (y - 3) * (y - 3) + z * z > 12) continue;
+    const hot = (x * 7 + y * 3 + z * 5) % 5 === 0;
+    b.v(x, y, z, hot ? '#ff7a1a' : y > 4 ? '#3a2a2a' : '#5a2a1a', hot ? 1 : 0);
+  }
+  b.v(0, 7, 0, '#ffb02e', 1).v(1, 7, -1, '#ff5a0a', 1);
+  return angryFace(b, 0, 4, 3, { eye: '#ffd23f', brow: '#141018', mouth: '#ff5a0a' }).list();
+}
+
+/** Kawumm-Kultist: Kutte, Kapuze, leuchtende Bombe als Amulett */
+export function kultist(): Vox[] {
+  const b = new VoxBuilder()
+    .box(-3, 3, 0, 7, -2, 2, '#4a1a3a').box(-2, 2, 0, 0, -3, 3, '#4a1a3a')
+    .box(-3, 3, 8, 12, -3, 2, '#5a2248').box(-2, 2, 13, 13, -2, 1, '#5a2248').v(0, 14, -1, '#5a2248')
+    .box(-2, 2, 8, 11, 3, 3, '#2a0e20')
+    .v(0, 5, 3, '#24202e').v(0, 6, 3, '#ff7a1a', 1).v(0, 7, 3, '#ffd23f', 1)
+    .box(-5, -4, 4, 6, -1, 0, '#4a1a3a').box(4, 5, 4, 6, -1, 0, '#4a1a3a').v(-5, 7, 0, '#ff3df0', 1).v(5, 7, 0, '#ff3df0', 1);
+  return angryFace(b, 0, 9, 4, { eye: '#ff3df0', brow: '#ff3df0', mouth: '' }).list();
+}
+
+/** Schneemann: drei Kugeln, Möhrennase, Kohleaugen, Zylinder schief */
+export function schneemann(): Vox[] {
+  const b = new VoxBuilder();
+  const ball = (cy: number, r: number) => { for (let x = -r; x <= r; x++) for (let y = -r; y <= r; y++) for (let z = -r; z <= r; z++) if (x * x + y * y + z * z <= r * r + 1) b.v(x, cy + y, z, (x + y + z) % 3 === 0 ? '#e8f4ff' : '#ffffff'); };
+  ball(3, 3); ball(8, 2); ball(12, 2);
+  b.v(0, 7, 3, INK).v(0, 9, 3, INK).box(-6, -3, 8, 8, 0, 0, '#6b4b2e').box(3, 6, 9, 9, 0, 0, '#6b4b2e');
+  b.box(-2, 2, 14, 14, -2, 2, INK).box(-1, 1, 15, 17, -1, 1, INK).box(-1, 1, 15, 15, -1, 1, '#c42a28');
+  b.v(0, 12, 3, '#ff7a1a').v(0, 12, 4, '#ff7a1a').v(0, 12, 5, '#ff9a3a');
+  b.v(-1, 13, 2, INK).v(1, 13, 2, INK).v(-2, 14, 2, '#3a3a4a').v(2, 14, 2, '#3a3a4a').v(-1, 14, 2, '#3a3a4a').v(1, 14, 2, '#3a3a4a');
+  b.v(-1, 11, 2, INK).v(0, 10, 2, INK).v(1, 11, 2, INK);
+  return b.box(-2, 2, 10, 10, -2, 2, '#c42a28').list();
+}
+
+/** Bombenpinguin: schwarz-weiß, Bombe auf dem Rücken, Fliegerbrille */
+export function bombenpinguin(): Vox[] {
+  const b = new VoxBuilder()
+    .box(-1, -1, 0, 0, 0, 1, '#ff9a1a').box(1, 1, 0, 0, 0, 1, '#ff9a1a')
+    .box(-3, 3, 1, 7, -2, 2, '#24202e').box(-2, 2, 1, 6, 3, 3, '#ffffff')
+    .box(-4, -4, 3, 5, -1, 1, '#24202e').box(4, 4, 3, 5, -1, 1, '#24202e')
+    .box(-2, 2, 8, 9, -2, 2, '#24202e').box(-2, 1, 7, 7, 3, 4, '#ff9a1a')
+    .box(-3, 3, 9, 9, 3, 3, '#7a5a3a').v(-2, 9, 3, '#a8f6ff', 1).v(1, 9, 3, '#a8f6ff', 1)
+    .box(-1, 1, 3, 6, -4, -3, '#3a3a4a').v(0, 7, -4, '#6b4b2e').v(0, 8, -4, '#ff7a1a', 1);
+  return b.v(-2, 10, 3, INK).v(-1, 10, 2, INK).v(1, 10, 2, INK).v(2, 10, 3, INK).list();
+}
+
+/** König Gockel: Riesenhahn mit Krone und Umhang */
+export function koenigGockel(): Vox[] {
+  const b = new VoxBuilder();
+  b.box(-2, -1, 0, 3, 0, 1, '#ff9a1a').box(1, 2, 0, 3, 0, 1, '#ff9a1a').box(-3, -1, 0, 0, 2, 3, '#ff9a1a').box(1, 3, 0, 0, 2, 3, '#ff9a1a');
+  b.box(-5, 5, 4, 12, -5, 4, '#f4ecff');
+  b.box(-6, 6, 5, 13, -6, -6, '#8a1a3a').box(-6, -6, 5, 12, -5, 2, '#8a1a3a').box(6, 6, 5, 12, -5, 2, '#8a1a3a');
+  for (const [x, y] of [[-3, 14], [0, 15], [3, 14], [-2, 16], [2, 16]]) b.box(x, x, y, y + 4, -8, -7, ['#ff7a1a', '#3d9bff', '#5dff7a', '#ff3df0', '#ffd23f'][(x + 3) % 5]);
+  b.box(-4, 4, 13, 20, -1, 5, '#f4ecff');
+  b.box(-1, 1, 15, 16, 6, 8, '#ffb02e').v(0, 14, 6, '#ff3d3d').v(0, 13, 6, '#ff3d3d');
+  angryFace(b, 0, 18, 6, { mouth: '', gap: 2 });
+  b.box(-4, 4, 21, 21, -1, 5, '#ffd23f');
+  for (const x of [-4, -2, 0, 2, 4]) b.v(x, 22, 2, '#ffd23f').v(x, 23, 2, x === 0 ? '#ff3d6a' : '#ffd23f', x === 0 ? 1 : 0);
+  return b.box(-1, 1, 22, 24, -2, -2, '#ff3d3d').list();
+}
+
+/** Toastomat 3000: großer Toaster mit vier Schlitzen, Raupenfüßen und Krone aus Toast */
+export function megatoaster(): Vox[] {
+  const chrome = '#c9ced8', dark = '#8d93a3', led = '#ff2a4a';
+  const b = new VoxBuilder()
+    .box(-6, -3, 0, 2, -4, 4, '#2a2e38').box(3, 6, 0, 2, -4, 4, '#2a2e38')
+    .box(-6, 6, 3, 15, -4, 4, chrome).box(-6, -6, 3, 15, -4, 4, dark).box(6, 6, 3, 15, -4, 4, dark)
+    .box(-4, 4, 15, 15, -3, -3, '#2a2e38').box(-4, 4, 15, 15, -1, -1, '#2a2e38').box(-4, 4, 15, 15, 1, 1, '#2a2e38').box(-4, 4, 15, 15, 3, 3, '#2a2e38')
+    .box(-4, 4, 16, 18, -3, -3, '#c98a3a').box(-4, 4, 16, 17, 1, 1, '#c98a3a').box(-4, 4, 16, 19, 3, 3, '#c98a3a').box(-4, 4, 16, 16, -1, -1, '#ff7a1a', 1)
+    .v(-3, 11, 5, '#ffffff', 1).v(2, 11, 5, '#ffffff', 1).v(-4, 11, 5, '#ffffff', 1).v(3, 11, 5, '#ffffff', 1)
+    .v(-5, 14, 5, led, 1).v(-4, 13, 5, led, 1).v(-3, 12, 5, led, 1).v(5, 14, 5, led, 1).v(4, 13, 5, led, 1).v(3, 12, 5, led, 1)
+    .box(-4, 4, 6, 7, 5, 5, '#2a2e38').v(-3, 8, 5, '#fff6d8').v(3, 8, 5, '#fff6d8')
+    .box(7, 8, 9, 10, -1, 0, '#5a5f68').box(9, 9, 9, 12, -1, 0, '#ff3d3d');
+  return b.list();
+}
+
+/** Pilzkönigin Morchella: riesiger Pilz, Spitzenkragen, Krone */
+export function morchella(): Vox[] {
+  const b = new VoxBuilder();
+  b.box(-3, 3, 0, 10, -3, 3, '#f2e2c8');
+  for (let x = -5; x <= 5; x++) for (let z = -5; z <= 5; z++) if (x * x + z * z <= 26 && (x + z) % 2 === 0) b.v(x, 9, z, '#ffffff');
+  for (let y = 11; y <= 16; y++) {
+    const r = y < 14 ? 8 : 18 - y + 3;
+    for (let x = -r; x <= r; x++) for (let z = -r; z <= r; z++) if (x * x + z * z <= r * r) b.v(x, y, z, (x * 3 + z * 5 + y) % 9 === 0 ? '#ffffff' : '#9a3ab0');
+  }
+  b.box(-2, 2, 17, 17, -2, 2, '#ffd23f').v(-2, 18, 0, '#ffd23f').v(0, 18, 0, '#7dff5a', 1).v(2, 18, 0, '#ffd23f');
+  angryFace(b, 0, 6, 4, { mouth: '#a8505a', tusks: false, gap: 1 });
+  return b.v(-1, 3, 4, '#a8505a').v(0, 3, 4, '#a8505a').v(-8, 12, 0, '#7dff5a', 1).v(8, 12, 2, '#7dff5a', 1).list();
 }

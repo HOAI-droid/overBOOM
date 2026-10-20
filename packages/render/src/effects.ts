@@ -484,6 +484,38 @@ export class Effects {
     this.flash(x, z, recipe ? 5 : 3, 0.3);
   }
 
+  /* ---------------- Phase 5: Gegner & Inseln ---------------- */
+
+  enemyHeal(x: number, z: number, r: number): void {
+    this.ring(x, z, r, 0x5dff7a, 0.5);
+    const rnd = this.rnd;
+    for (let i = 0; i < 12; i++) {
+      const a = rnd() * Math.PI * 2, d = rnd() * r;
+      this.sparks.spawn(x + Math.cos(a) * d, 0.2, z + Math.sin(a) * d, 0, 1.6 + rnd(), 0, 0.6, 0.09, 0, 0x5dff7a);
+    }
+  }
+
+  /** Schildtreffer: „Pling" mit Funken */
+  block(x: number, z: number): void {
+    const rnd = this.rnd;
+    for (let i = 0; i < 6; i++) this.sparks.spawn(x, 0.8, z, (rnd() - 0.5) * 5, 1 + rnd() * 2, (rnd() - 0.5) * 5, 0.2, 0.07, -10, i % 2 ? 0x3de8ff : 0xffffff);
+  }
+
+  keks(x: number, z: number): void {
+    const rnd = this.rnd;
+    for (let i = 0; i < 6; i++) this.debris.spawn(x, 1.2, z, (rnd() - 0.5) * 2, 2 + rnd() * 2, (rnd() - 0.5) * 2, 0.9, 0.1, -14, rnd() < 0.5 ? 0xc98a3a : 0x5a3a1e);
+    this.heal(x, z);
+  }
+
+  /** Tesla-Platten entladen sich: Blitze aus jeder Platte */
+  shock(a: { size: number; tile(x: number, z: number): number }): void {
+    const rnd = this.rnd;
+    for (let z = 0; z < a.size; z++) for (let x = 0; x < a.size; x++) {
+      if (a.tile(x, z) !== 8) continue;
+      for (let i = 0; i < 2; i++) this.sparks.spawn(x + 0.5 + (rnd() - 0.5), 0.1, z + 0.5 + (rnd() - 0.5), (rnd() - 0.5) * 3, 3 + rnd() * 3, (rnd() - 0.5) * 3, 0.3, 0.08, -6, i % 2 ? 0x3de8ff : 0xe8fdff);
+    }
+  }
+
   hurt(x: number, z: number): void {
     this.ring(x, z, 1.2, 0xff3d6a, 0.25);
     const rnd = this.rnd;

@@ -1,7 +1,7 @@
 import { DT, PLAYER_RADIUS } from './constants.ts';
 import type { World, Player } from './sim.ts';
 import type { Enemy, Projectile, WeaponSlot } from './entities.ts';
-import { AMBOSS, KAMPF, STUFEN, type Waffe } from '../../data/src/index.ts';
+import { AMBOSS, KAMPF, STUFEN, elemente, type Waffe } from '../../data/src/index.ts';
 
 /**
  * Waffen feuern automatisch auf den nächsten Gegner in Reichweite.
@@ -56,7 +56,13 @@ function ctxFromSlot(p: Player, s: WeaponSlot, dmg: number, crit: boolean): HitC
 
 /** Effektive Werte einer Waffe aus Grundwert × Stufe × Spielerwerten */
 export function weaponDamage(p: Player, s: WeaponSlot): number {
-  return s.waffe.schaden * STUFEN.schaden[s.tier - 1] * Math.max(0.1, 1 + p.stats.schaden / 100);
+  const w = s.waffe;
+  let perk = 1;
+  if (p.perk.nahkampfprofi && w.gruppe === 'Nahkampf') perk *= 1.5;
+  if (p.perk.turmprofi && w.antrieb === 'turm') perk *= 1.5;
+  if (p.perk.fusionsprofi && w.fusion) perk *= 1.25;
+  if (p.perk.huehnerfreund && (w.fusion ? w.fusion.elemente : elemente(w)).includes('Gacker')) perk *= 1.4;
+  return w.schaden * STUFEN.schaden[s.tier - 1] * Math.max(0.1, 1 + p.stats.schaden / 100) * perk;
 }
 export function weaponRate(p: Player, s: WeaponSlot): number {
   return s.waffe.feuerrate * STUFEN.feuerrate[s.tier - 1] * Math.max(0.2, 1 + p.stats.angriff / 100);
@@ -66,11 +72,11 @@ export function weaponRange(p: Player, s: WeaponSlot): number {
 }
 
 /** Persistente Antriebe: Begleiter, Türme, Minen – höchstens so viele gleichzeitig pro Waffe */
-function cap(antrieb: string, mask: number): number {
+function cap(antrieb: string, mask: number, p?: Player): number {
   switch (antrieb) {
     case 'orbit': return mask & SP.orbit6 ? 6 : 3;
     case 'schwarm': return mask & SP.schwarm6 ? 6 : 3;
-    case 'turm': return 1;
+    case 'turm': return p?.perk.turmprofi ? 2 : 1;
     case 'ablegen': return 8;
     default: return Infinity;
   }
@@ -97,7 +103,7 @@ export function stepWeapons(w: World): void {
       s.aim = Math.atan2(dx, dz);
       if (s.cd > 0) continue;
       // Türme feuern selbst – die Waffe baut nur alle 8 s einen neuen
-      const interval = s.waffe.antrieb === 'turm' ? TURRET_LIFE : 1 / weaponRate(p, s);
+      const interval = s.waffe.antrieb === 'turm' ? TURRET_LIFE / cap('turm', 0, p) : 1 / weaponRate(p, s);
       s.cd = Math.max(0.02, s.cd + interval);
       fire(w, p, i, s, e, wx, wz, dx / d, dz / d, d, range);
     }
@@ -114,7 +120,7 @@ function fire(w: World, p: Player, slot: number, s: WeaponSlot, e: Enemy, x: num
   const speed = KAMPF.tempo[a] ?? KAMPF.tempo.gerade;
   const volley = s.mask & SP.salve3 ? 3 : 1;
 
-  if (cap(a, s.mask) < Infinity && countOwned(w, p.id, slot) >= cap(a, s.mask)) {
+  if (cap(a, s.mask, p) < Infinity && countOwned(w, p.id, slot) >= cap(a, s.mask, p)) {
     // Begleiter/Türme/Minen voll – nichts Neues
     return;
   }
@@ -254,6 +260,13 @@ function initChild(pr: Projectile, c: HitCtx, x: number, z: number, y: number, d
   pr.bounces = 0; pr.mode = 0; pr.ang = 0; pr.rad = 0; pr.cd = 0; pr.rate = 1; pr.dur = 0;
 }
 
+/** Küken für Bauer Bruno (Helden-Macke) */
+export function spawnChickFor(w: World, p: Player, x: number, z: number, dmg: number): void {
+  ctx.player = p.id; ctx.ladung = 'keine'; ctx.geschoss = 'kueken'; ctx.src = 'kueken';
+  ctx.blastMul = 1; ctx.instabil = 0; ctx.mask = 0; ctx.dmg = dmg / 0.3; ctx.crit = false;
+  spawnChick(w, ctx, x, z);
+}
+
 function spawnChick(w: World, c: HitCtx, x: number, z: number): void {
   let n = 0;
   for (const pr of w.projectiles) if (pr.alive && pr.antrieb === 'kueken') n++;
@@ -328,7 +341,7 @@ function hitEnemy(w: World, c: HitCtx, e: Enemy, dx: number, dz: number, primary
     case 'rueckstoss': kb = KAMPF.rueckstoss; break;
     case 'frost':
       e.slow = Math.max(e.slow, 2);
-      if (++e.frost >= 3 && !boss) { e.frost = 0; e.stun = Math.max(e.stun, 1.2); }
+      if (++e.frost >= (owner?.perk.frostprofi ? 2 : 3) && !boss) { e.frost = 0; e.stun = Math.max(e.stun, 1.2); }
       if (c.mask & SP.konfettifrost && !boss) e.confuse = Math.max(e.confuse, 1.2);
       break;
     case 'kleister': e.slow = Math.max(e.slow, 2.5); kb = 3; break;
@@ -342,7 +355,8 @@ function hitEnemy(w: World, c: HitCtx, e: Enemy, dx: number, dz: number, primary
       if (primary) w.addHazard('lava', e.x, e.z, 0.9, 4, c.dmg * 0.5, c.src, false, 1, 0);
       break;
     case 'gift':
-      e.poisonT = 4; e.poisonDps = Math.min(c.dmg * 1.5, e.poisonDps + c.dmg * 0.15);
+      e.poisonT = 4;
+      e.poisonDps = Math.min(c.dmg * 1.5, e.poisonDps + c.dmg * 0.15) * (owner?.perk.giftprofi ? 1.6 : 1);
       if (c.mask & SP.giftwolke) e.cloud = true;
       break;
     case 'saeure': e.acid = Math.min(10, e.acid + 1); e.acidT = 4; break;
@@ -402,7 +416,7 @@ function zap(w: World, c: HitCtx, first: Enemy): void {
     zapIds[n++] = cur.id;
     const cx: number = cur.x, cz: number = cur.z;
     if (j > 0) pts.push(cx, 0.6 + cur.y, cz);
-    const reach = KAMPF.blitzReichweite * (cur.wet > 0 ? 2 : 1);
+    const reach = KAMPF.blitzReichweite * (cur.wet > 0 ? 2 : 1) * (w.players[c.player]?.perk.blitzprofi ? 2 : 1);
     c.dmg = dmg;
     hitEnemy(w, c, cur, 0, 0, false);
     dmg *= KAMPF.blitzAbfall;
@@ -773,13 +787,27 @@ function stepLinear(w: World, pr: Projectile): void {
 
 function stepHostile(w: World, pr: Projectile): void {
   if (pr.antrieb === 'zielbogen') {
-    // Boss-Bombe: Ziel steht fest (rot markiert), Explosion trifft Spieler
+    // Boss-Bombe: Ziel steht fest (rot markiert), Explosion bzw. Giftwolke trifft Spieler
     if (pr.t < 0) { pr.x = pr.px; pr.z = pr.pz; return; }
     const k = arc(pr, null);
     if (k >= 1) {
       pr.alive = false;
-      w.queueBlast(pr.x, pr.z, pr.r, pr.dmg, 0, 0, w.newGroup(), true, 'boss');
+      if (pr.ladung === 'gift') w.addHazard('gift', pr.x, pr.z, pr.r * 0.8, 4, pr.dmg, '', false, 1, 0, true);
+      else w.queueBlast(pr.x, pr.z, pr.r, pr.dmg, 0, 0, w.newGroup(), true, 'boss');
     }
+    return;
+  }
+  if (pr.antrieb === 'ablegen') {
+    // feindliche Mine: scharf nach kurzer Zeit, zündet, wenn ein Spieler drauftritt
+    pr.cd -= DT;
+    if (pr.cd > 0) return;
+    for (const p of w.players) {
+      if (!p.alive || Math.hypot(p.x - pr.x, p.z - pr.z) > pr.r) continue;
+      pr.alive = false;
+      w.queueBlast(pr.x, pr.z, 1.6, pr.dmg, 0.15, 0, w.newGroup(), true, 'boss');
+      return;
+    }
+    if (pr.life <= 0) pr.alive = false;
     return;
   }
   for (let sub = 0; sub < 2; sub++) {
@@ -796,6 +824,7 @@ function stepHostile(w: World, pr: Projectile): void {
         // Beim Dash fliegt der Toast einfach durch
         if (p.dashTime > 0 || p.invuln > 0) continue;
         w.hurtPlayer(p, pr.dmg, pr.x - pr.vx, pr.z - pr.vz);
+        if (pr.ladung === 'langsam') p.slowT = Math.max(p.slowT, 1.6);
         pr.alive = false;
         w.events.push({ type: 'spark', x: pr.x, y: pr.y, z: pr.z, hostile: true });
         return;

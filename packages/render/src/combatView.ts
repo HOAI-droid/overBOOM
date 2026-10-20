@@ -3,14 +3,30 @@ import { EnemyState, type World } from '@overboom/core';
 import { ELITE, GEGNER, SELTENHEIT, W } from '@overboom/data';
 import { VoxelInstances } from './instanced.ts';
 import { voxelObject } from './voxel.ts';
-import { PROJECTILE_IDS, REZEPT_MODELLE, baron, chicken, crown, disc, fusionModel, gem, grummel, kroete, projectileModel, spawnMarker, targetRing, toastomat, turret, weaponModel } from './models.ts';
+import { PROJECTILE_IDS, REZEPT_MODELLE, baron, bombenpinguin, funkenkobold, kampfhuhn, koenigGockel, kultist, lavaklops, megatoaster, minenbot, morchella, pilzling, schleimi, schneemann, schrottgolem, teslaritter, vogelscheuche, chicken, crown, disc, fusionModel, gem, grummel, kroete, projectileModel, spawnMarker, targetRing, toastomat, turret, weaponModel } from './models.ts';
 import type { Effects } from './effects.ts';
 
 const ENEMY_MODELS: Record<string, { vox: () => ReturnType<typeof grummel>; size: number; top: number; cap: number }> = {
   grummelbold: { vox: grummel, size: 0.11, top: 1.1, cap: 200 },
   bombenkroete: { vox: kroete, size: 0.1, top: 1.35, cap: 200 },
   toastomat: { vox: toastomat, size: 0.1, top: 1.3, cap: 200 },
-  baron: { vox: baron, size: 0.1, top: 3, cap: 4 }
+  baron: { vox: baron, size: 0.1, top: 3, cap: 4 },
+  kampfhuhn: { vox: kampfhuhn, size: 0.09, top: 1.15, cap: 200 },
+  vogelscheuche: { vox: vogelscheuche, size: 0.09, top: 1.6, cap: 60 },
+  funkenkobold: { vox: funkenkobold, size: 0.08, top: 0.85, cap: 200 },
+  teslaritter: { vox: teslaritter, size: 0.1, top: 1.75, cap: 100 },
+  schrottgolem: { vox: schrottgolem, size: 0.1, top: 1.9, cap: 60 },
+  minenbot: { vox: minenbot, size: 0.1, top: 1, cap: 100 },
+  pilzling: { vox: pilzling, size: 0.1, top: 1, cap: 200 },
+  schleimi: { vox: schleimi, size: 0.11, top: 0.8, cap: 150 },
+  schleimchen: { vox: schleimi, size: 0.065, top: 0.5, cap: 200 },
+  lavaklops: { vox: lavaklops, size: 0.11, top: 0.9, cap: 150 },
+  kultist: { vox: kultist, size: 0.1, top: 1.5, cap: 60 },
+  schneemann: { vox: schneemann, size: 0.1, top: 1.8, cap: 100 },
+  bombenpinguin: { vox: bombenpinguin, size: 0.1, top: 1.1, cap: 150 },
+  koenig_gockel: { vox: koenigGockel, size: 0.1, top: 2.5, cap: 4 },
+  megatoaster: { vox: megatoaster, size: 0.11, top: 2.2, cap: 4 },
+  morchella: { vox: morchella, size: 0.1, top: 1.9, cap: 4 }
 };
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -149,6 +165,9 @@ export class CombatView {
         roll = 0; hop = 0;
       } else if (e.state === EnemyState.Jump) {
         pitch = -0.4; roll = 0; hop = 0;
+      } else if (e.state === 4) {
+        // Ansturm: weit nach vorne gelehnt, wackelt
+        pitch = 0.35; roll = Math.sin(time * 40) * 0.1; hop = Math.abs(Math.sin(time * 25)) * 0.1;
       } else if (e.state === EnemyState.Aim) {
         flash = Math.max(flash, (Math.sin(time * 30) * 0.5 + 0.5) * 0.35);
         roll = 0; pitch = -0.12; hop = 0;

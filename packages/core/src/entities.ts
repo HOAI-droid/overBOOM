@@ -191,10 +191,12 @@ export interface Hazard {
   /** Sog explodiert am Ende */
   implode: boolean;
   blastMul: number;
+  /** feindlich: schadet Spielern statt Gegnern (Pilzling, Lavaklops, Boss-Sporen) */
+  hostile: boolean;
 }
 
 export function makeHazard(): Hazard {
-  return { active: false, kind: 'lava', x: 0, z: 0, r: 1, t: 0, max: 1, dps: 0, clock: 0, src: '', implode: false, blastMul: 1 };
+  return { active: false, kind: 'lava', x: 0, z: 0, r: 1, t: 0, max: 1, dps: 0, clock: 0, src: '', implode: false, blastMul: 1, hostile: false };
 }
 
 export function makeEnemy(slot: number, def: GegnerDef): Enemy {

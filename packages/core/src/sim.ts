@@ -1,4 +1,4 @@
-import { createArena, type Arena, type Prop } from './arena.ts';
+import { Tile, createArena, type Arena, type ArenaStyle, type Prop } from './arena.ts';
 import { Rng } from './rng.ts';
 import { SpatialHash } from './spatial.ts';
 import {
@@ -6,10 +6,10 @@ import {
   makeBlast, makeCrystal, makeEnemy, makeHazard, makeProjectile, makeWarning,
   type Blast, type BlastSource, type Crystal, type Enemy, type Hazard, type Offer, type Projectile, type UpgradeOffer, type Warning, type WeaponSlot
 } from './entities.ts';
-import { spawnBoss, stepEnemies, stepWaves } from './enemies.ts';
-import { pull, stepProjectiles, stepWeapons } from './weapons.ts';
+import { spawnBoss, spawnEnemy, stepEnemies, stepWaves } from './enemies.ts';
+import { pull, spawnChickFor, stepProjectiles, stepWeapons } from './weapons.ts';
 import { addWeapon, gainXp, openShop, recomputeStats, runCommand, type Command } from './progression.ts';
-import { GEGNER, KAMPF, SPIELER, WELLEN, baseStats, type Stats } from '../../data/src/index.ts';
+import { FINALBOSS, GEGNER, GEGNER_INDEX, HELD_BY_ID, INSEL_BY_ID, KAMPF, SPIELER, WELLEN, baseStats, type Insel, type Stats } from '../../data/src/index.ts';
 
 import { ACCEL, BARREL_RADIUS, DASH_COOLDOWN, DASH_SPEED, DASH_TIME, DT, MOVE_SPEED, PLAYER_COLORS, PLAYER_RADIUS } from './constants.ts';
 export * from './constants.ts';
@@ -64,6 +64,15 @@ export interface Player {
   loadout: number;
   /** angesammelter Lebensraub (Ladung) */
   stealAcc: number;
+  /** gewählter Held ('' = keiner, z. B. in Tests) */
+  held: string;
+  /** Macken des Helden als schnelle Abfrage */
+  perk: Record<string, boolean>;
+  /** verlangsamt (Schneeball, Gifttümpel) */
+  slowT: number;
+  /** Uhr für Helden-Macken (Kekse, Küken) und Bodenschaden */
+  perkT: number;
+  floorT: number;
 }
 
 /**
@@ -105,6 +114,11 @@ export type SimEvent =
   | { type: 'teleport'; x: number; z: number; geschoss: string }
   | { type: 'kawumm'; x: number; z: number }
   | { type: 'fusion'; player: number; weapon: string; name: string; rezept: string; x: number; z: number }
+  | { type: 'enemyHeal'; x: number; z: number; r: number }
+  | { type: 'block'; x: number; z: number }
+  | { type: 'shock'; phase: 'laden' | 'entladen' }
+  | { type: 'split'; enemy: string; x: number; z: number }
+  | { type: 'keks'; player: number; x: number; z: number }
   | { type: 'victory'; wave: number };
 
 
@@ -119,6 +133,10 @@ export interface WorldOptions {
   choose?: boolean;
   /** Shop überspringen: nach der Pause sofort nächste Welle (Tests, Bots) */
   autoShop?: boolean;
+  /** Insel (Arena, Gegner, Boss) – Standard: Bummburg */
+  insel?: string;
+  /** Held (ohne Startwahl) */
+  held?: string;
 }
 
 interface ChainSlot { group: number; count: number; t: number }
@@ -128,7 +146,10 @@ interface ChainSlot { group: number; count: number; t: number }
  * im Browser, im Web Worker, in Node oder später auf einem Server.
  */
 export class World {
-  readonly arena: Arena;
+  arena: Arena;
+  insel: Insel;
+  /** Tesla-Platten: Zeit im 5-s-Zyklus */
+  shockT = 0;
   rng: Rng;
   /** eigener Zufall für Shop und Level-Up – Einkaufen verändert den Kampfverlauf nicht */
   shopRng: Rng;
@@ -143,7 +164,7 @@ export class World {
   readonly blasts: Blast[] = [];
   readonly warnings: Warning[] = [];
   readonly hazards: Hazard[] = [];
-  readonly barrels: Prop[];
+  barrels: Prop[];
   readonly hash: SpatialHash;
 
   phase: Phase = 'welle';
@@ -171,11 +192,15 @@ export class World {
   constructor(seed = 1337, playerCount = 1, opt: WorldOptions = {}) {
     this.seed = seed;
     this.playerCount = playerCount;
-    this.opt = { combat: opt.combat ?? true, wave: opt.wave ?? 1, god: opt.god ?? false, choose: opt.choose ?? false, autoShop: opt.autoShop ?? false };
-    this.arena = createArena(seed);
+    this.opt = {
+      combat: opt.combat ?? true, wave: opt.wave ?? 1, god: opt.god ?? false, choose: opt.choose ?? false, autoShop: opt.autoShop ?? false,
+      insel: opt.insel ?? 'bummburg', held: opt.held ?? ''
+    };
+    this.insel = INSEL_BY_ID[this.opt.insel] ?? INSEL_BY_ID.bummburg;
+    this.arena = createArena(seed, this.insel.gefahr as ArenaStyle);
     this.rng = new Rng(seed ^ 0x5eed);
     this.shopRng = new Rng(seed ^ 0x5409);
-    this.barrels = this.arena.props.filter((p) => p.kind === 'barrel');
+    this.barrels = this.arena.props.filter((p) => p.kind === 'barrel' || p.kind === 'heu');
     this.hash = new SpatialHash(this.arena.size, 2, MAX_ENEMIES);
     for (let i = 0; i < MAX_ENEMIES; i++) this.enemies.push(makeEnemy(i, GEGNER[0]));
     for (let i = 0; i < MAX_PROJECTILES; i++) this.projectiles.push(makeProjectile());
@@ -215,6 +240,26 @@ export class World {
     else this.startWave(this.opt.wave);
   }
 
+  /** Insel wechseln: Arena wird neu gebaut (der Renderer erkennt das am neuen arena-Objekt). */
+  setIsland(id: string): void {
+    const insel = INSEL_BY_ID[id];
+    if (!insel || insel === this.insel) return;
+    this.insel = insel;
+    this.arena = createArena(this.seed, insel.gefahr as ArenaStyle);
+    this.barrels = this.arena.props.filter((p) => p.kind === 'barrel' || p.kind === 'heu');
+    for (const p of this.players) { p.x = this.arena.spawn.x; p.z = this.arena.spawn.z; }
+  }
+
+  /** Held übernehmen: Werte, Macken, Startwaffe */
+  setHero(p: Player, id: string): void {
+    const h = HELD_BY_ID[id];
+    if (!h) return;
+    p.held = id;
+    p.perk = Object.fromEntries(h.perks.map((k) => [k, true]));
+    recomputeStats(p);
+    p.hp = p.maxHp;
+  }
+
   addPlayer(): Player {
     const i = this.players.length;
     const a = (i / 4) * Math.PI * 2;
@@ -230,11 +275,14 @@ export class World {
       hp: SPIELER.maxHp, maxHp: SPIELER.maxHp, invuln: 0, alive: true, crystals: 0,
       weapons: [],
       level: 1, xp: 0, pendingLevels: 0, upgradeOffers: [], upgrades: [], items: {},
-      stats: baseStats(), offers: [], rerolls: 0, ready: false, regenAcc: 0, loadout: 0, stealAcc: 0
+      stats: baseStats(), offers: [], rerolls: 0, ready: false, regenAcc: 0, loadout: 0, stealAcc: 0,
+      held: '', perk: {}, slowT: 0, perkT: 0, floorT: 0
     };
+    this.players.push(p);
+    if (this.opt.held) this.setHero(p, this.opt.held);
     if (this.opt.combat && !this.opt.choose) for (const id of SPIELER.startWaffen) addWeapon(p, id, 1);
     recomputeStats(p);
-    this.players.push(p);
+    p.hp = p.maxHp;
     return p;
   }
 
@@ -251,7 +299,8 @@ export class World {
         this.waveTime -= DT;
         stepWaves(this);
         if (this.waveTime <= 0) this.clearWave();
-        for (const p of this.players) this.regen(p);
+        for (const p of this.players) { this.regen(p); this.perks(p); }
+        this.stepShock();
       } else if (this.phase === 'pause') {
         this.pauseTime -= DT;
         if (this.pauseTime <= 0) this.endWave();
@@ -297,9 +346,10 @@ export class World {
       p.vx = p.vz = 0;
     }
     const boss = this.isBossWave;
-    // Boss-Wellen enden erst, wenn der Boss fällt
+    // Boss-Wellen enden erst, wenn der Boss fällt. Welle 10: Inselboss, Welle 20: Baron von Bumm
     this.waveTime = boss ? Infinity : WELLEN.dauer(n);
-    if (boss) spawnBoss(this);
+    if (boss) spawnBoss(this, n % 20 === 0 ? FINALBOSS : this.insel.boss);
+    this.shockT = 0;
     this.events.push({ type: 'waveStart', wave: n, boss });
   }
 
@@ -337,6 +387,51 @@ export class World {
   command(player: number, cmd: Command): boolean {
     const p = this.players[player];
     return p ? runCommand(this, p, cmd) : false;
+  }
+
+  /** Helden-Macken, die mit der Zeit wirken */
+  private perks(p: Player): void {
+    if (!p.alive) return;
+    p.perkT += DT;
+    if (p.perk.kekse && p.perkT >= 8) {
+      p.perkT = 0;
+      this.events.push({ type: 'keks', player: p.id, x: p.x, z: p.z });
+      this.heal(p, 2);
+    }
+    if (p.perk.huehnerfreund && p.perkT >= 6) {
+      p.perkT = 0;
+      spawnChickFor(this, p, p.x, p.z, 4 * (1 + p.stats.schaden / 100) * WELLEN.hpFaktor(this.wave) ** 0.5);
+    }
+  }
+
+  /** Tesla-Platten: 3,5 s Ruhe, 1,1 s Laden (Leuchten), dann Entladung */
+  private stepShock(): void {
+    if (this.arena.style !== 'strom') return;
+    const before = this.shockT;
+    this.shockT = (this.shockT + DT) % 5;
+    if (before < 3.5 && this.shockT >= 3.5) this.events.push({ type: 'shock', phase: 'laden' });
+    if (before < 4.6 && this.shockT >= 4.6) {
+      this.events.push({ type: 'shock', phase: 'entladen' });
+      const dmg = 10 * WELLEN.schadenFaktor(this.wave) ** 0.6;
+      for (const p of this.players) {
+        if (p.alive && this.arena.tile(Math.floor(p.x), Math.floor(p.z)) === Tile.Shock) this.hurtPlayer(p, dmg, p.x, p.z, false);
+      }
+      for (const e of this.enemies) {
+        if (e.alive && e.doom < 0 && this.arena.tile(Math.floor(e.x), Math.floor(e.z)) === Tile.Shock) this.damageEnemy(e, 20 * WELLEN.hpFaktor(this.wave) ** 0.7, false, 0, 0);
+      }
+    }
+  }
+
+  /** Bodengefahren für Spieler: Lava brennt, Gift verlangsamt und kratzt */
+  private floorEffects(p: Player): void {
+    const t = this.arena.tile(Math.floor(p.x), Math.floor(p.z));
+    p.floorT = Math.max(0, p.floorT - DT);
+    if (t === Tile.Lava && p.dashTime <= 0) {
+      this.hurtPlayer(p, 6 * WELLEN.schadenFaktor(this.wave) ** 0.5, Math.floor(p.x) + 0.5, Math.floor(p.z) + 0.5);
+    } else if (t === Tile.Poison) {
+      p.slowT = Math.max(p.slowT, 0.25);
+      if (p.floorT <= 0) { p.floorT = 1; this.hurtPlayer(p, 2 * WELLEN.schadenFaktor(this.wave) ** 0.5, p.x, p.z, false); }
+    }
   }
 
   private regen(p: Player): void {
@@ -403,7 +498,8 @@ export class World {
       const dl = Math.hypot(dx, dz) || 1;
       p.dashDirX = dx / dl; p.dashDirZ = dz / dl;
       p.dashTime = DASH_TIME;
-      p.dashCooldown = DASH_COOLDOWN;
+      p.dashCooldown = DASH_COOLDOWN * (p.perk.dashprofi ? 0.6 : 1);
+      if (p.perk.dashprofi) pull(this, p.x, p.z, 1.8, false, -9);
       this.events.push({ type: 'dash', player: p.id, x: p.x, z: p.z, dirX: p.dashDirX, dirZ: p.dashDirZ });
     }
 
@@ -412,9 +508,12 @@ export class World {
       p.vx = p.dashDirX * DASH_SPEED;
       p.vz = p.dashDirZ * DASH_SPEED;
     } else {
-      const ms = MOVE_SPEED * Math.max(0.3, 1 + p.stats.tempo / 100);
+      p.slowT = Math.max(0, p.slowT - DT);
+      const ms = MOVE_SPEED * Math.max(0.3, 1 + p.stats.tempo / 100) * (p.slowT > 0 ? 0.6 : 1);
       const tx = mx * ms, tz = mz * ms;
-      const k = Math.min(1, ACCEL * DT / ms);
+      // Eis: kaum Grip
+      const ice = this.arena.tile(Math.floor(p.x), Math.floor(p.z)) === Tile.Ice;
+      const k = Math.min(1, ACCEL * DT / ms) * (ice ? 0.12 : 1);
       p.vx += (tx - p.vx) * k;
       p.vz += (tz - p.vz) * k;
       if (len < 0.05 && Math.hypot(p.vx, p.vz) < 0.05) { p.vx = 0; p.vz = 0; }
@@ -449,10 +548,11 @@ export class World {
     if (p.dashTime <= 0 && Math.floor(p.stride / 0.9) !== before) {
       this.events.push({ type: 'step', player: p.id, x: p.x, z: p.z });
     }
+    if (this.phase === 'welle') this.floorEffects(p);
   }
 
   /** Schaden am Spieler. Dash und Schutzzeit machen unverwundbar. */
-  hurtPlayer(p: Player, dmg: number, fromX: number, fromZ: number): void {
+  hurtPlayer(p: Player, dmg: number, fromX: number, fromZ: number, knock = true): void {
     if (!p.alive || p.invuln > 0 || p.dashTime > 0 || this.phase !== 'welle') return;
     // Ausweichen: kompletter Treffer verpufft
     if (this.rng.next() * 100 < Math.min(SPIELER.maxAusweichen, p.stats.ausweichen)) {
@@ -468,7 +568,7 @@ export class World {
       this.queueBlast(p.x, p.z, 2.4 * (1 + p.stats.explosion / 100), 30 * (1 + p.stats.schaden / 100), 0, 0, this.newGroup(), false, 'weste', 'dynamitweste');
     }
     const dx = p.x - fromX, dz = p.z - fromZ, d = Math.hypot(dx, dz) || 1;
-    p.vx += (dx / d) * 7; p.vz += (dz / d) * 7;
+    if (knock) { p.vx += (dx / d) * 7; p.vz += (dz / d) * 7; }
     this.events.push({ type: 'hurt', player: p.id, dmg, x: p.x, z: p.z });
     if (p.hp <= 0) {
       p.hp = 0;
@@ -510,6 +610,15 @@ export class World {
   damageEnemy(e: Enemy, dmg: number, crit: boolean, kbx: number, kbz: number, chain = 0, group = 0, src = ''): void {
     if (!e.alive || e.doom >= 0) return;
     if (e.acid > 0) dmg *= 1 + 0.05 * e.acid;
+    // Schildträger: Treffer von vorne prallen ab (Richtung = Rückstoß-Richtung)
+    const sf = e.def.schildFaktor;
+    if (sf && (kbx || kbz) && e.stun <= 0) {
+      const kl = Math.hypot(kbx, kbz);
+      if ((kbx / kl) * Math.sin(e.facing) + (kbz / kl) * Math.cos(e.facing) < -0.35) {
+        dmg *= sf;
+        this.events.push({ type: 'block', x: e.x, z: e.z });
+      }
+    }
     const dealt = Math.min(dmg, Math.max(0, e.hp));
     e.hp -= dmg;
     e.flash = 0.12;
@@ -538,6 +647,20 @@ export class World {
     const big = n > 12 ? Math.ceil(n / 12) : 1;
     for (let i = 0; i < n; i += big) this.spawnCrystal(e.x, e.z, Math.min(big, n - i));
     if (e.cloud && e.poisonT > 0 && e.doom < 0) this.addHazard('gift', e.x, e.z, 1.3, 3, Math.max(4, e.poisonDps), src, false, 1, 0);
+    // Grubert kennt die Verstecke: Extra-Kristall
+    if (e.doom < 0 && this.players.some((q) => q.perk.grummelfreund) && this.rng.chance(0.2)) this.spawnCrystal(e.x, e.z, 1);
+    // Splitter: zerfällt in kleinere Gegner
+    const split = e.def.teiltSich;
+    if (split && e.doom < 0 && this.phase === 'welle') {
+      this.events.push({ type: 'split', enemy: e.def.id, x: e.x, z: e.z });
+      for (let i = 0; i < split.anzahl; i++) {
+        const a = (i / split.anzahl) * Math.PI * 2 + this.rng.next();
+        const c = spawnEnemy(this, GEGNER_INDEX[split.in], e.x + Math.cos(a) * 0.4, e.z + Math.sin(a) * 0.4, e.elite);
+        if (c) { c.kbx = Math.cos(a) * 5; c.kbz = Math.sin(a) * 5; c.age = 0.3; }
+      }
+    }
+    // Pilzling: großer Giftpuff beim Platzen
+    if (e.def.spur === 'gift' && e.doom < 0) this.addHazard('gift', e.x, e.z, 1.4, 3, (e.def.spurSchaden ?? 5) * e.dmgMul, '', false, 1, 0, true);
     if (e.def.verhalten === 'kamikaze' && !selfDestruct && e.doom < 0) {
       const g = group || this.newGroup();
       this.queueBlast(e.x, e.z, e.def.explosionsRadius ?? 1.8, (e.def.explosionsSchaden ?? 15) * 1.5 * (e.elite ? 2 : 1), KAMPF.kettenVerzoegerung, group ? chain + 1 : 0, g, false, 'kroete', src);
@@ -577,11 +700,17 @@ export class World {
     b.broken = true;
     b.r = 0;
     const dmg = KAMPF.fassSchaden * (1 + 0.15 * (Math.max(1, this.wave) - 1));
+    if (b.kind === 'heu') {
+      // Heuballen: kleiner Knall, dann brennt es eine Weile
+      this.addHazard('lava', b.x, b.z, 1.3, 5, dmg * 0.4, src, false, 1, 0);
+      this.queueBlast(b.x, b.z, 1.6, dmg * 0.5, group ? KAMPF.kettenVerzoegerung : 0, group ? chain + 1 : 0, group || this.newGroup(), false, 'fass', src);
+      return;
+    }
     this.queueBlast(b.x, b.z, KAMPF.fassRadius, dmg, group ? KAMPF.kettenVerzoegerung : 0, group ? chain + 1 : 0, group || this.newGroup(), false, 'fass', src);
   }
 
   /** Lava-/Giftpfütze oder Schwerkraft-Sog am Boden */
-  addHazard(kind: Hazard['kind'], x: number, z: number, r: number, t: number, dps: number, src: string, implode: boolean, blastMul: number, blastDmg: number): void {
+  addHazard(kind: Hazard['kind'], x: number, z: number, r: number, t: number, dps: number, src: string, implode: boolean, blastMul: number, blastDmg: number, hostile = false): void {
     let slot: Hazard | null = null;
     for (const h of this.hazards) if (!h.active) { slot = h; break; }
     if (!slot) {
@@ -591,7 +720,7 @@ export class World {
     }
     slot.active = true; slot.kind = kind; slot.x = x; slot.z = z; slot.r = r;
     slot.t = slot.max = t; slot.dps = kind === 'sog' ? blastDmg : dps; slot.clock = 0; slot.src = src;
-    slot.implode = implode; slot.blastMul = blastMul;
+    slot.implode = implode; slot.blastMul = blastMul; slot.hostile = hostile;
   }
 
   private stepHazards(): void {
@@ -607,6 +736,15 @@ export class World {
         continue;
       }
       h.clock += DT;
+      if (h.hostile) {
+        // feindliche Pfütze: schadet Spielern (ohne Rückstoß)
+        if (h.clock >= 0.5) {
+          h.clock -= 0.5;
+          for (const p of this.players) if (p.alive && Math.hypot(p.x - h.x, p.z - h.z) < h.r + PLAYER_RADIUS * 0.5) this.hurtPlayer(p, h.dps * 0.5, h.x, h.z, false);
+        }
+        if (h.t <= 0) h.active = false;
+        continue;
+      }
       if (h.clock >= 0.5) {
         h.clock -= 0.5;
         const n = this.hash.query(h.x, h.z, h.r + 0.6);

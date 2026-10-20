@@ -2,7 +2,7 @@ import type { Player, World } from './sim.ts';
 import type { Offer, WeaponSlot } from './entities.ts';
 import { spezialMask } from './weapons.ts';
 import {
-  AMBOSS, ITEMS, ITEM_BY_ID, LEVEL, SHOP, SPIELER, STUFEN, UPGRADES, UPGRADE_BY_ID, W, WAFFEN,
+  AMBOSS, HELD_BY_ID, ITEMS, ITEM_BY_ID, LEVEL, SHOP, SPIELER, STUFEN, UPGRADES, UPGRADE_BY_ID, W, WAFFEN, elemente,
   baseStats, fusionsWaffe, pruefeFusion, rollSeltenheit, waffeById, type Stats
 } from '../../data/src/index.ts';
 
@@ -12,7 +12,8 @@ import {
  * ausgeführt werden kann – die UI schickt nur Befehle und liest den Zustand.
  */
 export type Command =
-  | { type: 'start'; weapon: string }
+  /** Run-Start: Held (bestimmt Startwaffe) und Insel; `weapon` nur ohne Held */
+  | { type: 'start'; weapon?: string; held?: string; insel?: string }
   | { type: 'upgrade'; index: number }
   | { type: 'buy'; index: number }
   | { type: 'reroll' }
@@ -40,6 +41,7 @@ export function sellPrice(slot: WeaponSlot, wave: number): number {
 }
 
 export function rerollPrice(w: World, p: Player): number {
+  if (p.perk.zufall && p.rerolls === 0) return 0;
   return SHOP.rerollPreis(w.wave, p.rerolls);
 }
 
@@ -54,6 +56,8 @@ export function recomputeStats(p: Player): void {
     const n = p.items[id], def = ITEM_BY_ID[id];
     for (const k in def.werte) s[k as keyof Stats] += (def.werte[k as keyof Stats] ?? 0) * n;
   }
+  const held = HELD_BY_ID[p.held];
+  if (held) for (const k in held.werte) s[k as keyof Stats] += held.werte[k as keyof Stats] ?? 0;
   s.maxHp += (p.level - 1) * LEVEL.hpProLevel;
   p.stats = s;
   const oldMax = p.maxHp;
@@ -109,8 +113,11 @@ function rollOffer(w: World, p: Player): Offer {
   const tier = rollSeltenheit(w.wave + 1, p.stats.glueck, r.next());
   if (r.next() < SHOP.waffenAnteil) {
     // Bevorzugt Waffen, die man schon hat (zum Mergen) – wie in Brotato
-    const own = p.weapons.length && r.next() < 0.35 ? p.weapons[Math.floor(r.next() * p.weapons.length)].waffe.id : '';
-    const id = own || SHOP_WEAPONS[Math.floor(r.next() * SHOP_WEAPONS.length)];
+    const ownable = p.weapons.filter((s) => !s.waffe.fusion);
+    const own = ownable.length && r.next() < 0.35 ? ownable[Math.floor(r.next() * ownable.length)].waffe.id : '';
+    // Der Pyromane bekommt nur, was knallt oder brennt
+    const pool = p.perk.nurExplosiv ? SHOP_WEAPONS.filter((id) => elemente(W[id]).some((e) => e === 'Explosiv' || e === 'Feuer')) : SHOP_WEAPONS;
+    const id = own || pool[Math.floor(r.next() * pool.length)];
     return { kind: 'waffe', id, tier, price: weaponPrice(tier, w.wave + 1), locked: false, sold: false };
   }
   let pool = ITEMS.filter((it) => it.seltenheit === tier && (!it.max || (p.items[it.id] ?? 0) < it.max));
@@ -155,8 +162,19 @@ function mergeInto(p: Player, keep: number, remove: number): void {
 export function runCommand(w: World, p: Player, cmd: Command): boolean {
   switch (cmd.type) {
     case 'start': {
-      if (w.phase !== 'wahl' || p.weapons.length || !SPIELER.startAuswahl.includes(cmd.weapon)) return false;
-      addWeapon(p, cmd.weapon, 1);
+      if (w.phase !== 'wahl' || p.weapons.length) return false;
+      let weapon = cmd.weapon ?? '';
+      if (cmd.held) {
+        const h = HELD_BY_ID[cmd.held];
+        if (!h) return false;
+        w.setHero(p, h.id);
+        // Glückspilz: irgendeine Waffe
+        weapon = h.startWaffe === 'zufall' ? SHOP_WEAPONS[Math.floor(w.shopRng.next() * SHOP_WEAPONS.length)] : h.startWaffe;
+      } else if (!SPIELER.startAuswahl.includes(weapon)) return false;
+      if (cmd.insel) w.setIsland(cmd.insel);
+      addWeapon(p, weapon, 1);
+      recomputeStats(p);
+      p.hp = p.maxHp;
       if (w.players.every((q) => q.weapons.length > 0)) w.startWave(w.opt.wave);
       return true;
     }
@@ -272,7 +290,7 @@ export interface FusionPreview {
 
 /** Was käme am Amboss heraus? (für Vorschau und Befehl) */
 export function fusionPreview(w: World, p: Player, cmd: { slots: number[]; geschoss: number; antrieb: number; ladung: number }): FusionPreview {
-  const price = AMBOSS.preis(w.wave);
+  const price = p.perk.fusionsprofi ? 0 : AMBOSS.preis(w.wave);
   const slots = cmd.slots;
   if (new Set(slots).size !== slots.length || slots.some((i) => !p.weapons[i])) return { waffe: null, tier: 1, price, error: 'Wähle 2 oder 3 Waffen.' };
   const ids = slots.map((i) => p.weapons[i].waffe.id);

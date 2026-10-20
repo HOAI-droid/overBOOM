@@ -3,7 +3,7 @@ import {
   type Command, type Player, type World, type WeaponSlot
 } from '@overboom/core';
 import {
-  A, AMBOSS, G, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
+  A, AMBOSS, G, GEGNER_BY_ID, HELDEN, HELD_BY_ID, INSELN, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W, WELLEN,
   elemente, type StatKey
 } from '@overboom/data';
 
@@ -86,6 +86,8 @@ export class Menus {
   private parts = { geschoss: 0, antrieb: 1, ladung: 2 };
   private book = false;
   private shopWave = -1;
+  /** Startauswahl: erst Held, dann Insel */
+  private startHeld = '';
   private lastKey = '';
   onRestart: () => void = () => {};
   onResume: () => void = () => {};
@@ -142,19 +144,45 @@ export class Menus {
   /* ---------------- Startwahl ---------------- */
 
   private renderStart(): void {
-    const p = this.p;
-    const cards = SPIELER.startAuswahl.map((id, i) => `
-      <button type="button" class="ob-card" ${rarity(1)} data-act="start" data-id="${id}" data-focus="start${i}">
-        <span class="ob-kind">Startwaffe · ${W[id].gruppe}</span>
-        <span class="ob-name">${W[id].name}</span>
-        ${weaponLines(p, W[id], 1)}
-        <span class="ob-flavor">${W[id].text}</span>
+    if (!this.startHeld) {
+      const cards = HELDEN.map((h, i) => {
+        const wf = h.startWaffe === 'zufall' ? null : W[h.startWaffe];
+        return `<button type="button" class="ob-card ob-hero" style="--rc:${h.farbe}" data-act="held" data-id="${h.id}" data-focus="held${i}">
+          <span class="ob-kind">${h.titel}</span>
+          <span class="ob-name">${h.name}</span>
+          <ul class="ob-lines">
+            <li>Startwaffe <b>${wf ? wf.name : 'zufällig'}</b></li>
+            ${(Object.keys(h.werte) as StatKey[]).map((k) => statLine(k, h.werte[k]!)).join('')}
+          </ul>
+          <span class="ob-part">${h.text}</span>
+          <span class="ob-flavor">${h.spruch}</span>
+        </button>`;
+      }).join('');
+      this.show('start', `
+        <div class="ob-panel ob-wide">
+          <h2 class="ob-h">Wähle deinen Kawumm-Jäger</h2>
+          <p class="ob-sub">Jeder Held hat eine Startwaffe und eine Macke. Waffen feuern von selbst – du läufst, weichst aus und kaufst nach jeder Welle nach.</p>
+          <div class="ob-cards">${cards}</div>
+        </div>`);
+      return;
+    }
+    const h = HELD_BY_ID[this.startHeld];
+    const cards = INSELN.map((i, k) => `
+      <button type="button" class="ob-card ob-island" style="--rc:${i.farben.spezial[0]}; --bg:${i.farben.boden[2]}" data-act="insel" data-id="${i.id}" data-focus="insel${k}">
+        <span class="ob-kind">${i.fraktion}</span>
+        <span class="ob-name">${i.name}</span>
+        <span class="ob-part">${i.text}</span>
+        <ul class="ob-lines">
+          <li class="ob-part"><b>Gefahr:</b> ${i.gefahrText}</li>
+          <li class="ob-part"><b>Boss:</b> ${GEGNER_BY_ID[i.boss].name} · Welle 20: Baron von Bumm</li>
+        </ul>
       </button>`).join('');
     this.show('start', `
       <div class="ob-panel ob-wide">
-        <h2 class="ob-h">Wähle deine Startwaffe</h2>
-        <p class="ob-sub">Alle Waffen feuern von selbst. Du läufst, weichst aus – und kaufst nach jeder Welle nach.</p>
+        <h2 class="ob-h">Wohin, ${h.name}?</h2>
+        <p class="ob-sub">Krawummia schwebt seit dem Großen Kawumm in Brocken durch den Himmel. Jede Insel hat ihre eigene Bande, ihren Boss und ihre Tücken.</p>
         <div class="ob-cards">${cards}</div>
+        <div class="ob-row"><button type="button" class="ob-btn2" data-act="heldzurueck" data-focus="back">◀ Anderer Held</button></div>
       </div>`);
   }
 
@@ -379,6 +407,7 @@ export class Menus {
   /** Zurück-Taste (Esc / Gamepad B) */
   back(): boolean {
     if (this.mode === 'shop' && this.detail >= 0) { this.detail = -1; this.sync(); return true; }
+    if (this.mode === 'start' && this.startHeld) { this.startHeld = ''; this.mode = 'none'; this.sync(); return true; }
     if (this.mode === 'pause') { this.hide(); this.onResume(); return true; }
     return false;
   }
@@ -388,7 +417,9 @@ export class Menus {
     if (!el || (el as HTMLButtonElement).disabled) return;
     const i = Number(el.dataset.i ?? -1);
     switch (el.dataset.act) {
-      case 'start': this.send({ type: 'start', weapon: el.dataset.id! }); this.hide(); break;
+      case 'held': this.startHeld = el.dataset.id!; this.mode = 'none'; break;
+      case 'heldzurueck': this.startHeld = ''; this.mode = 'none'; break;
+      case 'insel': this.send({ type: 'start', held: this.startHeld, insel: el.dataset.id! }); this.startHeld = ''; this.hide(); break;
       case 'upgrade': this.send({ type: 'upgrade', index: i }); break;
       case 'buy': this.send({ type: 'buy', index: i }); break;
       case 'lock': this.send({ type: 'lock', index: i }); break;

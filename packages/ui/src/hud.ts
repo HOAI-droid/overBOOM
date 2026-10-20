@@ -52,7 +52,7 @@ export class Hud {
     this.root.innerHTML = `
       <div class="ob-hurt"></div>
       <div class="ob-left">
-        <div class="ob-title"><b>OVER</b><b class="boom">BOOM</b><span>Prototyp · Phase 4</span></div>
+        <div class="ob-title"><b>OVER</b><b class="boom">BOOM</b><span>Prototyp · Phase 5</span></div>
         <div class="ob-hp" role="meter" aria-label="Leben"><div class="ob-hp-fill"></div><span class="ob-hp-txt">60 / 60</span></div>
         <div class="ob-xp"><span class="ob-lvl">Lv 1</span><div class="ob-xp-bar"><div class="ob-xp-fill"></div></div></div>
         <div class="ob-gems">${GEM_SVG}<span>0</span></div>
@@ -172,7 +172,7 @@ export class Hud {
       this.gems.textContent = String(s.crystals);
     }
     if (s.wave !== L.wave) { L.wave = s.wave; this.waveNum.textContent = s.wave ? `Welle ${s.wave} / 20` : 'Bereit?'; }
-    const timed = s.phase === 'welle' && Number.isFinite(s.waveTime);
+    const timed = s.phase === 'welle' && Number.isFinite(s.waveTime) && s.waveTime < 3600;
     const sec = timed ? Math.max(0, Math.ceil(s.waveTime)) : -1;
     if (sec !== L.sec || s.phase !== L.phase) {
       L.sec = sec; L.phase = s.phase;

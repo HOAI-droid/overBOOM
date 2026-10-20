@@ -5,3 +5,5 @@ export * from './stats.ts';
 export * from './upgrades.ts';
 export * from './items.ts';
 export * from './fusion.ts';
+export * from './islands.ts';
+export * from './heroes.ts';

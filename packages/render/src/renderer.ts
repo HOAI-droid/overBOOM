@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import type { Player, SimEvent, World } from '@overboom/core';
-import { buildArenaView, type ArenaView } from './arenaView.ts';
+import { buildArenaView, paletteOf, type ArenaView } from './arenaView.ts';
+import { HELD_BY_ID } from '@overboom/data';
+import type { Arena } from '@overboom/core';
 import { HeroView } from './heroView.ts';
 import { Effects } from './effects.ts';
 import { CombatView } from './combatView.ts';
@@ -34,6 +36,9 @@ export class GameRenderer {
   private post: { scene: THREE.Scene; cam: THREE.OrthographicCamera; mat: THREE.ShaderMaterial };
   private sun: THREE.DirectionalLight;
   private arena: ArenaView;
+  private arenaSrc: Arena;
+  private hemi: THREE.HemisphereLight;
+  private heroKeys: string[] = [];
   private heroes: HeroView[] = [];
   private effects: Effects;
   private combat: CombatView;
@@ -97,7 +102,8 @@ export class GameRenderer {
     this.post = { scene: ps, cam: new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), mat };
 
     // Licht: violetter Himmel, warme Sonne von hinten links
-    this.scene.add(new THREE.HemisphereLight('#b0a2f0', '#3a2050', 2.2));
+    this.hemi = new THREE.HemisphereLight('#b0a2f0', '#3a2050', 2.2);
+    this.scene.add(this.hemi);
     this.sun = new THREE.DirectionalLight('#ffe6c8', 3.2);
     this.sun.castShadow = this.opt.shadows;
     this.sun.shadow.mapSize.set(1024, 1024);
@@ -107,8 +113,10 @@ export class GameRenderer {
     this.sun.shadow.normalBias = 0.02;
     this.scene.add(this.sun, this.sun.target);
 
+    this.arenaSrc = world.arena;
     this.arena = buildArenaView(world.arena);
     this.scene.add(this.arena.group, this.effects.group, this.combat.group);
+    this.applyPalette();
     for (const p of world.players) this.addHero(p);
 
     const sp = world.players[0] ?? { x: world.arena.spawn.x, z: world.arena.spawn.z };
@@ -116,9 +124,33 @@ export class GameRenderer {
   }
 
   private addHero(p: Player) {
-    const h = new HeroView(p.color);
+    const old = this.heroes[p.id];
+    if (old) this.scene.remove(old.root);
+    const h = new HeroView(p.color, HELD_BY_ID[p.held]?.farbe ?? p.color);
     this.heroes[p.id] = h;
+    this.heroKeys[p.id] = p.held;
     this.scene.add(h.root);
+  }
+
+  /** Licht und Himmel nach Inselpalette */
+  private applyPalette(): void {
+    const pal = paletteOf(this.world.arena);
+    this.hemi.color.set(pal.himmel);
+    this.sun.color.set(pal.sonne);
+    this.renderer.setClearColor(pal.nebel);
+  }
+
+  /** Insel gewechselt: Arena neu aufbauen */
+  private rebuildArena(): void {
+    this.scene.remove(this.arena.group);
+    this.arena.group.traverse((o) => {
+      if (o instanceof THREE.Mesh) o.geometry.dispose();
+      if (o instanceof THREE.Mesh && o.material instanceof THREE.MeshLambertMaterial && o.material.map) { o.material.map.dispose(); o.material.emissiveMap?.dispose(); o.material.dispose(); }
+    });
+    this.arena = buildArenaView(this.world.arena);
+    this.arenaSrc = this.world.arena;
+    this.scene.add(this.arena.group);
+    this.applyPalette();
   }
 
   private rnd = () => {
@@ -184,6 +216,11 @@ export class GameRenderer {
         case 'death': fx.explosion(e.x, e.z, 2.4); kick(0.45); stop = 0.2; this.lastStop = -1; break;
         case 'waveClear': kick(0.15); break;
         case 'levelUp': fx.levelUp(e.x, e.z); break;
+        case 'enemyHeal': fx.enemyHeal(e.x, e.z, e.r); break;
+        case 'block': fx.block(e.x, e.z); break;
+        case 'split': fx.burst(e.x, e.z, ENEMY_DEBRIS.schleimi); break;
+        case 'keks': fx.keks(e.x, e.z); break;
+        case 'shock': if (e.phase === 'entladen') { fx.shock(this.world.arena); kick(0.15); } break;
         case 'beam': fx.beam(e.x, e.z, e.x2, e.z2, shotColor(e.geschoss)); break;
         case 'cone': fx.cone(e.x, e.z, e.dirX, e.dirZ, e.range, shotColor(e.geschoss), e.geschoss === 'flamme'); break;
         case 'swing': fx.swing(e.x, e.z, e.dirX, e.dirZ, e.range, shotColor(e.geschoss)); kick(0.04); break;
@@ -215,8 +252,9 @@ export class GameRenderer {
 
   render(prev: readonly PlayerPose[], players: readonly Player[], alpha: number, dt: number, time: number): void {
     let focus: { x: number; z: number; vx: number; vz: number } | null = null;
+    if (this.world.arena !== this.arenaSrc) this.rebuildArena();
     for (const p of players) {
-      if (!this.heroes[p.id]) this.addHero(p);
+      if (!this.heroes[p.id] || this.heroKeys[p.id] !== p.held) this.addHero(p);
       const a = prev[p.id] ?? p;
       const x = a.x + (p.x - a.x) * alpha, z = a.z + (p.z - a.z) * alpha;
       let df = p.facing - a.facing;
@@ -270,6 +308,11 @@ export class GameRenderer {
     for (const c of this.arena.crystals) { c.light.intensity = 4.5 + Math.sin(time * 2 + c.seed) * 1.2; c.group.position.y = Math.sin(time * 1.6 + c.seed) * 0.03; }
     for (const h of this.arena.halos) (h.material as THREE.SpriteMaterial).opacity = 0.45 + Math.sin(time * 9 + h.id) * 0.08;
     this.arena.lavaMaterial.emissiveIntensity = 0.55 + Math.sin(time * 2.2) * 0.12;
+    if (this.arena.shock) {
+      // Tesla-Platten: flackern beim Aufladen, gleißen beim Entladen
+      const t = this.world.shockT;
+      this.arena.shock.opacity = t >= 4.6 ? 0.9 : t >= 3.5 ? 0.25 + 0.35 * Math.abs(Math.sin(time * 30)) : 0.05;
+    }
     for (const b of this.arena.barrels) b.group.visible = !b.prop.broken;
     this.combat.update(alpha, time, dt, this.heroPos);
     this.effects.update(dt);

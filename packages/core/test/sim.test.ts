@@ -1,5 +1,6 @@
 import { World, Tile, DT, spawnEnemy, type InputState } from '../src/index.ts';
-import { ANTRIEBE, GEGNER, LADUNGEN, REZEPTE, WAFFEN, WELLEN, fusionsWaffe, waffeById } from '../../data/src/index.ts';
+import { ANTRIEBE, GEGNER, GEGNER_INDEX, HELDEN, INSELN, LADUNGEN, REZEPTE, WAFFEN, WELLEN, fusionsWaffe, waffeById } from '../../data/src/index.ts';
+import { Tile as T } from '../src/arena.ts';
 
 let fails = 0;
 const ok = (cond: boolean, msg: string) => { console.log((cond ? '✓ ' : '✗ ') + msg); if (!cond) fails++; };
@@ -270,11 +271,11 @@ const runUntil = (w: World, cond: () => boolean, max = 30 * 120) => { for (let t
   ok(elites > 0, `Elite-Gegner tauchen auf (${elites})`);
 }
 
-// Boss auf Welle 10: erscheint, wirft Bomben, Welle endet mit seinem Tod
+// Baron von Bumm (Welle 20): erscheint, wirft Bomben, Phase 2, Welle endet mit seinem Tod
 {
-  const w = new World(25, 1, { god: true, wave: 10 });
+  const w = new World(25, 1, { god: true, wave: 20 });
   const boss = w.enemies[w.boss];
-  ok(w.boss >= 0 && boss.alive && boss.def.id === 'baron', 'Welle 10: Baron von Bumm erscheint');
+  ok(w.boss >= 0 && boss.alive && boss.def.id === 'baron', 'Welle 20: Baron von Bumm erscheint');
   ok(w.waveTime === Infinity, 'Boss-Welle hat keinen Timer');
   let bombs = 0, phase2 = false;
   for (let t = 0; t < 30 * 12; t++) {
@@ -446,6 +447,187 @@ const progression = await import('../src/progression.ts');
     kawumm += w.events.filter((e) => e.type === 'kawumm').length;
   }
   ok(kawumm > 5, `instabile Fusion: Bonus-Kawumm bei Krits (${kawumm}×)`);
+}
+
+/* ------------------------------------------------------------------ */
+/* Phase 5 / Etappe 1: Helden, Inseln, Gegner                           */
+/* ------------------------------------------------------------------ */
+
+ok(GEGNER.filter((g) => g.verhalten !== 'boss').length >= 15 && GEGNER.filter((g) => g.verhalten === 'boss').length >= 4, `${GEGNER.filter((g) => g.verhalten !== 'boss').length} Gegnertypen, ${GEGNER.filter((g) => g.verhalten === 'boss').length} Bosse`);
+ok(HELDEN.length >= 12, `${HELDEN.length} Helden`);
+
+// Jede Insel: eigene Arena, nur Gegner ihrer Fraktion, Inselboss auf Welle 10
+for (const insel of INSELN) {
+  const w = new World(40, 1, { god: true, insel: insel.id, autoShop: true });
+  const pool = new Set(insel.gegner.map((g) => g.id));
+  let foreign = '', types = new Set<string>(), nan = false;
+  for (let t = 0; t < 30 * 50; t++) {
+    w.step([bot(t)]);
+    for (const e of w.enemies) if (e.alive) {
+      types.add(e.def.id);
+      if (!pool.has(e.def.id) && !GEGNER[GEGNER_INDEX[e.def.id]].abWelle) foreign = e.def.id;
+      if (!Number.isFinite(e.x) || !Number.isFinite(e.hp)) nan = true;
+    }
+  }
+  const allowed = [...types].every((id) => pool.has(id) || id === 'schleimchen' || id === 'grummelbold' || GEGNER.some((g) => g.beschwoert === id));
+  const wb = new World(41, 1, { god: true, insel: insel.id, wave: 10 });
+  ok(allowed && !nan && types.size >= 2 && w.arena.style === insel.gefahr && wb.enemies[wb.boss]?.def.id === insel.boss,
+    `${insel.name}: Arena „${insel.gefahr}", Gegner ${[...types].join('/')}, Boss ${wb.enemies[wb.boss]?.def.name}${foreign ? ' FREMD ' + foreign : ''}`);
+}
+
+// Jeder Held: Start klappt, Werte und Startwaffe stimmen
+for (const h of HELDEN) {
+  const w = new World(42, 1, { choose: true });
+  const okStart = w.command(0, { type: 'start', held: h.id, insel: 'gackerfeld' });
+  const p = w.players[0];
+  const weaponOk = h.startWaffe === 'zufall' ? p.weapons.length === 1 : p.weapons[0]?.waffe.id === h.startWaffe;
+  for (let t = 0; t < 30 * 8; t++) w.step([bot(t)]);
+  if (!(okStart && weaponOk && w.insel.id === 'gackerfeld' && p.held === h.id)) ok(false, `Held ${h.name} startet nicht korrekt`);
+}
+ok(true, 'alle Helden starten mit Startwaffe auf der gewählten Insel');
+{
+  const w = new World(43, 1, { choose: true });
+  w.command(0, { type: 'start', held: 'panzerpaule' });
+  ok(w.players[0].maxHp > 80 && w.players[0].stats.ruestung >= 5, `Panzer-Paule: ${w.players[0].maxHp} Leben, Rüstung ${w.players[0].stats.ruestung}`);
+  const w2 = new World(43, 1, { choose: true });
+  w2.command(0, { type: 'start', held: 'pyromane' });
+  const p2 = w2.players[0];
+  runUntil(w2, () => w2.phase === 'shop');
+  while (p2.pendingLevels) w2.command(0, { type: 'upgrade', index: 0 });
+  let wrong = 0;
+  for (let r = 0; r < 30; r++) { p2.crystals = 999; w2.command(0, { type: 'reroll' }); for (const o of p2.offers) if (o.kind === 'waffe' && !(waffeById(o.id)!.fusion?.elemente ?? (await import('../../data/src/index.ts')).elemente(waffeById(o.id)!)).some((e) => e === 'Explosiv' || e === 'Feuer')) wrong++; }
+  ok(wrong === 0, 'Pyromane: im Shop nur Explosiv-/Feuerwaffen');
+  const w3 = new World(43, 1, { choose: true });
+  w3.command(0, { type: 'start', held: 'omagranate' });
+  let keks = 0;
+  for (let t = 0; t < 30 * 20; t++) { w3.step([bot(t)]); keks += w3.events.filter((e) => e.type === 'keks').length; }
+  ok(keks >= 2, `Oma Granate verteilt Kekse (${keks}×)`);
+}
+
+/** Einzelgegner gegen stillstehenden Spieler testen */
+function duel(id: string, opt: { insel?: string; seconds?: number; hp?: number } = {}) {
+  const w = new World(44, 1, { god: true, insel: opt.insel ?? 'bummburg' });
+  for (const warn of w.warnings) warn.active = false;
+  w.spawnAcc = -999;
+  const p = w.players[0];
+  p.weapons = [];
+  const e = spawnEnemy(w, GEGNER_INDEX[id], p.x + 3, p.z + 0.5)!;
+  if (opt.hp) e.hp = e.maxHp = opt.hp;
+  const ev: Record<string, number> = {};
+  let hostile = 0, hazards = 0;
+  for (let t = 0; t < 30 * (opt.seconds ?? 8); t++) {
+    w.step([idle]);
+    for (const x of w.events) ev[x.type] = (ev[x.type] ?? 0) + 1;
+    hostile = Math.max(hostile, w.projectiles.filter((q) => q.alive && q.hostile).length);
+    hazards = Math.max(hazards, w.hazards.filter((h) => h.active && h.hostile).length);
+  }
+  return { w, e, ev, hostile, hazards };
+}
+{
+  const d1 = duel('kampfhuhn');
+  ok((d1.ev.hurt ?? 0) > 0 && (d1.ev.windup ?? 0) > 0, `Kampfhuhn: scharrt (Ansage) und stürmt (${d1.ev.windup}× Anlauf)`);
+  const d2 = duel('minenbot', { seconds: 10 });
+  ok(d2.hostile > 0, `Minenbot legt Minen (${d2.hostile})`);
+  const d3 = duel('pilzling');
+  ok(d3.hazards > 0, `Pilzling hinterlässt Giftwolken (${d3.hazards})`);
+  const d4 = duel('lavaklops');
+  ok(d4.hazards > 0, `Lavaklops hinterlässt eine Lavaspur (${d4.hazards})`);
+  const d5 = duel('kultist', { seconds: 10 });
+  ok(d5.w.enemyCount > 1, `Kultist öffnet Portale (${d5.w.enemyCount - 1} Grummelbolde)`);
+  const d6 = duel('schneemann');
+  ok((d6.ev.enemyShot ?? 0) > 0, `Schneemann wirft Schneebälle (${d6.ev.enemyShot})`);
+  const d7 = duel('bombenpinguin');
+  ok(!d7.e.alive && (d7.ev.explosion ?? 0) > 0, 'Bombenpinguin rutscht heran und explodiert');
+  const d8 = duel('funkenkobold');
+  ok((d8.ev.enemyShot ?? 0) > 0, 'Funkenkobold schießt Funken');
+}
+// Schleimi teilt sich
+{
+  const w = new World(45, 1, { god: true });
+  for (const warn of w.warnings) warn.active = false;
+  w.spawnAcc = -999; w.players[0].weapons = [];
+  const e = spawnEnemy(w, GEGNER_INDEX.schleimi, 10, 10)!;
+  w.damageEnemy(e, 1e6, false, 0, 0);
+  ok(w.enemies.filter((q) => q.alive && q.def.id === 'schleimchen').length === 2, 'Schleimi zerfällt in 2 Schleimchen');
+}
+// Vogelscheuche heilt
+{
+  const w = new World(46, 1, { god: true });
+  for (const warn of w.warnings) warn.active = false;
+  w.spawnAcc = -999; w.players[0].weapons = [];
+  const h = spawnEnemy(w, GEGNER_INDEX.vogelscheuche, 20, 20)!;
+  const g = spawnEnemy(w, GEGNER_INDEX.grummelbold, 21, 20)!;
+  g.hp = 1; h.cd = 0.1;
+  for (let t = 0; t < 10; t++) w.step([idle]);
+  ok(g.hp > 1, `Vogelscheuche heilt Verbündete (${g.hp.toFixed(1)} HP)`);
+}
+// Tesla-Ritter blockt von vorne
+{
+  const w = new World(47, 1, { god: true });
+  for (const warn of w.warnings) warn.active = false;
+  w.spawnAcc = -999;
+  const e = spawnEnemy(w, GEGNER_INDEX.teslaritter, 10, 10)!;
+  e.facing = 0; // Blick nach +z
+  const hp0 = e.hp;
+  w.damageEnemy(e, 10, false, 0, -1); // Treffer von vorne (schiebt nach -z)
+  const front = hp0 - e.hp;
+  w.damageEnemy(e, 10, false, 0, 1);  // Treffer von hinten
+  const back = hp0 - front - e.hp;
+  ok(front < 3 && back > 9, `Tesla-Ritter: vorne ${front.toFixed(1)}, hinten ${back.toFixed(1)} Schaden`);
+}
+// Alle Bosse spielen ihre Angriffe
+for (const id of ['koenig_gockel', 'megatoaster', 'morchella', 'baron']) {
+  const w = new World(48, 1, { god: true, wave: 10 });
+  for (const warn of w.warnings) warn.active = false;
+  for (const e of w.enemies) e.alive = false;
+  w.enemyCount = 0;
+  w.spawnAcc = -999;
+  (await import('../src/enemies.ts')).spawnBoss(w, id);
+  const boss = w.enemies[w.boss];
+  boss.hp = boss.maxHp * 0.4; boss.bossPhase = 2;
+  let shots = 0, warns = 0, haz = 0;
+  for (let t = 0; t < 30 * 16; t++) {
+    w.step([bot(t)]);
+    shots = Math.max(shots, w.projectiles.filter((q) => q.alive && q.hostile).length);
+    warns = Math.max(warns, w.warnings.filter((q) => q.active).length);
+    haz = Math.max(haz, w.hazards.filter((h) => h.active && h.hostile).length);
+  }
+  ok(boss.alive && shots + haz > 0 && warns > 0, `${boss.def.name}: Angriffe laufen (Geschosse ${shots}, Pfützen ${haz}, Beschwörungen ${warns})`);
+}
+// Bodengefahren
+{
+  const lava = new World(49, 1, { insel: 'lavakessel' });
+  const p = lava.players[0];
+  let tx = -1, tz = -1;
+  for (let z = 2; z < 26 && tx < 0; z++) for (let x = 2; x < 26; x++) if (lava.arena.tile(x, z) === T.Lava) { tx = x; tz = z; break; }
+  for (const warn of lava.warnings) warn.active = false; lava.spawnAcc = -999;
+  p.x = tx + 0.5; p.z = tz + 0.5;
+  const hp = p.hp; lava.step([idle]);
+  ok(p.hp < hp, `Lava verbrennt den Spieler (${hp} → ${p.hp})`);
+
+  const ice = new World(50, 1, { insel: 'frostfass', combat: false });
+  const q = ice.players[0];
+  for (let t = 0; t < 30; t++) ice.step([{ mx: 1, mz: 0, dash: false }]);
+  const speed = Math.hypot(q.vx, q.vz);
+  let slide = 0;
+  for (let t = 0; t < 10; t++) { ice.step([idle]); slide += Math.hypot(q.vx, q.vz); }
+  ok(ice.arena.tile(Math.floor(q.x), Math.floor(q.z)) !== T.Ice || slide > speed * 2, `Eis: Spieler rutscht nach (${slide.toFixed(1)})`);
+
+  const zap = new World(51, 1, { insel: 'funkenschlund' });
+  const r = zap.players[0];
+  for (const warn of zap.warnings) warn.active = false; zap.spawnAcc = -999;
+  let sx = -1, sz = -1;
+  for (let z = 2; z < 26 && sx < 0; z++) for (let x = 2; x < 26; x++) if (zap.arena.tile(x, z) === T.Shock) { sx = x; sz = z; break; }
+  let shocks = 0; const hp2 = r.hp;
+  for (let t = 0; t < 30 * 6; t++) { r.x = sx + 0.5; r.z = sz + 0.5; r.vx = r.vz = 0; zap.step([idle]); shocks += zap.events.filter((e) => e.type === 'shock').length; }
+  ok(shocks >= 2 && r.hp < hp2, `Tesla-Platten laden und entladen (${shocks} Ereignisse, ${hp2} → ${r.hp})`);
+}
+// Heuballen brennen
+{
+  const w = new World(52, 1, { insel: 'gackerfeld' });
+  const heu = w.barrels.find((b) => b.kind === 'heu')!;
+  w.breakBarrel(heu, 0, 0);
+  ok(!!heu && w.hazards.some((h) => h.active && h.kind === 'lava'), 'Heuballen brennen nach dem Anschießen');
 }
 
 if (fails) { console.log(`\n${fails} Test(s) fehlgeschlagen`); process.exit(1); } else console.log('\nAlle Tests bestanden');
