@@ -11,7 +11,7 @@ export const Tile = {
 } as const;
 export type TileId = (typeof Tile)[keyof typeof Tile];
 
-export type PropKind = 'barrel' | 'crystal' | 'torch' | 'grummel' | 'rubble';
+export type PropKind = 'barrel' | 'crystal' | 'torch' | 'rubble';
 
 export interface Prop {
   kind: PropKind;
@@ -22,6 +22,8 @@ export interface Prop {
   /** Kollisionsradius; 0 = nicht fest */
   r: number;
   seed: number;
+  /** zerstört (explosive Fässer); kommt mit der nächsten Welle zurück */
+  broken?: boolean;
 }
 
 export interface Arena {
@@ -83,10 +85,6 @@ export function createArena(seed: number, size = 28): Arena {
   // Explosive Fässer
   for (const [x, z] of [[22.5, 15.4], [23.3, 16.2], [10.6, 5.5], [15.5, 24.4]] as const) {
     props.push({ kind: 'barrel', x, z, y: 0, r: 0.3, seed: Math.floor(x * 10 + z) });
-  }
-  // Grummelbolde (in Phase 1 nur Deko)
-  for (const [x, z] of [[9.5, 11.5], [18.5, 9.5], [11.5, 18.5]] as const) {
-    props.push({ kind: 'grummel', x, z, y: 0, r: 0, seed: Math.floor(x * 7 + z) });
   }
   // Geröll
   for (let i = 0; i < 26; i++) {

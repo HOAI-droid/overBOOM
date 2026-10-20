@@ -3,6 +3,8 @@ import type { Player, SimEvent, World } from '@overboom/core';
 import { buildArenaView, type ArenaView } from './arenaView.ts';
 import { HeroView } from './heroView.ts';
 import { Effects } from './effects.ts';
+import { CombatView } from './combatView.ts';
+import { ENEMY_DEBRIS } from './models.ts';
 
 export interface RenderOptions {
   /** Pixel auf der kurzen Bildschirmseite (Low-Res-Look). 270 = Standard */
@@ -10,6 +12,8 @@ export interface RenderOptions {
   /** sichtbare Welteinheiten auf der kurzen Seite */
   viewShort?: number;
   shadows?: boolean;
+  /** Stärke des Screen-Shakes (0 = aus, 1 = normal) – Barrierefreiheit */
+  shake?: number;
 }
 
 export interface PlayerPose { x: number; z: number; facing: number }
@@ -31,7 +35,8 @@ export class GameRenderer {
   private sun: THREE.DirectionalLight;
   private arena: ArenaView;
   private heroes: HeroView[] = [];
-  private effects = new Effects();
+  private effects: Effects;
+  private combat: CombatView;
   private camTarget = new THREE.Vector3();
   private camDir = new THREE.Vector3(Math.sin(AZIMUTH) * Math.cos(ELEVATION), Math.sin(ELEVATION), Math.cos(AZIMUTH) * Math.cos(ELEVATION));
   private iw = 480;
@@ -39,10 +44,20 @@ export class GameRenderer {
   private wpp = 1;
   private shake = 0;
   private rngState = 12345;
+  private clock = 0;
+  private lastStop = -1;
+  private cssW = 1;
+  private cssH = 1;
+  private offX = 0;
+  private offY = 0;
+  private tmpV = new THREE.Vector3();
+  private heroPos: { x: number; z: number; visible: boolean }[] = [];
   private opt: Required<RenderOptions>;
 
   constructor(canvas: HTMLCanvasElement, private world: World, opt: RenderOptions = {}) {
-    this.opt = { internalShort: opt.internalShort ?? 270, viewShort: opt.viewShort ?? 11, shadows: opt.shadows ?? true };
+    this.opt = { internalShort: opt.internalShort ?? 270, viewShort: opt.viewShort ?? 11.5, shadows: opt.shadows ?? true, shake: opt.shake ?? 1 };
+    this.effects = new Effects(this.rnd);
+    this.combat = new CombatView(world, this.effects);
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
     this.renderer.shadowMap.enabled = this.opt.shadows;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -93,7 +108,7 @@ export class GameRenderer {
     this.scene.add(this.sun, this.sun.target);
 
     this.arena = buildArenaView(world.arena);
-    this.scene.add(this.arena.group, this.effects.group);
+    this.scene.add(this.arena.group, this.effects.group, this.combat.group);
     for (const p of world.players) this.addHero(p);
 
     const sp = world.players[0] ?? { x: world.arena.spawn.x, z: world.arena.spawn.z };
@@ -114,6 +129,7 @@ export class GameRenderer {
   resize(width: number, height: number, dpr: number): void {
     this.renderer.setPixelRatio(Math.min(2, dpr));
     this.renderer.setSize(width, height, false);
+    this.cssW = width; this.cssH = height;
     const aspect = width / height, s = this.opt.internalShort;
     if (aspect >= 1) { this.ih = s; this.iw = Math.round(s * aspect); }
     else { this.iw = s; this.ih = Math.round(s / aspect); }
@@ -128,12 +144,61 @@ export class GameRenderer {
 
   get internalSize() { return { w: this.iw, h: this.ih }; }
 
-  handleEvents(events: readonly SimEvent[]): void {
+  /**
+   * Erzeugt Effekte aus den Simulations-Ereignissen eines Ticks.
+   * Rückgabe: gewünschter Hit-Stop in Sekunden (0 = keiner).
+   */
+  handleEvents(events: readonly SimEvent[]): number {
+    const fx = this.effects;
+    let stop = 0;
+    const kick = (amount: number) => { this.shake = Math.min(0.45, Math.max(this.shake, amount) + amount * 0.2); };
     for (const e of events) {
-      if (e.type === 'dash') { this.effects.dash(e.x, e.z, e.dirX, e.dirZ, this.rnd); this.heroes[e.player]?.punch(0.35); this.shake = Math.max(this.shake, 0.08); }
-      else if (e.type === 'step') this.effects.step(e.x, e.z, this.rnd);
-      else if (e.type === 'bump') { this.effects.bump(e.x, e.z, this.rnd); this.heroes[e.player]?.punch(0.5); this.shake = Math.max(this.shake, 0.22); }
+      switch (e.type) {
+        case 'dash': fx.dash(e.x, e.z, e.dirX, e.dirZ); this.heroes[e.player]?.punch(0.35); kick(0.08); break;
+        case 'step': fx.step(e.x, e.z); break;
+        case 'bump': fx.bump(e.x, e.z); this.heroes[e.player]?.punch(0.5); kick(0.2); break;
+        case 'fire': {
+          const m = this.combat.muzzle(e.player, e.slot, this.tmpV);
+          const color = e.weapon === 'raketenwerfer' ? 0xff9a3a : e.weapon === 'teslastab' ? 0x3de8ff : 0xffe28a;
+          fx.muzzle(m.x, m.y, m.z, e.dirX, e.dirZ, color);
+          this.combat.kick(e.player, e.slot);
+          break;
+        }
+        case 'hit': fx.hit(e.x, e.y, e.z, e.crit); break;
+        case 'kill': fx.burst(e.x, e.z, ENEMY_DEBRIS[e.enemy] ?? ENEMY_DEBRIS.grummelbold); break;
+        case 'explosion': {
+          const wave = e.source === 'welle';
+          fx.explosion(e.x, e.z, e.r, wave);
+          kick((0.1 + e.r * 0.09) * (wave ? 0.5 : 1));
+          if (!wave) stop = Math.max(stop, e.chain >= 2 ? 0.075 : 0.05);
+          break;
+        }
+        case 'zap': fx.zap(e.pts); kick(0.05); break;
+        case 'spark': fx.spark(e.x, e.y, e.z, e.hostile); break;
+        case 'spawn': fx.spawn(e.x, e.z); break;
+        case 'windup': fx.windup(e.x, e.z, e.enemy === 'toastomat' ? 0xff2a4a : 0xff7a1a); break;
+        case 'enemyShot': fx.muzzle(e.x, 0.8, e.z, 0, 0, 0xff7a1a); break;
+        case 'pickup': fx.pickup(e.x, e.z); break;
+        case 'hurt': fx.hurt(e.x, e.z); this.heroes[e.player]?.punch(0.6); kick(0.3); stop = Math.max(stop, 0.11); this.lastStop = -1; break;
+        case 'death': fx.explosion(e.x, e.z, 2.4); kick(0.45); stop = 0.2; this.lastStop = -1; break;
+        case 'waveClear': kick(0.15); break;
+      }
     }
+    // Hit-Stop nicht im Dauerfeuer: höchstens alle 0,3 s
+    if (stop > 0) {
+      if (this.clock - this.lastStop < 0.3) return 0;
+      this.lastStop = this.clock;
+    }
+    return stop;
+  }
+
+  /** Weltpunkt → CSS-Pixel im Canvas (für Schadenszahlen und Beschriftungen). */
+  project(x: number, y: number, z: number, out: { x: number; y: number }): { x: number; y: number } {
+    const v = this.tmpV.set(x, y, z).project(this.camera);
+    const rx = (v.x * 0.5 + 0.5) * (this.iw + 2), ry = (v.y * 0.5 + 0.5) * (this.ih + 2);
+    out.x = ((rx - 1 - this.offX) / this.iw) * this.cssW;
+    out.y = (1 - (ry - 1 - this.offY) / this.ih) * this.cssH;
+    return out;
   }
 
   render(prev: readonly PlayerPose[], players: readonly Player[], alpha: number, dt: number, time: number): void {
@@ -145,8 +210,13 @@ export class GameRenderer {
       let df = p.facing - a.facing;
       while (df > Math.PI) df -= Math.PI * 2;
       while (df < -Math.PI) df += Math.PI * 2;
-      this.heroes[p.id].update(x, z, a.facing + df * alpha, Math.hypot(p.vx, p.vz), p.stride, p.dashTime > 0, time, dt);
-      if (!focus) focus = { x, z, vx: p.vx, vz: p.vz };
+      const hero = this.heroes[p.id];
+      hero.update(x, z, a.facing + df * alpha, Math.hypot(p.vx, p.vz), p.stride, p.dashTime > 0, time, dt);
+      // Nach Treffer blinken, tot = weg
+      const visible = p.alive && !(p.invuln > 0 && p.dashTime <= 0 && Math.floor(time * 24) % 2 === 0);
+      hero.root.visible = visible;
+      this.heroPos[p.id] = { x, z, visible: p.alive };
+      if (!focus) focus = { x, z, vx: p.alive ? p.vx : 0, vz: p.alive ? p.vz : 0 };
     }
 
     // Kamera folgt mit Vorausblick in Laufrichtung
@@ -158,8 +228,10 @@ export class GameRenderer {
       this.camTarget.x += (tx - this.camTarget.x) * k;
       this.camTarget.z += (tz - this.camTarget.z) * k;
     }
+    this.clock = time;
     this.shake *= Math.pow(0.002, dt);
-    const sx = (this.rnd() - 0.5) * this.shake, sz = (this.rnd() - 0.5) * this.shake;
+    const amp = this.shake * this.opt.shake;
+    const sx = (this.rnd() - 0.5) * amp, sz = (this.rnd() - 0.5) * amp;
     const target = new THREE.Vector3(this.camTarget.x + sx, 0, this.camTarget.z + sz);
     const pos = target.clone().addScaledVector(this.camDir, 40);
     this.camera.position.copy(pos);
@@ -174,7 +246,8 @@ export class GameRenderer {
     const dr = Math.round(pr / this.wpp) * this.wpp - pr, du = Math.round(pu / this.wpp) * this.wpp - pu;
     this.camera.position.addScaledVector(R, dr).addScaledVector(U, du);
     this.camera.updateMatrixWorld();
-    this.post.mat.uniforms.uOffset.value.set(-dr / this.wpp, -du / this.wpp);
+    this.offX = -dr / this.wpp; this.offY = -du / this.wpp;
+    this.post.mat.uniforms.uOffset.value.set(this.offX, this.offY);
 
     // Sonne + Schatten folgen der Kamera
     this.sun.position.set(target.x - 7, 14, target.z - 3);
@@ -185,18 +258,8 @@ export class GameRenderer {
     for (const c of this.arena.crystals) { c.light.intensity = 4.5 + Math.sin(time * 2 + c.seed) * 1.2; c.group.position.y = Math.sin(time * 1.6 + c.seed) * 0.03; }
     for (const h of this.arena.halos) (h.material as THREE.SpriteMaterial).opacity = 0.45 + Math.sin(time * 9 + h.id) * 0.08;
     this.arena.lavaMaterial.emissiveIntensity = 0.55 + Math.sin(time * 2.2) * 0.12;
-    const hero = players[0];
-    for (const g of this.arena.grummels) {
-      const bob = Math.abs(Math.sin(time * 3 + g.seed)) * 0.12;
-      g.group.position.y = bob;
-      if (hero) {
-        const want = Math.atan2(hero.x - g.x, hero.z - g.z);
-        let d = want - g.group.rotation.y;
-        while (d > Math.PI) d -= Math.PI * 2;
-        while (d < -Math.PI) d += Math.PI * 2;
-        g.group.rotation.y += d * Math.min(1, dt * 3);
-      }
-    }
+    for (const b of this.arena.barrels) b.group.visible = !b.prop.broken;
+    this.combat.update(alpha, time, dt, this.heroPos);
     this.effects.update(dt);
 
     this.renderer.setRenderTarget(this.rt);

@@ -13,7 +13,12 @@ export function createWebPlatform(): Platform {
       }
     },
     haptic(ms) {
-      try { navigator.vibrate?.(ms); } catch { /* nicht unterstützt (z. B. iOS-Safari) */ }
+      try {
+        // Browser blockieren Vibration vor der ersten Nutzer-Interaktion
+        const ua = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
+        if (ua && !ua.hasBeenActive) return;
+        navigator.vibrate?.(ms);
+      } catch { /* nicht unterstützt (z. B. iOS-Safari) */ }
     },
     async toggleFullscreen() {
       try {

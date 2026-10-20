@@ -29,5 +29,7 @@ Arena-Roguelite im Stil von Brotato mit 3D-Voxel-Pixel-Grafik (Kamera wie Minecr
 
 ## Stand
 - Phase 1 (Fundament) fertig: Bewegung, Dash, Kollision, Arena, Held-Animation, Touch/Tastatur/Gamepad.
-- Nächster Schritt: **Phase 2 – Kampf-Kern** (3 Waffen mit Auto-Aim, 3 Gegnertypen, Wellen-Timer, Kristalle, Explosionen mit Voxel-Trümmern, Hit-Stop, Screen-Shake).
+- Phase 2 (Kampf-Kern) fertig: Pistole/Raketenwerfer/Tesla-Stab mit Auto-Aim (systemisch aus Antrieb + Ladung, `core/src/weapons.ts`), Grummelbold/Bomben-Kröte/Toastomat (`core/src/enemies.ts`, Daten in `data/src/enemies.ts`), Wellen, Kristalle, Ketten-Explosionen, Fässer, Hit-Stop, Shake, Schadenszahlen, Run-Ende. Balancing zentral in `data/src/balance.ts`.
+- Effekte entstehen nur aus `world.events` (`render/src/effects.ts`); Gegner/Geschosse per Instancing (`render/src/instanced.ts`, `combatView.ts`).
+- Nächster Schritt: **Phase 3 – Shop & Progression** (Level-Up, Shop, Merge, 20 Wellen, Boss, Run-Ende).
 - Nach jeder Phase: Tests + Typecheck grün, kurze Änderungsliste, bekannte Probleme, nächster Schritt.

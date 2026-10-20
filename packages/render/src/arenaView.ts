@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { Tile, hash2, type Arena } from '@overboom/core';
+import { Tile, hash2, type Arena, type Prop } from '@overboom/core';
 import { buildVoxels, solidMaterial, voxelObject, VoxBuilder } from './voxel.ts';
-import { barrel, crystal, grummel, rubble, torch } from './models.ts';
+import { barrel, crystal, rubble, torch } from './models.ts';
 
 const PX = 8; // Texturpixel pro Kachel
 
@@ -73,7 +73,7 @@ export interface ArenaView {
   lavaMaterial: THREE.MeshLambertMaterial;
   torches: { light: THREE.PointLight; x: number; z: number; seed: number }[];
   crystals: { group: THREE.Group; light: THREE.PointLight; seed: number }[];
-  grummels: { group: THREE.Group; x: number; z: number; seed: number }[];
+  barrels: { group: THREE.Group; prop: Prop }[];
   halos: THREE.Sprite[];
 }
 
@@ -157,7 +157,7 @@ export function buildArenaView(a: Arena): ArenaView {
 
   const torches: ArenaView['torches'] = [];
   const crystals: ArenaView['crystals'] = [];
-  const grummels: ArenaView['grummels'] = [];
+  const barrels: ArenaView['barrels'] = [];
   const halos: THREE.Sprite[] = [];
 
   for (const p of a.props) {
@@ -188,18 +188,12 @@ export function buildArenaView(a: Arena): ArenaView {
       o.position.set(p.x, 0, p.z);
       o.rotation.y = p.seed;
       group.add(o);
+      barrels.push({ group: o, prop: p });
     } else if (p.kind === 'rubble') {
       const o = voxelObject(rubble(p.seed), 0.16, {}, false);
       o.position.set(p.x, 0, p.z);
       o.rotation.y = p.seed;
       group.add(o);
-    } else if (p.kind === 'grummel') {
-      const o = voxelObject(grummel(), 0.11, { origin: [0, 0, 0] });
-      const holder = new THREE.Group();
-      holder.add(o);
-      holder.position.set(p.x, 0, p.z);
-      group.add(holder);
-      grummels.push({ group: holder, x: p.x, z: p.z, seed: p.seed });
     }
   }
 
@@ -209,5 +203,5 @@ export function buildArenaView(a: Arena): ArenaView {
     l.position.set(x, 0.8, z);
     group.add(l);
   }
-  return { group, lavaMaterial, torches, crystals, grummels, halos };
+  return { group, lavaMaterial, torches, crystals, barrels, halos };
 }

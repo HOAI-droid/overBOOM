@@ -104,3 +104,118 @@ export function rubble(seed: number): Vox[] {
   if (seed % 4 === 0) b.v(0, 1, 0, c[(seed + 2) % 4]).v(0, 0, 1, c[(seed + 3) % 4]);
   return b.list();
 }
+
+/* ------------------------------------------------------------------ */
+/* Phase 2: Gegner, Waffen, Geschosse, Pickups                          */
+/* ------------------------------------------------------------------ */
+
+/** Bomben-Kröte (Sumpfbande): dick, lila, Glupschaugen, Bombe auf dem Rücken. Blick +z. */
+export function kroete(): Vox[] {
+  const p = '#8a4fd8', pd = '#6a38b0', belly = '#c9a0ff', ink = '#141018', brow = '#2b1440';
+  const b = new VoxBuilder()
+    // Beinchen
+    .box(-4, -3, 0, 0, 1, 3, pd).box(2, 3, 0, 0, 1, 3, pd).box(-4, -3, 0, 0, -3, -2, pd).box(2, 3, 0, 0, -3, -2, pd)
+    // Körper
+    .box(-4, 3, 1, 5, -3, 3, p)
+    .box(-3, 2, 1, 2, 4, 4, belly)
+    // breites Maul mit Unterbiss und zwei Hauern
+    .box(-3, 2, 3, 3, 4, 4, '#3a1a4a').v(-2, 4, 4, '#fff6d8').v(1, 4, 4, '#fff6d8')
+    // Glupschaugen
+    .box(-4, -2, 5, 7, 1, 3, '#ffffff').box(1, 3, 5, 7, 1, 3, '#ffffff')
+    .v(-2, 6, 4, ink).v(-3, 6, 4, '#ffffff').v(1, 6, 4, ink).v(2, 6, 4, '#ffffff')
+    // schräge Wut-Brauen (innen tief)
+    .v(-4, 8, 3, brow).v(-3, 8, 3, brow).v(-2, 7, 4, brow).v(3, 8, 3, brow).v(2, 8, 3, brow).v(1, 7, 4, brow)
+    // Bombe auf dem Rücken
+    .box(-2, 1, 5, 8, -5, -2, '#24202e').box(-1, 0, 9, 9, -4, -3, '#24202e')
+    .v(-2, 7, -2, '#5a5468')
+    .v(0, 10, -3, '#6b4b2e').v(0, 11, -3, '#ff7a1a', 1).v(0, 12, -3, '#ffd23f', 1);
+  for (const [x, y, z] of [[-2, 5, -5], [1, 5, -5], [-2, 8, -5], [1, 8, -5], [-2, 5, -2], [1, 5, -2], [-2, 8, -2], [1, 8, -2]]) b.del(x, y, z);
+  return b.list();
+}
+
+/** Toastomat (Blechbrut): wütender Toaster auf Stelzen, rote LED-Brauen. Blick +z. */
+export function toastomat(): Vox[] {
+  const chrome = '#c9ced8', dark = '#8d93a3', led = '#ff2a4a';
+  return new VoxBuilder()
+    // Stelzenbeine
+    .box(-2, -2, 0, 3, 0, 0, '#5a5f68').box(1, 1, 0, 3, 0, 0, '#5a5f68')
+    .box(-2, -2, 0, 0, 1, 1, '#3a3e46').box(1, 1, 0, 0, 1, 1, '#3a3e46')
+    // Gehäuse
+    .box(-3, 2, 4, 10, -2, 2, chrome)
+    .box(-3, -3, 4, 10, -2, 2, dark).box(2, 2, 4, 10, -2, 2, dark)
+    .box(-3, 2, 4, 4, -2, 2, '#6b707a')
+    // Toastschlitze mit glühendem Toast
+    .box(-2, 1, 10, 10, -1, -1, '#2a2e38').box(-2, 1, 10, 10, 1, 1, '#2a2e38')
+    .box(-2, 1, 11, 12, -1, -1, '#c98a3a').box(-2, 1, 11, 11, 1, 1, '#c98a3a').box(-2, 1, 12, 12, 1, 1, '#ff7a1a', 1)
+    // Gesicht: LED-Augen und schräge LED-Brauen
+    .v(-2, 7, 3, '#ffffff', 1).v(1, 7, 3, '#ffffff', 1)
+    .v(-3, 9, 3, led, 1).v(-2, 8, 3, led, 1).v(2, 9, 3, led, 1).v(1, 8, 3, led, 1)
+    // Grill-Mund mit Hauern
+    .box(-2, 1, 5, 5, 3, 3, '#2a2e38').v(-2, 6, 3, '#fff6d8').v(1, 6, 3, '#fff6d8')
+    // Hebel an der Seite
+    .box(3, 3, 7, 7, 0, 0, '#5a5f68').v(4, 7, 0, '#ff3d3d')
+    .list();
+}
+
+/** Schwebende Waffen-Modelle (Lauf zeigt nach +z). */
+export function weaponModel(id: string): Vox[] {
+  switch (id) {
+    case 'raketenwerfer':
+      return new VoxBuilder()
+        .box(-1, 0, 1, 2, -3, 3, '#5b6b3a').box(-1, 0, 1, 2, 4, 4, '#ff7a1a')
+        .box(-1, 0, 1, 2, -4, -4, '#2a2e38').v(0, 3, 0, '#3a4426').v(-1, 0, 0, '#5a3a1e').v(-1, -1, 0, '#5a3a1e')
+        .v(-1, 2, 4, '#ff3d3d', 1)
+        .list();
+    case 'teslastab':
+      return new VoxBuilder()
+        .box(0, 0, 0, 0, -4, 2, '#7a4a28')
+        .box(-1, 1, 0, 0, 0, 0, '#d8a04a').box(-1, 1, 0, 0, 2, 2, '#d8a04a')
+        .box(0, 1, 0, 1, 3, 4, '#3de8ff', 1).v(0, 2, 4, '#e8fdff', 1)
+        .list();
+    default: // Pistole
+      return new VoxBuilder()
+        .box(0, 0, -2, 0, -1, -1, '#5a3a1e')
+        .box(0, 0, 1, 2, -2, 3, '#7d8597').box(0, 0, 2, 2, -2, 0, '#5a5f68')
+        .v(0, 2, 4, '#2a2e38').v(0, 3, -1, '#3de8ff', 1)
+        .list();
+  }
+}
+
+/** Geschoss-Modelle nach Geschoss-Bauteil (Flugrichtung +z). */
+export function projectileModel(geschoss: string): Vox[] {
+  switch (geschoss) {
+    case 'rakete':
+      return new VoxBuilder()
+        .box(0, 0, 0, 0, -2, 2, '#e8e2f0').v(0, 0, 3, '#ff3d3d')
+        .v(-1, 0, -2, '#ff3d3d').v(1, 0, -2, '#ff3d3d').v(0, 1, -2, '#ff3d3d')
+        .v(0, 0, -3, '#ffd23f', 1)
+        .list();
+    case 'blitzkugel':
+      return new VoxBuilder().box(-1, 0, -1, 0, -1, 0, '#3de8ff', 1).v(0, 0, 0, '#e8fdff', 1).v(-1, -1, -1, '#a8f6ff', 1).list();
+    case 'toast':
+      return new VoxBuilder().box(-1, 1, 0, 0, -1, 1, '#c98a3a').box(-1, 1, 1, 1, -1, 1, '#ff7a1a', 1).v(0, 1, 0, '#ffd23f', 1).list();
+    default: // Kugel
+      return new VoxBuilder().box(0, 0, 0, 0, -1, 1, '#ffd23f', 1).v(0, 0, 1, '#fff3c4', 1).list();
+  }
+}
+
+/** Kleiner Kristall zum Einsammeln. */
+export function gem(): Vox[] {
+  return new VoxBuilder()
+    .box(0, 1, 1, 2, 0, 1, '#3de8ff', 1).box(0, 1, 0, 0, 0, 1, '#1aa8d8', 1).v(0, 3, 0, '#a8f6ff', 1).v(1, 3, 1, '#e8fdff', 1)
+    .list();
+}
+
+/** Rotes Spawn-Kreuz, flach am Boden. */
+export function spawnMarker(): Vox[] {
+  const b = new VoxBuilder();
+  for (let i = -3; i <= 3; i++) { b.v(i, 0, i, '#ff2a4a', 1); b.v(i, 0, -i, '#ff2a4a', 1); }
+  return b.list();
+}
+
+/** Farben, in die ein Gegner zerplatzt. */
+export const ENEMY_DEBRIS: Record<string, string[]> = {
+  grummelbold: ['#6cc24a', '#5aa83c', '#7d8597', '#8a5a2a', '#ffffff'],
+  bombenkroete: ['#8a4fd8', '#6a38b0', '#c9a0ff', '#24202e', '#ff7a1a'],
+  toastomat: ['#c9ced8', '#8d93a3', '#c98a3a', '#ff2a4a', '#2a2e38']
+};
