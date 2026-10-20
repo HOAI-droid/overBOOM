@@ -19,7 +19,9 @@ export default defineConfig({
       '@overboom/audio': r('../../packages/audio/src/index.ts')
     }
   },
-  plugins: single ? [viteSingleFile()] : [],
+  plugins: single
+    ? [viteSingleFile(), { name: 'overboom-single', transformIndexHtml: (html: string) => html.replace('<head>', '<head>\n<meta name="overboom-single" content="1">') }]
+    : [],
   build: {
     outDir: r(single ? '../../dist-single' : '../../dist'),
     emptyOutDir: true,

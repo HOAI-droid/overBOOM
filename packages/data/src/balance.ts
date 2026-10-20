@@ -146,3 +146,16 @@ export const KOOP = {
   /** Fortschritt verfällt, wenn niemand im Ring steht (pro s) */
   reviveVerfall: 0.6
 };
+
+/** Overkill-Leiste: füllt sich durch Kills und Ketten; voll → OVERBOOM-Modus */
+export const OVERKILL = {
+  proKill: 0.012,
+  proKettenglied: 0.012,
+  /** Dauer des OVERBOOM-Modus (s) */
+  dauer: 5,
+  /** Feuerrate × im Modus */
+  feuerrate: 2,
+  /** Mini-Explosion bei jedem Treffer: Radius, Schadensanteil */
+  bummRadius: 1.2,
+  bummSchaden: 0.5
+};

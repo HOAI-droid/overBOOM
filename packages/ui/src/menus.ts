@@ -10,7 +10,7 @@ import { gefahrWahl } from './gefahr.ts';
 import { STANDARD, einstellungenHtml, type Einstellungen } from './settings.ts';
 import { lobbyHtml, titelHtml, type CoopAktion, type CoopAnsicht } from './lobby.ts';
 import { ALBUM_TABS, albumGrid, albumZaehler, erfolgeHtml, karteGross, kartenListe, type AlbumTab, type KartenKunst } from './album.ts';
-import { GEFAHREN, MAX_GEFAHR, HELD_FREI, KARTEN, KARTE_BY_ID, WELT as WELT_INFO, type Karte } from '@overboom/data';
+import { TIPPS, GEFAHREN, MAX_GEFAHR, HELD_FREI, KARTEN, KARTE_BY_ID, WELT as WELT_INFO, type Karte } from '@overboom/data';
 
 const GEM = '<i class="ob-gem" aria-hidden="true"></i>';
 const LOCK_ON = '<svg viewBox="0 0 8 9" width="16" height="18" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M2 0h4v1h1v3h1v5h-8v-5h1v-3h1zM2 1v3h4v-3zM3 5v2h2v-2z"/></svg>';
@@ -204,7 +204,7 @@ export class Menus {
     const w = this.world, p = this.p;
     if (this.mode === 'pause' || this.mode === 'end' || this.mode === 'album' || this.mode === 'einst') return;
     if (this.screen === 'titel') {
-      if (this.mode !== 'titel') this.show('titel', titelHtml(this.name, this.codeVorgabe, this.albumButton(), '<button type="button" class="ob-btn2" data-act="einst" data-focus="einst">Einstellungen</button>'), '[data-act="tsolo"]');
+      if (this.mode !== 'titel') this.show('titel', titelHtml(this.name, this.codeVorgabe, this.albumButton(), '<button type="button" class="ob-btn2" data-act="einst" data-focus="einst">Einstellungen</button>', TIPPS[Math.floor(Date.now() / 1000) % TIPPS.length]), '[data-act="tsolo"]');
       return;
     }
     if (this.screen === 'lobby' && this.coop) {
@@ -612,6 +612,7 @@ export class Menus {
       <div class="ob-panel ob-end">
         <h2>Pause</h2>
         <p class="ob-sub">${this.koop ? 'Achtung: Im Koop läuft das Spiel weiter!' : 'Kurz durchatmen. Die Grummelbolde warten (grummelnd).'}</p>
+        <p class="ob-tipp">Tipp: ${TIPPS[Math.floor(Date.now() / 1000) % TIPPS.length]}</p>
         <div class="ob-row ob-center">
           <button type="button" class="ob-go" data-act="resume">Weiter</button>
           ${this.koop ? '<button type="button" class="ob-btn2" data-act="lverlassen">Raum verlassen</button>' : '<button type="button" class="ob-btn2" data-act="restart">Neu starten</button>'}

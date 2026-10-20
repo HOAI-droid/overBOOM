@@ -1,8 +1,8 @@
 import { World, DT, DASH_COOLDOWN, NO_INPUT, MetaTracker, heldenFrei, inselFrei, ladeProfil, profilAusCode, profilCode, spawnEnemy, type Command, type InputState, type SimEvent } from '@overboom/core';
-import { BOSS_LORE, ELEMENT_INFO, ERFOLGE, GEGNER, GEGNER_BY_ID, HELD_BY_ID, INSELN, INSEL_BY_ID, INSEL_LORE, KARTE_BY_ID, LEVEL, SELTENHEIT, SYNERGIEN, WELLEN_SPRUECHE, waffeById, waehle } from '@overboom/data';
+import { GEGNER_INDEX, BOSS_LORE, ELEMENT_INFO, ERFOLGE, GEGNER, GEGNER_BY_ID, HELD_BY_ID, INSELN, INSEL_BY_ID, INSEL_LORE, KARTE_BY_ID, LEVEL, SELTENHEIT, SYNERGIEN, WELLEN_SPRUECHE, waffeById, waehle } from '@overboom/data';
 import { CardArt, FX, GameRenderer, type PlayerPose } from '@overboom/render';
 import { AudioEngine } from '@overboom/audio';
-import { Controls, DamageNumbers, Hud, MenuNav, Menus, NameTags, karteAlsBild, ladeEinstellungen, screenToWorld, type CoopAktion, type CoopAnsicht, type Einstellungen } from '@overboom/ui';
+import { Controls, DamageNumbers, DebugMenu, Hud, MenuNav, Menus, NameTags, karteAlsBild, ladeEinstellungen, screenToWorld, type CoopAktion, type CoopAnsicht, type Einstellungen } from '@overboom/ui';
 import { ClientSession, HostSession, LocalTransport, createTrysteroTransport, makeRoomCode, normalizeRoomCode, type LobbySpieler, type Transport } from '@overboom/net';
 import { createWebPlatform } from '@overboom/platform';
 
@@ -110,7 +110,7 @@ async function start() {
   const damage = new DamageNumbers(root);
   damage.enabled = einst.zahlen;
   const tags = new NameTags(root);
-  const controls = new Controls(root, hud.dashButton);
+  const controls = new Controls(root, hud.dashButton, hud.boomButton);
 
   /* ---------------- Sitzung: Solo, Host oder Client ---------------- */
   let modus: 'solo' | 'host' | 'client' = 'solo';
@@ -166,6 +166,25 @@ async function start() {
   };
   const nav = new MenuNav(menus.root);
 
+  platform.registerOffline();
+
+  /* ---------------- Debug-Menü (F1 / 5 Finger) ---------------- */
+  const debug = new DebugMenu(root);
+  debug.erlaubt = () => modus !== 'client' && menus.screen !== 'titel' && menus.screen !== 'lobby';
+  debug.onAktion = (a) => {
+    const p = world.players[me];
+    if (!p || modus === 'client') return;
+    switch (a.t) {
+      case 'kristalle': p.crystals += 500; break;
+      case 'welle': if (world.phase === 'welle') { world.waveTime = 0.1; if (world.boss >= 0) world.killEnemy(world.enemies[world.boss], 0, 0, false); } break;
+      case 'gott': (world.opt as { god: boolean }).god = !world.opt.god; hud.toast('Debug', world.opt.god ? 'Gott-Modus an' : 'Gott-Modus aus', '#3de8ff'); break;
+      case 'overkill': p.overkill = 1; break;
+      case 'heilen': p.hp = p.maxHp; break;
+      case 'waffe': world.debugGive(me, a.id); break;
+      case 'gegner': for (let i = 0; i < a.n; i++) spawnEnemy(world, GEGNER_INDEX[a.id] ?? 0, p.x + Math.cos(i * 1.3) * 4, p.z + Math.sin(i * 1.3) * 4); break;
+    }
+  };
+
   /* ---------------- Einstellungen anwenden ---------------- */
   const QUALI = { hoch: { res: 270, schatten: true, partikel: 1 }, mittel: { res: 216, schatten: true, partikel: 0.7 }, niedrig: { res: 180, schatten: false, partikel: 0.5 } };
   /** bei „Automatisch": aktuelle Stufe (wird nach gemessener Bildrate angepasst) */
@@ -205,6 +224,7 @@ async function start() {
   let acc = 0;
   let last = performance.now();
   let dashQueued = false;
+  let boomQueued = false;
   let moving = false;
   /** Hit-Stop: Simulation steht kurz still, Darstellung (Shake) läuft weiter – nur solo */
   let freeze = 0;
@@ -218,6 +238,8 @@ async function start() {
   let lastItems: object | null = null;
   let lastItemCount = -1;
   const prevSelf: PlayerPose = { x: 0, z: 0, facing: 0 };
+  // automatische Qualität: Bildrate über 3 s messen
+  let fpsT = 0, fpsN = 0, qualiPause = 5;
 
   /** andere Welt anzeigen (Koop-Start, Rückkehr zu Solo) */
   const useWorld = (w: World, slot: number) => {
@@ -468,6 +490,8 @@ async function start() {
           else if (e.by === me) hud.toast('Gerettet!', world.players[e.player]?.name ?? '', '#7dff5a');
           break;
         case 'death': haptic(200); endTimer = 1.6; break;
+        case 'overkillVoll': if (e.player === me) hud.toast('Overkill voll!', touch ? 'OVERBOOM antippen' : 'E oder Q drücken', '#ff7a1a', true); break;
+        case 'overboom': hud.banner('OVERBOOM!', e.player === me ? 'Doppelte Feuerrate · alles explodiert' : `${world.players[e.player]?.name ?? ''} dreht durch`, 'rot'); haptic(250); break;
       }
     }
     const self = world.players[me];
@@ -527,7 +551,8 @@ async function start() {
   }
 
   const frame = (now: number) => {
-    const dt = Math.min(0.1, (now - last) / 1000);
+    const rawDt = Math.max(0, (now - last) / 1000);
+    const dt = Math.min(0.1, rawDt);
     last = now;
 
     const si = controls.poll();
@@ -540,6 +565,7 @@ async function start() {
 
     const inMenu = menus.open || paused;
     if (si.dash && !inMenu) dashQueued = true;
+    if (si.boom && !inMenu) boomQueued = true;
     if (!moving && (Math.abs(si.x) + Math.abs(si.y) > 0.1 || si.dash)) { moving = true; hud.moved(); }
 
     // Im Koop hält Pause die Welt nicht an
@@ -554,8 +580,9 @@ async function start() {
     while (!halt && acc >= DT && steps < 5 && freeze <= 0) {
       prev = poses();
       const w = screenToWorld(si.x, si.y);
-      const input: InputState = world.phase === 'welle' && !inMenu ? { mx: w.mx, mz: w.mz, dash: dashQueued } : NO_INPUT;
+      const input: InputState = world.phase === 'welle' && !inMenu ? { mx: w.mx, mz: w.mz, dash: dashQueued, boom: boomQueued } : NO_INPUT;
       dashQueued = false;
+      boomQueued = false;
       if (modus === 'host' && host?.world) {
         host.tick(input);
         processEvents(world.events, now);
@@ -614,7 +641,8 @@ async function start() {
       hp: p.hp, maxHp: p.maxHp, crystals: p.crystals,
       wave: world.wave, waveTime: world.waveTime, phase: world.phase,
       level: p.level, xp: p.xp / LEVEL.xpBedarf(p.level),
-      boss: boss && boss.alive ? Math.max(0, boss.hp / boss.maxHp) : -1
+      boss: boss && boss.alive ? Math.max(0, boss.hp / boss.maxHp) : -1,
+      overkill: p.overkill, boomT: p.boomT
     });
     if (world.phase !== lastPhase || p.loadout !== lastLoadout || p.items !== lastItems || Object.keys(p.items).length !== lastItemCount) {
       lastPhase = world.phase;
@@ -629,6 +657,19 @@ async function start() {
         const count = p.synCount[sy.element] ?? 0;
         return { element: sy.element, count, level: sy.stufen.filter((st) => count >= st.ab).length, farbe: sy.farbe };
       }));
+    }
+    // Automatische Qualitätsstufe nach gemessener Bildrate
+    fpsT += Math.min(0.5, rawDt); fpsN++;
+    qualiPause -= dt;
+    if (fpsT >= 3) {
+      const fps = fpsN / fpsT;
+      fpsT = 0; fpsN = 0;
+      if (einst.qualitaet === 'auto' && qualiPause <= 0 && menus.screen === 'spiel' && !document.hidden) {
+        const stufen = ['niedrig', 'mittel', 'hoch'] as const;
+        const i = stufen.indexOf(autoStufe);
+        if (fps < 40 && i > 0) { autoStufe = stufen[i - 1]; applyEinstellungen(false); qualiPause = 6; }
+        else if (fps > 57 && i < 2) { autoStufe = stufen[i + 1]; applyEinstellungen(false); qualiPause = 20; }
+      }
     }
     // Musik je nach Lage
     audio.update(dt);

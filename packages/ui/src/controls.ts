@@ -4,6 +4,8 @@ export interface ScreenInput {
   y: number;
   /** wurde seit dem letzten Abfragen ein Dash ausgelöst? */
   dash: boolean;
+  /** OVERBOOM auslösen */
+  boom: boolean;
   source: 'keyboard' | 'touch' | 'gamepad' | 'none';
 }
 
@@ -14,6 +16,8 @@ export interface ScreenInput {
 export class Controls {
   private keys = new Set<string>();
   private dashQueued = false;
+  private boomQueued = false;
+  private padBoomWas = false;
   private stick = { id: -1, ox: 0, oy: 0, x: 0, y: 0 };
   private base: HTMLDivElement;
   private knob: HTMLDivElement;
@@ -21,7 +25,8 @@ export class Controls {
   private lastSource: ScreenInput['source'] = 'none';
   private readonly radius = 56;
 
-  constructor(private surface: HTMLElement, dashButton: HTMLElement) {
+  constructor(private surface: HTMLElement, dashButton: HTMLElement, boomButton?: HTMLElement) {
+    boomButton?.addEventListener('pointerdown', (e) => { this.boomQueued = true; e.preventDefault(); e.stopPropagation(); });
     this.base = document.createElement('div');
     this.base.className = 'ob-stick';
     this.knob = document.createElement('div');
@@ -33,6 +38,7 @@ export class Controls {
       if (e.repeat) return;
       this.keys.add(e.code);
       if (e.code === 'Space' || e.code === 'ShiftLeft' || e.code === 'ShiftRight') { this.dashQueued = true; e.preventDefault(); }
+      if (e.code === 'KeyE' || e.code === 'KeyQ' || e.code === 'Enter') this.boomQueued = true;
       this.lastSource = 'keyboard';
     });
     addEventListener('keyup', (e) => this.keys.delete(e.code));
@@ -104,12 +110,16 @@ export class Controls {
       const pressed = !!(p.buttons[0]?.pressed || p.buttons[5]?.pressed || p.buttons[7]?.pressed);
       if (pressed && !this.padDashWas) { this.dashQueued = true; this.lastSource = 'gamepad'; }
       this.padDashWas = pressed;
+      const boom = !!(p.buttons[3]?.pressed || p.buttons[2]?.pressed);
+      if (boom && !this.padBoomWas) this.boomQueued = true;
+      this.padBoomWas = boom;
       break;
     }
 
-    const dash = this.dashQueued;
+    const dash = this.dashQueued, boom = this.boomQueued;
     this.dashQueued = false;
-    return { x, y, dash, source: this.lastSource };
+    this.boomQueued = false;
+    return { x, y, dash, boom, source: this.lastSource };
   }
 }
 

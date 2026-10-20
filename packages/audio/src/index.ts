@@ -198,6 +198,8 @@ export class AudioEngine {
         case 'revive': this.play('wiederda'); break;
         case 'death': this.play('tod'); break;
         case 'victory': this.play('fanfare', { pitch: 1.12 }); break;
+        case 'overboom': this.play('overboom'); break;
+        case 'overkillVoll': if (e.player === me) this.play('stern', { pitch: 0.7 }); break;
       }
     }
   }

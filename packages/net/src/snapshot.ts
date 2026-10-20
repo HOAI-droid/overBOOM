@@ -96,6 +96,7 @@ export interface PlayerSnap {
   dashTime: number; dashCooldown: number; invuln: number;
   hp: number; maxHp: number; alive: boolean; downed: boolean; ready: boolean; reviveT: number;
   crystals: number; level: number; xp: number;
+  overkill: number; boomT: number;
   /** zuletzt verarbeitete Eingabe dieses Spielers */
   ack: number;
   aims: number[];
@@ -154,6 +155,7 @@ export function encodeSnapshot(w: World, events: readonly SimEvent[], acks: read
     out.put('u8', (p.alive ? 1 : 0) | (p.downed ? 2 : 0) | (p.ready ? 4 : 0));
     out.put('u8', p.reviveT, 50);
     out.put('u32', p.crystals); out.put('u16', p.level); out.put('f32', p.xp);
+    out.put('u8', p.overkill, 255); out.put('u8', p.boomT, 50);
     out.put('u32', acks[p.id] ?? 0);
     out.put('u8', p.weapons.length);
     for (const s of p.weapons) out.put('i16', Math.atan2(Math.sin(s.aim), Math.cos(s.aim)), 10000);
@@ -204,7 +206,7 @@ export function decodeSnapshot(buf: ArrayBuffer, s: Snapshot = new Snapshot()): 
   const np = r.get('u8');
   s.players.length = np;
   for (let i = 0; i < np; i++) {
-    const p: PlayerSnap = s.players[i] ?? (s.players[i] = { x: 0, z: 0, vx: 0, vz: 0, facing: 0, stride: 0, dashTime: 0, dashCooldown: 0, invuln: 0, hp: 0, maxHp: 1, alive: true, downed: false, ready: false, reviveT: 0, crystals: 0, level: 1, xp: 0, ack: 0, aims: [] });
+    const p: PlayerSnap = s.players[i] ?? (s.players[i] = { x: 0, z: 0, vx: 0, vz: 0, facing: 0, stride: 0, dashTime: 0, dashCooldown: 0, invuln: 0, hp: 0, maxHp: 1, alive: true, downed: false, ready: false, reviveT: 0, crystals: 0, level: 1, xp: 0, overkill: 0, boomT: 0, ack: 0, aims: [] });
     p.x = r.get('f32'); p.z = r.get('f32');
     p.vx = r.get('i16', 100); p.vz = r.get('i16', 100);
     p.facing = r.get('i16', 10000);
@@ -215,6 +217,7 @@ export function decodeSnapshot(buf: ArrayBuffer, s: Snapshot = new Snapshot()): 
     p.alive = (fl & 1) !== 0; p.downed = (fl & 2) !== 0; p.ready = (fl & 4) !== 0;
     p.reviveT = r.get('u8', 50);
     p.crystals = r.get('u32'); p.level = r.get('u16'); p.xp = r.get('f32');
+    p.overkill = r.get('u8', 255); p.boomT = r.get('u8', 50);
     p.ack = r.get('u32');
     const nw = r.get('u8');
     p.aims.length = nw;
@@ -280,7 +283,7 @@ export function applySnapshot(w: World, a: Snapshot, b: Snapshot, t: number, sel
     p.dashCooldown = i === self ? p.dashCooldown : q.dashCooldown;
     p.hp = q.hp; p.maxHp = q.maxHp;
     p.alive = q.alive; p.downed = q.downed; p.ready = q.ready; p.reviveT = q.reviveT;
-    p.crystals = q.crystals; p.level = q.level; p.xp = q.xp;
+    p.crystals = q.crystals; p.level = q.level; p.xp = q.xp; p.overkill = q.overkill; p.boomT = q.boomT;
     for (let k = 0; k < p.weapons.length && k < q.aims.length; k++) p.weapons[k].aim = q.aims[k];
     if (i === self) p.invuln = q.invuln;
   }

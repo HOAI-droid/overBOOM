@@ -9,7 +9,7 @@ import {
 import { spawnBoss, spawnEnemy, stepEnemies, stepWaves } from './enemies.ts';
 import { maintainDrones, pull, rainEgg, spawnChickFor, stepProjectiles, stepWeapons, stormStrike } from './weapons.ts';
 import { addWeapon, creditKill, gainXp, openShop, recomputeStats, runCommand, type Command } from './progression.ts';
-import { BEUTE, FINALBOSS, GEGNER, KOOP, MAX_GEFAHR, gefahrWerte, type GefahrWerte, GEGNER_INDEX, HELD_BY_ID, INSEL_BY_ID, KAMPF, SPIELER, WELLEN, baseStats, rollAusruestung, type Ausruestung, type Insel, type PlatzId, type Stats } from '../../data/src/index.ts';
+import { BEUTE, FINALBOSS, GEGNER, KOOP, OVERKILL, MAX_GEFAHR, gefahrWerte, type GefahrWerte, GEGNER_INDEX, HELD_BY_ID, INSEL_BY_ID, KAMPF, SPIELER, WELLEN, baseStats, rollAusruestung, type Ausruestung, type Insel, type PlatzId, type Stats } from '../../data/src/index.ts';
 
 import { ACCEL, BARREL_RADIUS, DASH_COOLDOWN, DASH_SPEED, DASH_TIME, DT, MOVE_SPEED, PLAYER_COLORS, PLAYER_RADIUS } from './constants.ts';
 export * from './constants.ts';
@@ -35,6 +35,10 @@ export interface Player {
   downed: boolean;
   /** Fortschritt des Wiederbelebens (s) */
   reviveT: number;
+  /** Overkill-Leiste 0–1 */
+  overkill: number;
+  /** verbleibende Zeit im OVERBOOM-Modus (s) */
+  boomT: number;
   x: number;
   z: number;
   vx: number;
@@ -120,6 +124,8 @@ export type SimEvent =
   | { type: 'death'; player: number; x: number; z: number }
   | { type: 'downed'; player: number; x: number; z: number }
   | { type: 'revive'; player: number; by: number; x: number; z: number }
+  | { type: 'overboom'; player: number; x: number; z: number }
+  | { type: 'overkillVoll'; player: number }
   | { type: 'chain'; count: number; x: number; z: number }
   | { type: 'waveStart'; wave: number; boss: boolean }
   | { type: 'waveClear'; wave: number }
@@ -319,7 +325,7 @@ export class World {
     const p: Player = {
       id: i,
       color: PLAYER_COLORS[i % PLAYER_COLORS.length],
-      name: `Spieler ${i + 1}`, downed: false, reviveT: 0,
+      name: `Spieler ${i + 1}`, downed: false, reviveT: 0, overkill: 0, boomT: 0,
       x: this.arena.spawn.x + (i ? Math.cos(a) * 1.5 : 0),
       z: this.arena.spawn.z + (i ? Math.sin(a) * 1.5 : 0),
       vx: 0, vz: 0,
@@ -405,6 +411,7 @@ export class World {
       if (!p.alive) continue;
       p.hp = p.maxHp;
       p.ready = false;
+      p.boomT = 0;
       // Spieler zurück in die Mitte
       p.x = this.arena.spawn.x + (p.id ? Math.cos(p.id * 1.57) * 1.5 : 0);
       p.z = this.arena.spawn.z + (p.id ? Math.sin(p.id * 1.57) * 1.5 : 0);
@@ -582,6 +589,13 @@ export class World {
 
     p.invuln = Math.max(0, p.invuln - DT);
     p.dashCooldown = Math.max(0, p.dashCooldown - DT);
+    // OVERBOOM auslösen, wenn die Leiste voll ist
+    if (inp.boom && p.overkill >= 1 && p.boomT <= 0 && this.phase === 'welle') {
+      p.overkill = 0;
+      p.boomT = OVERKILL.dauer;
+      this.events.push({ type: 'overboom', player: p.id, x: p.x, z: p.z });
+    }
+    if (p.boomT > 0) p.boomT = Math.max(0, p.boomT - DT);
     if (inp.dash && p.dashCooldown <= 0 && p.dashTime <= 0) {
       let dx = mx, dz = mz;
       if (Math.hypot(dx, dz) < 0.2) { dx = Math.sin(p.facing); dz = Math.cos(p.facing); }
@@ -698,6 +712,13 @@ export class World {
     p.hp = Math.max(1, Math.round(p.maxHp * anteil));
     p.invuln = 2;
     this.events.push({ type: 'revive', player: p.id, by, x: p.x, z: p.z });
+  }
+
+  /** Overkill-Leiste füllen (nicht während des OVERBOOM-Modus) */
+  addOverkill(p: Player, v: number): void {
+    if (p.boomT > 0 || this.phase !== 'welle' || p.overkill >= 1) return;
+    p.overkill = Math.min(1, p.overkill + v);
+    if (p.overkill >= 1) this.events.push({ type: 'overkillVoll', player: p.id });
   }
 
   /** Faktor für Gegnerleben/-anzahl nach Spielerzahl */
@@ -976,6 +997,7 @@ export class World {
     slot.t = 0;
     if (slot.count >= KAMPF.kettenAnzeige) {
       this.events.push({ type: 'chain', count: slot.count, x, z });
+      for (const p of this.players) if (p.alive) this.addOverkill(p, OVERKILL.proKettenglied);
       if (slot.count > this.stats.maxChain) this.stats.maxChain = slot.count;
     }
   }

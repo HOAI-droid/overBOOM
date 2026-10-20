@@ -271,6 +271,7 @@ export class GameRenderer {
         case 'keks': fx.keks(e.x, e.z); break;
         case 'reaction': fx.reaction(e.x, e.z, e.farbe); kick(0.08); break;
         case 'nova': fx.reaction(e.x, e.z, e.farbe); break;
+        case 'overboom': fx.nuke(e.x, e.z); kick(0.3); break;
         case 'nuke': fx.nuke(e.x, e.z); kick(0.45); stop = Math.max(stop, 0.12); this.lastStop = -1; break;
         case 'storm': fx.storm(e.x, e.z); kick(0.12); break;
         case 'shock': if (e.phase === 'entladen') { fx.shock(this.world.arena); kick(0.15); } break;

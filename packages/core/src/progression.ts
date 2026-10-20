@@ -3,7 +3,7 @@ import type { Offer, WeaponSlot } from './entities.ts';
 import type { PlatzId } from '../../data/src/index.ts';
 import { modMask, spezialMask } from './weapons.ts';
 import {
-  AMBOSS, BEUTE, HELD_BY_ID, PLAETZE, ausruestungsPreis, rollAusruestung, schrottwert, setBoni, ITEMS, MODS, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, ITEM_BY_ID, LEVEL, SHOP, SPIELER, STUFEN, UPGRADES, UPGRADE_BY_ID, W, WAFFEN, elemente,
+  AMBOSS, BEUTE, HELD_BY_ID, OVERKILL, PLAETZE, ausruestungsPreis, rollAusruestung, schrottwert, setBoni, ITEMS, MODS, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, ITEM_BY_ID, LEVEL, SHOP, SPIELER, STUFEN, UPGRADES, UPGRADE_BY_ID, W, WAFFEN, elemente,
   baseStats, fusionsWaffe, pruefeFusion, rollSeltenheit, waffeById, type Stats
 } from '../../data/src/index.ts';
 
@@ -225,6 +225,7 @@ export function creditKill(w: World, src: string): void {
       const s = p.weapons[i];
       if (s.waffe.id !== src) continue;
       s.kills++;
+      w.addOverkill(p, OVERKILL.proKill);
       if (s.stars < 5 && s.kills >= STERNE.kills[s.stars]) {
         s.stars++;
         w.events.push({ type: 'star', player: p.id, slot: i, stars: s.stars, weapon: s.waffe.name, x: p.x, z: p.z });

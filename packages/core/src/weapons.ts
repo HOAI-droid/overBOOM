@@ -1,7 +1,7 @@
 import { DT, PLAYER_RADIUS } from './constants.ts';
 import type { World, Player } from './sim.ts';
 import type { Enemy, Projectile, WeaponSlot } from './entities.ts';
-import { AMBOSS, KAMPF, LADUNG_ELEMENT, STERNE, STUFEN, elemente, findeReaktion, type Reaktionselement, type Waffe } from '../../data/src/index.ts';
+import { AMBOSS, KAMPF, OVERKILL, LADUNG_ELEMENT, STERNE, STUFEN, elemente, findeReaktion, type Reaktionselement, type Waffe } from '../../data/src/index.ts';
 
 /**
  * Waffen feuern automatisch auf den nächsten Gegner in Reichweite.
@@ -90,7 +90,7 @@ export function weaponDamage(p: Player, s: WeaponSlot): number {
   return w.schaden * STUFEN.schaden[s.tier - 1] * Math.max(0.1, 1 + p.stats.schaden / 100) * perk * stars * mods;
 }
 export function weaponRate(p: Player, s: WeaponSlot): number {
-  return s.waffe.feuerrate * STUFEN.feuerrate[s.tier - 1] * Math.max(0.2, 1 + p.stats.angriff / 100) * (1 + s.stars * STERNE.feuerrateProStern);
+  return s.waffe.feuerrate * STUFEN.feuerrate[s.tier - 1] * Math.max(0.2, 1 + p.stats.angriff / 100) * (1 + s.stars * STERNE.feuerrateProStern) * (p.boomT > 0 ? OVERKILL.feuerrate : 1);
 }
 export function weaponRange(p: Player, s: WeaponSlot): number {
   return Math.max(1.5, s.waffe.reichweite * (1 + p.stats.reichweite / 100));
@@ -418,6 +418,8 @@ function hitEnemy(w: World, c: HitCtx, e: Enemy, dx: number, dz: number, primary
   }
   if (c.mask & SP.heilkeks && owner && w.rng.chance(0.15)) w.heal(owner, 1);
   if (primary && c.mask >= SP.minibumm) rezeptTreffer(w, c, e, boss);
+  // OVERBOOM-Modus: jeder Treffer explodiert
+  if (primary && owner && owner.boomT > 0 && c.src !== 'overboom') w.queueBlast(e.x, e.z, OVERKILL.bummRadius * c.blastMul, c.dmg * OVERKILL.bummSchaden, 0.04, 1, w.newGroup(), false, 'waffe', 'overboom');
   // Mods
   const m = c.mods;
   if (m && primary) {

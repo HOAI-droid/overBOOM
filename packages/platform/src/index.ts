@@ -19,6 +19,8 @@ export interface Platform {
   saveImage(blob: Blob, filename: string): Promise<void>;
   /** Link teilen (Handy: Teilen-Menü, sonst Zwischenablage). true = geteilt/kopiert */
   shareLink(title: string, url: string): Promise<'geteilt' | 'kopiert' | 'fehler'>;
+  /** Offline-Modus/Installierbarkeit einschalten (Service Worker), wo möglich */
+  registerOffline(): void;
   /** Zufallskennung (für den Koop-Platz beim Wiederverbinden) */
   randomId(): string;
   /** Text in die Zwischenablage */

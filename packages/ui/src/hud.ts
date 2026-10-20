@@ -15,6 +15,9 @@ export interface HudState {
   xp: number;
   /** Boss-Leben 0–1 oder -1 (kein Boss) */
   boss: number;
+  /** Overkill-Leiste 0–1 und verbleibende OVERBOOM-Zeit */
+  overkill: number;
+  boomT: number;
 }
 
 const GEM_SVG = '<svg viewBox="0 0 6 8" width="12" height="16" shape-rendering="crispEdges" aria-hidden="true"><path fill="#1aa8d8" d="M1 2h4v4h-1v1h-2v-1h-1z"/><path fill="#3de8ff" d="M2 0h2v1h1v1h-4v-1h1zM2 2h2v3h-2z"/><path fill="#e8fdff" d="M2 1h1v1h-1z"/></svg>';
@@ -23,6 +26,9 @@ const GEM_SVG = '<svg viewBox="0 0 6 8" width="12" height="16" shape-rendering="
 export class Hud {
   readonly root: HTMLDivElement;
   readonly dashButton: HTMLButtonElement;
+  readonly boomButton: HTMLButtonElement;
+  private okFill!: HTMLDivElement;
+  private okWas = -1;
   private fps: HTMLSpanElement;
   private hint: HTMLDivElement;
   private hpFill: HTMLDivElement;
@@ -54,9 +60,10 @@ export class Hud {
     this.root.innerHTML = `
       <div class="ob-hurt"></div>
       <div class="ob-left">
-        <div class="ob-title"><b>OVER</b><b class="boom">BOOM</b><span>Prototyp · Phase 6</span></div>
+        <div class="ob-title"><b>OVER</b><b class="boom">BOOM</b><span>v0.8 · Koop</span></div>
         <div class="ob-hp" role="meter" aria-label="Leben"><div class="ob-hp-fill"></div><span class="ob-hp-txt">60 / 60</span></div>
         <div class="ob-xp"><span class="ob-lvl">Lv 1</span><div class="ob-xp-bar"><div class="ob-xp-fill"></div></div></div>
+        <div class="ob-ok" role="meter" aria-label="Overkill"><span>Overkill</span><div class="ob-ok-bar"><div class="ob-ok-fill"></div></div></div>
         <div class="ob-gems">${GEM_SVG}<span>0</span></div>
         <div class="ob-syn"></div>
       </div>
@@ -71,6 +78,8 @@ export class Hud {
       <div class="ob-banner" aria-live="polite"></div>
       <div class="ob-chain"></div>
       <div class="ob-hint">${touch ? 'Linker Daumen: laufen · Waffen feuern von selbst · Rechts: <b>Dash</b>' : '<b>WASD</b>: laufen · Waffen feuern von selbst · <b>Leertaste</b>: Dash'}</div>
+      <div class="ob-boomtint"></div>
+      <button type="button" class="ob-boombtn" aria-label="OVERBOOM auslösen">OVER<b>BOOM</b><small>${touch ? 'antippen' : 'E / Q'}</small></button>
       <button type="button" class="ob-dash" aria-label="Dash">
         <svg viewBox="0 0 8 8" width="30" height="30" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M4 0h3v1h-1v1h-1v1h3v1h-1v1h-1v1h-1v1h-1v1h-2v-1h1v-1h1v-1h-3v-1h1v-1h1v-1h1z"></path></svg>
         <span>Dash</span>
@@ -81,6 +90,8 @@ export class Hud {
     this.fps = q('.ob-fps');
     this.hint = q('.ob-hint');
     this.dashButton = q('.ob-dash');
+    this.boomButton = q('.ob-boombtn');
+    this.okFill = q('.ob-ok-fill');
     this.hpFill = q('.ob-hp-fill');
     this.hpText = q('.ob-hp-txt');
     this.gems = q('.ob-gems span');
@@ -219,6 +230,14 @@ export class Hud {
       L.boss = boss;
       this.bossEl.classList.toggle('hidden', boss < 0);
       if (boss >= 0) this.bossFill.style.width = `${boss}%`;
+    }
+    // Overkill-Leiste und OVERBOOM-Modus
+    const ok = s.boomT > 0 ? -2 : Math.round(s.overkill * 100);
+    if (ok !== this.okWas) {
+      this.okWas = ok;
+      this.okFill.style.width = `${ok < 0 ? 100 : ok}%`;
+      this.root.classList.toggle('ok-voll', ok >= 100);
+      this.root.classList.toggle('ok-aktiv', ok === -2);
     }
     this.dashButton.style.setProperty('--cd', String(Math.round(s.dashReady * 100)));
     this.dashButton.classList.toggle('ready', s.dashReady >= 1);

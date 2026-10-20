@@ -972,4 +972,24 @@ for (const [el, ids, ev] of [
   ok(Core.heldenFrei(prof).includes('omagranate') && !Core.heldenFrei(Core.neuesProfil()).includes('omagranate'), 'Oma Granate wird durch den ersten Sieg freigeschaltet');
 }
 
+// Phase 8: Overkill-Leiste und OVERBOOM-Modus
+{
+  const w = new World(140, 1, { god: true });
+  for (const warn of w.warnings) warn.active = false; w.spawnAcc = -999;
+  const p = w.players[0];
+  const pist = p.weapons.find((x) => x.waffe.id === 'pistole') ?? p.weapons[0];
+  for (let k = 0; k < 200 && p.overkill < 1; k++) { const e = spawnEnemy(w, 0, p.x + 5, p.z)!; w.killEnemy(e, 0, 0, false, pist.waffe.id); }
+  ok(p.overkill >= 1 && w.events.some((e) => e.type === 'overkillVoll'), `Overkill-Leiste füllt sich durch Kills (${Math.round(D.OVERKILL.proKill * 1000) / 10} % pro Kill)`);
+  const rate0 = W2.weaponRate(p, pist);
+  w.step([{ mx: 0, mz: 0, dash: false, boom: true }]);
+  ok(p.boomT > 4.8 && p.overkill === 0 && w.events.some((e) => e.type === 'overboom'), 'Auslösen startet 5 s OVERBOOM-Modus');
+  ok(Math.abs(W2.weaponRate(p, pist) / rate0 - D.OVERKILL.feuerrate) < 1e-9, 'Doppelte Feuerrate im Modus');
+  for (let k = 0; k < 4; k++) { const e = spawnEnemy(w, GEGNER_INDEX.schrottgolem, p.x + 3, p.z + k * 0.5)!; e.hp = e.maxHp = 1e6; e.cd = 99; }
+  let booms = 0;
+  for (let t = 0; t < 30 * 3; t++) { w.step([idle]); booms += w.events.filter((e) => e.type === 'explosion').length; }
+  ok(booms > 3, `Im Modus explodiert jeder Treffer (${booms} Explosionen)`);
+  for (let t = 0; t < 30 * 3; t++) w.step([idle]);
+  ok(p.boomT === 0, 'Modus endet nach 5 s');
+}
+
 if (fails) { console.log(`\n${fails} Test(s) fehlgeschlagen`); process.exit(1); } else console.log('\nAlle Tests bestanden');

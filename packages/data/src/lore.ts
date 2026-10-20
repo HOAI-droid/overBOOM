@@ -114,6 +114,30 @@ export const SPRUECHE_TOD = [
   'Die Kawumm-Jäger-Akademie schickt einen Beileids-Keks.'
 ];
 
+/** Tipps und Sprüche (Titel, Pause) */
+export const TIPPS = [
+  'Bomben-Kröten explodieren auch, wenn man sie erwischt. Stell dich nicht daneben. Oder doch – wenn du Ketten liebst.',
+  'Drei gleiche Waffen gleicher Stufe? Verschmelzen! Zwei verschiedene Gruppen? Ab zum Amboss!',
+  'Die Overkill-Leiste füllt sich durch Kills und Ketten. Voll? OVERBOOM drücken und genießen.',
+  'Feuer + Wasser = Dampfexplosion. Die Natur ist ein großer Chemiebaukasten.',
+  'Im Koop rechnet das Gerät des Hosts für alle. Ein PC ist ein guter Host.',
+  'Niedergeschlagen? Ein Mitspieler muss nur kurz neben dir stehen.',
+  'Elite-Gegner tragen eine Krone – und manchmal Ausrüstung.',
+  'Sterne bekommt eine Waffe durch Kills. Bei fünf Sternen wartet eine Evolution.',
+  'Gesperrte Karten im Album verraten, wie man sie bekommt.',
+  'Auf Gefahr 10 explodiert alles. Wirklich alles. Viel Glück!',
+  'Glückspilz-Tipp: Neu würfeln ist manchmal gratis.',
+  'Fässer sind Freunde. Explosive Freunde.',
+  'Oma Granate verteilt Kekse. Gegen Kekse hat noch niemand gewonnen.',
+  'Prof. Fusionski schmiedet gratis. Er nennt das „Forschung".',
+  'Schadenszahlen, Wackeln und Lichtblitze kannst du in den Einstellungen anpassen.',
+  'Ein Kampfhuhn scharrt, bevor es stürmt. Hör auf das Scharren!',
+  'Die Pilzkönigin mag keine Feuerwaffen. Und auch sonst nichts.',
+  'Spielstand sichern: Album → Erfolge → Code kopieren.',
+  'Der Baron hat das Große Kawumm gezündet. Zeit, das Kawumm zurückzugeben.',
+  'Kein Huhn wurde bei der Entwicklung verletzt. Sie sind alle nur sehr wütend.'
+];
+
 export const SIEG_TEXT = 'Baron von Bumm ist geschlagen. Krawummia atmet auf – vorerst.';
 
 /** Namen und Texte der Helden-Macken (für Karten und Tooltips) */

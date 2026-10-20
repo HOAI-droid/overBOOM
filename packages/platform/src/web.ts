@@ -104,6 +104,14 @@ export function createWebPlatform(): Platform {
       } catch { /* abgebrochen → kopieren */ }
       try { await navigator.clipboard.writeText(url); return 'kopiert'; } catch { return 'fehler'; }
     },
+    registerOffline() {
+      try {
+        if (!('serviceWorker' in navigator) || !location.protocol.startsWith('http')) return;
+        // Einzeldatei-Build (Artefakt) hat keinen Service Worker
+        if (document.querySelector('meta[name="overboom-single"]')) return;
+        void navigator.serviceWorker.register('./sw.js').catch(() => {});
+      } catch { /* nicht unterstützt */ }
+    },
     randomId() {
       const a = new Uint32Array(3);
       crypto.getRandomValues(a);

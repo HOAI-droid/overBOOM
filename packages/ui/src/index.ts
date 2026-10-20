@@ -7,3 +7,4 @@ export type { KartenKunst } from './album.ts';
 export { NameTags } from './nametags.ts';
 export type { CoopAnsicht, CoopAktion } from './lobby.ts';
 export { STANDARD, ladeEinstellungen, type Einstellungen } from './settings.ts';
+export { DebugMenu, type DebugAktion } from './debug.ts';

@@ -49,7 +49,7 @@ export function qrSvg(text: string): string {
 }
 
 /** Titelbildschirm */
-export function titelHtml(name: string, code: string, albumBtn: string, extra = ''): string {
+export function titelHtml(name: string, code: string, albumBtn: string, extra = '', tipp = ''): string {
   return `
     <div class="ob-panel ob-titel">
       <h1 class="ob-logo"><b>OVER</b><b class="boom">BOOM</b></h1>
@@ -65,6 +65,7 @@ export function titelHtml(name: string, code: string, albumBtn: string, extra = 
         <button type="button" class="ob-btn2" data-act="tbeitreten" data-focus="tbeitreten">Beitreten</button>
       </div>
       <div class="ob-titel-row">${albumBtn}${extra}</div>
+      ${tipp ? `<p class="ob-tipp">Tipp: ${esc(tipp)}</p>` : ''}
     </div>`;
 }
 
