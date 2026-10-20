@@ -1,0 +1,59 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<!-- Werbeplakat 1080×1920 – Vorlage. Bild neu erzeugen: im Browser öffnen und Screenshot in 1080×1920 (z. B. mit Playwright). -->
+<style>
+@font-face { font-family: Silkscreen; font-weight: 400; src: url(silkscreen-400.woff2) format('woff2'); }
+@font-face { font-family: Silkscreen; font-weight: 700; src: url(silkscreen-700.woff2) format('woff2'); }
+html, body { margin: 0; }
+body { width: 1080px; height: 1920px; overflow: hidden; font-family: Silkscreen, monospace; color: #f4ecff; position: relative;
+  background: radial-gradient(ellipse 900px 700px at 50% 52%, rgba(255,122,26,0.35), transparent 70%),
+              radial-gradient(ellipse 700px 500px at 20% 10%, rgba(61,232,255,0.18), transparent 70%),
+              linear-gradient(180deg, #1a1036 0%, #0b0814 55%, #120a26 100%); }
+/* Pixel-Konfetti */
+.px { position: absolute; width: 18px; height: 18px; box-shadow: 0 0 0 4px #07040e; }
+.logo { position: absolute; top: 64px; left: 0; right: 0; text-align: center; font-weight: 700; font-size: 150px; line-height: 1; letter-spacing: 4px; transform: rotate(-4deg); }
+.logo b { color: #f4ecff; text-shadow: 0 10px 0 #6a3aa8, 0 20px 0 #07040e; }
+.logo b.boom { color: #ff7a1a; text-shadow: 0 10px 0 #c2410c, 0 20px 0 #07040e; display: block; font-size: 196px; margin-top: -4px; }
+.tag { position: absolute; top: 452px; left: 0; right: 0; text-align: center; }
+.tag span { display: inline-block; padding: 14px 28px; background: #ffd23f; color: #07040e; font-weight: 700; font-size: 40px; transform: rotate(2deg); box-shadow: 0 0 0 6px #07040e, 10px 10px 0 #07040e; }
+.shot { position: absolute; top: 575px; left: 90px; width: 900px; height: 700px; transform: rotate(-2.5deg); border: 12px solid #3de8ff; box-shadow: 0 0 0 8px #07040e, 22px 22px 0 #07040e, 0 0 90px rgba(61,232,255,0.45);
+  background: url(kampf1.png) center 42% / cover; image-rendering: pixelated; }
+.shot2 { position: absolute; top: 1045px; left: 670px; width: 330px; height: 270px; transform: rotate(5deg); border: 10px solid #ff3df0; box-shadow: 0 0 0 7px #07040e, 14px 14px 0 #07040e;
+  background: url(kampf2.png) 45% 40% / 220% auto; image-rendering: pixelated; }
+.burst { position: absolute; top: 572px; left: 700px; transform: rotate(10deg); padding: 18px 26px; font-weight: 700; font-size: 46px; color: #07040e; background: #ff7a1a; box-shadow: 0 0 0 7px #07040e, 10px 10px 0 #07040e; }
+.chain { position: absolute; top: 1190px; left: 50px; transform: rotate(-6deg); font-weight: 700; font-size: 72px; color: #ffd23f; text-shadow: 0 6px 0 #c2410c, 0 12px 0 #07040e; }
+.feat { position: absolute; top: 1345px; left: 70px; right: 70px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.feat div { padding: 16px 18px; background: rgba(26,18,48,0.92); border: 5px solid var(--c); box-shadow: 0 0 0 5px #07040e, 8px 8px 0 #07040e; font-size: 25px; line-height: 1.25; }
+.feat b { display: block; color: var(--c); font-size: 34px; }
+.cta { position: absolute; bottom: 64px; left: 0; right: 0; text-align: center; }
+.cta span { display: inline-block; padding: 22px 46px; font-weight: 700; font-size: 52px; color: #07040e; background: #ffd23f; box-shadow: 0 0 0 7px #07040e, 0 12px 0 #c2410c, 0 19px 0 #07040e; }
+.cta small { display: block; margin-top: 28px; font-size: 26px; color: #c9bfe8; letter-spacing: 2px; }
+</style></head><body>
+<div id="konfetti"></div>
+<div class="logo"><b>OVER</b><b class="boom">BOOM</b></div>
+<div class="tag"><span>ARENA-CHAOS MIT WAFFEN-FUSION</span></div>
+<div class="shot"></div>
+<div class="shot2"></div>
+<div class="burst">KAWUMM!</div>
+<div class="chain">CHAIN ×40!</div>
+<div class="feat">
+  <div style="--c:#ff7a1a"><b>16.700</b>Waffen-Fusionen aus 60 Waffen</div>
+  <div style="--c:#3de8ff"><b>1–4 Spieler</b>Koop, jeder am eigenen Gerät</div>
+  <div style="--c:#ff3df0"><b>292 Karten</b>zum Sammeln – auch in Glanz</div>
+  <div style="--c:#7dff5a"><b>7 Inseln</b>13 Helden, 40 geheime Rezepte</div>
+</div>
+<div class="cta"><span>JETZT SPIELEN ▶</span><small>PC · MAC · LINUX · ANDROID · IOS · BROWSER</small></div>
+<script>
+  // Pixel-Konfetti (fest gewürfelt, damit das Bild reproduzierbar ist)
+  let s = 7; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const farben = ['#ff7a1a', '#ffd23f', '#3de8ff', '#ff3df0', '#7dff5a'];
+  const k = document.getElementById('konfetti');
+  for (let i = 0; i < 46; i++) {
+    const d = document.createElement('i'); d.className = 'px';
+    const x = r() * 1060, y = r() * 1900;
+    if (y > 430 && y < 1640 && x > 40 && x < 1040) continue;
+    const z = 10 + Math.floor(r() * 3) * 6;
+    Object.assign(d.style, { left: x + 'px', top: y + 'px', width: z + 'px', height: z + 'px', background: farben[i % 5], transform: `rotate(${(r() * 40 - 20) | 0}deg)`, opacity: 0.85 });
+    k.appendChild(d);
+  }
+</script>
+</body></html>
