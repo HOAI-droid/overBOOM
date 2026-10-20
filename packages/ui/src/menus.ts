@@ -775,6 +775,7 @@ export class Menus {
       case 'album': this.openAlbum(); return;
       case 'einst': this.openEinstellungen(); return;
       case 'setzu': this.closeEinstellungen(); return;
+      case 'setmusik': this.einstellungen = { ...this.einstellungen, musikStil: el.dataset.m as Einstellungen['musikStil'] }; this.onEinstellungen(this.einstellungen); this.renderEinstellungen(); return;
       case 'setq': this.einstellungen = { ...this.einstellungen, qualitaet: el.dataset.q as Einstellungen['qualitaet'] }; this.onEinstellungen(this.einstellungen); this.renderEinstellungen(); return;
       case 'settoggle': {
         const k = el.dataset.key as 'zahlen' | 'vibration' | 'farbenblind';

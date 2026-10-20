@@ -12,7 +12,7 @@ Arena-Roguelite mit Wellen-Runden, 3D-Voxel-Pixel-Grafik (schräge isometrische 
 - `packages/render`: liest nur den Zustand aus `core`, verändert ihn nie. Effekte entstehen aus `world.events`.
 - `packages/platform`: einziger Zugriff auf Speicher, Vibration, Vollbild, Wake-Lock usw. Spielcode ruft nie direkt `localStorage`/`navigator` auf.
 - `packages/net`: Koop (Host-autoritativ). `Transport`-Interface mit Trystero/WebRTC + TURN, BroadcastChannel (`?netz=lokal`) und Speicher-Transport (Tests). `HostSession`/`ClientSession`, binäre Snapshots (`snapshot.ts`), Inventar-Zustand als JSON (`state.ts`). Muss in Node laufen (`packages/net/test`).
-- `packages/audio`: prozedurale SFX (`synth.ts`, `sounds.ts`), Musik-Sequenzer (`music.ts`), `AudioEngine.events()` vertont `world.events`.
+- `packages/audio`: prozedurale SFX (`synth.ts`, `sounds.ts`), prozedurale Musik: `komponist.ts` (rein, Node-testbar: Stile rock/pop/jazz/chip × Stimmungen menu/kampf/boss/shop, Abschnitte, 3 Intensitätsstufen), `band.ts` (WebAudio-Instrumente, Mix, Ducking), `music.ts` (Scheduler, `renderMusik` für Hörproben). `AudioEngine.events()` vertont `world.events`, `setLage()`/Explosionen steuern die Intensität, Einstellung `musikStil`.
 - Daten (Waffen, Gegner, Items, Karten, Lore) gehören nach `packages/data`, nicht in die Logik.
 - Performance-Pflicht: Instancing, Object-Pools, keine Allokationen pro Frame im Game-Loop.
 

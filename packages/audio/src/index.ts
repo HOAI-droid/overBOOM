@@ -2,9 +2,10 @@ import type { SimEvent } from '@overboom/core';
 import { waffeById } from '@overboom/data';
 import { SR } from './synth.ts';
 import { SOUNDS } from './sounds.ts';
-import { Musik } from './music.ts';
+import { Musik, type MusikWahl } from './music.ts';
 
-export { TRACKS } from './music.ts';
+export { Musik, renderMusik, type MusikWahl } from './music.ts';
+export { Komponist, CHIP, MUSIK_STILE, STIMMUNGEN, type MusikStil, type Stimmung, type MusikNote } from './komponist.ts';
 
 /** Klang je Waffe: aus Gruppe und Geschoss abgeleitet (gecacht) */
 const fireCache = new Map<string, string>();
@@ -49,6 +50,11 @@ export class AudioEngine {
   private wunschMusik: string | null = null;
   private gemStreak = 0;
   private gemT = 0;
+  private stil: MusikWahl = 'rock';
+  /** kurzfristige „Action" aus Explosionen und Kills (klingt ab) */
+  private action = 0;
+  private lage = 0;
+  private boom = false;
 
   get bereit(): boolean { return !!this.ctx && this.ctx.state === 'running'; }
 
@@ -69,6 +75,7 @@ export class AudioEngine {
         this.musicGain.connect(this.master);
         this.master.connect(comp).connect(this.ctx.destination);
         this.musik = new Musik(this.ctx, this.musicGain);
+        this.musik.setStil(this.stil);
         this.apply();
         if (this.wunschMusik) this.musik.play(this.wunschMusik);
       }
@@ -93,6 +100,21 @@ export class AudioEngine {
     this.master.gain.setTargetAtTime(this.vol.gesamt, t, 0.05);
     this.sfx.gain.setTargetAtTime(this.vol.effekte, t, 0.05);
     this.musicGain.gain.setTargetAtTime(this.vol.musik * 0.6, t, 0.2);
+  }
+
+  /** Musikstil (Rock, Pop, Jazz, Chiptune oder aus) */
+  setMusikStil(stil: MusikWahl): void {
+    this.stil = stil;
+    this.musik?.setStil(stil);
+  }
+
+  /**
+   * Lage für die Musik-Intensität: lage = Anteil der Gegner am Maximum (0–1),
+   * boom = OVERBOOM-Modus aktiv. Explosionen/Kills kommen über events() dazu.
+   */
+  setLage(lage: number, boom: boolean): void {
+    this.lage = Math.max(0, Math.min(1, lage));
+    this.boom = boom;
   }
 
   music(id: string | null): void {
@@ -159,10 +181,12 @@ export class AudioEngine {
           break;
         }
         case 'hit': this.play(e.crit ? 'krit' : 'treffer', { vol: 0.7, minGap: e.crit ? 0.05 : 0.03 }); break;
-        case 'kill': { const p = pos(e.x, e.z); this.play(e.enemy === 'kampfhuhn' ? 'gacker' : e.enemy.startsWith('schleim') ? 'matsch' : 'pop', { vol: p.vol * 0.8, pan: p.pan, minGap: 0.04 }); break; }
+        case 'kill': this.action = Math.min(0.5, this.action + 0.015); { const p = pos(e.x, e.z); this.play(e.enemy === 'kampfhuhn' ? 'gacker' : e.enemy.startsWith('schleim') ? 'matsch' : 'pop', { vol: p.vol * 0.8, pan: p.pan, minGap: 0.04 }); break; }
         case 'explosion': {
           const p = pos(e.x, e.z);
           this.play(e.r > 1.9 ? 'bumm' : 'bummklein', { vol: p.vol, pan: p.pan, pitch: 1 + Math.min(0.5, e.chain * 0.04), minGap: 0.06 });
+          this.action = Math.min(0.5, this.action + 0.03 + Math.min(0.1, e.chain * 0.01));
+          if (e.r > 1.9 && p.vol > 0.5) this.musik?.duck(0.3);
           break;
         }
         case 'pickup':
@@ -190,7 +214,7 @@ export class AudioEngine {
         case 'evolve': this.play('rezept', { pitch: 0.8 }); break;
         case 'loot': if (e.player === me) this.play('beute'); break;
         case 'reaction': this.play('reaktion', { minGap: 0.08 }); break;
-        case 'nuke': this.play('megabumm'); break;
+        case 'nuke': this.play('megabumm'); this.musik?.duck(0.6); this.action = 0.5; break;
         case 'storm': this.play('donner', { minGap: 0.2 }); break;
         case 'shock': if (e.phase === 'entladen') this.play('zap', { pitch: 0.6, vol: 1 }); break;
         case 'kawumm': this.play('bummklein', { pitch: 1.3 }); break;
@@ -207,5 +231,8 @@ export class AudioEngine {
   /** pro Frame (Zähler für Kristall-Tonleiter) */
   update(dt: number): void {
     if (this.gemT > 0) this.gemT -= dt;
+    // Musik-Intensität: Grundspannung + Gegnerzahl + aktuelle Action, OVERBOOM = Vollgas
+    this.action = Math.max(0, this.action - dt * 0.08);
+    this.musik?.setIntensitaet(this.boom ? 1 : 0.15 + this.lage * 0.55 + this.action);
   }
 }

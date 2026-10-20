@@ -14,11 +14,13 @@ export interface Einstellungen {
   /** farbenblind-freundliche Gefahren-Markierungen */
   farbenblind: boolean;
   qualitaet: 'auto' | 'hoch' | 'mittel' | 'niedrig';
+  /** Musikfärbung: prozedural erzeugt, oder aus */
+  musikStil: 'rock' | 'pop' | 'jazz' | 'chip' | 'aus';
 }
 
 export const STANDARD: Einstellungen = {
   gesamt: 0.8, effekte: 0.8, musik: 0.5, shake: 1, blitze: 1, partikel: 1,
-  zahlen: true, vibration: true, farbenblind: false, qualitaet: 'auto'
+  zahlen: true, vibration: true, farbenblind: false, qualitaet: 'auto', musikStil: 'rock'
 };
 
 export function ladeEinstellungen(json: string | null): Einstellungen {
@@ -45,6 +47,8 @@ function toggle(key: keyof Einstellungen, label: string, v: boolean, hint = ''):
 export function einstellungenHtml(e: Einstellungen, info: string): string {
   const q = (['auto', 'hoch', 'mittel', 'niedrig'] as const).map((k) =>
     `<button type="button" class="ob-tab ${e.qualitaet === k ? 'on' : ''}" data-act="setq" data-q="${k}" data-focus="setq-${k}">${k === 'auto' ? 'Automatisch' : k[0].toUpperCase() + k.slice(1)}</button>`).join('');
+  const stile = ([['rock', 'Rock'], ['pop', 'Pop'], ['jazz', 'Jazz'], ['chip', 'Chiptune'], ['aus', 'Aus']] as const).map(([k, n]) =>
+    `<button type="button" class="ob-tab ${e.musikStil === k ? 'on' : ''}" data-act="setmusik" data-m="${k}" data-focus="setm-${k}">${n}</button>`).join('');
   return `
     <div class="ob-panel ob-wide ob-settings">
       <div class="ob-shop-head">
@@ -57,6 +61,8 @@ export function einstellungenHtml(e: Einstellungen, info: string): string {
         ${slider('effekte', 'Effekte', e.effekte, 0, 1, 0.05)}
         ${slider('musik', 'Musik', e.musik, 0, 1, 0.05)}
       </div>
+      <h3 class="ob-h3">Musik <small>wird live erzeugt und passt sich dem Kampf an</small></h3>
+      <div class="ob-tabs">${stile}</div>
       <h3 class="ob-h3">Grafik <small>${info}</small></h3>
       <div class="ob-tabs">${q}</div>
       <h3 class="ob-h3">Barrierefreiheit</h3>

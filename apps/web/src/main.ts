@@ -1,8 +1,8 @@
 import './fonts.css';
 import { World, DT, DASH_COOLDOWN, NO_INPUT, MetaTracker, heldenFrei, inselFrei, ladeProfil, profilAusCode, profilCode, spawnEnemy, type Command, type InputState, type SimEvent } from '@overboom/core';
-import { GEGNER_INDEX, BOSS_LORE, ELEMENT_INFO, ERFOLGE, GEGNER, GEGNER_BY_ID, HELD_BY_ID, INSELN, INSEL_BY_ID, INSEL_LORE, KARTE_BY_ID, LEVEL, SELTENHEIT, SYNERGIEN, WELLEN_SPRUECHE, waffeById, waehle } from '@overboom/data';
+import { GEGNER_INDEX, BOSS_LORE, ELEMENT_INFO, ERFOLGE, GEGNER, GEGNER_BY_ID, HELD_BY_ID, INSELN, INSEL_BY_ID, INSEL_LORE, KARTE_BY_ID, LEVEL, SELTENHEIT, SYNERGIEN, WELLEN, WELLEN_SPRUECHE, waffeById, waehle } from '@overboom/data';
 import { CardArt, FX, GameRenderer, type PlayerPose } from '@overboom/render';
-import { AudioEngine } from '@overboom/audio';
+import { AudioEngine, renderMusik } from '@overboom/audio';
 import { Controls, DamageNumbers, DebugMenu, Hud, MenuNav, Menus, NameTags, karteAlsBild, ladeEinstellungen, screenToWorld, type CoopAktion, type CoopAnsicht, type Einstellungen } from '@overboom/ui';
 import { ClientSession, HostSession, LocalTransport, createTrysteroTransport, makeRoomCode, normalizeRoomCode, type LobbySpieler, type Transport } from '@overboom/net';
 import { createPlatform, type Platform } from '@overboom/platform';
@@ -205,6 +205,7 @@ async function start() {
   const qualiStufe = () => (speicherKnapp ? 'niedrig' : einst.qualitaet === 'auto' ? autoStufe : einst.qualitaet);
   const applyEinstellungen = (speichern: boolean) => {
     audio.setLautstaerke({ gesamt: einst.gesamt, effekte: einst.effekte, musik: einst.musik });
+    audio.setMusikStil(einst.musikStil);
     renderer.setShake(einst.shake);
     const q = QUALI[qualiStufe()];
     FX.blitze = einst.blitze;
@@ -576,7 +577,7 @@ async function start() {
 
   // ?test=1: Zustand für automatische Browser-Tests lesbar machen
   if (params.get('test') === '1') {
-    (globalThis as Record<string, unknown>).__overboom = { get world() { return world; }, get me() { return me; }, get modus() { return modus; } };
+    (globalThis as Record<string, unknown>).__overboom = { get world() { return world; }, get me() { return me; }, get modus() { return modus; }, renderMusik };
   }
 
   const frame = (now: number) => {
@@ -704,7 +705,9 @@ async function start() {
         else if (fps > 57 && i < stufen.indexOf(autoMax)) { autoStufe = stufen[i + 1]; applyEinstellungen(false); qualiPause = 20; }
       }
     }
-    // Musik je nach Lage
+    // Musik je nach Lage: Intensität aus Gegnerzahl und OVERBOOM-Modus (Explosionen zählt die Audio-Engine selbst)
+    const ich = world.players[me];
+    audio.setLage(world.phase === 'welle' ? world.enemyCount / WELLEN.maxGegner : 0, !!ich && ich.boomT > 0);
     audio.update(dt);
     const scr = menus.screen;
     audio.music(scr === 'titel' || scr === 'lobby' || world.phase === 'wahl' ? 'menu'
