@@ -475,6 +475,23 @@ export const REZEPT_MODELLE: Record<string, () => Vox[]> = {
   }
 };
 
+/**
+ * Modell einer Rezept-Waffe: eigenes Modell, falls vorhanden – sonst das
+ * zusammengesteckte Fusionsmodell mit goldener Krone und Leuchtring.
+ */
+export function rezeptModell(id: string, antriebWaffe: string, antriebGruppe: string, geschoss: string, ladung: string, instabil: number): Vox[] {
+  const mk = REZEPT_MODELLE[id];
+  if (mk) return mk();
+  const b = new VoxBuilder();
+  const glow = LADUNG_FARBE[ladung] ?? '#ff3df0';
+  for (const v of fusionModel(antriebWaffe, antriebGruppe, geschoss, ladung, instabil, glow)) b.v(v[0], v[1], v[2], v[3], v[4]);
+  let top = 0;
+  for (const v of b.list()) top = Math.max(top, v[1]);
+  // kleine goldene Krone mit Edelstein in Ladungsfarbe
+  b.v(-1, top + 1, 0, '#e8b030').v(0, top + 1, 0, '#e8b030').v(1, top + 1, 0, '#e8b030').v(-1, top + 2, 0, '#ffd23f').v(1, top + 2, 0, '#ffd23f').v(0, top + 2, 0, glow, 1);
+  return b.list();
+}
+
 /** Turm (Antrieb „Turm"): Sockel + Drehkopf, Blick +z */
 export function turret(): Vox[] {
   return new VoxBuilder()

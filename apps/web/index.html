@@ -83,6 +83,7 @@
   .ob-kc.glanz::after, .ob-bigcard.glanz .ob-holo { content: ''; position: absolute; inset: 0; pointer-events: none; mix-blend-mode: color-dodge;
     background: linear-gradient(115deg, transparent 25%, rgba(255,61,240,0.45) 38%, rgba(61,232,255,0.45) 50%, rgba(255,210,63,0.45) 62%, transparent 75%); background-size: 300% 300%; animation: ob-holo2 2.4s linear infinite; }
   @keyframes ob-holo2 { from { background-position: 100% 100%; } to { background-position: 0% 0%; } }
+  .ob-kc.glanz::after { opacity: 0.45; }
   .ob-bigwrap { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; align-items: flex-start; }
   .ob-bigcard { --mx: 0.5; --my: 0.5; position: relative; width: min(330px, 100%); aspect-ratio: 5 / 7; box-sizing: border-box; padding: 10px; border: 8px solid var(--ec); background: #1c1434; box-shadow: 0 0 0 3px var(--ink), 8px 8px 0 var(--ink); display: flex; flex-direction: column; gap: 6px; overflow: hidden;
     transform: perspective(700px) rotateY(calc((var(--mx) - 0.5) * 14deg)) rotateX(calc((0.5 - var(--my)) * 10deg)); transition: transform 0.08s linear; }

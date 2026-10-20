@@ -3,7 +3,7 @@ import { EnemyState, type World } from '@overboom/core';
 import { ELITE, GEGNER, SELTENHEIT, W } from '@overboom/data';
 import { VoxelInstances } from './instanced.ts';
 import { voxelObject } from './voxel.ts';
-import { PROJECTILE_IDS, REZEPT_MODELLE, baron, bombenpinguin, funkenkobold, kampfhuhn, koenigGockel, kultist, lavaklops, megatoaster, minenbot, morchella, pilzling, schleimi, schneemann, schrottgolem, teslaritter, vogelscheuche, chicken, crown, disc, fusionModel, gem, grummel, kroete, projectileModel, spawnMarker, targetRing, toastomat, turret, weaponModel } from './models.ts';
+import { PROJECTILE_IDS, rezeptModell, baron, bombenpinguin, funkenkobold, kampfhuhn, koenigGockel, kultist, lavaklops, megatoaster, minenbot, morchella, pilzling, schleimi, schneemann, schrottgolem, teslaritter, vogelscheuche, chicken, crown, disc, fusionModel, gem, grummel, kroete, projectileModel, spawnMarker, targetRing, toastomat, turret, weaponModel } from './models.ts';
 import type { Effects } from './effects.ts';
 
 export const ENEMY_MODELS: Record<string, { vox: () => ReturnType<typeof grummel>; size: number; top: number; cap: number }> = {
@@ -116,7 +116,7 @@ export class CombatView {
         const glow = SELTENHEIT[s.tier - 1]?.farbe ?? '#3de8ff';
         const f = s.waffe.fusion;
         let vox;
-        if (f?.rezept && REZEPT_MODELLE[f.rezept]) vox = REZEPT_MODELLE[f.rezept]();
+        if (f?.rezept) vox = rezeptModell(f.rezept, f.teile.antrieb, W[f.teile.antrieb]?.gruppe ?? s.waffe.gruppe, s.waffe.geschoss, s.waffe.ladung, f.instabil);
         else if (f) vox = fusionModel(f.teile.antrieb, W[f.teile.antrieb]?.gruppe ?? s.waffe.gruppe, s.waffe.geschoss, s.waffe.ladung, f.instabil, glow);
         else vox = weaponModel(s.waffe.id.startsWith('evo:') ? s.waffe.id.slice(6) : s.waffe.id, s.waffe.gruppe, glow);
         const m = voxelObject(vox, f?.rezept ? 0.08 : 0.07, { origin: [0.5, 0.5, 0.5], jitter: 0.05 });

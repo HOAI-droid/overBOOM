@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { hash2 } from '@overboom/core';
 import { HELD_BY_ID, ITEM_BY_ID, KARTE_BY_ID, SELTENHEIT, W, waffeById, type Karte } from '@overboom/data';
 import { buildVoxels, glowMaterial, solidMaterial, VoxBuilder, type Vox } from './voxel.ts';
-import { HERO_VOXEL, REZEPT_MODELLE, fusionModel, heroParts, weaponModel } from './models.ts';
+import { HERO_VOXEL, heroParts, rezeptModell, weaponModel } from './models.ts';
 import { ENEMY_MODELS } from './combatView.ts';
 
 /** Silhouette für noch nicht gefundene Karten */
@@ -58,11 +58,9 @@ function modellTeile(k: Karte): { teile: { vox: Vox[]; pivot?: [number, number, 
       return { size: 0.07, teile: [{ vox: weaponModel(k.ref, w?.gruppe, SELTENHEIT[k.seltenheit - 1].farbe) }] };
     }
     case 'rezept': {
-      const mk = REZEPT_MODELLE[k.ref];
-      if (mk) return { size: 0.08, teile: [{ vox: mk() }] };
       const w = waffeById(`rezept:${k.ref}`);
       const f = w?.fusion;
-      const vox = f && w ? fusionModel(f.teile.antrieb, W[f.teile.antrieb]?.gruppe ?? w.gruppe, w.geschoss, w.ladung, f.instabil, '#ffd23f') : weaponModel('pistole');
+      const vox = f && w ? rezeptModell(k.ref, f.teile.antrieb, W[f.teile.antrieb]?.gruppe ?? w.gruppe, w.geschoss, w.ladung, f.instabil) : weaponModel('pistole');
       return { size: 0.08, teile: [{ vox }] };
     }
     case 'gegner':

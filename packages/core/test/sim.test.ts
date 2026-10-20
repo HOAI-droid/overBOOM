@@ -872,4 +872,37 @@ for (const [el, ids, ev] of [
   ok(Core.ladeProfil('{kaputt').stats.runs === 0 && Core.ladeProfil('{"karten":5}').karten !== null, 'Kaputtes Profil → frisches Profil');
 }
 
+// Phase 6: 40 Rezepte, neue Sonderwirkungen
+{
+  ok(REZEPTE.length >= 40, `${REZEPTE.length} geheime Rezepte`);
+  const keys = REZEPTE.map((r) => [...r.zutaten].sort().join('|'));
+  ok(new Set(keys).size === keys.length, 'Keine zwei Rezepte mit denselben Zutaten');
+  ok(REZEPTE.every((r) => D.REZEPT_ZITATE[r.id] && r.spezial.every((sp) => D.SPEZIAL_INFO[sp])), 'Jedes Rezept hat Zitat und erklärte Sonderwirkung');
+  // Jede neue Sonderwirkung muss sichtbar etwas tun
+  const probe = (id: string) => {
+    const w = new World(91, 1, { god: true });
+    for (const warn of w.warnings) warn.active = false;
+    w.spawnAcc = -999;
+    const p = w.players[0];
+    p.weapons = [];
+    progression.addWeapon(p, `rezept:${id}`, 3);
+    for (let i = 0; i < 12; i++) { const e = spawnEnemy(w, GEGNER_INDEX.schrottgolem, p.x + 2 + (i % 4) * 0.8, p.z - 1.5 + Math.floor(i / 4) * 0.8)!; e.cd = 99; e.hp = e.maxHp = 1e5; }
+    const ev: Record<string, number> = {};
+    let lava = 0, gems = 0;
+    for (let t = 0; t < 30 * 8; t++) {
+      w.step([idle]);
+      for (const x of w.events) ev[x.type] = (ev[x.type] ?? 0) + 1;
+      lava = Math.max(lava, w.hazards.filter((h) => h.active && h.kind === 'lava').length);
+      gems = Math.max(gems, w.crystals.filter((c) => c.active).length);
+    }
+    return { ev, lava, gems };
+  };
+  const a = probe('bowlingapokalypse'), b = probe('pommesbude'), c = probe('tiefkuehltruhe'), d = probe('goldesel'), e = probe('todesblick');
+  ok((a.ev.explosion ?? 0) > 3, `Mini-Bumm: ${a.ev.explosion} Explosionen`);
+  ok(b.lava > 0, `Feuerspur: ${b.lava} Lavapfützen`);
+  ok((c.ev.nova ?? 0) > 0, `Frostnova: ${c.ev.nova}×`);
+  ok(d.gems + (d.ev.pickup ?? 0) > 0, `Goldregen: ${d.ev.pickup ?? 0} Kristalle eingesammelt`);
+  ok((e.ev.storm ?? 0) > 0, `Donnerschlag: ${e.ev.storm}×`);
+}
+
 if (fails) { console.log(`\n${fails} Test(s) fehlgeschlagen`); process.exit(1); } else console.log('\nAlle Tests bestanden');

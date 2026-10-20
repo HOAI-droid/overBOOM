@@ -134,6 +134,7 @@ export type SimEvent =
   | { type: 'keks'; player: number; x: number; z: number }
   | { type: 'reaction'; id: string; name: string; farbe: string; x: number; z: number }
   | { type: 'nuke'; x: number; z: number }
+  | { type: 'nova'; x: number; z: number; farbe: string }
   | { type: 'storm'; x: number; z: number }
   | { type: 'star'; player: number; slot: number; stars: number; weapon: string; x: number; z: number }
   | { type: 'evolve'; player: number; weapon: string; x: number; z: number }

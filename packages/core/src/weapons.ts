@@ -16,7 +16,9 @@ export const SP = {
   salve3: 1, cluster: 2, doppelblitz: 4, implosion: 8, heilkeks: 16,
   schwarm6: 32, konfettifrost: 64, orbit6: 128, giftwolke: 256, kueken: 512,
   /** Evolution „Mega": größere Explosionen */
-  gross: 1024
+  gross: 1024,
+  /** Rezepte: Mini-Explosion, Feuerspur, Frostnova, Kristallregen, Donnerschlag */
+  minibumm: 2048, feuerspur: 4096, frostnova: 8192, goldregen: 16384, donner: 32768
 } as const;
 
 /** Mods als Bitmaske */
@@ -415,6 +417,7 @@ function hitEnemy(w: World, c: HitCtx, e: Enemy, dx: number, dz: number, primary
     case 'splitter': if (primary) spawnSplinters(w, c, e.x, e.z, e.id); break;
   }
   if (c.mask & SP.heilkeks && owner && w.rng.chance(0.15)) w.heal(owner, 1);
+  if (primary && c.mask >= SP.minibumm) rezeptTreffer(w, c, e, boss);
   // Mods
   const m = c.mods;
   if (m && primary) {
@@ -1047,6 +1050,29 @@ export function stormStrike(w: World, p: Player, dmg: number): void {
   ctx.blastMul = 1; ctx.instabil = 0; ctx.mask = 0; ctx.dmg = dmg; ctx.crit = false;
   w.events.push({ type: 'storm', x: e.x, z: e.z });
   zap(w, ctx, e);
+}
+
+/** Sonderwirkungen der späteren Rezepte (nur beim Haupttreffer) */
+function rezeptTreffer(w: World, c: HitCtx, e: Enemy, boss: boolean): void {
+  const m = c.mask;
+  if (m & SP.minibumm && w.rng.chance(0.22)) w.queueBlast(e.x, e.z, 1.3 * c.blastMul, c.dmg * 0.6, 0.06, 1, w.newGroup(), false, 'waffe', c.src);
+  if (m & SP.feuerspur && w.rng.chance(0.25)) w.addHazard('lava', e.x, e.z, 0.8, 3, c.dmg * 0.4, c.src, false, 1, 0);
+  if (m & SP.goldregen && w.rng.chance(0.15)) w.spawnCrystal(e.x, e.z, 1);
+  if (m & SP.frostnova && w.rng.chance(0.12)) {
+    w.events.push({ type: 'nova', x: e.x, z: e.z, farbe: '#a8f6ff' });
+    for (const o of w.enemies) {
+      if (!o.alive || Math.hypot(o.x - e.x, o.z - e.z) > 2.2) continue;
+      o.slow = Math.max(o.slow, 2); o.frostT = 3;
+      if (!boss && o.def.verhalten !== 'boss') o.stun = Math.max(o.stun, 0.8);
+    }
+  }
+  if (m & SP.donner && c.ladung !== 'kettenblitz' && w.rng.chance(0.12)) {
+    const save = c.ladung, saveMods = c.mods;
+    c.ladung = 'kettenblitz'; c.mods = 0;
+    w.events.push({ type: 'storm', x: e.x, z: e.z });
+    zap(w, c, e);
+    c.ladung = save; c.mods = saveMods;
+  }
 }
 
 /** Gacker-Synergie 6: ein explodierendes Ei fällt vom Himmel */

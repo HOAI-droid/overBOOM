@@ -39,6 +39,11 @@ export interface Rezept {
  *   orbit6       – 6 Kreisel auf größerem Radius
  *   giftwolke    – vergiftete Gegner hinterlassen Giftpfützen
  *   kueken       – Treffer lassen Küken schlüpfen
+ *   minibumm     – Treffer lösen manchmal eine Mini-Explosion aus
+ *   feuerspur    – Treffer hinterlassen manchmal Lavapfützen
+ *   frostnova    – Treffer frieren manchmal alle Gegner ringsum ein
+ *   goldregen    – Treffer lassen manchmal einen Kristall fallen
+ *   donner       – Treffer rufen manchmal einen Blitzschlag
  */
 export const REZEPTE: Rezept[] = [
   {
@@ -100,6 +105,186 @@ export const REZEPTE: Rezept[] = [
     geschoss: 'laser', antrieb: 'strahl', ladung: 'verhuehnern', schaden: 2.5, feuerrate: 2, reichweite: 1.1, spezial: ['kueken'],
     text: 'Ein Strahl, der Gegner in Hühner verwandelt – und Küken schlüpfen lässt.',
     hinweis: 'Alles, was gackert, piepst oder Hühner macht.'
+  },
+  {
+    id: 'pommesbude', name: 'Pommesbude', zutaten: ['kartoffelkanone', 'flammenwerfer', 'bratpfanne'],
+    geschoss: 'kartoffel', antrieb: 'bogen', ladung: 'brand', schaden: 1.5, feuerrate: 1.1, reichweite: 1.1, spezial: ['feuerspur'],
+    text: 'Frittierte Kartoffeln fliegen im Bogen und hinterlassen brennendes Fett.',
+    hinweis: 'Kartoffeln, Feuer und eine Pfanne.'
+  },
+  {
+    id: 'gewitterkapelle', name: 'Gewitterkapelle', zutaten: ['kriegstrommel', 'teslastab', 'dudelsack'],
+    geschoss: 'note', antrieb: 'orbit', ladung: 'kettenblitz', schaden: 1.4, feuerrate: 1.2, reichweite: 1.1, spezial: ['orbit6', 'donner'],
+    text: 'Sechs Noten kreisen um dich und schlagen Blitze in den Takt.',
+    hinweis: 'Trommel, Dudelsack – und ein Stab unter Strom.'
+  },
+  {
+    id: 'schneeballschlacht', name: 'Eiszeit-Schneeballschlacht', zutaten: ['schneeballschleuder', 'wasserbombe', 'eiszapfenwerfer'],
+    geschoss: 'schneeball', antrieb: 'regen', ladung: 'frost', schaden: 1.3, feuerrate: 1.1, reichweite: 1.2, spezial: ['salve3', 'frostnova'],
+    text: 'Schneebälle hageln vom Himmel. Manchmal friert gleich die ganze Nachbarschaft ein.',
+    hinweis: 'Schnee, Wasser und Eis – alles, was kalt ist und fliegt.'
+  },
+  {
+    id: 'goldesel', name: 'Goldesel', zutaten: ['gluecksmuenzen', 'kartoffelkanone', 'grummelpfeife'],
+    geschoss: 'muenze', antrieb: 'zielsuchend', ladung: 'glueck', schaden: 1.4, feuerrate: 1.2, reichweite: 1.2, spezial: ['goldregen'],
+    text: 'Zielsuchende Goldmünzen. Getroffene Gegner spucken manchmal Kristalle aus.',
+    hinweis: 'Münzen, Kartoffeln und eine Grummel-Pfeife.'
+  },
+  {
+    id: 'bowlingapokalypse', name: 'Bowling-Apokalypse', zutaten: ['bowlingkugel', 'partykanone', 'dynamitbuendel'],
+    geschoss: 'bowling', antrieb: 'rollen', ladung: 'explosion', schaden: 1.5, feuerrate: 1, reichweite: 1.1, spezial: ['minibumm', 'cluster'],
+    text: 'Explodierende Bowlingkugeln. Jeder Treffer ein Strike – und noch einer.',
+    hinweis: 'Kugel, Party und Dynamit.'
+  },
+  {
+    id: 'fruehstuecksapokalypse', name: 'Frühstücksapokalypse', zutaten: ['toasterturm', 'sternschnuppenstab', 'teleporttoaster'],
+    geschoss: 'toast', antrieb: 'regen', ladung: 'brand', schaden: 1.4, feuerrate: 1.2, reichweite: 1.2, spezial: ['salve3', 'feuerspur'],
+    text: 'Glühende Toastscheiben regnen vom Himmel und hinterlassen Brandflecken.',
+    hinweis: 'Zwei Toaster und eine Sternschnuppe.'
+  },
+  {
+    id: 'drohnenstaffel', name: 'Drohnenstaffel Bumm', zutaten: ['kampfdrohne', 'geschuetzturm', 'minigun'],
+    geschoss: 'drohne', antrieb: 'schwarm', ladung: 'splitter', schaden: 1.4, feuerrate: 1.2, reichweite: 1.2, spezial: ['schwarm6', 'minibumm'],
+    text: 'Sechs Kampfdrohnen, deren Treffer kleine Explosionen auslösen.',
+    hinweis: 'Drohne, Turm und eine Menge Munition.'
+  },
+  {
+    id: 'laserdisco', name: 'Laser-Disco', zutaten: ['laserpistole', 'partykanone', 'kampfkazoo'],
+    geschoss: 'laser', antrieb: 'strahl', ladung: 'konfetti', schaden: 2.2, feuerrate: 1.6, reichweite: 1.1, spezial: ['minibumm'],
+    text: 'Ein Party-Laser, der Gegner verwirrt tanzen lässt – und manchmal platzen.',
+    hinweis: 'Laser, Party und ein Kazoo.'
+  },
+  {
+    id: 'schleimlawine', name: 'Schleimlawine', zutaten: ['schleimzucht', 'klebebombe', 'bananarang'],
+    geschoss: 'schleim', antrieb: 'rollen', ladung: 'kleister', schaden: 1.5, feuerrate: 1.1, reichweite: 1.1, spezial: ['minibumm'],
+    text: 'Rollende Schleimkugeln kleben Gegner fest und blubbern explosiv.',
+    hinweis: 'Alles, was klebt und schleimt.'
+  },
+  {
+    id: 'vulkanausbruch', name: 'Vulkanausbruch', zutaten: ['lavaschleuder', 'bombenhagel', 'flammenwerfer'],
+    geschoss: 'meteor', antrieb: 'regen', ladung: 'lava', schaden: 1.4, feuerrate: 1.1, reichweite: 1.2, spezial: ['salve3', 'feuerspur'],
+    text: 'Glühende Brocken regnen herab und lassen Lava zurück.',
+    hinweis: 'Lava, Bomben und Flammen – der Lavakessel zum Mitnehmen.'
+  },
+  {
+    id: 'stinkendebrut', name: 'Stinkende Brut', zutaten: ['fauleeier', 'kuekenkorb', 'giftblaeser'],
+    geschoss: 'ei', antrieb: 'bogen', ladung: 'gift', schaden: 1.4, feuerrate: 1.2, reichweite: 1.1, spezial: ['giftwolke', 'kueken'],
+    text: 'Faule Eier, aus denen giftige Küken schlüpfen.',
+    hinweis: 'Eier, Küken und ein Giftbläser.'
+  },
+  {
+    id: 'zeitgewitter', name: 'Zeitgewitter', zutaten: ['kuckucksuhr', 'orbitalschlag', 'teslaturm'],
+    geschoss: 'kuckuck', antrieb: 'teleport', ladung: 'kettenblitz', schaden: 1.5, feuerrate: 1.2, reichweite: 1.2, spezial: ['donner', 'doppelblitz'],
+    text: 'Ein teleportierender Kuckuck, der zur vollen Stunde Blitze ruft.',
+    hinweis: 'Eine Uhr, ein Satellit und ein Turm unter Strom.'
+  },
+  {
+    id: 'mahlstrom', name: 'Magnetischer Mahlstrom', zutaten: ['magnetkanone', 'plasmaspirale', 'minenleger'],
+    geschoss: 'kugel', antrieb: 'spirale', ladung: 'magnet', schaden: 1.5, feuerrate: 1.2, reichweite: 1.1, spezial: ['minibumm'],
+    text: 'Spiralige Magnetkugeln ziehen Gegner zusammen und knallen.',
+    hinweis: 'Magnet, Spirale und Minen.'
+  },
+  {
+    id: 'holzfaellerhurrikan', name: 'Holzfäller-Hurrikan', zutaten: ['wurfaxt', 'kettensaege', 'baseballschlaeger'],
+    geschoss: 'axt', antrieb: 'bumerang', ladung: 'splitter', schaden: 1.5, feuerrate: 1.2, reichweite: 1.1, spezial: ['minibumm'],
+    text: 'Bumerang-Äxte, die beim Treffer in Splitter und Funken zerfallen.',
+    hinweis: 'Axt, Säge und Schläger.'
+  },
+  {
+    id: 'lazarettluftbruecke', name: 'Lazarett-Luftbrücke', zutaten: ['pflasterkanone', 'keksdose', 'schildblasen'],
+    geschoss: 'pflaster', antrieb: 'regen', ladung: 'heilung', schaden: 1.3, feuerrate: 1.3, reichweite: 1.2, spezial: ['heilkeks', 'salve3'],
+    text: 'Pflaster und Kekse regnen auf dich und deine Freunde – Gegner bekommen trotzdem eins drauf.',
+    hinweis: 'Pflaster, Kekse und Blasen.'
+  },
+  {
+    id: 'tiefkuehltruhe', name: 'Tiefkühltruhe', zutaten: ['kuckucksuhr', 'schneeballschleuder', 'wasserwerfer'],
+    geschoss: 'wasser', antrieb: 'kegel', ladung: 'frost', schaden: 1.4, feuerrate: 1.2, reichweite: 1.1, spezial: ['frostnova'],
+    text: 'Ein eiskalter Wasserstrahl, der ganze Gruppen schockgefriert.',
+    hinweis: 'Kuckuck, Schnee und Wasser.'
+  },
+  {
+    id: 'sternenhimmel', name: 'Sternenhimmel', zutaten: ['wurfsterne', 'sternschnuppenstab', 'praezisionsgewehr'],
+    geschoss: 'stern', antrieb: 'zielsuchend', ladung: 'plasma', schaden: 1.4, feuerrate: 1.1, reichweite: 1.3, spezial: ['salve3'],
+    text: 'Drei Plasma-Sterne pro Schuss, die sich ihr Ziel selbst suchen.',
+    hinweis: 'Sterne, Sternschnuppen und ein sehr genaues Gewehr.'
+  },
+  {
+    id: 'pilzrave', name: 'Pilz-Rave', zutaten: ['pilzbeutel', 'partykanone', 'dudelsack'],
+    geschoss: 'spore', antrieb: 'kegel', ladung: 'konfetti', schaden: 1.4, feuerrate: 1.2, reichweite: 1.1, spezial: ['giftwolke'],
+    text: 'Ein Kegel aus Sporen und Konfetti. Die Gegner tanzen, bis ihnen schlecht wird.',
+    hinweis: 'Pilze, Party und Dudelsack.'
+  },
+  {
+    id: 'nagelbombe', name: 'Nagelbombe deluxe', zutaten: ['nagelpistole', 'granatwerfer', 'klebebombe'],
+    geschoss: 'nagel', antrieb: 'huepfend', ladung: 'splitter', schaden: 1.5, feuerrate: 1.1, reichweite: 1.1, spezial: ['cluster', 'minibumm'],
+    text: 'Hüpfende Nagelbündel, die in alle Richtungen zerplatzen.',
+    hinweis: 'Nägel, Granaten und Kleber.'
+  },
+  {
+    id: 'ententsunami', name: 'Ententeich-Tsunami', zutaten: ['entenarmee', 'wasserbombe', 'wasserwerfer'],
+    geschoss: 'gummiente', antrieb: 'schwarm', ladung: 'wasser', schaden: 1.4, feuerrate: 1.2, reichweite: 1.2, spezial: ['schwarm6', 'donner'],
+    text: 'Sechs nasse Gummienten – und nasse Gegner leiten Blitze besonders gut.',
+    hinweis: 'Enten und ganz viel Wasser.'
+  },
+  {
+    id: 'grummelaufstand', name: 'Grummel-Aufstand', zutaten: ['grummelpfeife', 'kawummhammer', 'federfaust'],
+    geschoss: 'grummel', antrieb: 'schwarm', ladung: 'explosion', schaden: 1.5, feuerrate: 1.1, reichweite: 1.1, spezial: ['schwarm6', 'minibumm'],
+    text: 'Sechs bekehrte Grummelbolde stürmen mit Sprengstoff los.',
+    hinweis: 'Pfeife, Hammer und Faust.'
+  },
+  {
+    id: 'todesblick', name: 'Todesblick', zutaten: ['stirnlaser', 'laserpistole', 'praezisionsgewehr'],
+    geschoss: 'laser', antrieb: 'strahl', ladung: 'plasma', schaden: 2.6, feuerrate: 1.4, reichweite: 1.3, spezial: ['donner'],
+    text: 'Ein Plasmastrahl, der gelegentlich einen Blitz hinterherschickt.',
+    hinweis: 'Drei Arten, sehr genau zu zielen.'
+  },
+  {
+    id: 'honigfalle', name: 'Honigfalle', zutaten: ['bienenstock', 'schleimzucht', 'keksdose'],
+    geschoss: 'biene', antrieb: 'schwarm', ladung: 'kleister', schaden: 1.4, feuerrate: 1.2, reichweite: 1.2, spezial: ['schwarm6', 'heilkeks'],
+    text: 'Sechs Bienen kleben Gegner mit Honig fest. Süß für dich, klebrig für sie.',
+    hinweis: 'Bienen, Schleim und Kekse.'
+  },
+  {
+    id: 'teppichbombardement', name: 'Teppichbombardement', zutaten: ['orbitalschlag', 'bombenhagel', 'raketenwerfer'],
+    geschoss: 'rakete', antrieb: 'regen', ladung: 'explosion', schaden: 1.3, feuerrate: 1.1, reichweite: 1.2, spezial: ['salve3', 'cluster'],
+    text: 'Raketen regnen in Dreiergruppen herab und zerfallen in Mini-Explosionen.',
+    hinweis: 'Vom Himmel, aus dem Himmel, in den Himmel.'
+  },
+  {
+    id: 'minenrasen', name: 'Minenfeld-Rasenmäher', zutaten: ['minenleger', 'rasenmaeherbot', 'geschuetzturm'],
+    geschoss: 'mine', antrieb: 'ablegen', ladung: 'explosion', schaden: 1.5, feuerrate: 1.2, reichweite: 1.1, spezial: ['minibumm', 'cluster'],
+    text: 'Legt Minen, die in Kettenexplosionen hochgehen.',
+    hinweis: 'Minen, Mäher und Turm.'
+  },
+  {
+    id: 'kopfoderkawumm', name: 'Kopf oder Kawumm', zutaten: ['gluecksmuenzen', 'wurfsterne', 'schrotflinte'],
+    geschoss: 'muenze', antrieb: 'faecher', ladung: 'glueck', schaden: 1.4, feuerrate: 1.2, reichweite: 1.1, spezial: ['goldregen'],
+    text: 'Ein Fächer aus Glücksmünzen. Kopf: Kristalle. Zahl: auch Kristalle.',
+    hinweis: 'Münzen, Sterne und Schrot.'
+  },
+  {
+    id: 'lawine', name: 'Lawine', zutaten: ['eiszapfenwerfer', 'baseballschlaeger', 'bowlingkugel'],
+    geschoss: 'schneeball', antrieb: 'rollen', ladung: 'frost', schaden: 1.5, feuerrate: 1.1, reichweite: 1.1, spezial: ['frostnova'],
+    text: 'Riesige rollende Schneebälle, die alles einfrieren, was im Weg steht.',
+    hinweis: 'Eis, Schläger und Kugel.'
+  },
+  {
+    id: 'trommelfeuer', name: 'Trommelfeuer', zutaten: ['kriegstrommel', 'minigun', 'kampfkazoo'],
+    geschoss: 'note', antrieb: 'gerade', ladung: 'schall', schaden: 1.3, feuerrate: 1.2, reichweite: 1.2, spezial: ['salve3'],
+    text: 'Drei Schallnoten pro Schlag. Taub wird hier jeder.',
+    hinweis: 'Trommel, Minigun und Kazoo.'
+  },
+  {
+    id: 'teslaspule', name: 'Tesla-Spule', zutaten: ['teslaturm', 'magnetkanone', 'plasmaspirale'],
+    geschoss: 'blitzkugel', antrieb: 'orbit', ladung: 'kettenblitz', schaden: 1.4, feuerrate: 1.2, reichweite: 1.2, spezial: ['orbit6', 'doppelblitz'],
+    text: 'Sechs Blitzkugeln kreisen um dich und springen doppelt so oft weiter.',
+    hinweis: 'Turm, Magnet und Spirale – alles unter Strom.'
+  },
+  {
+    id: 'huehnerstallrevolte', name: 'Hühnerstall-Revolte', zutaten: ['kuekenkorb', 'huehnerkanone', 'grummelpfeife'],
+    geschoss: 'huhn', antrieb: 'schwarm', ladung: 'kueken', schaden: 1.5, feuerrate: 1.2, reichweite: 1.2, spezial: ['schwarm6', 'kueken'],
+    text: 'Ein Schwarm Kampfhühner, aus deren Treffern Küken schlüpfen.',
+    hinweis: 'Küken, Hühner und ein Grummel-Pfiff.'
   }
 ];
 

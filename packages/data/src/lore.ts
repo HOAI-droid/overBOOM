@@ -201,7 +201,37 @@ export const REZEPT_ZITATE: Record<string, string> = {
   frostfeuerwerk: '„Schön kalt, schön bunt." – Frost-Fritz',
   saegenkarussell: '„Einmal rundherum, bitte." – Panzer-Paule',
   bienenkoenigin: '„Bsssss." – Ihre Majestät',
-  gackerchaos: '„Gack? GACK!" – ehemaliger Grummelbold'
+  gackerchaos: '„Gack? GACK!" – ehemaliger Grummelbold',
+  pommesbude: '„Mit Mayo oder mit Kawumm?" – Oma Granate',
+  gewitterkapelle: '„Das ist kein Lärm, das ist Hochspannungsmusik." – Blitz-Bettina',
+  schneeballschlacht: '„Wer zuerst friert, hat verloren." – Frost-Fritz',
+  goldesel: '„Geld stinkt nicht. Grummelbolde schon." – Grubert',
+  bowlingapokalypse: '„STRIIIKE! Und … weg." – Panzer-Paule',
+  fruehstuecksapokalypse: '„Ich wollte doch nur Frühstück." – Megatoaster',
+  drohnenstaffel: '„Staffel, Formation Kawumm!" – Die Ingenieurin',
+  laserdisco: '„Und jetzt alle: TÖÖÖRÖÖÖ!" – Der Glückspilz',
+  schleimlawine: '„Blubb." – ein Schleimi, sehr beeindruckt',
+  vulkanausbruch: '„Das ist kein Ausbruch, das ist ein Gruß." – Der Pyromane',
+  stinkendebrut: '„Riecht wie Bauer Brunos Socken." – Giftmischerin Gerda',
+  zeitgewitter: '„Kuckuck! Es ist … Gewitterzeit."',
+  mahlstrom: '„Alles hängt zusammen. Vor allem die Gegner." – Prof. Fusionski',
+  holzfaellerhurrikan: '„Holz vor der Hütte? Nicht mehr lange." – Panzer-Paule',
+  lazarettluftbruecke: '„Erst verarzten, dann verkloppen." – Oma Granate',
+  tiefkuehltruhe: '„Bitte nicht auftauen." – Frost-Fritz',
+  sternenhimmel: '„Wünsch dir was. Zum Beispiel weniger Gegner."',
+  pilzrave: '„Untz untz untz … hust." – ein Pilzling',
+  nagelbombe: '„Do it yourself!" – Die Ingenieurin',
+  ententsunami: '„Quietsch!" – die Flotte',
+  grummelaufstand: '„Grmpf! Für Grubert!" – die Grummel-Garde',
+  todesblick: '„Nicht blinzeln." – Prof. Fusionski',
+  honigfalle: '„Bsss … klebt." – eine sehr zufriedene Biene',
+  teppichbombardement: '„Ich nenne es: Kunst." – Der Pyromane',
+  minenrasen: '„Bitte den Rasen nicht betreten." – Schild am Gartenzaun',
+  kopfoderkawumm: '„Ich gewinne immer." – Der Glückspilz',
+  lawine: '„Vorsicht, rutschig!" – Schneemann Fritz',
+  trommelfeuer: '„BUMM-TSCHAK-BUMM!" – die Kapelle',
+  teslaspule: '„Nicht anfassen. Nein, wirklich." – Blitz-Bettina',
+  huehnerstallrevolte: '„Gack-gack-GACKERN!" – König Gockel (unfreiwillig)'
 };
 
 /** Text für Fusions-Sonderwirkungen (Rezept-Karten) */
@@ -216,7 +246,12 @@ export const SPEZIAL_INFO: Record<string, { name: string; text: string }> = {
   orbit6: { name: 'Großer Orbit', text: '6 Kreisel auf größerem Radius.' },
   giftwolke: { name: 'Giftwolke', text: 'Vergiftete Gegner hinterlassen Giftpfützen.' },
   kueken: { name: 'Kükenschlupf', text: 'Treffer lassen Küken schlüpfen.' },
-  gross: { name: 'Riesig', text: 'Größer, langsamer, verheerend.' }
+  gross: { name: 'Riesig', text: 'Größer, langsamer, verheerend.' },
+  minibumm: { name: 'Mini-Bumm', text: 'Treffer lösen manchmal eine Mini-Explosion aus.' },
+  feuerspur: { name: 'Feuerspur', text: 'Treffer hinterlassen manchmal Lavapfützen.' },
+  frostnova: { name: 'Frostnova', text: 'Treffer frieren manchmal alles ringsum ein.' },
+  goldregen: { name: 'Goldregen', text: 'Getroffene Gegner spucken manchmal einen Kristall aus.' },
+  donner: { name: 'Donnerschlag', text: 'Treffer rufen manchmal einen Blitzschlag.' }
 };
 
 /** deterministisch ein Element aus einer Liste nach Text-Hash */
