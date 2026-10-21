@@ -9,7 +9,7 @@ OVERBOOM ist ein actiongeladenes Arena-Roguelite in knalliger 3D-Voxel-Pixel-Opt
   <img src="docs/werbung/kampf2.png" width="300" alt="Kettenexplosionen">
 </p>
 
-## Downloads (Version 0.12.1)
+## Downloads (Version 0.13.0)
 
 **Sofort im Browser spielen:** <https://hoai-droid.github.io/overboom/> – am Handy über *Teilen → Zum Home-Bildschirm* (iPhone) bzw. *App installieren* (Android) wie eine App im Vollbild, solo auch offline.
 
@@ -101,6 +101,12 @@ Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` 
 Phase 10: Tests auf echten Geräten (Handy, Xbox, Koop über Mobilfunk), Signaturen und Store-Einträge.
 
 ## Versionsgeschichte
+
+### Version 0.13.0 – feiner und lauter
+- **Feine Modelle** für alle Helden, Gegner und Bosse (`render/src/hd/`, halbe Voxelgröße). Sie werden ab Grafikstufe „Ultra“ verwendet (`renderer.setDetail()`, Vergleich mit `?modelle=klein|fein`). „Automatisch“ startet auf PC/Xbox mit „Ultra“.
+- **Voxel-Explosionen** (`render/src/voxelExplosion.ts`): glühender Ball mit Hitze-Farbverlauf, zerfällt von außen nach innen, Glutstücke, Brocken und Rauch. Drei Größen aus dem Wirkungsradius; Ketten und viele gleichzeitige Explosionen werden kleiner bzw. sparsamer, mit Obergrenze an Voxeln.
+- Fülllicht aus Kamerarichtung, Held-Silhouette hinter Mauern per Stencil.
+- Weltkarte nennt den Baron bzw. die Baronin statt einer Wellennummer.
 
 ### Version 0.12.1 – Controller-Fokus
 - Menüs zeigen die Auswahl mit Controller/Pfeiltasten jetzt immer deutlich (eigene Markierung `.ob-fokus` statt `:focus` – in der Xbox-Hülle griff `:focus` nicht, weil die WebView keinen Fensterfokus hatte). Die Xbox-Hülle holt den Fokus bei Aktivierung zurück.
