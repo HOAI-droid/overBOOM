@@ -98,5 +98,6 @@ Dark violet background, orange/yellow/cyan/magenta highlights, playful and loud.
 | `04-barone-und-baroninnen.png` | Alle 7 Inselbarone/-baroninnen und das Große Kawumm |
 | `05-weltkarte.png` | Weltkarte Krawummia mit den 7 schwebenden Inseln |
 | `06-shop.png`, `07-amboss.png` | Shop mit Karten und Waffen-Amboss |
+| `08-bosse-egoperspektive-4k.png` | Alle Barone/Baroninnen und das Große Kawumm aus Augenhöhe, 3840×2160 (eigens gerendert, nicht die Spielkamera) |
 
 Aufgenommen in Grafikstufe „Max“ bei 1920×1080.
