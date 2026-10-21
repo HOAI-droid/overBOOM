@@ -3,12 +3,26 @@ import { buildVoxels, solidMaterial, glowMaterial, type Vox } from './voxel.ts';
 import { heroParts, HERO_VOXEL } from './models.ts';
 import { DETAIL, heroPartsHd, HERO_VOXEL_HD } from './hd/index.ts';
 
+/** Held-Material: schreibt Stencil 1 – die Silhouette erscheint dann nur, wo die Welt den Helden verdeckt, nicht auf ihm selbst */
+const mitStencil = <T extends THREE.Material>(m: T): T => {
+  m.stencilWrite = true; m.stencilRef = 1;
+  m.stencilFunc = THREE.AlwaysStencilFunc; m.stencilZPass = THREE.ReplaceStencilOp;
+  return m;
+};
+const heldMaterial = mitStencil(solidMaterial.clone());
+const heldGlow = mitStencil(glowMaterial.clone());
+/** Held nach der Welt zeichnen: Stencil 1 nur auf wirklich sichtbaren Held-Pixeln */
+const HELD_REIHE = 5;
+
 const silhouettes = new Map<string, THREE.MeshBasicMaterial>();
 /** Durchscheinende Silhouette, wenn der Held hinter Mauern oder Säulen steht. */
 function silhouetteMaterial(color: string): THREE.MeshBasicMaterial {
   let m = silhouettes.get(color);
   if (!m) {
-    m = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.6, depthFunc: THREE.GreaterDepth, depthWrite: false, toneMapped: false });
+    m = new THREE.MeshBasicMaterial({
+      color, transparent: true, opacity: 0.6, depthFunc: THREE.GreaterDepth, depthWrite: false, toneMapped: false,
+      stencilWrite: true, stencilRef: 1, stencilFunc: THREE.NotEqualStencilFunc, stencilZPass: THREE.KeepStencilOp
+    });
     silhouettes.set(color, m);
   }
   return m;
@@ -18,12 +32,12 @@ function partMesh(vox: Vox[], pivot: [number, number, number], color: string, si
   const g = new THREE.Group();
   const { solid, glow } = buildVoxels(vox, size, { origin: pivot, jitter: size < HERO_VOXEL ? 0.03 : 0.05 });
   if (solid) {
-    const m = new THREE.Mesh(solid, solidMaterial); m.castShadow = true; g.add(m);
+    const m = new THREE.Mesh(solid, heldMaterial); m.castShadow = true; m.renderOrder = HELD_REIHE; g.add(m);
     const ghost = new THREE.Mesh(solid, silhouetteMaterial(color));
     ghost.renderOrder = 10;
     g.add(ghost);
   }
-  if (glow) g.add(new THREE.Mesh(glow, glowMaterial));
+  if (glow) { const gm = new THREE.Mesh(glow, heldGlow); gm.renderOrder = HELD_REIHE; g.add(gm); }
   g.position.set(pivot[0] * size, pivot[1] * size, pivot[2] * size);
   return g;
 }

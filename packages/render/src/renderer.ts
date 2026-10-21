@@ -83,10 +83,12 @@ export class GameRenderer {
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.setClearColor('#0b0814');
 
-    this.rt = new THREE.WebGLRenderTarget(4, 4, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, depthBuffer: true });
+    this.rt = new THREE.WebGLRenderTarget(4, 4, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, depthBuffer: true, stencilBuffer: true });
     this.rt.texture.colorSpace = THREE.SRGBColorSpace;
     // Tiefe als Textur: daraus entstehen im Nachbearbeitungs-Shader die Umrisslinien
-    this.rt.depthTexture = new THREE.DepthTexture(4, 4);
+    // Tiefe + Stencil (Stencil: Held-Silhouette nur hinter Mauern)
+    this.rt.depthTexture = new THREE.DepthTexture(4, 4, THREE.UnsignedInt248Type);
+    this.rt.depthTexture.format = THREE.DepthStencilFormat;
 
     const mat = new THREE.ShaderMaterial({
       uniforms: {
