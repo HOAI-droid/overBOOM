@@ -206,10 +206,12 @@ async function start() {
   // Auflösung = kurze Bildseite in Pixeln (Pixel-Look); Max/Ultra feiner für starke Geräte
   const QUALI = { max: { res: 540, schatten: true, partikel: 1 }, ultra: { res: 405, schatten: true, partikel: 1 }, hoch: { res: 270, schatten: true, partikel: 1 }, mittel: { res: 216, schatten: true, partikel: 0.7 }, niedrig: { res: 180, schatten: false, partikel: 0.5 } };
   /** bei „Automatisch": aktuelle Stufe (wird nach gemessener Bildrate angepasst) */
-  // Xbox: konservativ (App-Speicherlimit ~1 GB) – startet und bleibt höchstens auf „mittel"
-  // Automatisch: startet auf „hoch" (Xbox: „mittel") und steigt bei flüssigen 60 fps bis „ultra"
-  const autoMax: keyof typeof QUALI = platform.name === 'xbox' ? 'mittel' : 'ultra';
-  let autoStufe: keyof typeof QUALI = platform.name === 'xbox' ? 'mittel' : 'hoch';
+  // HD: ab „ultra" feinere Auflösung UND feine Modelle (render/src/hd).
+  // Automatisch: PC und Xbox starten auf „ultra" (PC steigt bis „max"), Handys/Tablets auf „hoch" (bis „ultra");
+  // bei ruckelnder Bildrate geht es stufenweise zurück.
+  const handy = platform.isTouchDevice();
+  const autoMax: keyof typeof QUALI = handy || platform.name === 'xbox' ? 'ultra' : 'max';
+  let autoStufe: keyof typeof QUALI = handy ? 'hoch' : 'ultra';
   /** meldet die Hülle knappen Speicher, gilt bis zum Neustart „niedrig" */
   let speicherKnapp = false;
   const qualiStufe = () => (speicherKnapp ? 'niedrig' : einst.qualitaet === 'auto' ? autoStufe : einst.qualitaet);
@@ -224,6 +226,8 @@ async function start() {
     hud.blitze = einst.blitze;
     damage.enabled = einst.zahlen;
     if (!params.has('res')) renderer.setResolution(q.res);
+    // feine Modelle ab „ultra" (zum Vergleich: ?modelle=klein | fein)
+    renderer.setDetail(params.get('modelle') === 'fein' || (params.get('modelle') !== 'klein' && q.res >= QUALI.ultra.res));
     if (params.get('shadows') !== '0') renderer.setShadows(q.schatten);
     menus.einstellungen = { ...einst };
     if (speichern) platform.storage.set('einstellungen', JSON.stringify(einst));
@@ -774,10 +778,10 @@ async function start() {
       const fps = fpsN / fpsT;
       fpsT = 0; fpsN = 0;
       if (einst.qualitaet === 'auto' && qualiPause <= 0 && menus.screen === 'spiel' && !document.hidden) {
-        const stufen: (keyof typeof QUALI)[] = ['niedrig', 'mittel', 'hoch', 'ultra'];
+        const stufen: (keyof typeof QUALI)[] = ['niedrig', 'mittel', 'hoch', 'ultra', 'max'];
         const i = stufen.indexOf(autoStufe);
         // „ultra" ist Luxus: schon unter 52 fps wieder zurück auf „hoch"
-        if (fps < (autoStufe === 'ultra' ? 52 : 40) && i > 0) { autoStufe = stufen[i - 1]; applyEinstellungen(false); qualiPause = 6; }
+        if (fps < (autoStufe === 'ultra' || autoStufe === 'max' ? 52 : 40) && i > 0) { autoStufe = stufen[i - 1]; applyEinstellungen(false); qualiPause = 6; }
         else if (fps > 57 && i < stufen.indexOf(autoMax)) { autoStufe = stufen[i + 1]; applyEinstellungen(false); qualiPause = 20; }
       }
     }

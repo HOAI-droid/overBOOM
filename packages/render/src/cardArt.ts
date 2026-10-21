@@ -4,6 +4,7 @@ import { HELD_BY_ID, ITEM_BY_ID, KARTE_BY_ID, SELTENHEIT, W, waffeById, type Kar
 import { buildVoxels, glowMaterial, solidMaterial, VoxBuilder, type Vox } from './voxel.ts';
 import { HERO_VOXEL, heroParts, rezeptModell, weaponModel } from './models.ts';
 import { ENEMY_MODELS } from './combatView.ts';
+import { HD_GEGNER } from './hd/index.ts';
 
 /** Silhouette für noch nicht gefundene Karten */
 const silhouette = new THREE.MeshBasicMaterial({ color: '#3d2f6e' });
@@ -65,7 +66,8 @@ function modellTeile(k: Karte): { teile: { vox: Vox[]; pivot?: [number, number, 
     }
     case 'gegner':
     case 'boss': {
-      const m = ENEMY_MODELS[k.ref];
+      // Karten zeigen immer das feine Modell (falls vorhanden)
+      const m = HD_GEGNER[k.ref] ?? ENEMY_MODELS[k.ref];
       return { size: m?.size ?? 0.1, teile: [{ vox: m ? m.vox() : [] }] };
     }
     case 'item':

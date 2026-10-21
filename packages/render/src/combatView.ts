@@ -5,6 +5,7 @@ import { VoxelInstances } from './instanced.ts';
 import { voxelObject } from './voxel.ts';
 import { discMuster, panzerSchild, PROJECTILE_IDS, rezeptModell, baron, baronBlitzbirne, baronGlutbauch, baroninFrostine, baroninGackerella, baroninSchraubella, baroninSporella, grossesKawumm, bombenpinguin, funkenkobold, kampfhuhn, koenigGockel, kultist, lavaklops, megatoaster, minenbot, morchella, pilzling, schleimi, schneemann, schrottgolem, teslaritter, vogelscheuche, chicken, crown, disc, fusionModel, gem, grummel, kroete, projectileModel, spawnMarker, targetRing, toastomat, turret, weaponModel } from './models.ts';
 import { FX, type Effects } from './effects.ts';
+import { DETAIL, HD_GEGNER } from './hd/index.ts';
 
 export const ENEMY_MODELS: Record<string, { vox: () => ReturnType<typeof grummel>; size: number; top: number; cap: number }> = {
   grummelbold: { vox: grummel, size: 0.11, top: 1.1, cap: 200 },
@@ -81,12 +82,7 @@ export class CombatView {
   private scl = new THREE.Vector3();
 
   constructor(private world: World, private fx: Effects) {
-    this.enemies = GEGNER.map((g) => {
-      const m = ENEMY_MODELS[g.id] ?? ENEMY_MODELS.grummelbold;
-      const inst = new VoxelInstances(m.vox(), m.size, m.cap, { jitter: 0.06 });
-      this.group.add(inst.group);
-      return inst;
-    });
+    this.enemies = this.baueGegner();
     for (const id of PROJECTILE_IDS) {
       const size = id === 'toast' || id === 'bombe' ? 0.09 : 0.07;
       const inst = new VoxelInstances(projectileModel(id), size, id === 'kugel' ? 400 : 200, { jitter: 0, shadows: id === 'bombe', origin: [0.5, 0.5, 0.5] });
@@ -116,6 +112,27 @@ export class CombatView {
   }
 
   /** Andere Welt anzeigen (Koop: Spiegelwelt des Clients, neuer Run des Hosts) */
+  /** Gegner-Modelle bauen (klein oder fein, je nach DETAIL.hd) */
+  private baueGegner(): VoxelInstances[] {
+    return GEGNER.map((g) => {
+      const m = ENEMY_MODELS[g.id] ?? ENEMY_MODELS.grummelbold;
+      // feines Modell ab Grafikstufe „Ultra“, sonst das kleine
+      const hd = DETAIL.hd ? HD_GEGNER[g.id] : undefined;
+      const inst = hd ? new VoxelInstances(hd.vox(), hd.size, m.cap, { jitter: 0.04 }) : new VoxelInstances(m.vox(), m.size, m.cap, { jitter: 0.06 });
+      this.group.add(inst.group);
+      return inst;
+    });
+  }
+
+  /** Detailstufe gewechselt: Gegner-Modelle neu bauen */
+  setDetail(): void {
+    for (const inst of this.enemies) {
+      this.group.remove(inst.group);
+      inst.group.traverse((o) => { if (o instanceof THREE.Mesh) o.geometry.dispose(); });
+    }
+    this.enemies = this.baueGegner();
+  }
+
   setWorld(w: World): void {
     this.world = w;
     for (const list of this.weapons) for (const v of list ?? []) {

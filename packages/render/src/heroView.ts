@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { buildVoxels, solidMaterial, glowMaterial, type Vox } from './voxel.ts';
 import { heroParts, HERO_VOXEL } from './models.ts';
+import { DETAIL, heroPartsHd, HERO_VOXEL_HD } from './hd/index.ts';
 
 const silhouettes = new Map<string, THREE.MeshBasicMaterial>();
 /** Durchscheinende Silhouette, wenn der Held hinter Mauern oder Säulen steht. */
@@ -13,9 +14,9 @@ function silhouetteMaterial(color: string): THREE.MeshBasicMaterial {
   return m;
 }
 
-function partMesh(vox: Vox[], pivot: [number, number, number], color: string): THREE.Group {
+function partMesh(vox: Vox[], pivot: [number, number, number], color: string, size: number): THREE.Group {
   const g = new THREE.Group();
-  const { solid, glow } = buildVoxels(vox, HERO_VOXEL, { origin: pivot, jitter: 0.05 });
+  const { solid, glow } = buildVoxels(vox, size, { origin: pivot, jitter: size < HERO_VOXEL ? 0.03 : 0.05 });
   if (solid) {
     const m = new THREE.Mesh(solid, solidMaterial); m.castShadow = true; g.add(m);
     const ghost = new THREE.Mesh(solid, silhouetteMaterial(color));
@@ -23,7 +24,7 @@ function partMesh(vox: Vox[], pivot: [number, number, number], color: string): T
     g.add(ghost);
   }
   if (glow) g.add(new THREE.Mesh(glow, glowMaterial));
-  g.position.set(pivot[0] * HERO_VOXEL, pivot[1] * HERO_VOXEL, pivot[2] * HERO_VOXEL);
+  g.position.set(pivot[0] * size, pivot[1] * size, pivot[2] * size);
   return g;
 }
 
@@ -42,12 +43,14 @@ export class HeroView {
 
   /** color = Spielerfarbe (Ring, Silhouette), body = Heldenfarbe (Helm, Anzug) */
   constructor(color: string, body = color) {
-    const p = heroParts(body);
-    this.body = partMesh(p.body, [0, 0, 0], color);
-    this.legL = partMesh(p.legL, p.pivots.legL, color);
-    this.legR = partMesh(p.legR, p.pivots.legR, color);
-    this.armL = partMesh(p.armL, p.pivots.armL, color);
-    this.armR = partMesh(p.armR, p.pivots.armR, color);
+    // feines Modell ab Grafikstufe „Ultra“
+    const hd = DETAIL.hd, size = hd ? HERO_VOXEL_HD : HERO_VOXEL;
+    const p = hd ? heroPartsHd(body) : heroParts(body);
+    this.body = partMesh(p.body, [0, 0, 0], color, size);
+    this.legL = partMesh(p.legL, p.pivots.legL, color, size);
+    this.legR = partMesh(p.legR, p.pivots.legR, color, size);
+    this.armL = partMesh(p.armL, p.pivots.armL, color, size);
+    this.armR = partMesh(p.armR, p.pivots.armR, color, size);
     this.model.add(this.body, this.legL, this.legR, this.armL, this.armR);
     this.root.add(this.model);
 

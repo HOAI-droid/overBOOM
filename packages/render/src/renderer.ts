@@ -1,10 +1,11 @@
 import * as THREE from 'three';
+import { DETAIL } from './hd/index.ts';
 import type { Player, SimEvent, World } from '@overboom/core';
 import { buildArenaView, paletteOf, type ArenaView } from './arenaView.ts';
 import { HELD_BY_ID, KOOP } from '@overboom/data';
 import type { Arena } from '@overboom/core';
 import { HeroView } from './heroView.ts';
-import { Effects } from './effects.ts';
+import { Effects, FX } from './effects.ts';
 import { CombatView } from './combatView.ts';
 import { ENEMY_DEBRIS, shotColor } from './models.ts';
 import { WorldMapView, type MapState } from './worldMap.ts';
@@ -36,6 +37,8 @@ export class GameRenderer {
   private rt: THREE.WebGLRenderTarget;
   private post: { scene: THREE.Scene; cam: THREE.OrthographicCamera; mat: THREE.ShaderMaterial };
   private sun: THREE.DirectionalLight;
+  /** Fülllicht aus Kamerarichtung: Gesichter und Vorderseiten liegen sonst im Schatten */
+  private front: THREE.DirectionalLight;
   private arena: ArenaView;
   private arenaSrc: Arena;
   private hemi: THREE.HemisphereLight;
@@ -82,21 +85,37 @@ export class GameRenderer {
 
     this.rt = new THREE.WebGLRenderTarget(4, 4, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, depthBuffer: true });
     this.rt.texture.colorSpace = THREE.SRGBColorSpace;
+    // Tiefe als Textur: daraus entstehen im Nachbearbeitungs-Shader die Umrisslinien
+    this.rt.depthTexture = new THREE.DepthTexture(4, 4);
 
     const mat = new THREE.ShaderMaterial({
       uniforms: {
         tDiffuse: { value: this.rt.texture },
+        tDepth: { value: this.rt.depthTexture },
+        uUmriss: { value: 1 },
         uInner: { value: new THREE.Vector2(1, 1) },
         uFull: { value: new THREE.Vector2(1, 1) },
         uOffset: { value: new THREE.Vector2(0, 0) }
       },
       vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
       fragmentShader: `
-        uniform sampler2D tDiffuse; uniform vec2 uInner; uniform vec2 uFull; uniform vec2 uOffset;
+        uniform sampler2D tDiffuse; uniform sampler2D tDepth; uniform float uUmriss;
+        uniform vec2 uInner; uniform vec2 uFull; uniform vec2 uOffset;
         varying vec2 vUv;
         void main(){
           vec2 p = (vUv * uInner + 1.0 + uOffset) / uFull;
           vec3 c = texture2D(tDiffuse, p).rgb;
+          // Umriss: 1 Pixel dunkler Rand, wo ein Nachbarpixel deutlich näher an der Kamera liegt
+          // (Figuren, Säulen, Kisten heben sich so klar vom Boden ab). Tiefe ist orthografisch = linear.
+          if (uUmriss > 0.0) {
+            // Texel-Mitte, damit der Umriss beim Subpixel-Versatz nicht flimmert
+            vec2 t = 1.0 / uFull, m = (floor(p * uFull) + 0.5) * t;
+            float d = texture2D(tDepth, m).r;
+            float n = min(min(texture2D(tDepth, m + vec2(t.x, 0.0)).r, texture2D(tDepth, m - vec2(t.x, 0.0)).r),
+                          min(texture2D(tDepth, m + vec2(0.0, t.y)).r, texture2D(tDepth, m - vec2(0.0, t.y)).r));
+            float kante = smoothstep(0.0007, 0.0018, d - n);
+            c = mix(c, vec3(0.043, 0.031, 0.078), kante * 0.9 * uUmriss);
+          }
           float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
           c = mix(vec3(l), c, 1.15);
           vec2 q = vUv - 0.5;
@@ -124,6 +143,9 @@ export class GameRenderer {
     this.sun.shadow.bias = -0.0008;
     this.sun.shadow.normalBias = 0.02;
     this.scene.add(this.sun, this.sun.target);
+    this.front = new THREE.DirectionalLight('#fff4e8', 0.95);
+    this.front.castShadow = false;
+    this.scene.add(this.front, this.front.target);
 
     this.arenaSrc = world.arena;
     this.arena = buildArenaView(world.arena);
@@ -224,6 +246,16 @@ export class GameRenderer {
     this.resize(this.cssW, this.cssH, this.dpr);
   }
   get resolution(): number { return this.opt.internalShort; }
+  /** Detailstufe: feine Modelle (true) oder kleine; baut Gegner und Helden neu */
+  setDetail(hd: boolean): void {
+    if (DETAIL.hd === hd) return;
+    DETAIL.hd = hd;
+    this.combat.setDetail();
+    for (const h of this.heroes) if (h) this.scene.remove(h.root);
+    this.heroes = [];
+    this.heroKeys = [];
+  }
+  get detail(): boolean { return DETAIL.hd; }
 
   /**
    * Erzeugt Effekte aus den Simulations-Ereignissen eines Ticks.
@@ -315,6 +347,7 @@ export class GameRenderer {
     this.map.resize(this.iw + 2, this.ih + 2);
     this.map.update(state, dt, time);
     this.post.mat.uniforms.uOffset.value.set(0, 0);
+    this.post.mat.uniforms.uUmriss.value = 0;
     this.renderer.setRenderTarget(this.rt);
     this.renderer.render(this.map.scene, this.map.camera);
     this.renderer.setRenderTarget(null);
@@ -399,6 +432,9 @@ export class GameRenderer {
     // Sonne + Schatten folgen der Kamera
     this.sun.position.set(target.x - 7, 14, target.z - 3);
     this.sun.target.position.copy(target);
+    // Fülllicht leicht von oben aus Kamerarichtung
+    this.front.position.set(target.x + this.camDir.x * 20, target.y + 9, target.z + this.camDir.z * 20);
+    this.front.target.position.copy(target);
 
     // Lebendige Welt
     for (const t of this.arena.torches) t.light.intensity = 5 + Math.sin(time * 11 + t.seed) * 0.8 + Math.sin(time * 23 + t.seed * 3) * 0.6;
@@ -414,6 +450,7 @@ export class GameRenderer {
     this.combat.update(alpha, time, dt, this.heroPos);
     this.effects.update(dt);
 
+    this.post.mat.uniforms.uUmriss.value = FX.umriss;
     this.renderer.setRenderTarget(this.rt);
     this.renderer.render(this.scene, this.camera);
     this.renderer.setRenderTarget(null);
