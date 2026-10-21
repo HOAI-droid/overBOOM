@@ -1,3 +1,5 @@
+<p align="center"><b>Deutsch</b> · <a href="README.en.md">English</a></p>
+
 <p align="center">
   <a href="https://hoai-droid.github.io/overboom/"><img src="docs/werbung/keyart.jpg" width="720" alt="OVERBOOM – das Große Kawumm, die Inselbarone und dein Held auf einer schwebenden Insel"></a>
 </p>
@@ -23,14 +25,10 @@ OVERBOOM ist ein actiongeladenes Arena-Roguelite in knalliger 3D-Voxel-Pixel-Opt
 
 - 🏝️ **7 schwebende Inseln**, Inselbosse, 4 Baroninnen, 3 Barone – und am Ende **das Große Kawumm**
 - 🔨 **Waffen-Fusion** mit über 16.000 Kombinationen und 40 geheimen Rezepten
-- 💥 **Kettenexplosionen** aus glühenden Voxeln
+- 💥 **Kettenexplosionen** aus glühenden Voxeln, fein aufgelöste Figuren
 - 👥 **Koop für 1–4 Spieler**, jeder am eigenen Gerät
+- 📱 Läuft im Browser, auf PC, Mac, Linux, Android, iPhone und Xbox
 - 🎮 Touch, Tastatur und Controller · 🌍 Deutsch, English, Español, Français
-
-<p>
-  <img src="docs/werbung/kampf1.png" width="260" alt="Kampf auf einer Insel">
-  <img src="docs/werbung/kampf2.png" width="260" alt="Kettenexplosionen">
-</p>
 
 <br clear="right">
 
@@ -69,9 +67,9 @@ Die Downloads werden kostenlos und ohne Gewähr bereitgestellt. Solo werden kein
 - **Koop für 1–4 Spieler**, jeder am eigenen Gerät: Raum erstellen, Code oder QR-Code teilen, losspielen. Gefallene Mitspieler werden wiederbelebt.
 - **Sammelkartenalbum** mit 292 Karten, Glanzkarten und Erfolgen – jede Karte auch als Bild speicherbar.
 - **Gefahrenstufen 0–10** für alle, denen es zu leicht wird.
-- **Musik, die mitspielt:** wird live erzeugt, wählbar als Rock, Pop, Retro (8/16 Bit) oder Chiptune, und passt sich dem Kampfgeschehen an.
+- **Musik, die mitspielt:** bewusst schlicht, wird live erzeugt, wählbar als Rock, Pop, Retro (8/16 Bit) oder Chiptune, und passt sich dem Kampfgeschehen an.
 - **Vier Sprachen:** Englisch, Deutsch, Spanisch, Französisch – Abfrage beim ersten Start, umstellbar in den Einstellungen.
-- Grafik von „Niedrig“ bis „Max“ (doppelte Auflösung), Einstellungen für Barrierefreiheit (Wackeln, Lichtblitze, Farbenblind-Modus).
+- Grafik von „Niedrig“ bis „Max“ (doppelte Auflösung); ab „Ultra“ fein aufgelöste Figuren. Einstellungen für Barrierefreiheit (Wackeln, Lichtblitze, Farbenblind-Modus).
 
 ## Steuerung
 
@@ -112,7 +110,7 @@ Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` 
 
 
 ## Bekannte Probleme
-- **Koop über echtes WebRTC ist noch nicht zwischen zwei Geräten getestet** – in der Entwicklungsumgebung sind die öffentlichen Nostr-Relays gesperrt. Getestet sind Netzcode (Node-Tests) und Koop zwischen Browser-Tabs (`?netz=lokal`). Ohne TURN-Relay klappt Koop nicht in jedem Netz.
+- Koop zwischen Geräten im selben Netz (WLAN) läuft. Über verschiedene Netze (z. B. Mobilfunk) ist es noch nicht getestet; ohne TURN-Relay klappt Koop nicht in jedem Netz.
 - Keine Host-Migration: Verlässt der Host das Spiel, endet es für alle (mit Hinweis).
 - Ein Host-Tab im Hintergrund läuft über den Worker-Takt weiter, Browser können ihn aber nach einer Weile drosseln. Am besten bleibt der Host im Vordergrund.
 - Snapshots haben noch keine Delta-Kompression; bei sehr vielen Geschossen werden sie größer (gemessen ~1,5 KB, im Extremfall bis ~20 KB).
@@ -120,12 +118,12 @@ Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` 
 - Balancing mit dem Bot justiert (8 Reisen: Tode verteilt über alle Inseln, starke Builds erreichen das Finale). Der Bot nutzt weder Mods, Evolutionen noch den OVERBOOM-Modus; ein guter Spieler ist stärker. Koop- und Gefahren-Werte (`KOOP`, `data/src/danger.ts`) sind Schätzungen.
 - Inselbosse wiederholen sich auf der Reise (4 Bossmodelle für 7 Inseln); jede Insel hat aber eine eigene Baronin bzw. einen eigenen Baron.
 - Fusions-Vorschau am Trainings-Dummy (10 s testen) fehlt noch; Fusionen aus Fusionen sind bewusst nicht möglich.
-- Musik ist bewusst schlicht (prozedurale Loops); Soundeffekte sind synthetisch.
-- Auf echten Handys und der Xbox noch nicht gemessen (nur Headless-Chromium mit Software-Rendering getestet).
 - Apps sind unsigniert (Windows SmartScreen, Mac Gatekeeper, iOS muss selbst signiert werden).
 
 ## Nächster Schritt
-Phase 10: Tests auf echten Geräten (Handy, Xbox, Koop über Mobilfunk), Signaturen und Store-Einträge.
+Phase 10: Koop über verschiedene Netze (Mobilfunk) testen, Signaturen und Store-Einträge.
+
+**Getestet auf echten Geräten:** Android-Handys, iPhone (Simulator), Xbox Series X|S, PC/Mac im Browser; Koop zwischen Geräten im selben WLAN.
 
 ## Versionsgeschichte
 

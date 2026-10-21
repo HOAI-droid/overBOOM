@@ -8,7 +8,7 @@ on:
   push:
     branches: [main]
     # reine Doku-/Bild-Änderungen bauen keine neuen Apps
-    paths-ignore: ['README.md', 'CLAUDE.md', 'docs/werbung/**', 'docs/hd/**']
+    paths-ignore: ['README*.md', 'CLAUDE.md', 'docs/werbung/**', 'docs/hd/**']
 
 permissions:
   contents: write
