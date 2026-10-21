@@ -85,39 +85,22 @@ export class GameRenderer {
 
     this.rt = new THREE.WebGLRenderTarget(4, 4, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, depthBuffer: true, stencilBuffer: true });
     this.rt.texture.colorSpace = THREE.SRGBColorSpace;
-    // Tiefe als Textur: daraus entstehen im Nachbearbeitungs-Shader die Umrisslinien
-    // Tiefe + Stencil (Stencil: Held-Silhouette nur hinter Mauern)
-    this.rt.depthTexture = new THREE.DepthTexture(4, 4, THREE.UnsignedInt248Type);
-    this.rt.depthTexture.format = THREE.DepthStencilFormat;
+    // Stencil-Puffer: Held-Silhouette nur hinter Mauern
 
     const mat = new THREE.ShaderMaterial({
       uniforms: {
         tDiffuse: { value: this.rt.texture },
-        tDepth: { value: this.rt.depthTexture },
-        uUmriss: { value: 1 },
         uInner: { value: new THREE.Vector2(1, 1) },
         uFull: { value: new THREE.Vector2(1, 1) },
         uOffset: { value: new THREE.Vector2(0, 0) }
       },
       vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
       fragmentShader: `
-        uniform sampler2D tDiffuse; uniform sampler2D tDepth; uniform float uUmriss;
-        uniform vec2 uInner; uniform vec2 uFull; uniform vec2 uOffset;
+        uniform sampler2D tDiffuse; uniform vec2 uInner; uniform vec2 uFull; uniform vec2 uOffset;
         varying vec2 vUv;
         void main(){
           vec2 p = (vUv * uInner + 1.0 + uOffset) / uFull;
           vec3 c = texture2D(tDiffuse, p).rgb;
-          // Umriss: 1 Pixel dunkler Rand, wo ein Nachbarpixel deutlich näher an der Kamera liegt
-          // (Figuren, Säulen, Kisten heben sich so klar vom Boden ab). Tiefe ist orthografisch = linear.
-          if (uUmriss > 0.0) {
-            // Texel-Mitte, damit der Umriss beim Subpixel-Versatz nicht flimmert
-            vec2 t = 1.0 / uFull, m = (floor(p * uFull) + 0.5) * t;
-            float d = texture2D(tDepth, m).r;
-            float n = min(min(texture2D(tDepth, m + vec2(t.x, 0.0)).r, texture2D(tDepth, m - vec2(t.x, 0.0)).r),
-                          min(texture2D(tDepth, m + vec2(0.0, t.y)).r, texture2D(tDepth, m - vec2(0.0, t.y)).r));
-            float kante = smoothstep(0.0007, 0.0018, d - n);
-            c = mix(c, vec3(0.043, 0.031, 0.078), kante * 0.9 * uUmriss);
-          }
           float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
           c = mix(vec3(l), c, 1.15);
           vec2 q = vUv - 0.5;
@@ -284,7 +267,7 @@ export class GameRenderer {
         case 'kill': fx.burst(e.x, e.z, ENEMY_DEBRIS[e.enemy] ?? ENEMY_DEBRIS.grummelbold); break;
         case 'explosion': {
           const wave = e.source === 'welle';
-          fx.explosion(e.x, e.z, e.r, wave);
+          fx.explosion(e.x, e.z, e.r, wave, e.chain);
           kick((0.1 + e.r * 0.09) * (wave ? 0.5 : 1));
           if (!wave) stop = Math.max(stop, e.chain >= 2 ? 0.075 : 0.05);
           break;
@@ -349,7 +332,6 @@ export class GameRenderer {
     this.map.resize(this.iw + 2, this.ih + 2);
     this.map.update(state, dt, time);
     this.post.mat.uniforms.uOffset.value.set(0, 0);
-    this.post.mat.uniforms.uUmriss.value = 0;
     this.renderer.setRenderTarget(this.rt);
     this.renderer.render(this.map.scene, this.map.camera);
     this.renderer.setRenderTarget(null);
@@ -452,7 +434,6 @@ export class GameRenderer {
     this.combat.update(alpha, time, dt, this.heroPos);
     this.effects.update(dt);
 
-    this.post.mat.uniforms.uUmriss.value = FX.umriss;
     this.renderer.setRenderTarget(this.rt);
     this.renderer.render(this.scene, this.camera);
     this.renderer.setRenderTarget(null);

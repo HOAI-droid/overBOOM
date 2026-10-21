@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { hash2 } from '@overboom/core';
 import { haloTexture } from './arenaView.ts';
+import { VoxelExplosions } from './voxelExplosion.ts';
 
 /** Größe der Explosionsgrafik relativ zum Wirkungsradius */
 const EXPLOSION_GRAFIK = 0.8;
@@ -22,8 +23,7 @@ export interface PoolOptions {
 }
 
 /** Einstellungen (Barrierefreiheit/Qualität): Partikeldichte 0,25–1, Blitz-Intensität 0–1 */
-/** Darstellung: Partikeldichte, Lichtblitze, Farbenblind-Modus, Umrisslinien (0 = aus, 1 = voll) */
-export const FX = { dichte: 1, blitze: 1, farbenblind: false, umriss: 1 };
+export const FX = { dichte: 1, blitze: 1, farbenblind: false };
 
 /** Partikel-Pool mit Instancing und Farbe pro Partikel – keine Allokationen pro Frame. */
 export class ParticlePool {
@@ -101,7 +101,6 @@ export class ParticlePool {
 
 const FIRE = [0xfff3c4, 0xffd23f, 0xffb02e, 0xff7a1a, 0xff4a14];
 const ROCK = [0x2a2142, 0x3a2f5c, 0x4b3f6e, 0x241b38, 0x1c1530];
-const SMOKE = [0x3a2f52, 0x2e2542, 0x4a3d66, 0x262036];
 const CONFETTI = [0xff3df0, 0x3de8ff, 0xffd23f, 0x5dff7a, 0xff7a1a];
 const ZAP_POINTS = 6;
 const ZAP_SUB = 4;
@@ -142,6 +141,8 @@ export class Effects {
   readonly debris: ParticlePool;
   readonly fire: ParticlePool;
   readonly smoke: ParticlePool;
+  /** Voxel-Explosionen (Feuerball, Glut, Rauch) */
+  readonly vox = new VoxelExplosions();
   private rings: { mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial; t: number; max: number; r: number }[] = [];
   private lights: { light: THREE.PointLight; t: number; max: number; power: number }[] = [];
   private decals: { mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial; t: number }[] = [];
@@ -174,7 +175,7 @@ export class Effects {
     this.fire = new ParticlePool(700, new THREE.MeshBasicMaterial({ toneMapped: false }), { puff: true, floor: false });
     this.smoke = new ParticlePool(500, new THREE.MeshLambertMaterial(), { puff: true, floor: false });
     this.debris.mesh.castShadow = true;
-    this.group.add(this.dust.mesh, this.sparks.mesh, this.debris.mesh, this.fire.mesh, this.smoke.mesh);
+    this.group.add(this.dust.mesh, this.sparks.mesh, this.debris.mesh, this.fire.mesh, this.smoke.mesh, this.vox.glow, this.vox.rauch);
 
     const ringGeo = new THREE.RingGeometry(0.8, 1, 28, 1);
     ringGeo.rotateX(-Math.PI / 2);
@@ -315,50 +316,33 @@ export class Effects {
     if (hostile) for (let i = 0; i < 4; i++) this.debris.spawn(x, y, z, (rnd() - 0.5) * 3, 2 + rnd() * 2, (rnd() - 0.5) * 3, 0.8, 0.07, -14, rnd() < 0.5 ? 0xc98a3a : 0x8a5a2a);
   }
 
-  /** Die große Nummer: Feuerball, Rauch, Voxel-Trümmer, Funken, Schockwelle, Lichtblitz, Brandfleck. */
-  explosion(x: number, z: number, r: number, small = false): void {
+  /**
+   * Die große Nummer: glühender Voxel-Ball (weiß → gelb → orange → rot), der zerfällt, dazu wegfliegende
+   * Glut, ein paar Brocken, Rauch, Druckwelle, Lichtblitz und Brandfleck.
+   * `small` = schwache Variante (Druckwellen am Wellenende, Boss-Auftritt), `chain` = Glied einer Kettenreaktion.
+   */
+  explosion(x: number, z: number, r: number, small = false, chain = 0): void {
     const rnd = this.rnd;
-    // nur die Grafik 20 % kleiner (v0.10: man soll vor lauter Explosionen noch etwas sehen);
-    // der Wirkungsradius im Spiel bleibt unverändert
-    r *= EXPLOSION_GRAFIK;
     this.load += 1;
-    // HD-Zweig: klare Formen statt Partikelwolke – wenige, große Teile, kaum Rauch;
-    // viele gleichzeitige Explosionen dünnen stärker aus
-    const q = this.density / (1 + this.load * 0.4);
-    const n = (base: number) => Math.max(1, Math.round(base * q));
-    const y = 0.35;
-
-    // Kern: heller, kantiger Blitz (wenige große Würfel)
-    for (let i = 0; i < n(2); i++) this.fire.spawn(x + (rnd() - 0.5) * 0.3, y + 0.25, z + (rnd() - 0.5) * 0.3, 0, 1.2, 0, 0.07, r * 0.3, 0, 0xffe27a);
-    // Feuerball: wenige, große Feuerwürfel, die schnell auseinanderfliegen und verlöschen
-    for (let i = 0; i < n(5 + r * 3); i++) {
-      const a = rnd() * Math.PI * 2, el = rnd() * 0.9, sp = (2.2 + rnd() * 3) * r;
-      this.fire.spawn(x, y + rnd() * 0.3, z, Math.cos(a) * Math.cos(el) * sp, Math.sin(el) * sp * 0.8 + 1.5, Math.sin(a) * Math.cos(el) * sp, 0.18 + rnd() * 0.18, (0.24 + rnd() * 0.22) * Math.sqrt(r), 2, this.pick(FIRE), 6);
-    }
-    // nur ein Hauch Rauch
-    for (let i = 0; i < n(1 + r); i++) {
-      const a = rnd() * Math.PI * 2, sp = rnd() * 1.1 * r;
-      this.smoke.spawn(x + Math.cos(a) * 0.3, y + 0.3, z + Math.sin(a) * 0.3, Math.cos(a) * sp, 1.4 + rnd() * 1.2, Math.sin(a) * sp, 0.45 + rnd() * 0.4, (0.3 + rnd() * 0.3) * Math.sqrt(r), 0.6, this.pick(SMOKE), 2.2);
-    }
+    // Größe der Grafik: Raketenwerfer (r = 2) → 0,8; klein (r ≈ 1,2) → 0,6; groß (r ≈ 4,4) → 1,15; höchstens 1,4
+    let S = Math.min(1.4, Math.max(0.5, 0.8 * Math.pow(r / 2, 0.45)));
+    if (chain > 0) S *= 0.85;
+    if (small) S = Math.min(S, 0.6);
+    // viele gleichzeitige Explosionen: weniger Glut, Rauch und Brocken je Explosion
+    const menge = 1 / (1 + this.load * 0.25);
+    this.vox.density = FX.dichte;
+    this.vox.spawn(x, z, S, rnd, menge, small);
     if (!small) {
-      // wenige, aber deutliche Brocken (Boden + Glut)
-      for (let i = 0; i < n(5 + r * 3); i++) {
-        const a = rnd() * Math.PI * 2, sp = (1.8 + rnd() * 3.5) * Math.sqrt(r);
-        const ember = rnd() < 0.35;
-        this.debris.spawn(x + (rnd() - 0.5) * 0.4, y, z + (rnd() - 0.5) * 0.4, Math.cos(a) * sp, 3.5 + rnd() * 5, Math.sin(a) * sp, 0.9 + rnd() * 0.9, 0.11 + rnd() * 0.1, -18, ember ? this.pick(FIRE) : this.pick(ROCK));
+      const nb = Math.max(1, Math.round(VoxelExplosions.brocken(S) * menge));
+      for (let i = 0; i < nb; i++) {
+        const a = rnd() * Math.PI * 2, sp = (2 + rnd() * 1.5) * Math.sqrt(S);
+        this.debris.spawn(x, 0.6 * S, z, Math.cos(a) * sp, 3 + rnd() * 2, Math.sin(a) * sp, 0.9 + rnd() * 0.4, 0.14 + rnd() * 0.06, -22, this.pick(ROCK));
       }
-      // ein paar Funken
-      for (let i = 0; i < n(5 + r * 2); i++) {
-        const a = rnd() * Math.PI * 2, sp = (4 + rnd() * 6) * Math.sqrt(r);
-        this.sparks.spawn(x, y + 0.2, z, Math.cos(a) * sp, 2 + rnd() * 5, Math.sin(a) * sp, 0.2 + rnd() * 0.25, 0.07, -12, this.pick(FIRE), 2);
-      }
-      this.decal(x, z, r * (0.9 + rnd() * 0.3));
+      this.decal(x, z, r * EXPLOSION_GRAFIK * (0.9 + rnd() * 0.3));
     }
-    // deutliche Druckwelle: zwei Ringe (hell innen, orange außen)
-    this.ring(x, z, r * 1.25, small ? 0xffb02e : 0xfff3c4, 0.2);
-    if (!small) this.ring(x, z, r * 1.5, 0xff7a1a, 0.3);
-    this.light(x, z, small ? 10 : 16 + r * 6, 0.18 + r * 0.03);
-    this.flash(x, z, r * 1.4, 0.07);
+    // Druckwelle: ein heller Ring, der schnell nach außen läuft
+    this.ring(x, z, (0.3 + 2.2) * S, 0xffe9a8, 0.24 * S);
+    this.light(x, z, small ? 10 : 16 + S * 10, 0.3 + S * 0.15);
   }
 
   /** Gegner zerplatzt in seine Voxel + etwas Konfetti (kein Blut!) */
@@ -646,6 +630,7 @@ export class Effects {
     this.debris.update(dt);
     this.fire.update(dt);
     this.smoke.update(dt);
+    this.vox.update(dt);
 
     for (const m of this.marks) {
       if (m.t <= 0) continue;
