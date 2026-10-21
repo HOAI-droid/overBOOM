@@ -2318,7 +2318,10 @@
   "Das Finale!": "¡La gran final!",
   "Letzte Phase!": "¡Última fase!",
   "Die Arena zerbricht!": "¡La arena se rompe!",
-  "Zurück zum Titel. Mit „Fortsetzen“ geht es ab dem letzten Shop weiter.": "Volver al título. Con «Continuar» sigues desde la última tienda."
+  "Zurück zum Titel. Mit „Fortsetzen“ geht es ab dem letzten Shop weiter.": "Volver al título. Con «Continuar» sigues desde la última tienda.",
+  "Noch nicht befreit: Besiege {name} in der letzten Inselwelle.": "Aún sin liberar: derrota a {name} en la última oleada de la isla.",
+  "Baron:": "Barón:",
+  "Die Reise führt von hier bis Bummburg – danach wartet das Große Kawumm.": "El viaje va desde aquí hasta Bumburgo; después te espera el Gran Kabum."
  },
  "fusion": {
   "adj": {

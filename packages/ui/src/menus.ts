@@ -423,7 +423,7 @@ export class Menus {
     const lore = INSEL_LORE[i.id];
     const status = !frei ? `<span class="ob-warn">${lore?.gesperrt ?? t('Noch gesperrt.')}</span>`
       : ero ? `<span class="ob-hint2">${t('Erobert ♛ – hier wurde der Baron besiegt.')}</span>`
-      : bef ? `<span class="ob-hint2">${t('Befreit ⚑ – {text}', { text: lore?.befreit ?? '' })}</span>` : `<span class="ob-hint2">${t('Noch nicht befreit: Besiege den Boss auf Welle 10.')}</span>`;
+      : bef ? `<span class="ob-hint2">${t('Befreit ⚑ – {text}', { text: lore?.befreit ?? '' })}</span>` : `<span class="ob-hint2">${t('Noch nicht befreit: Besiege {name} in der letzten Inselwelle.', { name: GEGNER_BY_ID[i.baron]?.name ?? '' })}</span>`;
     this.show('start', `
       <div class="ob-map">
         <div class="ob-map-head">
@@ -436,7 +436,8 @@ export class Menus {
           <span class="ob-kind">${i.fraktion}</span>
           <span class="ob-name">${i.name}</span>
           <p class="ob-part">${i.text}</p>
-          <p class="ob-part"><b>${t('Gefahr:')}</b> ${i.gefahrText} · <b>${t('Boss:')}</b> ${GEGNER_BY_ID[i.boss].name} · ${t('Welle 20: Baron von Bumm')}</p>
+          <p class="ob-part"><b>${t('Gefahr:')}</b> ${i.gefahrText} · <b>${t('Boss:')}</b> ${GEGNER_BY_ID[i.boss].name} · <b>${t('Baron:')}</b> ${GEGNER_BY_ID[i.baron]?.name ?? ''}</p>
+          <p class="ob-part">${t('Die Reise führt von hier bis Bummburg – danach wartet das Große Kawumm.')}</p>
           ${status}
           ${gefahrWahl(this.gefahr, pr.gefahrFrei, true)}
           <div class="ob-row"><button type="button" class="ob-go" data-act="go" data-focus="go" ${frei ? '' : 'disabled'}>${t('Los geht’s')} ▶</button></div>

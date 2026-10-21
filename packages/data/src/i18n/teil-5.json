@@ -1152,7 +1152,7 @@
   "quelle": "packages/ui/src/menus.ts"
  },
  {
-  "de": "Noch nicht befreit: Besiege den Boss auf Welle 10.",
+  "de": "Noch nicht befreit: Besiege {name} in der letzten Inselwelle.",
   "quelle": "packages/ui/src/menus.ts"
  },
  {
@@ -1168,7 +1168,11 @@
   "quelle": "packages/ui/src/menus.ts"
  },
  {
-  "de": "Welle 20: Baron von Bumm",
+  "de": "Baron:",
+  "quelle": "packages/ui/src/menus.ts"
+ },
+ {
+  "de": "Die Reise führt von hier bis Bummburg – danach wartet das Große Kawumm.",
   "quelle": "packages/ui/src/menus.ts"
  },
  {
@@ -1793,10 +1797,6 @@
  },
  {
   "de": "WebGL konnte nicht gestartet werden. Bitte einen aktuellen Browser verwenden.",
-  "quelle": "apps/web/src/main.ts"
- },
- {
-  "de": "Kopiert",
   "quelle": "apps/web/src/main.ts"
  }
 ]

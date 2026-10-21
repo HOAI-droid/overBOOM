@@ -2318,7 +2318,10 @@
   "Das Finale!": "La finale !",
   "Letzte Phase!": "Dernière phase !",
   "Die Arena zerbricht!": "L'arène se brise !",
-  "Zurück zum Titel. Mit „Fortsetzen“ geht es ab dem letzten Shop weiter.": "Retour au titre. « Reprendre » repart de la dernière boutique."
+  "Zurück zum Titel. Mit „Fortsetzen“ geht es ab dem letzten Shop weiter.": "Retour au titre. « Reprendre » repart de la dernière boutique.",
+  "Noch nicht befreit: Besiege {name} in der letzten Inselwelle.": "Pas encore libérée : bats {name} lors de la dernière vague de l’île.",
+  "Baron:": "Baron :",
+  "Die Reise führt von hier bis Bummburg – danach wartet das Große Kawumm.": "Le voyage mène d’ici jusqu’à Boumbourg – puis le Grand Kaboum t’attend."
  },
  "fusion": {
   "adj": {

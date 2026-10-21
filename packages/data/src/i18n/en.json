@@ -2318,7 +2318,10 @@
   "Das Finale!": "The Finale!",
   "Letzte Phase!": "Final phase!",
   "Die Arena zerbricht!": "The arena is shattering!",
-  "Zurück zum Titel. Mit „Fortsetzen“ geht es ab dem letzten Shop weiter.": "Back to the title screen. “Continue” picks up from the last shop."
+  "Zurück zum Titel. Mit „Fortsetzen“ geht es ab dem letzten Shop weiter.": "Back to the title screen. “Continue” picks up from the last shop.",
+  "Noch nicht befreit: Besiege {name} in der letzten Inselwelle.": "Not liberated yet: defeat {name} in the island’s final wave.",
+  "Baron:": "Baron:",
+  "Die Reise führt von hier bis Bummburg – danach wartet das Große Kawumm.": "The journey runs from here to Boomburg – then the Great Kaboom awaits."
  },
  "fusion": {
   "adj": {

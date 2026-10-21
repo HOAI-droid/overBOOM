@@ -1,5 +1,9 @@
 [
  {
+  "de": "Kopiert",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
   "de": "Kopieren ging nicht",
   "quelle": "apps/web/src/main.ts"
  },
