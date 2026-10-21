@@ -33,6 +33,10 @@ export function speicherbar(w: World): boolean {
 }
 
 export function speichereLauf(w: World): Spielstand {
+  return speichereLaufRoh(w);
+}
+
+function speichereLaufRoh(w: World): Spielstand {
   const p = w.players[0];
   return {
     v: 1, seed: w.runSeed, start: w.reise[0], wave: w.wave, gefahr: w.gefahr, endless: w.endless, equipUid: w.equipUid,
@@ -47,10 +51,25 @@ export function speichereLauf(w: World): Spielstand {
   };
 }
 
+/**
+ * Stand zu Beginn einer Welle (für Wiederversuche und den Insel-Checkpoint): wie nach dem Shop
+ * der vorigen Welle, aber ohne Angebote. Laden + startWave(wave + 1) spielt die Welle neu.
+ */
+export function wellenStartStand(w: World): Spielstand | null {
+  const p = w.players[0];
+  if (w.players.length !== 1 || w.phase !== 'welle' || !p?.alive || !p.weapons.length) return null;
+  const st = speichereLaufRoh(w);
+  st.wave = w.wave - 1;
+  st.spieler.offers = [];
+  st.spieler.upgradeOffers = [];
+  st.spieler.pendingLevels = 0;
+  return st;
+}
+
 /** Prüft grob, ob ein gespeicherter Wert ein brauchbarer Spielstand ist */
 export function istSpielstand(x: unknown): x is Spielstand {
   const s = x as Spielstand;
-  return !!s && s.v === 1 && typeof s.seed === 'number' && typeof s.wave === 'number' && s.wave >= 1 && !!s.spieler && Array.isArray(s.spieler.weapons) && s.spieler.weapons.length > 0;
+  return !!s && s.v === 1 && typeof s.seed === 'number' && typeof s.wave === 'number' && s.wave >= 0 && !!s.spieler && Array.isArray(s.spieler.weapons) && s.spieler.weapons.length > 0;
 }
 
 /** Spielstand in eine (Solo-)Welt laden: danach steht sie im Shop nach Welle `wave` */

@@ -1,5 +1,5 @@
 import './fonts.css';
-import { World, DT, DASH_COOLDOWN, NO_INPUT, MetaTracker, istSpielstand, ladeLauf, speicherbar, speichereLauf, type Spielstand, heldenFrei, inselFrei, ladeProfil, profilAusCode, profilCode, spawnEnemy, type Command, type InputState, type SimEvent } from '@overboom/core';
+import { World, DT, DASH_COOLDOWN, NO_INPUT, MetaTracker, istSpielstand, ladeLauf, wellenStartStand, istPlatz, PLATZ_ANZAHL, speicherCode, speicherAusCode, boomDateiname, type Speicherplatz, type Spielstand, heldenFrei, inselFrei, ladeProfil, profilAusCode, spawnEnemy, type Command, type InputState, type SimEvent } from '@overboom/core';
 import { t, istSprache, type Sprache, ladeWoerterbuch, lokalisiereDaten, setzeWoerterbuch, spracheAus, GEGNER_INDEX, BOSS_LORE, ELEMENT_INFO, ERFOLGE, GEGNER, GEGNER_BY_ID, HELD_BY_ID, INSELN, INSEL_BY_ID, INSEL_LORE, KARTE_BY_ID, LEVEL, REISE, SELTENHEIT, SYNERGIEN, WELLEN, WELLEN_SPRUECHE, waffeById, waehle } from '@overboom/data';
 import { CardArt, FX, GameRenderer, type PlayerPose } from '@overboom/render';
 import { AudioEngine, renderMusik } from '@overboom/audio';
@@ -163,9 +163,10 @@ async function start() {
   let kunst: CardArt | null = null;
   Object.defineProperty(menus, 'kunst', { get: () => (kunst ??= new CardArt(96)) });
   menus.gesehen = (id) => { meta.gesehen(id); save(); };
-  menus.profilCode = () => profilCode(meta.profil);
+  menus.profilCode = () => speicherText();
   menus.kopieren = (text) => { platform.copyText(text).then((ok) => hud.toast(ok ? t('Kopiert') : t('Kopieren ging nicht'), ok ? t('Spielstand-Code') : t('Bitte von Hand markieren'), ok ? '#3de8ff' : '#ff3d6a')); };
   menus.importCode = (code) => {
+    if (code.trim().startsWith('OB2-')) return speicherLaden(code);
     const p = profilAusCode(code);
     if (!p) return false;
     meta.profil = p;
@@ -288,35 +289,142 @@ async function start() {
     endTimer = -1; freeze = 0; acc = 0; paused = false;
   };
 
-  /** Spielstand des Solo-Runs (Fortsetzen); leer = keiner */
-  const laufSpeichern = () => {
-    if (modus !== 'solo' || world !== soloWorld || !speicherbar(world)) return;
-    gespeichert = speichereLauf(world);
-    menus.fortsetzen = laufText(gespeichert);
-    void platform.storage.set('lauf', JSON.stringify(gespeichert));
-  };
-  const laufLoeschen = () => { if (modus === 'solo') { gespeichert = null; menus.fortsetzen = ''; void platform.storage.set('lauf', ''); } };
-  // Gespeicherten Run laden (Titel zeigt dann „Fortsetzen")
-  let gespeichert: Spielstand | null = null;
-  try { const roh = await platform.storage.get('lauf'); const st = roh ? JSON.parse(roh) : null; if (istSpielstand(st)) gespeichert = st; } catch { /* kaputt → ignorieren */ }
+  /*
+   * Solo-Spielstände: drei Speicherplätze, jeder hält den Beginn der zuletzt erreichten Insel.
+   * Wiederversuche: 3 pro Welle (Stand vom Wellenbeginn), danach beginnt die Insel von vorne.
+   */
+  const plaetze: (Speicherplatz | null)[] = Array.from({ length: PLATZ_ANZAHL }, () => null);
+  let aktiverPlatz = 0;
+  /** Stand zu Beginn der laufenden Welle bzw. Insel (nur im Speicher) */
+  let wellenStand: Spielstand | null = null;
+  let inselStand: Spielstand | null = null;
+  let versuche = 0, versuchWelle = 0;
+  const VERSUCHE = 3;
   const laufText = (st: Spielstand) => {
     // nächste Welle auf der Reise (Solo: REISE.solo.wellen pro Insel)
     const W = REISE.solo.wellen, start = Math.max(0, INSELN.findIndex((i) => i.id === st.start));
     const insel = INSELN[Math.min(INSELN.length - 1, start + Math.floor(st.wave / W))];
-    return `${insel.name} · ${t('Welle {n} / {max}', { n: Math.min(W, (st.wave % W) + 1), max: W })}`;
+    const held = HELD_BY_ID[st.spieler.held]?.name ?? '';
+    return `${held ? held + ' · ' : ''}${insel.name} · ${t('Welle {n} / {max}', { n: Math.min(W, (st.wave % W) + 1), max: W })}`;
   };
-  if (gespeichert) menus.fortsetzen = laufText(gespeichert);
-  menus.onFortsetzen = () => {
-    if (!gespeichert || modus !== 'solo') return;
-    ladeLauf(soloWorld, gespeichert);
+  const zeigePlaetze = () => {
+    menus.plaetze = plaetze.map((p) => (p ? laufText(p.stand) : ''));
+    menus.fortsetzen = plaetze[aktiverPlatz] ? laufText(plaetze[aktiverPlatz]!.stand) : '';
+  };
+  const platzSpeichern = (i: number) => void platform.storage.set(`platz${i + 1}`, plaetze[i] ? JSON.stringify(plaetze[i]) : '');
+  for (let i = 0; i < PLATZ_ANZAHL; i++) {
+    try { const roh = await platform.storage.get(`platz${i + 1}`); const d = roh ? JSON.parse(roh) : null; if (istPlatz(d)) plaetze[i] = d; } catch { /* kaputt → leer */ }
+  }
+  // alter Spielstand (bis v0.13) → Platz 1
+  try {
+    const roh = await platform.storage.get('lauf');
+    const st = roh ? JSON.parse(roh) : null;
+    if (istSpielstand(st) && !plaetze[0]) { plaetze[0] = { stand: st, datum: Date.now() }; platzSpeichern(0); }
+    if (roh) void platform.storage.set('lauf', '');
+  } catch { /* egal */ }
+  zeigePlaetze();
+
+  /** Stand in eine Welt laden und sofort losspielen (alte Stände aus dem Shop: im Shop weiter) */
+  const standSpielen = (st: Spielstand) => {
+    ladeLauf(soloWorld, st);
     useWorld(soloWorld, 0);
-    runs++;
-    meta.neuerRun();
+    if (!st.spieler.offers.length) soloWorld.startWave(st.wave + 1);
     menus.screen = 'spiel';
     menus.hide();
   };
+  menus.onPlatz = (i, neu) => {
+    if (modus !== 'solo') return;
+    aktiverPlatz = i;
+    wellenStand = inselStand = null;
+    versuche = 0;
+    if (neu || !plaetze[i]) {
+      plaetze[i] = null;
+      platzSpeichern(i);
+      zeigePlaetze();
+      soloWorld.reset((seed + (runs + 1) * 7919) >>> 0);
+      soloWorld.players[0].crystals = startGems;
+      useWorld(soloWorld, 0);
+      menus.screen = 'solo';
+      menus.sync();
+      return;
+    }
+    runs++;
+    meta.neuerRun();
+    zeigePlaetze();
+    standSpielen(plaetze[i]!.stand);
+  };
+  /** bei jedem Wellenstart: Stand für Wiederversuche; am Inselbeginn auch in den Speicherplatz */
+  const wellenStart = (n: number) => {
+    if (modus !== 'solo' || world !== soloWorld) return;
+    const st = wellenStartStand(world);
+    if (!st) return;
+    wellenStand = st;
+    if (n !== versuchWelle) { versuchWelle = n; versuche = 0; }
+    const pos = world.reisePos(n);
+    if (pos.inselWelle === 1 || !inselStand) {
+      inselStand = st;
+      plaetze[aktiverPlatz] = { stand: st, datum: Date.now() };
+      platzSpeichern(aktiverPlatz);
+      zeigePlaetze();
+    }
+  };
+  /** Solo gestorben: Wiederversuch anbieten (true) oder normales Lauf-Ende (false) */
+  const nachTod = (): boolean => {
+    if (modus !== 'solo' || world !== soloWorld || world.phase !== 'ende' || !wellenStand) return false;
+    versuche++;
+    menus.showNochmal(versuche, VERSUCHE, !!inselStand);
+    return true;
+  };
+  menus.onNochmal = (art) => {
+    if (art === 'welle' && wellenStand) { standSpielen(wellenStand); return; }
+    if (art === 'insel' && inselStand) { versuche = 0; versuchWelle = 0; standSpielen(inselStand); return; }
+    // aufgeben: Lauf endet, Platz wird frei
+    wellenStand = inselStand = null;
+    plaetze[aktiverPlatz] = null;
+    platzSpeichern(aktiverPlatz);
+    zeigePlaetze();
+    meta.runEnde(world, false);
+    announce();
+    save(true);
+    menus.showEnd(endStats(false), seed + runs);
+  };
+  const laufLoeschen = () => {
+    if (modus !== 'solo') return;
+    wellenStand = inselStand = null;
+    plaetze[aktiverPlatz] = null;
+    platzSpeichern(aktiverPlatz);
+    zeigePlaetze();
+  };
+
+  /* .boom-Datei: Profil und alle Plätze */
+  const speicherText = () => speicherCode({ datum: Date.now(), profil: meta.profil, plaetze });
+  const speicherLaden = (text: string): boolean => {
+    const d = speicherAusCode(text);
+    if (!d) return false;
+    meta.profil = d.profil;
+    meta.dirty = true;
+    save(true);
+    for (let i = 0; i < PLATZ_ANZAHL; i++) { plaetze[i] = d.plaetze[i]; platzSpeichern(i); }
+    zeigePlaetze();
+    hud.toast(t('Spielstand geladen'), t('{n} Karten', { n: Object.keys(d.profil.karten).length }), '#3de8ff');
+    return true;
+  };
+  menus.onDatei = (art) => {
+    if (art === 'speichern') {
+      const name = boomDateiname(new Date());
+      platform.saveFile(new Blob([speicherText()], { type: 'application/octet-stream' }), name)
+        .then((ort) => hud.toast(t('Spielstand gespeichert'), ort || name, '#3de8ff'), () => hud.toast(t('Speichern ging nicht'), '', '#ff3d6a'));
+      return;
+    }
+    platform.openTextFile('.boom,text/plain').then((text) => {
+      if (text === null) return;
+      if (!speicherLaden(text)) hud.toast(t('Datei passt nicht'), t('Keine gültige .boom-Datei'), '#ff3d6a');
+    });
+  };
 
   const restart = () => {
+    wellenStand = inselStand = null;
+    versuche = versuchWelle = 0;
     // jeder Run mit neuem Seed: neue Arenen, neue Wellen
     world.reset((seed + (runs + 1) * 7919) >>> 0);
     world.players[0].crystals = startGems;
@@ -558,8 +666,7 @@ async function start() {
         case 'heal': damage.text(-e.player - 100, e.x, 1.1, e.z, `+${e.value}`, 'heal'); break;
         case 'levelUp': damage.text(-e.player - 200, e.x, 1.6, e.z, t('Level up!'), 'lvl'); if (e.player === me) haptic(30); break;
         case 'waveStart': {
-          // neuer Solo-Run: alter Spielstand ist hinfällig
-          if (e.wave === 1 && modus === 'solo' && gespeichert) laufLoeschen();
+          wellenStart(e.wave);
           const pos = world.reisePos(e.wave);
           const bossId = pos.art === 'finale' ? 'kawumm' : pos.art === 'baron' ? world.insel.baron : world.insel.boss;
           if (pos.art === 'finale') hud.banner(t('Das Finale!'), BOSS_LORE[bossId]?.auftritt ?? GEGNER_BY_ID[bossId]?.name ?? '', 'rot');
@@ -572,7 +679,6 @@ async function start() {
           const bossId = world.enemies[world.boss]?.def.id ?? world.insel.boss;
           hud.banner(e.phase >= 3 ? t('Letzte Phase!') : t('Jetzt wird’s ernst!'), e.phase >= 3 ? t('Die Arena zerbricht!') : BOSS_LORE[bossId]?.wut ?? '', 'rot'); haptic(120); break;
         }
-        case 'shopOpen': laufSpeichern(); break;
         case 'waveClear': hud.banner(t('Welle geschafft!'), t('Alles fliegt in die Luft'), 'cyan'); haptic(80); break;
         case 'victory': endTimer = 1.2; break;
         case 'fusion':
@@ -720,7 +826,8 @@ async function start() {
 
     if (endTimer > 0) {
       endTimer -= dt;
-      if (endTimer <= 0) {
+      if (endTimer <= 0 && nachTod()) { /* Wiederversuch angeboten */ }
+      else if (endTimer <= 0) {
         meta.runEnde(world, world.phase === 'sieg');
         laufLoeschen();
         announce();

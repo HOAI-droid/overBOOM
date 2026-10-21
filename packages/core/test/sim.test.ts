@@ -4,6 +4,7 @@ import { Tile as T } from '../src/arena.ts';
 import * as D from '../../data/src/index.ts';
 import { Rng } from '../src/rng.ts';
 import * as Core from '../src/index.ts';
+import { openShop } from '../src/progression.ts';
 /** Arena leerräumen (nur Mauern bleiben): Tests mit festen Positionen hängen nicht vom Zufallslayout ab */
 function leer(w: World): World {
   const a = w.arena;
@@ -366,6 +367,20 @@ const runUntil = (w: World, cond: () => boolean, max = 30 * 120) => { for (let t
   v.command(0, { type: 'ready' });
   ok(v.wave === 17 && v.phase === 'welle', 'nach dem Laden geht es mit Welle 17 weiter');
   ok(!Core.istSpielstand({ v: 1 }) && !Core.istSpielstand(null), 'kaputte Spielstände werden erkannt');
+  // Wiederversuch: Stand am Wellenbeginn (Insel 2, Welle 1) laden und die Welle neu starten
+  const ws = Core.wellenStartStand(v);
+  ok(!!ws && ws.wave === 16 && ws.spieler.offers.length === 0, 'Wellenbeginn-Stand: vor Welle 17, ohne Angebote');
+  const r = new World(2, 1, { choose: true });
+  Core.ladeLauf(r, JSON.parse(JSON.stringify(ws)));
+  r.startWave(ws!.wave + 1);
+  ok(r.wave === 17 && r.phase === 'welle' && r.insel.id === v.insel.id && r.players[0].weapons.length === q.weapons.length, 'Welle nochmal: gleiche Welle, Insel und Waffen');
+  // .boom-Datei: Profil + Plätze, Prüfsumme erkennt Fehler
+  const code = Core.speicherCode({ datum: 1, profil: Core.neuesProfil(), plaetze: [{ stand: ws!, datum: 5 }, null, null] });
+  const d = Core.speicherAusCode(code);
+  ok(!!d && d.plaetze[0]?.stand.wave === 16 && d.plaetze[1] === null, '.boom: Plätze kommen wieder heraus');
+  const kaputt = code.slice(0, -6) + (code.slice(-6, -5) === 'A' ? 'B' : 'A') + code.slice(-5);
+  ok(Core.speicherAusCode(kaputt) === null && Core.speicherAusCode('quatsch') === null, '.boom: beschädigte Dateien werden erkannt');
+  ok(Core.boomDateiname(new Date(2026, 9, 21, 23, 41)) === '261021-2341.boom', 'Dateiname 261021-2341.boom');
 }
 
 // MVP-Statistik
@@ -398,6 +413,24 @@ ok(fusionsWaffe({ geschoss: 'bowlingkugel', antrieb: 'bananarang', ladung: 'kuek
 {
   const f = fusionsWaffe({ geschoss: 'pistole', antrieb: 'teslastab', ladung: 'raketenwerfer' });
   ok(waffeById(f.id) === f && f.fusion!.instabil > 0, `Fusion per ID wiederherstellbar, Instabilität ${f.fusion!.instabil} %`);
+  // gleiche Bauteile aus anderen Spenderwaffen → dieselbe Waffe (mergebar)
+  const W2 = WAFFEN as D.Waffe[];
+  const andere = (art: 'geschoss' | 'antrieb' | 'ladung', id: string) => W2.find((w) => w[art] === (W2.find((x) => x.id === id) as D.Waffe)[art] && w.id !== id)?.id ?? id;
+  const g = fusionsWaffe({ geschoss: andere('geschoss', 'pistole'), antrieb: andere('antrieb', 'teslastab'), ladung: andere('ladung', 'raketenwerfer') });
+  ok(g.fusion?.rezept || g === f, `Gleiche Bauteile = gleiche Waffe (${f.name})`);
+  ok(waffeById('fusion:pistole+teslastab+raketenwerfer') === f, 'Alte Fusions-IDs werden umgerechnet');
+}
+{
+  // Seltenheit nach Insel und Fusionsangebote ab Insel 3
+  const w = new World(5, 1, { autoShop: false });
+  w.startReise(INSELN[0].id);
+  ok(w.seltenDeckel === 2, 'Insel 1: höchstens Seltenheit 2');
+  w.geheZuInsel(2);
+  ok(w.seltenDeckel === 3 && w.inselNr === 2, 'Insel 3: höchstens Seltenheit 3');
+  w.wave = 40;
+  let fusionen = 0, zuSelten = 0;
+  for (let i = 0; i < 60; i++) { openShop(w); for (const o of w.players[0].offers) { if (o.id.startsWith('fz:')) fusionen++; if (o.tier > 3) zuSelten++; } }
+  ok(fusionen > 0 && zuSelten === 0, `Shop ab Insel 3: ${fusionen} Fusionen in 240 Angeboten, keine Seltenheit über 3`);
 }
 
 /** Ein Kampf mit einer bestimmten Waffe gegen eine Gegnertraube */

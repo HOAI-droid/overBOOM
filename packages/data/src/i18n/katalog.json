@@ -7857,6 +7857,10 @@
    "quelle": "packages/platform/src/capacitor.ts"
   },
   {
+   "de": "OVERBOOM-Spielstand",
+   "quelle": "packages/platform/src/capacitor.ts"
+  },
+  {
    "de": "Alle",
    "quelle": "packages/ui/src/album.ts"
   },
@@ -8161,15 +8165,11 @@
    "quelle": "packages/ui/src/lobby.ts"
   },
   {
-   "de": "Fortsetzen",
+   "de": "Solo · Platz {n}",
    "quelle": "packages/ui/src/lobby.ts"
   },
   {
-   "de": "Neuer Run",
-   "quelle": "packages/ui/src/lobby.ts"
-  },
-  {
-   "de": "Solo spielen",
+   "de": "frei – neuer Lauf",
    "quelle": "packages/ui/src/lobby.ts"
   },
   {
@@ -8310,6 +8310,10 @@
   },
   {
    "de": "Stufe {n}",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "steckt in: {waffen}",
    "quelle": "packages/ui/src/menus.ts"
   },
   {
@@ -8649,6 +8653,10 @@
    "quelle": "packages/ui/src/menus.ts"
   },
   {
+   "de": "Gleiche Waffe wie in Platz {n} – danach zusammenführbar!",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
    "de": "Verschmelzen!",
    "quelle": "packages/ui/src/menus.ts"
   },
@@ -8729,6 +8737,42 @@
    "quelle": "packages/ui/src/menus.ts"
   },
   {
+   "de": "Versuch {n} von {max} verbraucht. Die Welle startet mit deinem Stand von ihrem Beginn.",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Alle {max} Versuche verbraucht. Die Insel beginnt von vorne – mit der Ausrüstung, mit der du sie betreten hast.",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Alle {max} Versuche verbraucht.",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Welle nochmal",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Insel von vorne",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Aufgeben",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Platz {n}",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Weiterspielen",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
+   "de": "Neu beginnen (überschreibt)",
+   "quelle": "packages/ui/src/menus.ts"
+  },
+  {
    "de": "Achtung: Im Koop läuft das Spiel weiter!",
    "quelle": "packages/ui/src/menus.ts"
   },
@@ -8761,7 +8805,7 @@
    "quelle": "packages/ui/src/menus.ts"
   },
   {
-   "de": "Zurück zum Titel. Mit „Fortsetzen“ geht es ab dem letzten Shop weiter.",
+   "de": "Zurück zum Titel. Dein Speicherplatz führt dich zum Beginn der aktuellen Insel zurück.",
    "quelle": "packages/ui/src/menus.ts"
   },
   {
@@ -8782,10 +8826,6 @@
   },
   {
    "de": "Ja, zum Titel",
-   "quelle": "packages/ui/src/menus.ts"
-  },
-  {
-   "de": "Weiterspielen",
    "quelle": "packages/ui/src/menus.ts"
   },
   {
@@ -8997,6 +9037,18 @@
    "quelle": "packages/ui/src/settings.ts"
   },
   {
+   "de": "Profil und alle drei Plätze, z. B. für ein anderes Gerät",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Als Datei speichern (.boom)",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
+   "de": "Datei laden",
+   "quelle": "packages/ui/src/settings.ts"
+  },
+  {
    "de": "WebGL konnte nicht gestartet werden. Bitte einen aktuellen Browser verwenden.",
    "quelle": "apps/web/src/main.ts"
   },
@@ -9066,6 +9118,22 @@
   },
   {
    "de": "gerade: {stufe}",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Spielstand gespeichert",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Speichern ging nicht",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Datei passt nicht",
+   "quelle": "apps/web/src/main.ts"
+  },
+  {
+   "de": "Keine gültige .boom-Datei",
    "quelle": "apps/web/src/main.ts"
   },
   {

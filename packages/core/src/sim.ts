@@ -8,8 +8,9 @@ import {
 } from './entities.ts';
 import { spawnBoss, spawnEnemy, stepEnemies, stepWaves } from './enemies.ts';
 import { maintainDrones, pull, rainEgg, spawnChickFor, stepProjectiles, stepWeapons, stormStrike } from './weapons.ts';
+import { FlowField } from './flow.ts';
 import { addWeapon, creditKill, gainXp, openShop, recomputeStats, runCommand, type Command } from './progression.ts';
-import { BEUTE, EXPLOSION, FINALBOSS, PANZER, GEGNER, INSELN, KOOP, REISE, OVERKILL, MAX_GEFAHR, gefahrWerte, type GefahrWerte, GEGNER_INDEX, HELD_BY_ID, INSEL_BY_ID, KAMPF, SPIELER, WELLEN, baseStats, rollAusruestung, type Ausruestung, type Insel, type PlatzId, type Stats } from '../../data/src/index.ts';
+import { BEUTE, EXPLOSION, FINALBOSS, PANZER, GEGNER, INSELN, KOOP, REISE, OVERKILL, MAX_GEFAHR, gefahrWerte, type GefahrWerte, GEGNER_INDEX, HELD_BY_ID, INSEL_BY_ID, KAMPF, SPIELER, WELLEN, baseStats, rollAusruestung, seltenheitsDeckel, type Ausruestung, type Insel, type PlatzId, type Stats } from '../../data/src/index.ts';
 
 import { ACCEL, BARREL_RADIUS, DASH_COOLDOWN, DASH_SPEED, DASH_TIME, DT, MOVE_SPEED, PLAYER_COLORS, PLAYER_RADIUS } from './constants.ts';
 export * from './constants.ts';
@@ -232,6 +233,8 @@ export class World {
   reise: string[] = [];
   /** Index der aktuellen Insel in der Reise */
   reiseIndex = 0;
+  /** Wegfindung der Gegner (Flow-Field zum nächsten Spieler) */
+  readonly flow = new FlowField();
   /** Welle auf der aktuellen Insel (1-basiert) */
   inselWelle = 0;
   /** Art der laufenden Welle */
@@ -273,6 +276,7 @@ export class World {
     this.shopRng = new Rng(seed ^ 0x5409);
     this.lootRng = new Rng(seed ^ 0x100f);
     this.barrels = this.arena.props.filter((p) => p.kind === 'barrel' || p.kind === 'heu');
+    this.flow.reset();
     this.hash = new SpatialHash(this.arena.size, 2, MAX_ENEMIES);
     for (let i = 0; i < MAX_ENEMIES; i++) this.enemies.push(makeEnemy(i, GEGNER[0]));
     for (let i = 0; i < MAX_PROJECTILES; i++) this.projectiles.push(makeProjectile());
@@ -325,6 +329,7 @@ export class World {
     this.arenaSeed = arenaSeed;
     this.arena = createArena(arenaSeed, insel.gefahr as ArenaStyle);
     this.barrels = this.arena.props.filter((p) => p.kind === 'barrel' || p.kind === 'heu');
+    this.flow.reset();
     for (const p of this.players) { p.x = this.arena.spawn.x; p.z = this.arena.spawn.z; }
   }
 
@@ -343,6 +348,16 @@ export class World {
     if (!id) return;
     this.reiseIndex = index;
     this.setIsland(id, arenaSeedFor(this.seed, index));
+  }
+
+  /** höchste Seltenheit für Shop und Beute auf der aktuellen Insel */
+  get seltenDeckel(): 2 | 3 | 4 {
+    return seltenheitsDeckel(this.inselNr);
+  }
+
+  /** Nummer der aktuellen Insel in der Reihenfolge der Reise (0 = erste Insel) */
+  get inselNr(): number {
+    return Math.max(0, INSELN.findIndex((x) => x.id === this.insel.id));
   }
 
   /** Welle n auf der Reise einordnen (Clients: nach jedem Snapshot) */
@@ -472,6 +487,7 @@ export class World {
 
       this.hash.clear();
       for (const e of this.enemies) if (e.alive) this.hash.insert(e.slot, e.x, e.z);
+      this.flow.update(this.arena, this.players, this.arena.props, DT);
       stepEnemies(this);
       if (this.phase === 'welle') stepWeapons(this);
       stepProjectiles(this);
@@ -905,7 +921,7 @@ export class World {
     this.stats.kills++;
     this.events.push({ type: 'kill', id: e.id, enemy: e.def.id, x: e.x, z: e.z, doomed: e.doom >= 0 });
     if (src && e.doom < 0) creditKill(this, src);
-    const n = Math.max(e.doom < 0 ? 1 : 0, Math.round(e.def.kristalle * (e.elite ? 6 : 1) * (e.lucky ? 2 : 1) * this.gw.kristalle));
+    const n = Math.max(e.doom < 0 ? 1 : 0, Math.round(e.def.kristalle * (e.elite ? 6 : 1) * (e.lucky ? 2 : 1) * this.gw.kristalle / (e.def.verhalten === 'boss' ? 1 : WELLEN.masse(this.wave))));
     // Gefahr 10: Gegner explodieren beim Tod – auch in Richtung Spieler
     if (this.gw.todesBumm && e.doom < 0 && e.def.verhalten !== 'kamikaze' && e.def.verhalten !== 'boss' && this.phase === 'welle') {
       this.queueBlast(e.x, e.z, 1.2, 6 * e.dmgMul, 0.25, 0, this.newGroup(), true, 'kroete');
@@ -961,8 +977,10 @@ export class World {
     for (const p of this.players) {
       if (!p.alive) continue;
       const roll = r.next() * 100 + p.stats.glueck * 0.3 + Math.min(40, this.wave * BEUTE.wellenBonus);
-      const selt = boss ? (roll > BEUTE.bossLegendaer ? 4 : 3) : roll > BEUTE.legendaer ? 4 : roll > BEUTE.episch ? 3 : roll > BEUTE.selten ? 2 : 1;
-      const a = rollAusruestung(() => r.next(), this.equipUid++, Math.max(1, this.wave), selt, boss ? 0.45 : 0.1);
+      const deckel = this.seltenDeckel;
+      const selt = Math.min(deckel, boss ? (roll > BEUTE.bossLegendaer ? 4 : 3) : roll > BEUTE.legendaer ? 4 : roll > BEUTE.episch ? 3 : roll > BEUTE.selten ? 2 : 1);
+      // Set-Teile sind episch (3) – erst ab Insel 3
+      const a = rollAusruestung(() => r.next(), this.equipUid++, Math.max(1, this.wave), selt, deckel < 3 ? 0 : boss ? 0.45 : 0.1);
       if (p.beute.length >= BEUTE.maxBeute) p.beute.shift();
       p.beute.push(a);
       this.events.push({ type: 'loot', player: p.id, name: a.name, seltenheit: a.seltenheit, set: a.set ?? '', x, z });

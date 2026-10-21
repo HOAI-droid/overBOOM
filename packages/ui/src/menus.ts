@@ -4,7 +4,7 @@ import {
 } from '@overboom/core';
 import {
   A, AMBOSS, EVOLUTION, G, GEGNER_BY_ID, INSEL_BY_ID, MOD_BY_ID, MOD_SLOTS, STERNE, SYNERGIEN, evoName, HELDEN, HELD_BY_ID, INSELN, ITEM_BY_ID, L, REZEPTE, SELTENHEIT, waffeById, type Gruppe, type Waffe, SPIELER, STAT_INFO, STAT_KEYS, TIER_ZAHL, UPGRADE_BY_ID, W,
-  elemente, t, type StatKey, INSEL_LORE, WELT, SIEG_TEXT, SPRUECHE_TOD, PLAETZE, SETS, SET_BY_ID, setBoni, schrottwert, BEUTE, type Ausruestung, zahl, ausruestungsName } from '@overboom/data';
+  elemente, t, type StatKey, INSEL_LORE, WELT, SIEG_TEXT, SPRUECHE_TOD, PLAETZE, SETS, SET_BY_ID, setBoni, schrottwert, waffenMitTeil, BEUTE, type Ausruestung, zahl, ausruestungsName } from '@overboom/data';
 import { gefahrWahl } from './gefahr.ts';
 import { STANDARD, einstellungenHtml, type Einstellungen } from './settings.ts';
 import { RAUMCODE_LAENGE, codeHinweis, leseRaumcode, lobbyHtml, titelHtml, type CoopAktion, type CoopAnsicht } from './lobby.ts';
@@ -118,13 +118,21 @@ function karte(k: KartenInhalt): string {
 function weaponLines(p: Player, w: Waffe, tier: number, real?: WeaponSlot): string {
   const slot = real ?? ({ waffe: w, tier, stars: 0, kills: 0, mods: [], modMask: 0, mask: 0 } as unknown as WeaponSlot);
   const el = w.fusion ? w.fusion.elemente : elemente(w);
-  const fu = w.fusion ? `<li class="ob-part"><b>${t('Geschoss:')}</b> ${G[w.geschoss].name}</li>` : '';
+  // Fusionen (ohne Rezept): zeigen, in welchen Grundwaffen jedes Bauteil steckt – zum Nachbauen
+  const nachbau = !!w.fusion && !w.fusion.rezept;
+  const steckt = (art: 'geschoss' | 'antrieb' | 'ladung', teil: string) => {
+    if (!nachbau) return '';
+    const ws = waffenMitTeil(art, teil);
+    const namen = ws.slice(0, 3).map((x) => x.name).join(', ') + (ws.length > 3 ? ' …' : '');
+    return `<small class="ob-steckt">${t('steckt in: {waffen}', { waffen: namen })}</small>`;
+  };
+  const fu = w.fusion ? `<li class="ob-part"><b>${t('Geschoss:')}</b> ${G[w.geschoss].name}${steckt('geschoss', w.geschoss)}</li>` : '';
   return `<ul class="ob-lines">
     <li>${t('Schaden')} <b>${fmt(weaponDamage(p, slot))}</b></li>
     <li>${t('Feuerrate')} <b>${fmt(weaponRate(p, slot))}/s</b></li>
     <li>${t('Reichweite')} <b>${fmt(weaponRange(p, slot))} m</b></li>
-    ${fu}<li class="ob-part"><b>${A[w.antrieb].name}:</b> ${A[w.antrieb].text}</li>
-    <li class="ob-part"><b>${L[w.ladung].name}:</b> ${L[w.ladung].text}</li>
+    ${fu}<li class="ob-part"><b>${A[w.antrieb].name}:</b> ${A[w.antrieb].text}${steckt('antrieb', w.antrieb)}</li>
+    <li class="ob-part"><b>${L[w.ladung].name}:</b> ${L[w.ladung].text}${steckt('ladung', w.ladung)}</li>
   </ul>${w.fusion ? instabilBar(w.fusion.instabil) : ''}${el.length ? `<span class="ob-tags">${el.map((e) => `<span>${t(e)}</span>`).join('')}</span>` : ''}`;
 }
 
@@ -174,7 +182,7 @@ export interface EndStats {
  */
 export class Menus {
   readonly root: HTMLDivElement;
-  private mode: 'none' | 'start' | 'shop' | 'end' | 'pause' | 'album' | 'titel' | 'lobby' | 'einst' | 'recht' | 'koophinweis' | 'abbruch' = 'none';
+  private mode: 'none' | 'start' | 'shop' | 'end' | 'pause' | 'album' | 'titel' | 'lobby' | 'einst' | 'recht' | 'koophinweis' | 'abbruch' | 'platz' | 'nochmal' = 'none';
   /** wohin „Weiterspielen“ im Beenden-Dialog zurückführt */
   private abbruchZurueck: 'shop' | 'pause' = 'shop';
   /** Run abbrechen (solo) bzw. Raum verlassen (Koop) – setzt die App */
@@ -250,6 +258,20 @@ export class Menus {
     this.fortsetzenText = text;
     if (this.mode === 'titel') this.mode = 'none';
   }
+  /** drei Speicherplätze (Beschreibung, leer = frei) */
+  private plaetzeText: string[] = ['', '', ''];
+  set plaetze(texte: string[]) {
+    if (texte.join('|') === this.plaetzeText.join('|')) return;
+    this.plaetzeText = [...texte];
+    if (this.mode === 'titel') this.mode = 'none';
+  }
+  /** Platz gewählt: weiterspielen (neu = false) oder dort einen neuen Lauf beginnen */
+  onPlatz: (i: number, neu: boolean) => void = () => {};
+  private platzWahl = 0;
+  /** Wiederversuch nach dem Tod (solo): Welle nochmal, Insel von vorne, aufgeben */
+  onNochmal: (art: 'welle' | 'insel' | 'aufgeben') => void = () => {};
+  /** Spielstand als .boom-Datei speichern / laden (Einstellungen) */
+  onDatei: (art: 'speichern' | 'laden') => void = () => {};
 
   world: World;
 
@@ -327,12 +349,12 @@ export class Menus {
       this.albumKarte = '';
       this.hide();
     }
-    if (this.mode === 'pause' || this.mode === 'end' || this.mode === 'album' || this.mode === 'einst' || this.mode === 'recht' || this.mode === 'koophinweis' || this.mode === 'abbruch') return;
+    if (this.mode === 'pause' || this.mode === 'end' || this.mode === 'album' || this.mode === 'einst' || this.mode === 'recht' || this.mode === 'koophinweis' || this.mode === 'abbruch' || this.mode === 'platz' || this.mode === 'nochmal') return;
     if (this.screen === 'titel') {
       if (this.mode !== 'titel') this.show('titel', titelHtml(this.name, this.codeVorgabe, this.albumButton(),
         '<button type="button" class="ob-btn2" data-act="einst" data-focus="einst">' + t('Einstellungen') + '</button>'
         + (this.onBeenden ? '<button type="button" class="ob-btn2" data-act="tbeenden" data-focus="tbeenden">' + t('Beenden') + '</button>' : ''),
-        TIPPS[Math.floor(Date.now() / 1000) % TIPPS.length], this.controller ? PAD_HINWEIS.menue : '', this.fortsetzenText), this.fortsetzenText ? '[data-act="tweiter"]' : '[data-act="tsolo"]');
+        TIPPS[Math.floor(Date.now() / 1000) % TIPPS.length], this.controller ? PAD_HINWEIS.menue : '', this.plaetzeText), '[data-act="tplatz"]');
       return;
     }
     if (this.screen === 'lobby' && this.coop) {
@@ -477,8 +499,8 @@ export class Menus {
       const afford = p.crystals >= o.price;
       let body: string, kind: string, title: string, stil = rarity(o.tier), stufe = 0;
       if (o.kind === 'waffe') {
-        const wf = W[o.id];
-        kind = `${t('Waffe')} · ${gruppenText(wf)}`;
+        const wf = waffeById(o.id) ?? W.pistole;
+        kind = `${wf.fusion ? t('Fusionswaffe') : t('Waffe')} · ${gruppenText(wf)}`;
         title = wf.name;
         stil = waffenStil(wf, o.tier);
         stufe = o.tier;
@@ -764,7 +786,10 @@ export class Menus {
         });
       }
       const err = v.error ? `<p class="ob-warn">${t(v.error)}</p>` : '';
-      preview = `<div class="ob-fuserow">${card}<div class="ob-fuseside">${err}<button type="button" class="ob-go" data-act="fuse" data-focus="fuse" ${v.error ? 'disabled' : ''}>${t('Verschmelzen!')} ${GEM}${price}</button></div></div>`;
+      // gleiche Waffe schon im Inventar? Dann lässt sie sich danach zusammenführen
+      const zwilling = v.waffe && !v.error ? p.weapons.findIndex((o, i) => !this.anvilSel.includes(i) && o.waffe.id === v.waffe!.id && o.tier === v.tier && o.tier < 5) : -1;
+      const zw = zwilling >= 0 ? `<p class="ob-gut">${t('Gleiche Waffe wie in Platz {n} – danach zusammenführbar!', { n: zwilling + 1 })}</p>` : '';
+      preview = `<div class="ob-fuserow">${card}<div class="ob-fuseside">${err}${zw}<button type="button" class="ob-go" data-act="fuse" data-focus="fuse" ${v.error ? 'disabled' : ''}>${t('Verschmelzen!')} ${GEM}${price}</button></div></div>`;
     } else {
       parts = `<p class="ob-sub">${t('Wähle 2 oder 3 Waffen aus <b>verschiedenen Gruppen</b>. Jede liefert ein Bauteil – Geschoss, Antrieb oder Ladung – und es entsteht eine ganz neue Waffe. Je verschiedener die Gruppen, desto instabiler … und stärker.')}</p>`;
     }
@@ -812,6 +837,38 @@ export class Menus {
       </div>`, '[data-act="restart"], [data-act="lzurueck"]');
   }
 
+  /** Nach dem Tod (solo): Versuche für diese Welle; nach dem dritten geht es zum Inselbeginn */
+  showNochmal(versuch: number, max: number, inselMoeglich: boolean): void {
+    const welle = versuch < max;
+    const text = welle ? t('Versuch {n} von {max} verbraucht. Die Welle startet mit deinem Stand von ihrem Beginn.', { n: versuch, max })
+      : inselMoeglich ? t('Alle {max} Versuche verbraucht. Die Insel beginnt von vorne – mit der Ausrüstung, mit der du sie betreten hast.', { max })
+      : t('Alle {max} Versuche verbraucht.', { max });
+    this.show('nochmal', `
+      <div class="ob-panel ob-end">
+        <h2>${t('Kawumm!')}</h2>
+        <p class="ob-sub">${text}</p>
+        <div class="ob-row ob-center">
+          ${welle ? `<button type="button" class="ob-go" data-act="nwelle" data-focus="nwelle">${t('Welle nochmal')}</button>`
+            : inselMoeglich ? `<button type="button" class="ob-go" data-act="ninsel" data-focus="ninsel">${t('Insel von vorne')}</button>` : ''}
+          <button type="button" class="ob-btn2" data-act="naufgeben" data-focus="naufgeben">${t('Aufgeben')}</button>
+        </div>
+      </div>`, welle ? '[data-act="nwelle"]' : '[data-act="ninsel"]');
+  }
+
+  private zeigePlatz(i: number): void {
+    this.platzWahl = i;
+    this.show('platz', `
+      <div class="ob-panel ob-end">
+        <h2>${t('Platz {n}', { n: i + 1 })}</h2>
+        <p class="ob-sub">${this.plaetzeText[i]}</p>
+        <div class="ob-row ob-center">
+          <button type="button" class="ob-go" data-act="pweiter" data-focus="pweiter">${t('Weiterspielen')}</button>
+          <button type="button" class="ob-btn2" data-act="pneu" data-focus="pneu">${t('Neu beginnen (überschreibt)')}</button>
+          <button type="button" class="ob-btn2" data-act="pzurueck" data-focus="pzurueck">${t('Zurück')}</button>
+        </div>
+      </div>`, '[data-act="pweiter"]');
+  }
+
   showPause(): void {
     this.show('pause', `
       <div class="ob-panel ob-end">
@@ -844,7 +901,7 @@ export class Menus {
     this.abbruchZurueck = this.mode === 'pause' ? 'pause' : 'shop';
     const text = this.koop === 'host' ? t('Du bist Host – wenn du gehst, endet das Spiel für alle Mitspieler.')
       : this.koop === 'client' ? t('Deine Mitspieler spielen ohne dich weiter.')
-      : this.fortsetzenText ? t('Zurück zum Titel. Mit „Fortsetzen“ geht es ab dem letzten Shop weiter.')
+      : this.fortsetzenText ? t('Zurück zum Titel. Dein Speicherplatz führt dich zum Beginn der aktuellen Insel zurück.')
       : t('Der laufende Run endet. Freigeschaltete Karten, Helden und Erfolge bleiben erhalten.');
     this.show('abbruch', `
       <div class="ob-panel ob-end">
@@ -1093,6 +1150,20 @@ export class Menus {
         return;
       }
       case 'tsolo': this.screen = 'solo'; this.mode = 'none'; break;
+      case 'tplatz': {
+        const k = Number(el.dataset.i ?? 0);
+        if (this.plaetzeText[k]) this.zeigePlatz(k);
+        else this.onPlatz(k, true);
+        return;
+      }
+      case 'pweiter': this.mode = 'none'; this.onPlatz(this.platzWahl, false); return;
+      case 'pneu': this.mode = 'none'; this.onPlatz(this.platzWahl, true); return;
+      case 'pzurueck': this.mode = 'none'; this.sync(); return;
+      case 'nwelle': this.hide(); this.onNochmal('welle'); return;
+      case 'ninsel': this.hide(); this.onNochmal('insel'); return;
+      case 'naufgeben': this.hide(); this.onNochmal('aufgeben'); return;
+      case 'sdatei': this.onDatei('speichern'); return;
+      case 'sladen': this.onDatei('laden'); return;
       case 'tbeenden': this.onBeenden?.(); return;
       case 'tweiter': this.onFortsetzen?.(); return;
       case 'terstellen': this.name = this.readName(); this.onCoop({ t: 'erstellen', name: this.name }); return;

@@ -18,6 +18,10 @@ export interface Platform {
   isTouchDevice(): boolean;
   /** Bild teilen (Handy) oder herunterladen (PC); Rückgabe: Speicherort, falls bekannt */
   saveImage(blob: Blob, filename: string): Promise<string | void>;
+  /** Datei speichern (PC: Download/Ordner, Handy: Teilen-Menü); Rückgabe: Speicherort, falls bekannt */
+  saveFile(blob: Blob, filename: string): Promise<string | void>;
+  /** Textdatei auswählen und lesen (z. B. .boom); null = abgebrochen */
+  openTextFile(accept: string): Promise<string | null>;
   /** Link teilen (Handy: Teilen-Menü, sonst Zwischenablage). true = geteilt/kopiert */
   shareLink(title: string, url: string): Promise<'geteilt' | 'kopiert' | 'fehler'>;
   /** Offline-Modus/Installierbarkeit einschalten (Service Worker), wo möglich */

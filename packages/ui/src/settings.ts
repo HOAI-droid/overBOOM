@@ -95,6 +95,11 @@ export function einstellungenHtml(e: Einstellungen, info: string): string {
         ${toggle('vibration', t('Vibration'), e.vibration)}
         ${toggle('farbenblind', t('Farbenblind-Modus'), e.farbenblind, t('Gefahren mit Mustern statt nur Farben'))}
       </div>
+      <h3 class="ob-h3">${t('Spielstand')} <small>${t('Profil und alle drei Plätze, z. B. für ein anderes Gerät')}</small></h3>
+      <div class="ob-row">
+        <button type="button" class="ob-btn2" data-act="sdatei" data-focus="sdatei">${t('Als Datei speichern (.boom)')}</button>
+        <button type="button" class="ob-btn2" data-act="sladen" data-focus="sladen">${t('Datei laden')}</button>
+      </div>
       <div class="ob-row"><button type="button" class="ob-btn2" data-act="recht" data-focus="recht">${t('Datenschutz &amp; Lizenzen')}</button></div>
     </div>`;
 }

@@ -85,19 +85,28 @@ export function createWebPlatform(): Platform {
       } catch { /* nicht unterstützt */ }
     },
     async saveImage(blob, filename) {
-      try {
-        const file = new File([blob], filename, { type: blob.type });
-        const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
-        if (matchMedia('(pointer: coarse)').matches && nav.canShare?.({ files: [file] })) {
-          await navigator.share({ files: [file], title: t('OVERBOOM-Karte') });
-          return;
-        }
-      } catch { /* abgebrochen oder nicht unterstützt → Download */ }
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = filename;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      return teilenOderLaden(blob, filename, t('OVERBOOM-Karte'));
+    },
+    async saveFile(blob, filename) {
+      return teilenOderLaden(blob, filename, t('OVERBOOM-Spielstand'));
+    },
+    openTextFile(accept) {
+      return new Promise<string | null>((ok) => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = accept;
+        input.style.display = 'none';
+        let fertig = false;
+        const ende = (v: string | null) => { if (fertig) return; fertig = true; input.remove(); ok(v); };
+        input.addEventListener('change', () => {
+          const f = input.files?.[0];
+          if (!f) { ende(null); return; }
+          f.text().then(ende, () => ende(null));
+        });
+        input.addEventListener('cancel', () => ende(null));
+        document.body.appendChild(input);
+        input.click();
+      });
     },
     async shareLink(title, url) {
       try {
@@ -129,4 +138,21 @@ export function createWebPlatform(): Platform {
       return matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
     }
   };
+}
+
+/** Handy: Teilen-Menü mit Datei; sonst Download */
+async function teilenOderLaden(blob: Blob, filename: string, titel: string): Promise<void> {
+  try {
+    const file = new File([blob], filename, { type: blob.type || 'application/octet-stream' });
+    const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
+    if (matchMedia('(pointer: coarse)').matches && nav.canShare?.({ files: [file] })) {
+      await navigator.share({ files: [file], title: titel });
+      return;
+    }
+  } catch { /* abgebrochen oder nicht unterstützt → Download */ }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
 }

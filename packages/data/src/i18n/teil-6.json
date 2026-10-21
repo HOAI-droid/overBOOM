@@ -1,5 +1,57 @@
 [
  {
+  "de": "Grafik",
+  "quelle": "packages/ui/src/settings.ts"
+ },
+ {
+  "de": "Barrierefreiheit",
+  "quelle": "packages/ui/src/settings.ts"
+ },
+ {
+  "de": "Bildschirm-Wackeln",
+  "quelle": "packages/ui/src/settings.ts"
+ },
+ {
+  "de": "Lichtblitze",
+  "quelle": "packages/ui/src/settings.ts"
+ },
+ {
+  "de": "Partikel",
+  "quelle": "packages/ui/src/settings.ts"
+ },
+ {
+  "de": "Schadenszahlen",
+  "quelle": "packages/ui/src/settings.ts"
+ },
+ {
+  "de": "Vibration",
+  "quelle": "packages/ui/src/settings.ts"
+ },
+ {
+  "de": "Farbenblind-Modus",
+  "quelle": "packages/ui/src/settings.ts"
+ },
+ {
+  "de": "Gefahren mit Mustern statt nur Farben",
+  "quelle": "packages/ui/src/settings.ts"
+ },
+ {
+  "de": "Profil und alle drei Plätze, z. B. für ein anderes Gerät",
+  "quelle": "packages/ui/src/settings.ts"
+ },
+ {
+  "de": "Als Datei speichern (.boom)",
+  "quelle": "packages/ui/src/settings.ts"
+ },
+ {
+  "de": "Datei laden",
+  "quelle": "packages/ui/src/settings.ts"
+ },
+ {
+  "de": "WebGL konnte nicht gestartet werden. Bitte einen aktuellen Browser verwenden.",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
   "de": "Kopiert",
   "quelle": "apps/web/src/main.ts"
  },
@@ -65,6 +117,22 @@
  },
  {
   "de": "gerade: {stufe}",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Spielstand gespeichert",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Speichern ging nicht",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Datei passt nicht",
+  "quelle": "apps/web/src/main.ts"
+ },
+ {
+  "de": "Keine gültige .boom-Datei",
   "quelle": "apps/web/src/main.ts"
  },
  {

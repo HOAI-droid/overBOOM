@@ -317,20 +317,27 @@ export interface FusionsWahl {
   ladung: string;
 }
 
+/** ID einer Fusion: allein die drei Bauteile zählen (gleicher Name = gleiche Waffe) */
 export function fusionsId(wahl: FusionsWahl): string {
-  return `fusion:${wahl.geschoss}+${wahl.antrieb}+${wahl.ladung}`;
+  return `fz:${W[wahl.geschoss].geschoss}+${W[wahl.antrieb].antrieb}+${W[wahl.ladung].ladung}`;
 }
 
 const cache = new Map<string, Waffe>();
 
+/** Grundwaffen, in denen ein Bauteil steckt (zum Nachbauen einer Fusion) */
+export function waffenMitTeil(art: 'geschoss' | 'antrieb' | 'ladung', teil: string): Waffe[] {
+  return Object.values(W).filter((w) => w[art] === teil);
+}
+
 /**
- * Baut die Fusionswaffe. Werte systemisch:
- * Feuerrate und Reichweite vom Antriebs-Spender (passt zur Flugart),
- * Schaden so, dass der DPS dem Mittel der Eingangswaffen entspricht – plus Instabilitäts-Bonus.
+ * Baut die Fusionswaffe. `wahl` = welche Waffe welches Bauteil liefert.
+ * Ohne Rezept hängen Werte, Name und Modell nur von den Bauteilen ab, nicht von den
+ * Spenderwaffen – so lässt sich jede Fusion auf verschiedenen Wegen nachbauen und mergen.
  */
 export function fusionsWaffe(wahl: FusionsWahl, quellen: readonly string[] = [wahl.geschoss, wahl.antrieb, wahl.ladung]): Waffe {
   const rezept = findeRezept(quellen);
-  const id = rezept ? `rezept:${rezept.id}` : fusionsId(wahl);
+  if (!rezept) return fusionAusTeilen(W[wahl.geschoss].geschoss, W[wahl.antrieb].antrieb, W[wahl.ladung].ladung);
+  const id = `rezept:${rezept.id}`;
   const hit = cache.get(id);
   if (hit) return hit;
 
@@ -339,36 +346,59 @@ export function fusionsWaffe(wahl: FusionsWahl, quellen: readonly string[] = [wa
   const instabil = instabilitaet(quellen);
   const avgDps = inputs.reduce((s, w) => s + dps(w), 0) / inputs.length;
   const gruppen = [...new Set(uniq.map((q) => W[q].gruppe))] as Gruppe[];
-
-  let teile = { geschoss: W[wahl.geschoss].geschoss, antrieb: W[wahl.antrieb].antrieb, ladung: W[wahl.ladung].ladung };
-  const rateSrc = W[wahl.antrieb];
-  let feuerrate = rateSrc.feuerrate, reichweite = rateSrc.reichweite;
-  let spezial: string[] = [];
-  let mult = 1 + instabil / 100 * 0.6;
-  let name = fusionsName(teile.geschoss, teile.antrieb, teile.ladung);
-  let text = `${t('{geschoss}, {antrieb}, mit {ladung}.', { geschoss: G[teile.geschoss].name, antrieb: A[teile.antrieb].name.toLowerCase(), ladung: L[teile.ladung].name.toLowerCase() })} ${A[teile.antrieb].text} ${L[teile.ladung].text}`;
-  if (rezept) {
-    teile = { geschoss: rezept.geschoss, antrieb: rezept.antrieb, ladung: rezept.ladung };
-    const avg = (f: (w: Waffe) => number) => inputs.reduce((sum, w) => sum + f(w), 0) / inputs.length;
-    feuerrate = avg((w) => w.feuerrate) * rezept.feuerrate;
-    reichweite = avg((w) => w.reichweite) * rezept.reichweite;
-    spezial = rezept.spezial;
-    mult *= rezept.schaden;
-    name = rezept.name;
-    text = rezept.text;
-  }
+  const teile = { geschoss: rezept.geschoss, antrieb: rezept.antrieb, ladung: rezept.ladung };
+  const avg = (f: (w: Waffe) => number) => inputs.reduce((sum, w) => sum + f(w), 0) / inputs.length;
+  const feuerrate = avg((w) => w.feuerrate) * rezept.feuerrate;
+  const reichweite = avg((w) => w.reichweite) * rezept.reichweite;
+  const spezial = rezept.spezial;
+  const mult = (1 + instabil / 100 * 0.6) * rezept.schaden;
   const schaden = (avgDps * mult) / (feuerrate * shots(teile.antrieb, spezial));
   const w: Waffe = {
     id,
-    name,
+    name: rezept.name,
     gruppe: W[wahl.antrieb].gruppe,
     ...teile,
     schaden: Math.round(schaden * 10) / 10,
     feuerrate: Math.round(feuerrate * 100) / 100,
     reichweite: Math.round(reichweite * 10) / 10,
-    text,
+    text: rezept.text,
     spezial,
-    fusion: { teile: { ...wahl }, quellen: uniq, gruppen, elemente: elemente(teile), instabil, rezept: rezept?.id }
+    fusion: { teile: { ...wahl }, quellen: uniq, gruppen, elemente: elemente(teile), instabil, rezept: rezept.id }
+  };
+  cache.set(id, w);
+  return w;
+}
+
+/**
+ * Fusion allein aus Bauteilen. Stellvertreter je Bauteil ist die erste Grundwaffe, die es hat
+ * (für Gruppe und Modell); Schaden und Tempo sind Mittelwerte aller Waffen mit dem Bauteil.
+ */
+function fusionAusTeilen(g: string, a: string, l: string): Waffe {
+  const id = `fz:${g}+${a}+${l}`;
+  const hit = cache.get(id);
+  if (hit) return hit;
+  const mitG = waffenMitTeil('geschoss', g), mitA = waffenMitTeil('antrieb', a), mitL = waffenMitTeil('ladung', l);
+  const mittel = (ws: Waffe[], f: (w: Waffe) => number) => ws.reduce((s, w) => s + f(w), 0) / ws.length;
+  const reps = [mitG[0], mitA[0], mitL[0]];
+  const gruppen = [...new Set(reps.map((w) => w.gruppe))] as Gruppe[];
+  const spender = new Set(reps.map((w) => w.id)).size;
+  const instabil = Math.min(100, (gruppen.length - 1) * 26 + (Math.max(2, spender) - 1) * 10);
+  const avgDps = (mittel(mitG, dps) + mittel(mitA, dps) + mittel(mitL, dps)) / 3;
+  const feuerrate = mittel(mitA, (w) => w.feuerrate), reichweite = mittel(mitA, (w) => w.reichweite);
+  const teile = { geschoss: g, antrieb: a, ladung: l };
+  const mult = 1 + instabil / 100 * 0.6;
+  const schaden = (avgDps * mult) / (feuerrate * shots(a));
+  const w: Waffe = {
+    id,
+    name: fusionsName(g, a, l),
+    gruppe: mitA[0].gruppe,
+    ...teile,
+    schaden: Math.round(schaden * 10) / 10,
+    feuerrate: Math.round(feuerrate * 100) / 100,
+    reichweite: Math.round(reichweite * 10) / 10,
+    text: `${t('{geschoss}, {antrieb}, mit {ladung}.', { geschoss: G[g].name, antrieb: A[a].name.toLowerCase(), ladung: L[l].name.toLowerCase() })} ${A[a].text} ${L[l].text}`,
+    spezial: [],
+    fusion: { teile: { geschoss: mitG[0].id, antrieb: mitA[0].id, ladung: mitL[0].id }, quellen: [...new Set(reps.map((r) => r.id))], gruppen, elemente: elemente(teile), instabil }
   };
   cache.set(id, w);
   return w;
@@ -385,9 +415,14 @@ export function waffeById(id: string): Waffe | undefined {
     cache.set(id, w);
     return w;
   }
+  if (id.startsWith('fz:')) {
+    const [g, a, l] = id.slice(3).split('+');
+    if (waffenMitTeil('geschoss', g).length && waffenMitTeil('antrieb', a).length && waffenMitTeil('ladung', l).length) return fusionAusTeilen(g, a, l);
+  }
+  // alte IDs (bis v0.13): Spenderwaffen statt Bauteile
   if (id.startsWith('fusion:')) {
     const [g, a, l] = id.slice(7).split('+');
-    if (W[g] && W[a] && W[l]) return fusionsWaffe({ geschoss: g, antrieb: a, ladung: l }, [g, a, l]);
+    if (W[g] && W[a] && W[l]) return fusionAusTeilen(W[g].geschoss, W[a].antrieb, W[l].ladung);
   }
   if (id.startsWith('rezept:')) {
     const r = REZEPT_BY_ID[id.slice(7)];

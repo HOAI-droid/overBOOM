@@ -34,7 +34,7 @@ OVERBOOM is an action-packed arena roguelite in loud, colourful 3D voxel pixel a
 
 ## Downloads
 
-Current version: **0.13.1**
+Current version: **0.14.0**
 
 **Play instantly in your browser:** <https://hoai-droid.github.io/overboom/> – on your phone use *Share → Add to Home Screen* (iPhone) or *Install app* (Android) to play full screen like an app; solo also works offline.
 
@@ -43,8 +43,9 @@ Or as an app – always the latest version, just click:
 | Platform | Download | Note |
 |---|---|---|
 | **Windows** | [Installer (.exe)](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Windows-Setup.exe) · [MSI](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Windows.msi) | Unsigned: on the SmartScreen warning click “More info” → “Run anyway” |
-| **Mac** | [App (.dmg)](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Mac.dmg) | Apple Silicon and Intel. First launch: right-click → “Open” |
+| **Mac** | [App (.dmg)](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Mac.dmg) | Apple Silicon and Intel. Won't start? See [Mac: opening the app](#mac-opening-the-app) |
 | **Linux** | [AppImage](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Linux.AppImage) · [.deb](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Linux.deb) · [.rpm](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Linux.rpm) | AppImage: make executable and run |
+| **Steam Deck** | [AppImage](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-SteamDeck.AppImage) | See [Steam Deck](#steam-deck) |
 | **Android** | [App (.apk)](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Android.apk) | Open on your phone and allow “install unknown apps” |
 | **iOS** | [App (.ipa, unsigned)](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-iOS-unsigniert.ipa) | Must be signed with your own Apple account (e.g. Xcode, AltStore, Sideloadly) |
 | **Xbox Series X\|S** | [Package (.zip)](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Xbox.zip) | Developer Mode only – guide (German): [docs/xbox.md](docs/xbox.md) |
@@ -52,16 +53,32 @@ Or as an app – always the latest version, just click:
 
 All versions and changes: [Releases](https://github.com/HOAI-droid/overboom/releases)
 
+### Mac: opening the app
+The app is not signed by Apple. If macOS says it “can't be opened” or “is damaged”:
+1. Drag the app into *Applications* and start it once.
+2. Open *System Settings → Privacy & Security*, scroll all the way down and click **“Open Anyway”** next to OVERBOOM.
+3. If that doesn't help, run this once in Terminal: `xattr -cr /Applications/OVERBOOM.app`
+
+### Steam Deck
+1. Switch to **Desktop Mode** (Steam button → Power → Switch to Desktop).
+2. Download the [Steam Deck file](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-SteamDeck.AppImage).
+3. Right-click the file → *Properties → Permissions* → tick **“Is executable”**.
+4. Open Steam → *Games → Add a Non-Steam Game to My Library* → pick the file.
+5. Back in Game Mode, OVERBOOM is in your library and plays with the controller.
+
+### Take your progress with you
+In the settings under *Progress* you can store everything (profile and the three save slots) as a file such as `261021-2341.boom` and load it on another device.
+
 **Legal (German):** [Privacy](DATENSCHUTZ.md) · [License – all rights reserved](LICENSE) · [Third-party software](DRITTANBIETER.md)
 
 The downloads are provided free of charge and without warranty. Solo play sends no data; for co-op, your IP address and player name go to the connection servers and your fellow players (details in the privacy notice).
 
 ## What to expect
 
-- **A journey across 7 islands** of the world of Kaboomia – each with its own enemy faction, ground hazard, island boss and an island baroness or baron. Solo: 15 waves per island (progress is saved after every wave), co-op: 8. At the very end: the Great Kaboom in three phases.
+- **A journey across 7 islands** of the world of Kaboomia – each with its own enemy faction, ground hazard, island boss and an island baroness or baron. Solo: 15 waves per island, co-op: 8. Solo has three save slots, 3 attempts per wave, and after that the island restarts with the gear you arrived with. At the very end: the Great Kaboom in three phases.
 - **Every arena is different:** pillars, crates, lava, poison and ice are placed anew for every run.
 - **13 heroes**, each with their own starting weapon and quirk, unlocked through achievements.
-- **60 weapons**, tiers I–V, stars, evolutions and 12 mods – plus **weapon fusion** and 40 secret recipes.
+- **60 weapons**, tiers I–V, stars, evolutions and 12 mods – plus **weapon fusion** (about 16,000 combinations) and 40 secret recipes. From island 3 the shop also sells ready-made fusion weapons.
 - **159 items** and **equipment** with 8 slots and 4 sets.
 - **9 elements** with synergies and 15 elemental reactions (steam explosion, shock frost, plasma burn …).
 - **Co-op for 1–4 players**, each on their own device: create a room, share the code or QR code, play. Fallen teammates can be revived.
@@ -84,13 +101,12 @@ Aiming and shooting are automatic. All menus work with mouse, touch, keyboard or
 
 ## Tested on
 
-Android phones, iPhone (simulator), Xbox Series X|S, PC and Mac in the browser; co-op between devices on the same Wi-Fi.
+Android phones, iPhone (simulator), Xbox Series X|S, PC and Mac in the browser; co-op between devices on the same Wi-Fi and over the internet.
 
 ## Known issues
 
-- Co-op between devices on the same network (Wi-Fi) works. Across different networks (e.g. mobile data) it is not tested yet; without a TURN relay co-op does not work on every network.
+- Co-op works on the same Wi-Fi and over the internet (tested, ran very well). Without a TURN relay it does not work on every network.
 - No host migration: if the host leaves, the game ends for everyone (with a notice).
-- Enemies walk straight at the player (no flow field yet); they slide sideways around pillars.
 - Island bosses repeat during the journey (4 boss models for 7 islands); every island has its own baroness or baron, though.
 - The apps are unsigned (Windows SmartScreen, Mac Gatekeeper, iOS must be signed by yourself).
 
@@ -115,6 +131,15 @@ npm run build:xbox     # copy web build into the Xbox app
 ```
 
 ## What's new
+
+### 0.14.0 – smarter, not more
+- Fusion: same name = same weapon, so fusions can be rebuilt and merged. Weapon cards show which base weapons contain each part, and the anvil tells you when a fusion matches one you own.
+- Ready-made fusion weapons in the shop from island 3 (5–8× the price).
+- Fewer but tougher enemies (at most 60 at once instead of 140), plus more elites.
+- Enemies now path around pillars and walls. Grumblers cut you off, slimes lurk behind cover and pounce, ranged enemies look for a clear line of fire.
+- Rarity follows your progress: islands 1–2 only the first two classes, 3–4 up to the third, the best from island 5.
+- 3 attempts per wave, then the island restarts; three save slots; save files (.boom) and codes.
+- Steam Deck download, Mac instructions.
 
 ### 0.13.1 – calmer and smoother
 - Much gentler screen shake: small explosions barely shake, many in a row no longer build up.

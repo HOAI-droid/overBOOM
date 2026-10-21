@@ -23,20 +23,28 @@ export async function createCapacitorPlatform(): Promise<Platform> {
     async keepAwake() { /* nativ: Bildschirm bleibt während der App an */ },
     isTouchDevice() { return true; },
     async saveImage(blob, filename) {
-      try {
-        const data = await new Promise<string>((res, rej) => {
-          const r = new FileReader();
-          r.onload = () => res(String(r.result).split(',')[1] ?? '');
-          r.onerror = () => rej(r.error);
-          r.readAsDataURL(blob);
-        });
-        const f = await Filesystem.writeFile({ path: filename, data, directory: Directory.Cache });
-        await Share.share({ title: t('OVERBOOM-Karte'), files: [f.uri] });
-      } catch { /* abgebrochen */ }
+      await teilen(blob, filename, t('OVERBOOM-Karte'));
+    },
+    async saveFile(blob, filename) {
+      await teilen(blob, filename, t('OVERBOOM-Spielstand'));
     },
     async shareLink(title, url) {
       try { await Share.share({ title, url }); return 'geteilt'; } catch { return web.shareLink(title, url); }
     },
     registerOffline() { /* Dateien liegen in der App */ }
   };
+
+  /** Datei in den Cache schreiben und über das System-Teilen-Menü anbieten */
+  async function teilen(blob: Blob, filename: string, titel: string): Promise<void> {
+    try {
+      const data = await new Promise<string>((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(String(r.result).split(',')[1] ?? '');
+        r.onerror = () => rej(r.error);
+        r.readAsDataURL(blob);
+      });
+      const f = await Filesystem.writeFile({ path: filename, data, directory: Directory.Cache });
+      await Share.share({ title: titel, files: [f.uri] });
+    } catch { /* abgebrochen */ }
+  }
 }

@@ -25,6 +25,15 @@ export async function createTauriPlatform(): Promise<Platform> {
         return web.saveImage(blob, filename);
       }
     },
+    async saveFile(blob, filename) {
+      try {
+        await fs.mkdir('OVERBOOM', { baseDir: fs.BaseDirectory.Download, recursive: true });
+        await fs.writeFile(`OVERBOOM/${filename}`, new Uint8Array(await blob.arrayBuffer()), { baseDir: fs.BaseDirectory.Download });
+        return `Downloads/OVERBOOM/${filename}`;
+      } catch {
+        return web.saveFile(blob, filename);
+      }
+    },
     // Dateien liegen in der App – kein Service Worker nötig
     registerOffline() {}
   };

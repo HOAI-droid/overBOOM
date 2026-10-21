@@ -8,3 +8,4 @@ export { SHOP_WEAPONS, canMerge, fusionPreview, type FusionPreview, rerollPrice,
 export { weaponDamage, weaponRate, weaponRange, modMask, spezialMask } from './weapons.ts';
 export * from './meta.ts';
 export * from './spielstand.ts';
+export * from './speicherdatei.ts';

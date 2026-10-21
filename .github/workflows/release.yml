@@ -64,6 +64,8 @@ jobs:
           eins art/OVERBOOM-Windows '*.msi'      OVERBOOM-Windows.msi
           eins art/OVERBOOM-Mac     '*.dmg'      OVERBOOM-Mac.dmg
           eins art/OVERBOOM-Linux   '*.AppImage' OVERBOOM-Linux.AppImage
+          # Steam Deck: dieselbe AppImage, eigener Name zum leichten Finden
+          eins art/OVERBOOM-Linux   '*.AppImage' OVERBOOM-SteamDeck.AppImage
           eins art/OVERBOOM-Linux   '*.deb'      OVERBOOM-Linux.deb
           eins art/OVERBOOM-Linux   '*.rpm'      OVERBOOM-Linux.rpm
           eins art/OVERBOOM-Android '*.apk'      OVERBOOM-Android.apk

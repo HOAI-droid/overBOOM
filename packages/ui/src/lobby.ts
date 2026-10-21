@@ -95,15 +95,14 @@ export function codeHinweis(e: RaumcodeEingabe, roh: string, fehler: boolean): {
 }
 
 /** Titelbildschirm */
-export function titelHtml(name: string, code: string, albumBtn: string, extra = '', tipp = '', hinweis = '', fortsetzen = ''): string {
+export function titelHtml(name: string, code: string, albumBtn: string, extra = '', tipp = '', hinweis = '', plaetze: string[] = ['', '', '']): string {
   const hinweisCode = codeHinweis(leseRaumcode(code), code, false);
   return `
     <div class="ob-panel ob-titel">
       <h1 class="ob-logo"><b>OVER</b><b class="boom">BOOM</b></h1>
       <p class="ob-sub">${t('Arena-Chaos mit Waffen-Fusion · 1–4 Spieler')}</p>
       <div class="ob-titel-row">
-        ${fortsetzen ? `<button type="button" class="ob-go ob-big" data-act="tweiter" data-focus="tweiter">${t('Fortsetzen')}<small style="display:block;font-size:10px;opacity:.8;margin-top:2px">${esc(fortsetzen)}</small></button>` : ''}
-        <button type="button" class="${fortsetzen ? 'ob-btn2' : 'ob-go ob-big'}" data-act="tsolo" data-focus="tsolo">${fortsetzen ? t('Neuer Run') : t('Solo spielen')}</button>
+        ${plaetze.map((d, i) => `<button type="button" class="${d ? 'ob-go' : 'ob-btn2'} ob-platz" data-act="tplatz" data-i="${i}" data-focus="tplatz${i}">${t('Solo · Platz {n}', { n: i + 1 })}<small>${d ? esc(d) : t('frei – neuer Lauf')}</small></button>`).join('')}
       </div>
       <h3 class="ob-h3">${t('Koop')} <small>${t('bis zu 4 Spieler, jeder am eigenen Gerät')}</small></h3>
       <label class="ob-field"><span>${t('Dein Name')}</span><input type="text" maxlength="16" data-name value="${esc(name)}" autocomplete="nickname"></label>

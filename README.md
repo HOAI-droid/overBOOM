@@ -34,7 +34,7 @@ OVERBOOM ist ein actiongeladenes Arena-Roguelite in knalliger 3D-Voxel-Pixel-Opt
 
 ## Downloads
 
-Aktuelle Version: **0.13.1**
+Aktuelle Version: **0.14.0**
 
 **Sofort im Browser spielen:** <https://hoai-droid.github.io/overboom/> – am Handy über *Teilen → Zum Home-Bildschirm* (iPhone) bzw. *App installieren* (Android) wie eine App im Vollbild, solo auch offline.
 
@@ -43,8 +43,9 @@ Oder als App – immer die neueste Version, einfach anklicken:
 | Plattform | Download | Hinweis |
 |---|---|---|
 | **Windows** | [Installer (.exe)](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Windows-Setup.exe) · [MSI](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Windows.msi) | Unsigniert: bei der SmartScreen-Warnung „Weitere Informationen“ → „Trotzdem ausführen“ |
-| **Mac** | [App (.dmg)](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Mac.dmg) | Apple Silicon und Intel. Beim ersten Start: Rechtsklick → „Öffnen“ |
+| **Mac** | [App (.dmg)](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Mac.dmg) | Apple Silicon und Intel. Startet nicht? Siehe [Mac: App öffnen](#mac-app-öffnen) |
 | **Linux** | [AppImage](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Linux.AppImage) · [.deb](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Linux.deb) · [.rpm](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Linux.rpm) | AppImage: ausführbar machen und starten |
+| **Steam Deck** | [AppImage](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-SteamDeck.AppImage) | Siehe [Steam Deck](#steam-deck) |
 | **Android** | [App (.apk)](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Android.apk) | Am Handy öffnen und „Installation aus unbekannten Quellen“ erlauben |
 | **iOS** | [App (.ipa, unsigniert)](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-iOS-unsigniert.ipa) | Muss mit eigenem Apple-Konto signiert werden (z. B. Xcode, AltStore, Sideloadly) |
 | **Xbox Series X\|S** | [Paket (.zip)](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Xbox.zip) | Nur im Developer Mode – Anleitung: [docs/xbox.md](docs/xbox.md) |
@@ -52,16 +53,32 @@ Oder als App – immer die neueste Version, einfach anklicken:
 
 Alle Versionen und Änderungen: [Releases](https://github.com/HOAI-droid/overboom/releases)
 
+### Mac: App öffnen
+Die App ist nicht von Apple signiert. Meldet macOS „kann nicht geöffnet werden“ oder „ist beschädigt“:
+1. App in den Ordner *Programme* ziehen und einmal starten.
+2. *Systemeinstellungen → Datenschutz & Sicherheit* öffnen, ganz nach unten scrollen und bei OVERBOOM auf **„Dennoch öffnen“** klicken.
+3. Hilft das nicht, im Terminal einmal eingeben: `xattr -cr /Applications/OVERBOOM.app`
+
+### Steam Deck
+1. In den **Desktop-Modus** wechseln (Steam-Taste → Ein/Aus → Zum Desktop wechseln).
+2. Die [Steam-Deck-Datei](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-SteamDeck.AppImage) herunterladen.
+3. Rechtsklick auf die Datei → *Eigenschaften → Berechtigungen* → **„Ist ausführbar“** anhaken.
+4. Steam öffnen → *Spiele → Ein Nicht-Steam-Spiel zu meiner Bibliothek hinzufügen* → Datei auswählen.
+5. Zurück in den Spielmodus: OVERBOOM steht in der Bibliothek und läuft mit dem Controller.
+
+### Spielstand mitnehmen
+In den Einstellungen unter *Spielstand* speicherst du alles (Profil und die drei Speicherplätze) als Datei, z. B. `261021-2341.boom`, und lädst sie auf einem anderen Gerät wieder. Im Album (Erfolge) gibt es denselben Stand auch als Code zum Kopieren.
+
 **Rechtliches:** [Datenschutz](DATENSCHUTZ.md) · [Lizenz – alle Rechte vorbehalten](LICENSE) · [Drittanbieter-Software](DRITTANBIETER.md)
 
 Die Downloads werden kostenlos und ohne Gewähr bereitgestellt. Solo werden keine Daten übertragen; für Koop gehen IP-Adresse und Spielername an Verbindungsserver und Mitspieler (Details im Datenschutzhinweis).
 
 ## Was dich erwartet
 
-- **Eine Reise über 7 Inseln** der Welt Krawummia – jede mit eigener Gegner-Fraktion, Bodengefahr, Inselboss und einer Inselbaronin bzw. einem Inselbaron. Solo 15 Wellen pro Insel (Spielstand wird nach jeder Welle gespeichert), im Koop 8. Ganz am Ende: das Große Kawumm in drei Phasen.
+- **Eine Reise über 7 Inseln** der Welt Krawummia – jede mit eigener Gegner-Fraktion, Bodengefahr, Inselboss und einer Inselbaronin bzw. einem Inselbaron. Solo 15 Wellen pro Insel, im Koop 8. Solo gibt es drei Speicherplätze, 3 Versuche pro Welle und danach einen Neustart der Insel mit der Ausrüstung, mit der du sie betreten hast. Ganz am Ende: das Große Kawumm in drei Phasen.
 - **Jede Arena ist anders:** Säulen, Kisten, Lava, Gift und Eis werden für jeden Run neu verteilt.
 - **13 Helden** mit eigener Startwaffe und Macke, über Erfolge freischaltbar.
-- **60 Waffen**, Stufen I–V, Sterne, Evolutionen und 12 Mods – plus **Waffen-Fusion** und 40 geheime Rezepte.
+- **60 Waffen**, Stufen I–V, Sterne, Evolutionen und 12 Mods – plus **Waffen-Fusion** (rund 16.000 Kombinationen) und 40 geheime Rezepte. Ab Insel 3 gibt es fertige Fusionswaffen im Shop.
 - **159 Items** und **Ausrüstung** mit 8 Plätzen und 4 Sets.
 - **9 Elemente** mit Synergien und 15 Elementar-Reaktionen (Dampfexplosion, Schockfrost, Plasmabrand …).
 - **Koop für 1–4 Spieler**, jeder am eigenen Gerät: Raum erstellen, Code oder QR-Code teilen, losspielen. Gefallene Mitspieler werden wiederbelebt.
@@ -110,22 +127,30 @@ Debug: `?wave=10` (Startwelle, 10 = Boss), `?god=1` (unverwundbar), `?gems=500` 
 
 
 ## Bekannte Probleme
-- Koop zwischen Geräten im selben Netz (WLAN) läuft. Über verschiedene Netze (z. B. Mobilfunk) ist es noch nicht getestet; ohne TURN-Relay klappt Koop nicht in jedem Netz.
+- Koop läuft im selben WLAN und übers Internet (getestet, lief sehr gut). Ohne TURN-Relay klappt Koop nicht in jedem Netz.
 - Keine Host-Migration: Verlässt der Host das Spiel, endet es für alle (mit Hinweis).
 - Ein Host-Tab im Hintergrund läuft über den Worker-Takt weiter, Browser können ihn aber nach einer Weile drosseln. Am besten bleibt der Host im Vordergrund.
 - Snapshots haben noch keine Delta-Kompression; bei sehr vielen Geschossen werden sie größer (gemessen ~1,5 KB, im Extremfall bis ~20 KB).
-- Gegner laufen direkt auf den Spieler zu (noch kein Flow-Field); an Säulen rutschen sie seitlich ab.
 - Balancing mit dem Bot justiert (8 Reisen: Tode verteilt über alle Inseln, starke Builds erreichen das Finale). Der Bot nutzt weder Mods, Evolutionen noch den OVERBOOM-Modus; ein guter Spieler ist stärker. Koop- und Gefahren-Werte (`KOOP`, `data/src/danger.ts`) sind Schätzungen.
 - Inselbosse wiederholen sich auf der Reise (4 Bossmodelle für 7 Inseln); jede Insel hat aber eine eigene Baronin bzw. einen eigenen Baron.
 - Fusions-Vorschau am Trainings-Dummy (10 s testen) fehlt noch; Fusionen aus Fusionen sind bewusst nicht möglich.
 - Apps sind unsigniert (Windows SmartScreen, Mac Gatekeeper, iOS muss selbst signiert werden).
 
 ## Nächster Schritt
-Phase 10: Koop über verschiedene Netze (Mobilfunk) testen, Signaturen und Store-Einträge.
+Feedback von echten Geräten; später Phase 10 (Signaturen und Store-Einträge).
 
-**Getestet auf echten Geräten:** Android-Handys, iPhone (Simulator), Xbox Series X|S, PC/Mac im Browser; Koop zwischen Geräten im selben WLAN.
+**Getestet auf echten Geräten:** Android-Handys, iPhone (Simulator), Xbox Series X|S, PC/Mac im Browser; Koop zwischen Geräten im selben WLAN und übers Internet.
 
 ## Versionsgeschichte
+
+### Version 0.14.0 – klüger statt mehr
+- **Fusion:** Gleicher Name = gleiche Waffe. Werte, Name und Modell hängen nur von den drei Bauteilen ab (`fz:geschoss+antrieb+ladung`, alte IDs werden umgerechnet), dadurch lassen sich Fusionen nachbauen und zusammenführen. Waffenkarten zeigen, in welchen Grundwaffen jedes Bauteil steckt; der Amboss meldet „zusammenführbar mit Platz X“.
+- **Fusionswaffen im Shop** ab Insel 3, zum 5- bis 8-fachen Preis, oft passend zu einer eigenen Fusion (`SHOP.fusion*`), keine geheimen Rezepte.
+- **Weniger, aber härtere Gegner:** höchstens 60 gleichzeitig (vorher 140); ab Welle 7 sinkt die Anzahl (`WELLEN.masse`), Leben und Kristalle steigen im gleichen Maß, Schaden etwas; mehr Elite-Gegner. Der Balancing-Bot kommt etwa gleich weit.
+- **Flow-Field** (`core/src/flow.ts`): Gegner laufen um Säulen und Mauern herum zum nächsten Spieler. Neue Taktiken: Grummelbolde schneiden den Weg ab, Schleimis lauern in Deckung und stürmen los, Fernkämpfer suchen freie Schusslinie.
+- **Seltenheit nach Insel:** Inseln 1–2 nur die ersten zwei Klassen, 3–4 bis zur dritten, ab Insel 5 alles (`seltenheitsDeckel`).
+- **Wiederversuche und Speicherplätze:** 3 Versuche pro Welle, danach beginnt die Insel von vorne; drei Speicherplätze mit dem Stand am Inselbeginn; Spielstand als `.boom`-Datei oder Code (`core/src/speicherdatei.ts`, Prüfsumme).
+- Steam-Deck-Download, Mac-Anleitung, Koop übers Internet getestet.
 
 ### Version 0.13.1 – ruhiger und flüssiger
 - **Wackeln dosiert:** Stärke hängt von der Explosionsgröße ab, Gewöhnung bei vielen Explosionen hintereinander (`unruhe` in `renderer.ts`), Stöße addieren sich kaum noch.

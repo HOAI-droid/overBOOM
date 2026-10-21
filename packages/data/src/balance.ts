@@ -45,7 +45,12 @@ export const WELLEN = {
   hpFaktor: (w: number) => w <= 15 ? frueh.hp(w) : frueh.hp(15) * (w / 15) ** 2.15,
   /** Schadens-Multiplikator der Gegner: danach etwas langsamer als bisher, damit das Leben mithält */
   schadenFaktor: (w: number) => w <= 15 ? frueh.schaden(w) : frueh.schaden(15) * (w / 15) ** 2.05,
-  maxGegner: 140,
+  /**
+   * Masse-Faktor (ab v0.14): später weniger, aber härtere Gegner. Spawnrate × masse,
+   * Leben und Kristalle ÷ masse (gleiche Gesamtmenge), Schaden ÷ √masse.
+   */
+  masse: (w: number) => (w <= 6 ? 1 : Math.max(0.45, 1 - 0.045 * (w - 6))),
+  maxGegner: 60,
   /** kurze Pause nach der Welle (alles explodiert, Kristalle fliegen ein), dann Shop */
   pause: 2.5,
   /** Vorwarnzeit (rotes Kreuz) vor dem Spawn */
@@ -135,10 +140,24 @@ export const SHOP = {
   inflation: (w: number) => 1 + 0.1 * (w - 1),
   rerollPreis: (w: number, rerolls: number) => 2 + Math.floor(w * 0.6) + rerolls * Math.max(1, Math.floor(w / 3)),
   verkaufsAnteil: 0.4,
+  /** Fusionswaffen im Angebot: ab dieser Insel (0-basiert), Anteil an Waffenangeboten, Preisfaktor 5–8× */
+  fusionAbInsel: 2,
+  fusionAnteil: 0.22,
+  fusionPreis: [5, 8] as const,
+  /** Chance, dass eine angebotene Fusion einer eigenen gleicht (zum Mergen) */
+  fusionEigene: 0.5,
   /** Antriebe, die die Simulation kann – seit Phase 4 alle 19, also sind alle 60 Waffen im Shop */
   antriebe: ['gerade', 'faecher', 'bogen', 'zielsuchend', 'zielbogen', 'orbit', 'abprall', 'bumerang', 'spirale', 'strahl',
     'kegel', 'regen', 'huepfend', 'ablegen', 'turm', 'schwarm', 'rollen', 'teleport', 'nahkampf'] as readonly string[]
 };
+
+/**
+ * Höchste Seltenheit nach Fortschritt (Insel-Nummer 0–6 in der Reihenfolge der Reise):
+ * Inseln 1–2 nur die ersten zwei Klassen, 3–4 bis zur dritten, ab Insel 5 alles.
+ */
+export function seltenheitsDeckel(inselNr: number): 2 | 3 | 4 {
+  return inselNr <= 1 ? 2 : inselNr <= 3 ? 3 : 4;
+}
 
 /**
  * Wahrscheinlichkeit für Seltenheit/Stufe 2–4 abhängig von Welle und Glück.
@@ -157,7 +176,7 @@ export function rollSeltenheit(welle: number, glueck: number, r: number): 1 | 2 
 
 export const ELITE = {
   /** Chance pro Spawn, dass ein Elite-Gegner kommt */
-  chance: (w: number) => (w < 5 ? 0 : Math.min(0.12, 0.025 + 0.006 * (w - 5))),
+  chance: (w: number) => (w < 5 ? 0 : Math.min(0.18, 0.025 + 0.008 * (w - 5))),
   hp: 5,
   schaden: 1.5,
   groesse: 1.4,

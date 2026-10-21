@@ -27,7 +27,7 @@ export function stepWaves(w: World): void {
       spawnEnemy(w, warn.type, warn.x, warn.z, warn.elite);
     }
   }
-  w.spawnAcc += WELLEN.spawnRate(w.wave) * (w.isBossWave ? BOSS.spawnAnteil : 1) * w.koop(KOOP.spawnProSpieler) * w.gw.spawn * DT;
+  w.spawnAcc += WELLEN.spawnRate(w.wave) * WELLEN.masse(w.wave) * (w.isBossWave ? BOSS.spawnAnteil : 1) * w.koop(KOOP.spawnProSpieler) * w.gw.spawn * DT;
   while (w.spawnAcc >= 1) {
     w.spawnAcc -= 1;
     trySpawn(w);
@@ -151,8 +151,9 @@ export function spawnEnemy(w: World, type: number, x: number, z: number, elite =
     e.panzer = def.verhalten !== 'boss' && w.rng.chance(PANZER.chance(w.wave));
     e.eliteT = ELITE_ANGRIFF.intervall * (0.5 + w.rng.next() * 0.5);
     e.r = def.radius * (elite ? ELITE.groesse : 1);
-    e.maxHp = e.hp = def.hp * WELLEN.hpFaktor(w.wave) * (elite ? ELITE.hp : 1) * w.koop(KOOP.hpProSpieler) * w.gw.hp;
-    e.dmgMul = WELLEN.schadenFaktor(w.wave) * (elite ? ELITE.schaden : 1) * w.gw.schaden;
+    const masse = WELLEN.masse(w.wave);
+    e.maxHp = e.hp = def.hp * WELLEN.hpFaktor(w.wave) / masse * (elite ? ELITE.hp : 1) * w.koop(KOOP.hpProSpieler) * w.gw.hp;
+    e.dmgMul = WELLEN.schadenFaktor(w.wave) / Math.sqrt(masse) * (elite ? ELITE.schaden : 1) * w.gw.schaden;
     e.slow = e.stun = e.burnT = e.burnDps = e.poisonT = e.poisonDps = e.dotClock = 0;
     e.lucky = false;
     e.bossPhase = 1; e.summonCd = 0;
@@ -172,6 +173,8 @@ export function spawnEnemy(w: World, type: number, x: number, z: number, elite =
   }
   return null;
 }
+
+const FLOW = { x: 0, z: 0 };
 
 export function stepEnemies(w: World): void {
   for (const e of w.enemies) {
@@ -255,6 +258,10 @@ export function stepEnemies(w: World): void {
     }
     const def = e.def;
     let mx = 0, mz = 0;
+    // Laufrichtung: direkt, wenn freie Sicht – sonst dem Flow-Field um Hindernisse herum
+    let gx = dx, gz = dz;
+    const sicht = !p || d < 1.5 || w.flow.sicht(e.x, e.z, p.x, p.z);
+    if (!sicht && w.flow.richtung(e.x, e.z, FLOW)) { gx = FLOW.x; gz = FLOW.z; }
 
     if (e.state === EnemyState.Jump) {
       // Kröten-Sprung: feste Flugbahn, landet mit Knall
@@ -275,13 +282,41 @@ export function stepEnemies(w: World): void {
     if (p) {
       switch (def.verhalten) {
         case 'jagen':
-          mx = dx * def.tempo; mz = dz * def.tempo;
+          if (def.taktik === 'lauern') {
+            // Lauerer: schleicht, wartet hinter Deckung und stürmt los, sobald man nah kommt
+            e.cd -= DT;
+            if (e.state === EnemyState.Walk) {
+              const k = !sicht && d < 9 ? 0.15 : 0.5;
+              mx = gx * def.tempo * k; mz = gz * def.tempo * k;
+              if (sicht && d < 5 && e.cd <= 0) {
+                e.state = EnemyState.Windup; e.stateT = 0.4;
+                w.events.push({ type: 'windup', enemy: def.id, x: e.x, z: e.z });
+              }
+            } else if (e.state === EnemyState.Windup) {
+              e.stateT -= DT;
+              if (e.stateT <= 0) { e.state = CHARGE; e.stateT = 0.8; e.cdx = dx; e.cdz = dz; }
+            } else if (e.state === CHARGE) {
+              e.stateT -= DT;
+              mx = e.cdx * def.tempo * 3; mz = e.cdz * def.tempo * 3;
+              if (e.stateT <= 0) { e.state = EnemyState.Walk; e.cd = 2.5; e.cdx = e.cdz = 0; }
+            }
+          } else if (def.taktik === 'umzingeln' && sicht && d > 2.2 && (e.id & 1)) {
+            // Umzingler: läuft dorthin, wo der Spieler gleich ist, und etwas seitlich davon
+            const lead = Math.min(1.2, d / def.tempo * 0.5);
+            let tx = p.x + p.vx * lead - e.x + dz * e.strafe * 1.4, tz = p.z + p.vz * lead - e.z - dx * e.strafe * 1.4;
+            const l = Math.hypot(tx, tz) || 1;
+            tx /= l; tz /= l;
+            if (w.flow.sicht(e.x, e.z, e.x + tx * 2, e.z + tz * 2)) { mx = tx * def.tempo; mz = tz * def.tempo; }
+            else { mx = gx * def.tempo; mz = gz * def.tempo; }
+          } else {
+            mx = gx * def.tempo; mz = gz * def.tempo;
+          }
           break;
 
         case 'kamikaze':
           e.cd -= DT;
           if (e.state === EnemyState.Walk) {
-            mx = dx * def.tempo; mz = dz * def.tempo;
+            mx = gx * def.tempo; mz = gz * def.tempo;
             if (d < (def.sprungDistanz ?? 2.5) && e.cd <= 0) {
               e.state = EnemyState.Windup;
               e.stateT = 0.55;
@@ -304,10 +339,11 @@ export function stepEnemies(w: World): void {
           e.cd -= DT;
           const want = def.wunschAbstand ?? 5;
           if (e.state === EnemyState.Walk) {
-            if (d > want + 0.8) { mx = dx * def.tempo; mz = dz * def.tempo; }
+            // ohne freie Schusslinie: um die Deckung herumlaufen, statt in die Säule zu schießen
+            if (d > want + 0.8 || !sicht) { mx = gx * def.tempo; mz = gz * def.tempo; }
             else if (d < want - 0.8) { mx = -dx * def.tempo; mz = -dz * def.tempo; }
             else { mx = -dz * e.strafe * def.tempo * 0.5; mz = dx * e.strafe * def.tempo * 0.5; }
-            if (e.cd <= 0 && d < want + 3) {
+            if (e.cd <= 0 && d < want + 3 && sicht) {
               e.state = EnemyState.Aim;
               e.stateT = 0.45;
               w.events.push({ type: 'windup', enemy: def.id, x: e.x, z: e.z });
@@ -343,7 +379,7 @@ export function stepEnemies(w: World): void {
           // Scharren/Anlauf (telegrafiert), dann geradeaus losstürmen
           e.cd -= DT;
           if (e.state === EnemyState.Walk) {
-            mx = dx * def.tempo; mz = dz * def.tempo;
+            mx = gx * def.tempo; mz = gz * def.tempo;
             if (d < (def.ansturmAbstand ?? 5) && e.cd <= 0) {
               e.state = EnemyState.Windup; e.stateT = def.verhalten === 'rutscher' ? 0.6 : 0.45;
               w.events.push({ type: 'windup', enemy: def.id, x: e.x, z: e.z });
@@ -368,7 +404,7 @@ export function stepEnemies(w: World): void {
         case 'heiler': case 'beschwoerer': case 'minenleger': {
           // Halten Abstand und wirken aus der Distanz
           const want = def.wunschAbstand ?? 5;
-          if (d > want + 0.8) { mx = dx * def.tempo; mz = dz * def.tempo; }
+          if (d > want + 0.8) { mx = gx * def.tempo; mz = gz * def.tempo; }
           else if (d < want - 0.8) { mx = -dx * def.tempo; mz = -dz * def.tempo; }
           else { mx = -dz * e.strafe * def.tempo * 0.5; mz = dx * e.strafe * def.tempo * 0.5; }
           e.cd -= DT;
@@ -389,11 +425,11 @@ export function stepEnemies(w: World): void {
         }
 
         case 'schild':
-          mx = dx * def.tempo; mz = dz * def.tempo;
+          mx = gx * def.tempo; mz = gz * def.tempo;
           break;
 
         case 'spurleger':
-          mx = dx * def.tempo; mz = dz * def.tempo;
+          mx = gx * def.tempo; mz = gz * def.tempo;
           e.cd -= DT;
           if (e.cd <= 0) {
             e.cd = def.spurIntervall ?? 1;

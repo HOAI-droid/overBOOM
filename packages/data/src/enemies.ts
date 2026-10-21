@@ -110,6 +110,8 @@ export interface GegnerDef {
   ringGeschoss?: string;
   /** Größe des Modells (Bosse) */
   groesse?: number;
+  /** Taktik beim Laufen: umzingeln (schneidet den Weg ab), lauern (wartet in Deckung, stürmt dann los) */
+  taktik?: 'umzingeln' | 'lauern';
 }
 
 export const GEGNER: GegnerDef[] = [
@@ -121,7 +123,7 @@ export const GEGNER: GegnerDef[] = [
     text: 'Grüner Kobold mit verbeultem Kochtopf als Helm. Grummelt beim Laufen und kommt nie allein.',
     verhalten: 'jagen',
     hp: 16, tempo: 2.6, radius: 0.32, beruehrSchaden: 8, kristalle: 1,
-    abWelle: 1, gewicht: 6, masse: 1, rudel: 3
+    abWelle: 1, gewicht: 6, masse: 1, rudel: 3, taktik: 'umzingeln'
   },
   {
     id: 'bombenkroete',
@@ -215,7 +217,7 @@ export const GEGNER: GegnerDef[] = [
     text: 'Ein grimmiger Glibberklops. Platzt man ihn, werden es zwei kleine. Die sind noch grimmiger.',
     verhalten: 'jagen',
     hp: 30, tempo: 1.7, radius: 0.4, beruehrSchaden: 8, kristalle: 2,
-    abWelle: 2, gewicht: 1.6, masse: 1.3, teiltSich: { in: 'schleimchen', anzahl: 2 }
+    abWelle: 2, gewicht: 1.6, masse: 1.3, teiltSich: { in: 'schleimchen', anzahl: 2 }, taktik: 'lauern'
   },
   {
     id: 'schleimchen', name: 'Schleimchen', fraktion: 'Sumpfbande',

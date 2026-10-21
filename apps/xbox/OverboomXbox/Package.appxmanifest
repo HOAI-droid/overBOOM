@@ -7,7 +7,7 @@
   IgnorableNamespaces="uap mp">
 
   <!-- Publisher muss zum Signatur-Zertifikat passen (CI: selbstsigniertes "CN=OVERBOOM Test") -->
-  <Identity Name="OVERBOOM.Spiel" Publisher="CN=OVERBOOM Test" Version="0.13.1.0" />
+  <Identity Name="OVERBOOM.Spiel" Publisher="CN=OVERBOOM Test" Version="0.14.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="6f1d7c2e-3b5a-4c8e-9d0f-2a7b4e6c1d39" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
 

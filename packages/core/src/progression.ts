@@ -141,7 +141,7 @@ function rollUpgrades(w: World, p: Player): void {
   for (let i = 0; i < LEVEL.angebote && pool.length; i++) {
     const k = Math.floor(w.shopRng.next() * pool.length);
     const u = pool.splice(k, 1)[0];
-    p.upgradeOffers.push({ id: u.id, tier: rollSeltenheit(w.wave + p.level * 0.5, p.stats.glueck, w.shopRng.next()) });
+    p.upgradeOffers.push({ id: u.id, tier: Math.min(w.seltenDeckel, rollSeltenheit(w.wave + p.level * 0.5, p.stats.glueck, w.shopRng.next())) });
   }
 }
 
@@ -154,7 +154,7 @@ function rollOffer(w: World, p: Player): Offer {
 
 function rollOfferRaw(w: World, p: Player): Offer {
   const r = w.shopRng;
-  const tier = rollSeltenheit(w.wave + 1, p.stats.glueck, r.next());
+  const tier = Math.min(w.seltenDeckel, rollSeltenheit(w.wave + 1, p.stats.glueck, r.next()));
   // Mods: etwa jedes 7. Angebot
   if (r.next() < 0.14) {
     const pool = MODS.filter((m) => m.seltenheit <= Math.max(tier, 1) + 1);
@@ -163,10 +163,16 @@ function rollOfferRaw(w: World, p: Player): Offer {
   }
   // Ausrüstung
   if (r.next() < BEUTE.shopAnteil) {
-    const a = rollAusruestung(() => r.next(), w.equipUid++, w.wave + 1, Math.min(4, tier), 0.08);
+    const a = rollAusruestung(() => r.next(), w.equipUid++, w.wave + 1, Math.min(4, tier), w.seltenDeckel < 3 ? 0 : 0.08);
     return { kind: 'ausruestung', id: a.name, tier: a.seltenheit, price: ausruestungsPreis(a, w.wave + 1), locked: false, sold: false, equip: a };
   }
   if (r.next() < SHOP.waffenAnteil) {
+    // ab Insel 3: teure, fertige Fusionswaffen (keine geheimen Rezepte)
+    if (w.inselNr >= SHOP.fusionAbInsel && !p.perk.nurExplosiv && r.next() < SHOP.fusionAnteil) {
+      const f = fusionsAngebot(w, p, tier);
+      const [lo, hi] = SHOP.fusionPreis;
+      return { kind: 'waffe', id: f.id, tier: f.tier, price: Math.round(weaponPrice(f.tier, w.wave + 1) * (lo + r.next() * (hi - lo))), locked: false, sold: false };
+    }
     // Bevorzugt Waffen, die man schon hat (zum Mergen)
     const ownable = p.weapons.filter((s) => !s.waffe.fusion);
     const own = ownable.length && r.next() < 0.35 ? ownable[Math.floor(r.next() * ownable.length)].waffe.id : '';
@@ -179,6 +185,25 @@ function rollOfferRaw(w: World, p: Player): Offer {
   if (!pool.length) pool = ITEMS.filter((it) => it.seltenheit <= tier && (!it.max || (p.items[it.id] ?? 0) < it.max));
   const it = pool[Math.floor(r.next() * pool.length)];
   return { kind: 'item', id: it.id, tier: it.seltenheit, price: itemPrice(it.id, w.wave + 1), locked: false, sold: false };
+}
+
+/** Fusion für den Shop: oft eine, die man schon hat (gleiche Stufe → mergebar), sonst eine zufällige */
+function fusionsAngebot(w: World, p: Player, tier: number): { id: string; tier: number } {
+  const r = w.shopRng;
+  const eigene = p.weapons.filter((s) => s.waffe.fusion && !s.waffe.fusion.rezept && s.tier < 5);
+  if (eigene.length && r.next() < SHOP.fusionEigene) {
+    const s = eigene[Math.floor(r.next() * eigene.length)];
+    return { id: s.waffe.id, tier: s.tier };
+  }
+  // drei Grundwaffen aus verschiedenen Gruppen, jede liefert ein Bauteil
+  for (let versuch = 0; versuch < 20; versuch++) {
+    const ids = [0, 1, 2].map(() => SHOP_WEAPONS[Math.floor(r.next() * SHOP_WEAPONS.length)]);
+    if (new Set(ids.map((id) => W[id].gruppe)).size < 3) continue;
+    const f = fusionsWaffe({ geschoss: ids[0], antrieb: ids[1], ladung: ids[2] }, ids);
+    if (f.fusion?.rezept) continue;
+    return { id: f.id, tier };
+  }
+  return { id: fusionsWaffe({ geschoss: 'pistole', antrieb: 'raketenwerfer', ladung: 'teslastab' }).id, tier };
 }
 
 function rollShop(w: World, p: Player): void {
