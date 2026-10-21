@@ -1,15 +1,42 @@
-# OVERBOOM
+<p align="center">
+  <a href="https://hoai-droid.github.io/overboom/"><img src="docs/werbung/keyart.jpg" width="720" alt="OVERBOOM – das Große Kawumm, die Inselbarone und dein Held auf einer schwebenden Insel"></a>
+</p>
 
-**Arena-Chaos mit Waffen-Fusion – allein oder mit bis zu vier Leuten.**
+<h3 align="center">Arena-Chaos mit Waffen-Fusion – allein oder mit bis zu vier Leuten.</h3>
+
+<p align="center">
+  <a href="https://hoai-droid.github.io/overboom/"><img src="https://img.shields.io/badge/%E2%96%B6%20JETZT%20SPIELEN-im%20Browser%2C%20kostenlos-ff7a1a?style=for-the-badge" alt="Jetzt im Browser spielen"></a>
+  <a href="#downloads"><img src="https://img.shields.io/badge/%E2%AC%87%20APPS-Windows%20%C2%B7%20Mac%20%C2%B7%20Linux%20%C2%B7%20Android%20%C2%B7%20iOS%20%C2%B7%20Xbox-3de8ff?style=for-the-badge" alt="Apps herunterladen"></a>
+</p>
+<p align="center">
+  <a href="https://github.com/HOAI-droid/overboom/stargazers"><img src="https://img.shields.io/github/stars/HOAI-droid/overboom?style=for-the-badge&logo=github&label=%E2%AD%90%20Sterne&color=ffd23f" alt="Sterne auf GitHub"></a>
+  <a href="https://github.com/HOAI-droid/overboom/releases/latest"><img src="https://img.shields.io/github/v/release/HOAI-droid/overboom?style=for-the-badge&label=Version&color=ff3df0" alt="Neueste Version"></a>
+</p>
+
+<p align="center"><b>Gefällt dir OVERBOOM? Gib dem Projekt oben rechts einen ⭐ – so finden es mehr Leute, und es motiviert enorm!</b></p>
+
+---
+
+<img src="docs/werbung/keyart-hochformat.jpg" align="right" width="300" alt="OVERBOOM im Hochformat">
 
 OVERBOOM ist ein actiongeladenes Arena-Roguelite in knalliger 3D-Voxel-Pixel-Optik. Du läufst über schwebende Inseln, deine Waffen feuern von selbst, und nach jeder Welle rüstest du im Shop auf. Aus zwei oder drei Waffen schmiedest du am **Fusions-Amboss** neue: Geschoss, Antrieb und Ladung lassen sich frei kombinieren – über 16.000 Möglichkeiten, von der *Gackernden Blitzrakete* bis zum *Rollenden Kükenbumerang*. Gegner sind grimmig, aber knuffig, Explosionen lösen Kettenreaktionen aus, und wenn die Overkill-Leiste voll ist, heißt es: **OVERBOOM!**
 
-<p align="center">
-  <img src="docs/werbung/kampf1.png" width="300" alt="Kampf auf einer Insel">
-  <img src="docs/werbung/kampf2.png" width="300" alt="Kettenexplosionen">
+- 🏝️ **7 schwebende Inseln**, Inselbosse, 4 Baroninnen, 3 Barone – und am Ende **das Große Kawumm**
+- 🔨 **Waffen-Fusion** mit über 16.000 Kombinationen und 40 geheimen Rezepten
+- 💥 **Kettenexplosionen** aus glühenden Voxeln
+- 👥 **Koop für 1–4 Spieler**, jeder am eigenen Gerät
+- 🎮 Touch, Tastatur und Controller · 🌍 Deutsch, English, Español, Français
+
+<p>
+  <img src="docs/werbung/kampf1.png" width="260" alt="Kampf auf einer Insel">
+  <img src="docs/werbung/kampf2.png" width="260" alt="Kettenexplosionen">
 </p>
 
-## Downloads (Version 0.13.0)
+<br clear="right">
+
+## Downloads
+
+Aktuelle Version: **0.13.0**
 
 **Sofort im Browser spielen:** <https://hoai-droid.github.io/overboom/> – am Handy über *Teilen → Zum Home-Bildschirm* (iPhone) bzw. *App installieren* (Android) wie eine App im Vollbild, solo auch offline.
 
