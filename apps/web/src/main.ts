@@ -653,7 +653,7 @@ async function start() {
 
   // ?test=1: Zustand für automatische Browser-Tests lesbar machen
   if (params.get('test') === '1') {
-    (globalThis as Record<string, unknown>).__overboom = { get world() { return world; }, get me() { return me; }, get modus() { return modus; }, renderMusik };
+    (globalThis as Record<string, unknown>).__overboom = { get world() { return world; }, get me() { return me; }, get modus() { return modus; }, get renderer() { return renderer; }, renderMusik };
   }
 
   const frame = (now: number) => {
