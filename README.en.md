@@ -19,8 +19,6 @@
 
 ---
 
-<img src="docs/werbung/keyart-hochformat.jpg" align="right" width="300" alt="OVERBOOM portrait key art">
-
 OVERBOOM is an action-packed arena roguelite in loud, colourful 3D voxel pixel art. You travel across floating islands, your weapons fire on their own, and after every wave you upgrade in the shop. At the **Fusion Anvil** you forge two or three weapons into a new one: projectile, propulsion and payload combine freely – more than 16,000 possibilities. Enemies are grumpy but cute, explosions set off chain reactions, and when the overkill bar is full, it's time for: **OVERBOOM!**
 
 - 🏝️ **7 floating islands**, island bosses, 4 baronesses, 3 barons – and finally **the Great Kaboom**
@@ -30,7 +28,9 @@ OVERBOOM is an action-packed arena roguelite in loud, colourful 3D voxel pixel a
 - 📱 Runs in the browser, on PC, Mac, Linux, Android, iPhone and Xbox
 - 🎮 Touch, keyboard and controller · 🌍 English, Deutsch, Español, Français
 
-<br clear="right">
+<p align="center">
+  <a href="https://hoai-droid.github.io/overboom/"><img src="docs/werbung/keyart-hochformat.jpg" width="380" alt="OVERBOOM portrait key art"></a>
+</p>
 
 ## Downloads
 

@@ -19,8 +19,6 @@
 
 ---
 
-<img src="docs/werbung/keyart-hochformat.jpg" align="right" width="300" alt="OVERBOOM im Hochformat">
-
 OVERBOOM ist ein actiongeladenes Arena-Roguelite in knalliger 3D-Voxel-Pixel-Optik. Du läufst über schwebende Inseln, deine Waffen feuern von selbst, und nach jeder Welle rüstest du im Shop auf. Aus zwei oder drei Waffen schmiedest du am **Fusions-Amboss** neue: Geschoss, Antrieb und Ladung lassen sich frei kombinieren – über 16.000 Möglichkeiten, von der *Gackernden Blitzrakete* bis zum *Rollenden Kükenbumerang*. Gegner sind grimmig, aber knuffig, Explosionen lösen Kettenreaktionen aus, und wenn die Overkill-Leiste voll ist, heißt es: **OVERBOOM!**
 
 - 🏝️ **7 schwebende Inseln**, Inselbosse, 4 Baroninnen, 3 Barone – und am Ende **das Große Kawumm**
@@ -30,7 +28,9 @@ OVERBOOM ist ein actiongeladenes Arena-Roguelite in knalliger 3D-Voxel-Pixel-Opt
 - 📱 Läuft im Browser, auf PC, Mac, Linux, Android, iPhone und Xbox
 - 🎮 Touch, Tastatur und Controller · 🌍 Deutsch, English, Español, Français
 
-<br clear="right">
+<p align="center">
+  <a href="https://hoai-droid.github.io/overboom/"><img src="docs/werbung/keyart-hochformat.jpg" width="380" alt="OVERBOOM im Hochformat"></a>
+</p>
 
 ## Downloads
 
