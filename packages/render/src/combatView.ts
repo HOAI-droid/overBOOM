@@ -118,7 +118,7 @@ export class CombatView {
       const m = ENEMY_MODELS[g.id] ?? ENEMY_MODELS.grummelbold;
       // feines Modell ab Grafikstufe „Ultra“, sonst das kleine
       const hd = DETAIL.hd ? HD_GEGNER[g.id] : undefined;
-      const inst = hd ? new VoxelInstances(hd.vox(), hd.size, m.cap, { jitter: 0.04 }) : new VoxelInstances(m.vox(), m.size, m.cap, { jitter: 0.06 });
+      const inst = hd ? new VoxelInstances(hd.vox(), hd.size, m.cap, { jitter: 0, greedy: true, schatten: { vox: m.vox(), size: m.size } }) : new VoxelInstances(m.vox(), m.size, m.cap, { jitter: 0.06 });
       this.group.add(inst.group);
       return inst;
     });

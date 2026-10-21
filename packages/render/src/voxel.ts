@@ -21,6 +21,8 @@ export interface VoxelBuildOptions {
   seed?: number;
   /** Nur diese Flächen erzeugen (z. B. ohne Unterseite) */
   skipBottom?: boolean;
+  /** gleichfarbige Nachbarflächen zu Rechtecken zusammenfassen (weniger Dreiecke, gleiches Bild) */
+  greedy?: boolean;
 }
 
 export interface VoxelGeometry {
@@ -39,12 +41,18 @@ export function buildVoxels(vox: Vox[], size: number, opt: VoxelBuildOptions = {
   for (const v of vox) occ.add(v[0] + ',' + v[1] + ',' + v[2]);
 
   const buf = [0, 1].map(() => ({ pos: [] as number[], nor: [] as number[], col: [] as number[], idx: [] as number[] }));
-  for (const v of vox) {
-    const [x, y, z, color, glow] = v;
-    const b = buf[glow ? 1 : 0];
+  const farbe = (v: Vox): [number, number, number] => {
+    const [x, y, z, color] = v;
     tmp.set(color);
     const f = jitter ? 1 + (hash2(x * 7 + y * 13, z * 11 + y, seed) - 0.5) * 2 * jitter : 1;
-    const r = Math.min(1, tmp.r * f), g = Math.min(1, tmp.g * f), bl = Math.min(1, tmp.b * f);
+    return [Math.min(1, tmp.r * f), Math.min(1, tmp.g * f), Math.min(1, tmp.b * f)];
+  };
+  if (opt.greedy ?? jitter === 0) {
+    buildGreedy(vox, occ, farbe, buf, size, ox, oy, oz, !!opt.skipBottom);
+  } else for (const v of vox) {
+    const [x, y, z, , glow] = v;
+    const b = buf[glow ? 1 : 0];
+    const [r, g, bl] = farbe(v);
     for (const face of FACES) {
       if (opt.skipBottom && face.n[1] === -1) continue;
       if (occ.has(x + face.n[0] + ',' + (y + face.n[1]) + ',' + (z + face.n[2]))) continue;
@@ -68,6 +76,54 @@ export function buildVoxels(vox: Vox[], size: number, opt: VoxelBuildOptions = {
     return geo;
   };
   return { solid: make(buf[0]), glow: make(buf[1]) };
+}
+
+type Puffer = { pos: number[]; nor: number[]; col: number[]; idx: number[] };
+
+/**
+ * Greedy-Meshing: pro Richtung und Ebene werden sichtbare Flächen gleicher Farbe
+ * (und gleichen Leuchtens) zu möglichst großen Rechtecken zusammengefasst.
+ */
+function buildGreedy(vox: Vox[], occ: Set<string>, farbe: (v: Vox) => [number, number, number], buf: Puffer[],
+  size: number, ox: number, oy: number, oz: number, skipBottom: boolean): void {
+  const o = [ox, oy, oz];
+  const cell = [0, 0, 0];
+  for (const face of FACES) {
+    if (skipBottom && face.n[1] === -1) continue;
+    const ax = face.n[0] ? 0 : face.n[1] ? 1 : 2, u = (ax + 1) % 3, w = (ax + 2) % 3;
+    // Ebene → (u,w) → Farbschlüssel + Daten
+    const ebenen = new Map<number, Map<string, { k: string; c: [number, number, number]; g: number }>>();
+    for (const v of vox) {
+      if (occ.has(v[0] + face.n[0] + ',' + (v[1] + face.n[1]) + ',' + (v[2] + face.n[2]))) continue;
+      const c = farbe(v), g = v[4] ? 1 : 0;
+      let e = ebenen.get(v[ax]);
+      if (!e) ebenen.set(v[ax], e = new Map());
+      e.set(v[u] + ',' + v[w], { k: c.join(',') + '|' + g, c, g });
+    }
+    for (const [ebene, e] of ebenen) {
+      const fertig = new Set<string>();
+      const zellen = [...e.keys()].map((k) => k.split(',').map(Number)).sort((p, q) => p[1] - q[1] || p[0] - q[0]);
+      for (const [a, b] of zellen) {
+        const k0 = a + ',' + b;
+        if (fertig.has(k0)) continue;
+        const d = e.get(k0)!;
+        const passt = (i: number, j: number) => { const k = i + ',' + j; return !fertig.has(k) && e.get(k)?.k === d.k; };
+        let bu = 1;
+        while (passt(a + bu, b)) bu++;
+        let bw = 1;
+        hoch: for (;;) { for (let i = 0; i < bu; i++) if (!passt(a + i, b + bw)) break hoch; bw++; }
+        for (let i = 0; i < bu; i++) for (let j = 0; j < bw; j++) fertig.add((a + i) + ',' + (b + j));
+        const p = buf[d.g], base = p.pos.length / 3;
+        for (const c of face.c) {
+          cell[ax] = ebene + c[ax]; cell[u] = a + c[u] * bu; cell[w] = b + c[w] * bw;
+          p.pos.push((cell[0] - o[0]) * size, (cell[1] - o[1]) * size, (cell[2] - o[2]) * size);
+          p.nor.push(face.n[0], face.n[1], face.n[2]);
+          p.col.push(d.c[0], d.c[1], d.c[2]);
+        }
+        p.idx.push(base, base + 1, base + 2, base + 2, base + 1, base + 3);
+      }
+    }
+  }
 }
 
 export const solidMaterial = new THREE.MeshLambertMaterial({ vertexColors: true });

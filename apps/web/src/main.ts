@@ -109,7 +109,7 @@ async function start() {
   const debugStart = giveDebug();
   let renderer: GameRenderer;
   try {
-    renderer = new GameRenderer(canvas, world, { internalShort, shadows: params.get('shadows') !== '0', shake: einst.shake });
+    renderer = new GameRenderer(canvas, world, { internalShort, shadows: params.get('shadows') !== '0', shake: einst.shake * 0.5 });
   } catch (e) {
     fail(t('WebGL konnte nicht gestartet werden. Bitte einen aktuellen Browser verwenden.'));
     throw e;
@@ -218,12 +218,13 @@ async function start() {
   const applyEinstellungen = (speichern: boolean) => {
     audio.setLautstaerke({ gesamt: einst.gesamt, effekte: einst.effekte, musik: einst.musik });
     audio.setMusikStil(einst.musikStil);
-    renderer.setShake(einst.shake);
+    // Effekt-Regler: 100 % = halbe Stärke, 200 % = volle Stärke
+    renderer.setShake(einst.shake * 0.5);
     const q = QUALI[qualiStufe()];
-    FX.blitze = einst.blitze;
-    FX.dichte = Math.min(einst.partikel, q.partikel);
+    FX.blitze = einst.blitze * 0.5;
+    FX.dichte = Math.min(einst.partikel * 0.5, q.partikel);
     FX.farbenblind = einst.farbenblind;
-    hud.blitze = einst.blitze;
+    hud.blitze = einst.blitze * 0.5;
     damage.enabled = einst.zahlen;
     if (!params.has('res')) renderer.setResolution(q.res);
     // feine Modelle ab „ultra" (zum Vergleich: ?modelle=klein | fein)

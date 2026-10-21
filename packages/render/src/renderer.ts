@@ -55,6 +55,8 @@ export class GameRenderer {
   private rngState = 12345;
   private clock = 0;
   private lastStop = -1;
+  /** Gewöhnung ans Wackeln: steigt mit jeder Explosion, klingt in ~1 s ab (Dauerfeuer wackelt kaum) */
+  private unruhe = 0;
   private cssW = 1;
   private cssH = 1;
   private offX = 0;
@@ -125,6 +127,8 @@ export class GameRenderer {
     this.sun.shadow.mapSize.set(1024, 1024);
     const sc = this.sun.shadow.camera;
     sc.left = -13; sc.right = 13; sc.top = 13; sc.bottom = -13; sc.near = 0.5; sc.far = 60;
+    // Ebene 1: unsichtbare Schatten-Stellvertreter (kleine Modelle für die feinen Gegner)
+    sc.layers.enable(1);
     this.sun.shadow.bias = -0.0008;
     this.sun.shadow.normalBias = 0.02;
     this.scene.add(this.sun, this.sun.target);
@@ -249,12 +253,19 @@ export class GameRenderer {
   handleEvents(events: readonly SimEvent[]): number {
     const fx = this.effects;
     let stop = 0;
-    const kick = (amount: number) => { this.shake = Math.min(0.45, Math.max(this.shake, amount) + amount * 0.2); };
+    // Wackeln addiert sich kaum: der stärkste Stoß zählt, Wiederholungen nur ein wenig
+    const kick = (amount: number) => { this.shake = Math.min(0.45, Math.max(this.shake, amount) + amount * 0.05); };
+    // Hit-Stop: wichtig = Tod, Nuke, Bossphase (immer); sonst höchstens alle 0,6 s
+    const halt = (t: number, wichtig = false) => {
+      if (!wichtig && this.clock - this.lastStop < 0.6) return;
+      stop = Math.max(stop, t);
+      this.lastStop = wichtig ? -1 : this.clock;
+    };
     for (const e of events) {
       switch (e.type) {
-        case 'dash': fx.dash(e.x, e.z, e.dirX, e.dirZ); this.heroes[e.player]?.punch(0.35); kick(0.08); break;
+        case 'dash': fx.dash(e.x, e.z, e.dirX, e.dirZ); this.heroes[e.player]?.punch(0.35); kick(0.03); break;
         case 'step': fx.step(e.x, e.z); break;
-        case 'bump': fx.bump(e.x, e.z); this.heroes[e.player]?.punch(0.5); kick(0.2); break;
+        case 'bump': fx.bump(e.x, e.z); this.heroes[e.player]?.punch(0.5); kick(0.1); break;
         case 'fire': {
           if (e.slot < 0) { fx.muzzle(e.x, 0.9, e.z, e.dirX, e.dirZ, 0xffe28a); break; }
           const m = this.combat.muzzle(e.player, e.slot, this.tmpV);
@@ -268,35 +279,39 @@ export class GameRenderer {
         case 'explosion': {
           const wave = e.source === 'welle';
           fx.explosion(e.x, e.z, e.r, wave, e.chain);
-          kick((0.1 + e.r * 0.09) * (wave ? 0.5 : 1));
-          if (!wave) stop = Math.max(stop, e.chain >= 2 ? 0.075 : 0.05);
+          // kleine Explosionen wackeln kaum, große spürbar; viele hintereinander gewöhnen ab
+          const gross = Math.max(0, e.r - 1.5);
+          kick((0.03 + gross * 0.07) * (wave ? 0.4 : 1) / (1 + this.unruhe));
+          this.unruhe = Math.min(6, this.unruhe + (wave ? 0.2 : 0.5));
+          // Hit-Stop nur bei großen Momenten (lange Kette oder sehr großer Knall)
+          if (!wave && (e.chain >= 3 || e.r >= 4)) halt(0.06);
           break;
         }
-        case 'zap': fx.zap(e.pts); kick(0.05); break;
+        case 'zap': fx.zap(e.pts); kick(0.02); break;
         case 'spark': fx.spark(e.x, e.y, e.z, e.hostile); break;
         case 'spawn': fx.spawn(e.x, e.z); break;
         case 'windup': fx.windup(e.x, e.z, e.enemy === 'toastomat' ? 0xff2a4a : 0xff7a1a); break;
         case 'enemyShot': fx.muzzle(e.x, 0.8, e.z, 0, 0, 0xff7a1a); break;
         case 'pickup': fx.pickup(e.x, e.z); break;
-        case 'hurt': fx.hurt(e.x, e.z); this.heroes[e.player]?.punch(0.6); kick(0.3); stop = Math.max(stop, 0.11); this.lastStop = -1; break;
-        case 'death': fx.explosion(e.x, e.z, 2.4); kick(0.45); stop = 0.2; this.lastStop = -1; break;
-        case 'waveClear': kick(0.15); break;
+        case 'hurt': fx.hurt(e.x, e.z); this.heroes[e.player]?.punch(0.6); kick(0.25); halt(0.08); break;
+        case 'death': fx.explosion(e.x, e.z, 2.4); kick(0.45); halt(0.2, true); break;
+        case 'waveClear': kick(0.1); break;
         case 'levelUp': fx.levelUp(e.x, e.z); break;
         case 'enemyHeal': fx.enemyHeal(e.x, e.z, e.r); break;
         case 'block': fx.block(e.x, e.z); break;
         case 'split': fx.burst(e.x, e.z, ENEMY_DEBRIS.schleimi); break;
         case 'keks': fx.keks(e.x, e.z); break;
-        case 'reaction': fx.reaction(e.x, e.z, e.farbe); kick(0.08); break;
+        case 'reaction': fx.reaction(e.x, e.z, e.farbe); kick(0.04 / (1 + this.unruhe)); break;
         case 'nova': fx.reaction(e.x, e.z, e.farbe); break;
         case 'overboom': fx.nuke(e.x, e.z); kick(0.3); break;
-        case 'nuke': fx.nuke(e.x, e.z); kick(0.45); stop = Math.max(stop, 0.12); this.lastStop = -1; break;
-        case 'storm': fx.storm(e.x, e.z); kick(0.12); break;
+        case 'nuke': fx.nuke(e.x, e.z); kick(0.4); halt(0.12, true); break;
+        case 'storm': fx.storm(e.x, e.z); kick(0.08); break;
         case 'shock': if (e.phase === 'entladen') { fx.shock(this.world.arena); kick(0.15); } break;
         case 'beam': fx.beam(e.x, e.z, e.x2, e.z2, shotColor(e.geschoss)); break;
         case 'cone': fx.cone(e.x, e.z, e.dirX, e.dirZ, e.range, shotColor(e.geschoss), e.geschoss === 'flamme'); break;
-        case 'swing': fx.swing(e.x, e.z, e.dirX, e.dirZ, e.range, shotColor(e.geschoss)); kick(0.04); break;
+        case 'swing': fx.swing(e.x, e.z, e.dirX, e.dirZ, e.range, shotColor(e.geschoss)); kick(0.015); break;
         case 'teleport': fx.teleport(e.x, e.z, shotColor(e.geschoss)); break;
-        case 'kawumm': kick(0.2); break;
+        case 'kawumm': kick(0.12); break;
         case 'fusion': fx.fusion(e.x, e.z, !!e.rezept); break;
         case 'evolve': fx.fusion(e.x, e.z, true); break;
         case 'star': fx.levelUp(e.x, e.z); break;
@@ -305,13 +320,8 @@ export class GameRenderer {
         case 'bossSpawn': fx.explosion(e.x, e.z, 2.5, true); kick(0.45); break;
         case 'telegraph': fx.telegraph(e.x, e.z, e.r, e.t, e.art); break;
         case 'arenaBricht': kick(0.8); break;
-        case 'bossPhase': fx.explosion(e.x, e.z, 2, true); kick(0.35); stop = Math.max(stop, 0.15); this.lastStop = -1; break;
+        case 'bossPhase': fx.explosion(e.x, e.z, 2, true); kick(0.35); halt(0.15, true); break;
       }
-    }
-    // Hit-Stop nicht im Dauerfeuer: höchstens alle 0,3 s
-    if (stop > 0) {
-      if (this.clock - this.lastStop < 0.3) return 0;
-      this.lastStop = this.clock;
     }
     return stop;
   }
@@ -394,6 +404,7 @@ export class GameRenderer {
     }
     this.clock = time;
     this.shake *= Math.pow(0.002, dt);
+    this.unruhe *= Math.pow(0.15, dt);
     const amp = this.shake * this.opt.shake;
     const sx = (this.rnd() - 0.5) * amp, sz = (this.rnd() - 0.5) * amp;
     const target = new THREE.Vector3(this.camTarget.x + sx, 0, this.camTarget.z + sz);

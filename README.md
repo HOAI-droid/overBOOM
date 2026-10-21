@@ -34,7 +34,7 @@ OVERBOOM ist ein actiongeladenes Arena-Roguelite in knalliger 3D-Voxel-Pixel-Opt
 
 ## Downloads
 
-Aktuelle Version: **0.13.0**
+Aktuelle Version: **0.13.1**
 
 **Sofort im Browser spielen:** <https://hoai-droid.github.io/overboom/> – am Handy über *Teilen → Zum Home-Bildschirm* (iPhone) bzw. *App installieren* (Android) wie eine App im Vollbild, solo auch offline.
 
@@ -126,6 +126,12 @@ Phase 10: Koop über verschiedene Netze (Mobilfunk) testen, Signaturen und Store
 **Getestet auf echten Geräten:** Android-Handys, iPhone (Simulator), Xbox Series X|S, PC/Mac im Browser; Koop zwischen Geräten im selben WLAN.
 
 ## Versionsgeschichte
+
+### Version 0.13.1 – ruhiger und flüssiger
+- **Wackeln dosiert:** Stärke hängt von der Explosionsgröße ab, Gewöhnung bei vielen Explosionen hintereinander (`unruhe` in `renderer.ts`), Stöße addieren sich kaum noch.
+- **Hit-Stop nur bei großen Momenten** (Kette ab 3, Riesen-Explosion, Treffer am Helden mit 0,6 s Pause, Tod, Nuke, Bossphase). Vorher bremste fast jede Explosion das Spiel um ca. 14 % und ließ es ruckeln.
+- **Regler 0–200 %** für Wackeln, Lichtblitze und Partikel; 100 % = halbe Stärke von früher. Alte gespeicherte Werte werden umgerechnet (`skala` in den Einstellungen).
+- **Greedy-Meshing** (`greedy` in `buildVoxels`) für feine Modelle und einfarbige Kleinteile, ohne Helligkeitsrauschen; Schatten der feinen Gegner kommen von den kleinen Modellen (unsichtbar auf Ebene 1). Bei 140 Gegnern auf „Ultra“ ca. 0,5 statt 1,9 Mio. Dreiecke pro Bild.
 
 ### Version 0.13.0 – feiner und lauter
 - **Feine Modelle** für alle Helden, Gegner und Bosse (`render/src/hd/`, halbe Voxelgröße). Sie werden ab Grafikstufe „Ultra“ verwendet (`renderer.setDetail()`, Vergleich mit `?modelle=klein|fein`). „Automatisch“ startet auf PC/Xbox mit „Ultra“.

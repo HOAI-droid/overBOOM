@@ -5,12 +5,14 @@ export interface Einstellungen {
   gesamt: number;
   effekte: number;
   musik: number;
-  /** Screen-Shake 0–2 */
+  /** Screen-Shake 0–2 (1 = Standard = halbe Stärke von früher, 2 = alte volle Stärke) */
   shake: number;
-  /** Blitze/Lichtblitze 0–1 (Photosensitivität) */
+  /** Blitze/Lichtblitze 0–2 (Photosensitivität, 1 = Standard) */
   blitze: number;
-  /** Partikeldichte 0,25–1 */
+  /** Partikeldichte 0–2 (1 = Standard) */
   partikel: number;
+  /** Version der Effekt-Skala (2 ab v0.13.1; ältere Werte werden umgerechnet) */
+  skala: number;
   zahlen: boolean;
   vibration: boolean;
   /** farbenblind-freundliche Gefahren-Markierungen */
@@ -21,7 +23,7 @@ export interface Einstellungen {
 }
 
 export const STANDARD: Einstellungen = {
-  gesamt: 0.8, effekte: 0.8, musik: 0.5, shake: 1, blitze: 1, partikel: 1,
+  gesamt: 0.8, effekte: 0.8, musik: 0.5, shake: 1, blitze: 1, partikel: 1, skala: 2,
   zahlen: true, vibration: true, farbenblind: false, qualitaet: 'auto', musikStil: 'rock'
 };
 
@@ -31,6 +33,15 @@ export function ladeEinstellungen(json: string | null): Einstellungen {
     const d = JSON.parse(json ?? '{}') as Partial<Einstellungen>;
     for (const k of Object.keys(STANDARD) as (keyof Einstellungen)[]) {
       if (d[k] !== undefined && typeof d[k] === typeof STANDARD[k]) (e as Record<string, unknown>)[k] = d[k];
+    }
+    // alte Skala (bis v0.13.0): 1 war volle Stärke. Standardwerte werden zum neuen Standard,
+    // eigene Werte behalten ihre Stärke (neue Skala = doppelt so groß).
+    if (d.skala !== 2) {
+      for (const k of ['shake', 'blitze', 'partikel'] as const) {
+        if (typeof d[k] === 'number' && d[k] !== 1) e[k] = Math.min(2, Math.max(0, d[k] * 2));
+        else e[k] = 1;
+      }
+      e.skala = 2;
     }
   } catch { /* Standard */ }
   // nur bekannte Werte übernehmen (z. B. nach Umbenennungen)
@@ -78,8 +89,8 @@ export function einstellungenHtml(e: Einstellungen, info: string): string {
       <h3 class="ob-h3">${t('Barrierefreiheit')}</h3>
       <div class="ob-setgrid">
         ${slider('shake', t('Bildschirm-Wackeln'), e.shake, 0, 2, 0.1)}
-        ${slider('blitze', t('Lichtblitze'), e.blitze, 0, 1, 0.05)}
-        ${slider('partikel', t('Partikel'), e.partikel, 0.25, 1, 0.05)}
+        ${slider('blitze', t('Lichtblitze'), e.blitze, 0, 2, 0.1)}
+        ${slider('partikel', t('Partikel'), e.partikel, 0, 2, 0.1)}
         ${toggle('zahlen', t('Schadenszahlen'), e.zahlen)}
         ${toggle('vibration', t('Vibration'), e.vibration)}
         ${toggle('farbenblind', t('Farbenblind-Modus'), e.farbenblind, t('Gefahren mit Mustern statt nur Farben'))}

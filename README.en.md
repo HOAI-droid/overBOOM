@@ -34,7 +34,7 @@ OVERBOOM is an action-packed arena roguelite in loud, colourful 3D voxel pixel a
 
 ## Downloads
 
-Current version: **0.13.0**
+Current version: **0.13.1**
 
 **Play instantly in your browser:** <https://hoai-droid.github.io/overboom/> – on your phone use *Share → Add to Home Screen* (iPhone) or *Install app* (Android) to play full screen like an app; solo also works offline.
 
@@ -115,6 +115,12 @@ npm run build:xbox     # copy web build into the Xbox app
 ```
 
 ## What's new
+
+### 0.13.1 – calmer and smoother
+- Much gentler screen shake: small explosions barely shake, many in a row no longer build up.
+- The short hit pause now only happens at big moments, so the game no longer feels slower and choppy during heavy fighting.
+- Sliders for shake, light flashes and particles from 0 % to 200 % (100 % is the new, half-strength default; your own settings carry over).
+- Fine models now need far fewer triangles and cast their shadows from the simple models: about a third of the GPU work in full waves on “Ultra”.
 
 ### 0.13.0 – finer and louder
 - **Finely detailed models** for all heroes, enemies and bosses from graphics level “Ultra”. On PC and Xbox, “Auto” now starts at “Ultra”.
