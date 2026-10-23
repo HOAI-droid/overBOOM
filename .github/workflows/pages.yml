@@ -1,4 +1,4 @@
-# Browser-Version auf GitHub Pages: https://hoai-droid.github.io/overboom/
+# Browser-Version auf GitHub Pages: https://hoai-droid.github.io/overBOOM/
 # Jeder Push auf main veröffentlicht den aktuellen Web-Build (installierbar als Web-App, solo offline spielbar).
 # Einmalig nötig: Repo → Settings → Pages → Source: „GitHub Actions“.
 name: Browser-Version (GitHub Pages)

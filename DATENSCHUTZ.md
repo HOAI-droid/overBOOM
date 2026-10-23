@@ -8,7 +8,7 @@ Stand: Oktober 2026 · gilt für alle Versionen (Browser, Windows, Mac, Linux, A
 
 ## Verantwortlich
 OVERBOOM ist ein privates, nicht-kommerzielles Hobbyprojekt von HOAI-droid.
-Kontakt: über die Issues des Projekts auf GitHub: <https://github.com/HOAI-droid/overboom/issues>
+Kontakt: über die Issues des Projekts auf GitHub: <https://github.com/HOAI-droid/overBOOM/issues>
 
 ## 1. Daten auf deinem Gerät
 Diese Daten werden **nur lokal auf deinem Gerät** gespeichert, im Speicher des Browsers bzw. der App (IndexedDB/localStorage):
@@ -47,7 +47,7 @@ Einige Anbieter sitzen außerhalb der EU, z. B. in den USA. Dort gilt ein andere
 Rechtsgrundlage ist Art. 6 Abs. 1 lit. b bzw. f DSGVO: Ohne diese Übertragung ist Koop technisch nicht möglich. Wer das nicht möchte, spielt solo; dann wird nichts übertragen.
 
 ## 3. Download und Browser-Version über GitHub
-Die Downloads und die Browser-Version (<https://hoai-droid.github.io/overboom/>, GitHub Pages) liegen bei GitHub (GitHub, Inc., USA). Beim Aufruf der Projektseite oder der Browser-Version und beim Herunterladen verarbeitet GitHub technische Daten wie die IP-Adresse; es gilt die [Datenschutzerklärung von GitHub](https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement). Der Entwickler erhält davon nur anonyme Download-Zahlen; die Browser-Version enthält keine Analyse- oder Tracking-Dienste. Spielstände der Browser-Version liegen nur im Speicher deines Browsers.
+Die Downloads und die Browser-Version (<https://hoai-droid.github.io/overBOOM/>, GitHub Pages) liegen bei GitHub (GitHub, Inc., USA). Beim Aufruf der Projektseite oder der Browser-Version und beim Herunterladen verarbeitet GitHub technische Daten wie die IP-Adresse; es gilt die [Datenschutzerklärung von GitHub](https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement). Der Entwickler erhält davon nur anonyme Download-Zahlen; die Browser-Version enthält keine Analyse- oder Tracking-Dienste. Spielstände der Browser-Version liegen nur im Speicher deines Browsers.
 
 ## 4. App-Berechtigungen
 - **Android/iOS:** Vibration; Teilen-Menü nur, wenn du selbst ein Kartenbild oder einen Einladungslink teilst.

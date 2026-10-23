@@ -1,18 +1,18 @@
 <p align="center"><a href="README.md">Deutsch</a> · <b>English</b></p>
 
 <p align="center">
-  <a href="https://hoai-droid.github.io/overboom/"><img src="docs/werbung/keyart.jpg" width="720" alt="OVERBOOM – the Great Kaboom, the island barons and your hero on a floating island"></a>
+  <a href="https://hoai-droid.github.io/overBOOM/"><img src="docs/werbung/keyart.jpg" width="720" alt="OVERBOOM – the Great Kaboom, the island barons and your hero on a floating island"></a>
 </p>
 
 <h3 align="center">Arena chaos with weapon fusion – solo or with up to four friends.</h3>
 
 <p align="center">
-  <a href="https://hoai-droid.github.io/overboom/"><img src="https://img.shields.io/badge/%E2%96%B6%20PLAY%20NOW-in%20your%20browser%2C%20free-ff7a1a?style=for-the-badge" alt="Play now in your browser"></a>
+  <a href="https://hoai-droid.github.io/overBOOM/"><img src="https://img.shields.io/badge/%E2%96%B6%20PLAY%20NOW-in%20your%20browser%2C%20free-ff7a1a?style=for-the-badge" alt="Play now in your browser"></a>
   <a href="#downloads"><img src="https://img.shields.io/badge/%E2%AC%87%20APPS-Windows%20%C2%B7%20Mac%20%C2%B7%20Linux%20%C2%B7%20Android%20%C2%B7%20iOS%20%C2%B7%20Xbox-3de8ff?style=for-the-badge" alt="Download the apps"></a>
 </p>
 <p align="center">
-  <a href="https://github.com/HOAI-droid/overboom/stargazers"><img src="https://img.shields.io/github/stars/HOAI-droid/overboom?style=for-the-badge&logo=github&label=%E2%AD%90%20Stars&color=ffd23f" alt="GitHub stars"></a>
-  <a href="https://github.com/HOAI-droid/overboom/releases/latest"><img src="https://img.shields.io/github/v/release/HOAI-droid/overboom?style=for-the-badge&label=Version&color=ff3df0" alt="Latest version"></a>
+  <a href="https://github.com/HOAI-droid/overBOOM/stargazers"><img src="https://img.shields.io/github/stars/HOAI-droid/overBOOM?style=for-the-badge&logo=github&label=%E2%AD%90%20Stars&color=ffd23f" alt="GitHub stars"></a>
+  <a href="https://github.com/HOAI-droid/overBOOM/releases/latest"><img src="https://img.shields.io/github/v/release/HOAI-droid/overBOOM?style=for-the-badge&label=Version&color=ff3df0" alt="Latest version"></a>
 </p>
 
 <p align="center"><b>Enjoying OVERBOOM? Give the project a ⭐ (top right) – it helps more people find it and keeps the development going!</b></p>
@@ -29,29 +29,29 @@ OVERBOOM is an action-packed arena roguelite in loud, colourful 3D voxel pixel a
 - 🎮 Touch, keyboard and controller · 🌍 English, Deutsch, Español, Français
 
 <p align="center">
-  <a href="https://hoai-droid.github.io/overboom/"><img src="docs/werbung/keyart-hochformat.jpg" width="380" alt="OVERBOOM portrait key art"></a>
+  <a href="https://hoai-droid.github.io/overBOOM/"><img src="docs/werbung/keyart-hochformat.jpg" width="380" alt="OVERBOOM portrait key art"></a>
 </p>
 
 ## Downloads
 
 Current version: **0.14.0**
 
-**Play instantly in your browser:** <https://hoai-droid.github.io/overboom/> – on your phone use *Share → Add to Home Screen* (iPhone) or *Install app* (Android) to play full screen like an app; solo also works offline.
+**Play instantly in your browser:** <https://hoai-droid.github.io/overBOOM/> – on your phone use *Share → Add to Home Screen* (iPhone) or *Install app* (Android) to play full screen like an app; solo also works offline.
 
 Or as an app – always the latest version, just click:
 
 | Platform | Download | Note |
 |---|---|---|
-| **Windows** | [Installer (.exe)](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Windows-Setup.exe) · [MSI](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Windows.msi) | Unsigned: on the SmartScreen warning click “More info” → “Run anyway” |
-| **Mac** | [App (.dmg)](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Mac.dmg) | Apple Silicon and Intel. Won't start? See [Mac: opening the app](#mac-opening-the-app) |
-| **Linux** | [AppImage](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Linux.AppImage) · [.deb](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Linux.deb) · [.rpm](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Linux.rpm) | AppImage: make executable and run |
-| **Steam Deck** | [AppImage](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-SteamDeck.AppImage) | See [Steam Deck](#steam-deck) |
-| **Android** | [App (.apk)](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Android.apk) | Open on your phone and allow “install unknown apps” |
-| **iOS** | [App (.ipa, unsigned)](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-iOS-unsigniert.ipa) | Must be signed with your own Apple account (e.g. Xcode, AltStore, Sideloadly) |
-| **Xbox Series X\|S** | [Package (.zip)](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Xbox.zip) | Developer Mode only – guide (German): [docs/xbox.md](docs/xbox.md) |
-| **Browser** | [Game as a single HTML file](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-Browser.html) | Download and open in your browser, works offline |
+| **Windows** | [Installer (.exe)](https://github.com/HOAI-droid/overBOOM/releases/latest/download/OVERBOOM-Windows-Setup.exe) · [MSI](https://github.com/HOAI-droid/overBOOM/releases/latest/download/OVERBOOM-Windows.msi) | Unsigned: on the SmartScreen warning click “More info” → “Run anyway” |
+| **Mac** | [App (.dmg)](https://github.com/HOAI-droid/overBOOM/releases/latest/download/OVERBOOM-Mac.dmg) | Apple Silicon and Intel. Won't start? See [Mac: opening the app](#mac-opening-the-app) |
+| **Linux** | [AppImage](https://github.com/HOAI-droid/overBOOM/releases/latest/download/OVERBOOM-Linux.AppImage) · [.deb](https://github.com/HOAI-droid/overBOOM/releases/latest/download/OVERBOOM-Linux.deb) · [.rpm](https://github.com/HOAI-droid/overBOOM/releases/latest/download/OVERBOOM-Linux.rpm) | AppImage: make executable and run |
+| **Steam Deck** | [AppImage](https://github.com/HOAI-droid/overBOOM/releases/latest/download/OVERBOOM-SteamDeck.AppImage) | See [Steam Deck](#steam-deck) |
+| **Android** | [App (.apk)](https://github.com/HOAI-droid/overBOOM/releases/latest/download/OVERBOOM-Android.apk) | Open on your phone and allow “install unknown apps” |
+| **iOS** | [App (.ipa, unsigned)](https://github.com/HOAI-droid/overBOOM/releases/latest/download/OVERBOOM-iOS-unsigniert.ipa) | Must be signed with your own Apple account (e.g. Xcode, AltStore, Sideloadly) |
+| **Xbox Series X\|S** | [Package (.zip)](https://github.com/HOAI-droid/overBOOM/releases/latest/download/OVERBOOM-Xbox.zip) | Developer Mode only – guide (German): [docs/xbox.md](docs/xbox.md) |
+| **Browser** | [Game as a single HTML file](https://github.com/HOAI-droid/overBOOM/releases/latest/download/OVERBOOM-Browser.html) | Download and open in your browser, works offline |
 
-All versions and changes: [Releases](https://github.com/HOAI-droid/overboom/releases)
+All versions and changes: [Releases](https://github.com/HOAI-droid/overBOOM/releases)
 
 ### Mac: opening the app
 The app is not signed by Apple. If macOS says it “can't be opened” or “is damaged”:
@@ -61,7 +61,7 @@ The app is not signed by Apple. If macOS says it “can't be opened” or “is 
 
 ### Steam Deck
 1. Switch to **Desktop Mode** (Steam button → Power → Switch to Desktop).
-2. Download the [Steam Deck file](https://github.com/HOAI-droid/overboom/releases/latest/download/OVERBOOM-SteamDeck.AppImage).
+2. Download the [Steam Deck file](https://github.com/HOAI-droid/overBOOM/releases/latest/download/OVERBOOM-SteamDeck.AppImage).
 3. Right-click the file → *Properties → Permissions* → tick **“Is executable”**.
 4. Open Steam → *Games → Add a Non-Steam Game to My Library* → pick the file.
 5. Back in Game Mode, OVERBOOM is in your library and plays with the controller.

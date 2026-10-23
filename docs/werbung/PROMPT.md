@@ -75,14 +75,14 @@ Dark violet background, orange/yellow/cyan/magenta highlights, playful and loud.
 > Kämpf dich über 7 schwebende Inseln: Inselbosse, 4 Baroninnen, 3 Barone – und am Ende das **Große Kawumm**, ein Feuerball so groß wie eine Scheune.
 > Waffen feuern von selbst, du weichst aus, sammelst Kristalle und **fusionierst Waffen** zu absurden Kombis. Allein oder im **Koop mit bis zu 4 Freunden**.
 > 🎮 PC · Mac · Linux · Android · iOS · Xbox · Browser
-> ▶️ Kostenlos spielen: https://hoai-droid.github.io/overboom/
+> ▶️ Kostenlos spielen: https://hoai-droid.github.io/overBOOM/
 
 **English**
 > 💥 **OVERBOOM 0.12 – The Great Journey!**
 > Blast your way across 7 floating islands: island bosses, 4 baronesses, 3 barons – and finally **The Great Kaboom**, a fireball the size of a barn.
 > Your weapons fire on their own – you dodge, grab crystals and **fuse weapons** into ridiculous combos. Solo or **co-op with up to 4 friends**.
 > 🎮 PC · Mac · Linux · Android · iOS · Xbox · Browser
-> ▶️ Play free: https://hoai-droid.github.io/overboom/
+> ▶️ Play free: https://hoai-droid.github.io/overBOOM/
 
 **Hashtags:** #overboom #indiegame #voxel #pixelart #roguelite #coop #gamedev #indiedev
 
