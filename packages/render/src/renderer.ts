@@ -88,6 +88,8 @@ export class GameRenderer {
   private bloom: UnrealBloomPass | null = null;
   private grade: ShaderPass | null = null;
   private godrays: GodrayPass | null = null;
+  private tiltH: ShaderPass | null = null;
+  private tiltV: ShaderPass | null = null;
   private atmo: Atmosphaere | null = null;
 
   constructor(canvas: HTMLCanvasElement, world: World, opt: RenderOptions = {}) {
@@ -182,15 +184,7 @@ export class GameRenderer {
         fragmentShader: `
           uniform sampler2D tDiffuse; uniform vec3 uTint; uniform vec2 uRes; varying vec2 vUv;
           void main(){
-            // Tilt-Shift: oben und unten leicht unscharf (Miniatur-Gefühl)
-            float d = abs(vUv.y - 0.5) * 2.0;
-            float r = smoothstep(0.45, 1.0, d) * 2.2;
-            vec2 px = r / uRes;
-            vec3 c = texture2D(tDiffuse, vUv).rgb * 0.4;
-            c += texture2D(tDiffuse, vUv + vec2(px.x, 0.0)).rgb * 0.15;
-            c += texture2D(tDiffuse, vUv - vec2(px.x, 0.0)).rgb * 0.15;
-            c += texture2D(tDiffuse, vUv + vec2(0.0, px.y)).rgb * 0.15;
-            c += texture2D(tDiffuse, vUv - vec2(0.0, px.y)).rgb * 0.15;
+            vec3 c = texture2D(tDiffuse, vUv).rgb;
             // warme Lichter, kühle Schatten, Vignette
             float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
             c = mix(c, c * uTint, smoothstep(0.3, 1.0, l) * 0.35);
@@ -202,6 +196,30 @@ export class GameRenderer {
           }`
       }));
       this.composer.addPass(this.grade);
+      // Tilt-Shift: Schärfe nur in einem Band um die Bildmitte, oben und unten weich (zwei Richtungen)
+      const tilt = (richtung: [number, number]) => new ShaderPass(new THREE.ShaderMaterial({
+        uniforms: { tDiffuse: { value: null }, uRes: { value: new THREE.Vector2(1, 1) }, uDir: { value: new THREE.Vector2(...richtung) }, uStaerke: { value: 1 } },
+        vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+        fragmentShader: `
+          uniform sampler2D tDiffuse; uniform vec2 uRes, uDir; uniform float uStaerke; varying vec2 vUv;
+          void main(){
+            float d = abs(vUv.y - 0.5) * 2.0;
+            // ab 35 % vom Zentrum beginnt die Unschärfe, am Rand bis zu 7 Pixel (bei 900p)
+            float r = smoothstep(0.35, 1.0, d) * uStaerke * uRes.y / 130.0;
+            vec2 step = uDir * r / uRes;
+            vec3 c = vec3(0.0); float ws = 0.0;
+            for (int i = -4; i <= 4; i++) {
+              float w = exp(-float(i * i) / 6.0);
+              c += texture2D(tDiffuse, vUv + step * float(i)).rgb * w; ws += w;
+            }
+            gl_FragColor = vec4(c / ws, 1.0);
+          }`
+      }));
+      this.tiltH = tilt([1, 0]); this.tiltV = tilt([0, 1]);
+      const ts = q.get('tilt');
+      for (const t of [this.tiltH, this.tiltV]) { t.enabled = ts !== '0'; if (ts) t.uniforms.uStaerke.value = Number(ts) || 1; }
+      this.composer.addPass(this.tiltH);
+      this.composer.addPass(this.tiltV);
       this.composer.addPass(new OutputPass());
     }
 
@@ -288,6 +306,8 @@ export class GameRenderer {
       this.godrays?.setSize(width * pr, height * pr);
       this.bloom?.setSize(width * pr, height * pr);
       this.grade?.uniforms.uRes.value.set(width * pr, height * pr);
+      this.tiltH?.uniforms.uRes.value.set(width * pr, height * pr);
+      this.tiltV?.uniforms.uRes.value.set(width * pr, height * pr);
     }
     this.post.mat.uniforms.uInner.value.set(this.iw, this.ih);
     this.post.mat.uniforms.uFull.value.set(this.iw + 2, this.ih + 2);
