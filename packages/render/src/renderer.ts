@@ -99,7 +99,9 @@ export class GameRenderer {
     this.combat = new CombatView(world, this.effects);
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
     this.renderer.shadowMap.enabled = this.opt.shadows;
-    this.renderer.shadowMap.type = LOOK.neu ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
+    // neuer Look: weich auslaufende Schattenränder (PCF mit Radius; ?sm=soft zum Vergleich)
+    const smArt = new URLSearchParams(location.search).get('sm');
+    this.renderer.shadowMap.type = LOOK.neu ? (smArt === 'soft' ? THREE.PCFSoftShadowMap : smArt === 'vsm' ? THREE.VSMShadowMap : THREE.PCFShadowMap) : THREE.PCFShadowMap;
     this.renderer.setClearColor('#0b0814');
     if (LOOK.neu) {
       this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -145,7 +147,8 @@ export class GameRenderer {
     this.scene.add(this.hemi);
     this.sun = new THREE.DirectionalLight('#ffe6c8', 3.2);
     this.sun.castShadow = this.opt.shadows;
-    this.sun.shadow.mapSize.set(LOOK.neu ? 2048 : 1024, LOOK.neu ? 2048 : 1024);
+    const smGr = LOOK.neu ? Number(new URLSearchParams(location.search).get('smap')) || 2048 : 1024;
+    this.sun.shadow.mapSize.set(smGr, smGr);
 
     const sc = this.sun.shadow.camera;
     sc.left = -13; sc.right = 13; sc.top = 13; sc.bottom = -13; sc.near = 0.5; sc.far = 60;
@@ -158,15 +161,18 @@ export class GameRenderer {
     this.front.castShadow = false;
     this.scene.add(this.front, this.front.target);
     if (LOOK.neu) {
-      // weiche, nicht ganz schwarze Schatten
-      this.sun.shadow.radius = 6; this.sun.shadow.intensity = 0.8; this.sun.intensity = 3.4;
-      this.hemi.intensity = 1.5; this.front.intensity = 0.4;
+      // kräftige Schatten mit weichem Rand (VSM: Radius = Weichheit)
+      this.sun.shadow.radius = Number(new URLSearchParams(location.search).get('smr')) || 7; this.sun.shadow.blurSamples = 12; this.sun.shadow.bias = -0.0006; this.sun.shadow.normalBias = 0.02;
+      this.sun.shadow.intensity = 1; this.sun.intensity = 3.6;
+      const qq = new URLSearchParams(location.search);
+      this.hemi.intensity = Number(qq.get('hemi')) || 0.9; this.front.intensity = Number(qq.get('front')) || 0.35;
+      if (qq.get('exp')) this.renderer.toneMappingExposure = Number(qq.get('exp'));
       this.atmo = new Atmosphaere();
       this.scene.add(this.atmo.group);
       this.composer = new EffectComposer(this.renderer);
       this.composer.addPass(new RenderPass(this.scene, this.camera));
       this.gtao = new GTAOPass(this.scene, this.camera, 4, 4);
-      this.gtao.blendIntensity = 0.85;
+      this.gtao.blendIntensity = 1.0;
       this.gtao.updateGtaoMaterial({ radius: 0.9, distanceExponent: 1, thickness: 1, scale: 1.2, samples: 12, distanceFallOff: 1, screenSpaceRadius: false });
       const q = new URLSearchParams(location.search);
       this.gtao.enabled = q.get('gtao') !== '0';
@@ -530,8 +536,9 @@ export class GameRenderer {
     this.offX = -dr / this.wpp; this.offY = -du / this.wpp;
     this.post.mat.uniforms.uOffset.value.set(this.offX, this.offY);
 
-    // Sonne + Schatten folgen der Kamera
-    this.sun.position.set(target.x - 7, 14, target.z - 3);
+    // Sonne + Schatten folgen der Kamera; neuer Look: flacher und seitlich, damit Schatten sichtbar fallen
+    if (LOOK.neu) this.sun.position.set(target.x + 3, 9.5, target.z - 13);
+    else this.sun.position.set(target.x - 7, 14, target.z - 3);
     this.sun.target.position.copy(target);
     // Fülllicht leicht von oben aus Kamerarichtung
     this.front.position.set(target.x + this.camDir.x * 20, target.y + 9, target.z + this.camDir.z * 20);

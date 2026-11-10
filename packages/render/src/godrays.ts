@@ -15,7 +15,9 @@ export class GodrayPass extends Pass {
   private mixQuad: FullScreenQuad;
   private rt: THREE.WebGLRenderTarget;
   /** Stärke der Strahlen (0 = aus) */
-  staerke = 0.42;
+  /** Grundstärke; die Strahlen kommen nur zeitweise (siehe setZeit) */
+  staerke = 0.3;
+  private phase = 0;
 
   constructor(private camera: THREE.OrthographicCamera, private sonne: THREE.DirectionalLight) {
     super();
@@ -66,7 +68,7 @@ export class GodrayPass extends Pass {
             vec3 w = o + dir * t;
             // Dunst in Schwaden, die langsam ziehen; unten dichter als oben
             float n = rausch(w * vec3(0.22, 0.35, 0.22) + vec3(uZeit * 0.05, 0.0, uZeit * 0.03)) * 0.6 + rausch(w * 0.7 + uZeit * 0.08) * 0.4;
-            float dichte = smoothstep(0.5, 0.9, n) * (0.4 + 0.6 * (1.0 - w.y / uHoehe));
+            float dichte = smoothstep(0.55, 0.95, n) * (0.4 + 0.6 * (1.0 - w.y / uHoehe));
             sum += licht(w) * dichte;
           }
           float l = sum / float(N);
@@ -96,11 +98,16 @@ export class GodrayPass extends Pass {
   }
 
   setSonne(c: THREE.Color): void { this.mat.uniforms.uSonne.value.copy(c); }
-  setZeit(t: number): void { this.mat.uniforms.uZeit.value = t; }
+  /** Zeit: Strahlen erscheinen etwa alle 40 s für rund 10 s und blenden weich ein und aus */
+  setZeit(t: number): void {
+    this.mat.uniforms.uZeit.value = t;
+    const k = (t % 40) / 40;
+    this.phase = k < 0.25 ? Math.sin(k / 0.25 * Math.PI) : 0;
+  }
 
   render(renderer: THREE.WebGLRenderer, writeBuffer: THREE.WebGLRenderTarget, readBuffer: THREE.WebGLRenderTarget): void {
     const sh = this.sonne.shadow;
-    if (!sh.map || this.staerke <= 0) {
+    if (!sh.map || this.staerke * this.phase <= 0.001) {
       // ohne Schattenkarte einfach durchreichen
       this.mix.uniforms.tDiffuse.value = readBuffer.texture;
       this.mix.uniforms.uStaerke.value = 0;
@@ -114,7 +121,7 @@ export class GodrayPass extends Pass {
       this.quad.render(renderer);
       this.mix.uniforms.tDiffuse.value = readBuffer.texture;
       this.mix.uniforms.tRays.value = this.rt.texture;
-      this.mix.uniforms.uStaerke.value = this.staerke;
+      this.mix.uniforms.uStaerke.value = this.staerke * this.phase;
     }
     renderer.setRenderTarget(this.renderToScreen ? null : writeBuffer);
     this.mixQuad.render(renderer);
