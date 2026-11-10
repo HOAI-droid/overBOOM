@@ -3,8 +3,10 @@ import { Tile, hash2, type Arena, type Prop } from '@overboom/core';
 import { buildVoxels, solidMaterial, voxelObject, VoxBuilder } from './voxel.ts';
 import { barrel, crystal, hayBale, rubble, torch } from './models.ts';
 import { INSELN, type Insel } from '@overboom/data';
+import { LOOK } from './atmosphaere.ts';
 
-const PX = 8; // Texturpixel pro Kachel
+/** Texturpixel pro Kachel: 8 im klassischen Look, 16 im neuen (feinere, abwechslungsreichere Böden) */
+const px = () => (LOOK.neu ? 16 : 8);
 
 function rgb(hex: string): [number, number, number] {
   const n = parseInt(hex.slice(1), 16);
@@ -21,7 +23,15 @@ export function paletteOf(a: Arena): Insel['farben'] {
 /** Bodentextur: Platten, Flecken, Lava, Eis, Gift, Tesla-Platten – Pixel für Pixel. */
 function floorTextures(a: Arena) {
   const pal = paletteOf(a);
+  const PX = px();
   const S = a.size * PX;
+  // weiches Rauschen in zwei Größen (nur neuer Look): Abnutzung, Flecken, Verfärbung
+  const weich = (x: number, y: number, k: number, seed: number) => {
+    const fx = Math.floor(x / k), fy = Math.floor(y / k), tx = (x / k) - fx, ty = (y / k) - fy;
+    const a0 = hash2(fx, fy, seed), b0 = hash2(fx + 1, fy, seed), c0 = hash2(fx, fy + 1, seed), d0 = hash2(fx + 1, fy + 1, seed);
+    const sx = tx * tx * (3 - 2 * tx), sy = ty * ty * (3 - 2 * ty);
+    return (a0 + (b0 - a0) * sx) * (1 - sy) + (c0 + (d0 - c0) * sx) * sy;
+  };
   const color = document.createElement('canvas');
   const glow = document.createElement('canvas');
   color.width = color.height = glow.width = glow.height = S;
@@ -46,9 +56,18 @@ function floorTextures(a: Arena) {
           // Fugen zwischen den Platten (je 2×2 Kacheln eine Platte)
           const edge = (px === 0 && tx % 2 === 0) || (py === 0 && tz % 2 === 0);
           if (edge) f *= 0.62;
+          if (LOOK.neu) {
+            // großflächige Verfärbung und feine Abnutzung, Risse entlang der Fugen, einzelne helle Kiesel
+            const w1 = weich(gx, gy, 23, 31), w2 = weich(gx, gy, 6, 32);
+            f *= 0.82 + w1 * 0.3 + (w2 - 0.5) * 0.14;
+            if (!edge && w2 > 0.83 && hash2(gx, gy, 33) > 0.6) f *= 0.72; // Riss / Kerbe
+            if (edge) f *= 0.9 + hash2(gx, gy, 34) * 0.2; // Fugen nicht überall gleich tief
+          }
           if (t === Tile.Moss) {
             c = moss[Math.floor(hash2(gx, gy, 4) * moss.length)];
             if (hash2(gx, gy, 5) > 0.82) c = base;
+            // neuer Look: Moosfleck mit weichem Rand statt harter Kachelkante, Stein schimmert durch
+            if (LOOK.neu && weich(gx + 1000, gy, 9, 35) < 0.3 + hash2(tx, tz, 36) * 0.2) c = base;
           } else if (t === Tile.Lava) {
             const w = Math.sin(gx * 0.55 + gy * 0.35) + Math.sin(gx * 0.21 - gy * 0.6);
             c = lava[Math.max(0, Math.min(3, Math.floor((w + 2) * 0.9 + n * 0.6)))];
@@ -177,7 +196,15 @@ export function buildArenaView(a: Arena): ArenaView {
             const top = y === h * 2 - 1;
             // Zinnen: auf Mauern jede zweite Teilfläche oben weglassen
             if (top && t === Tile.Wall && h < 4 && (sx + sz + x + z) % 2 === 1) continue;
-            walls.v(x * 2 + sx, y, z * 2 + sz, stones[Math.floor(hash2(x * 2 + sx, y, z * 2 + sz) * stones.length)]);
+            let farbe = stones[Math.floor(hash2(x * 2 + sx, y, z * 2 + sz) * stones.length)];
+            // neuer Look: oben bemoost, unten dunkler/feuchter, einzelne abweichende Steine
+            if (LOOK.neu) {
+              const r = hash2(x * 2 + sx, y * 3, z * 2 + sz + 500);
+              if (top && r < 0.45) farbe = pal.fleck[Math.floor(r * 10) % pal.fleck.length];
+              else if (y === 0 && r < 0.5) farbe = pal.klippe[Math.floor(r * 7) % pal.klippe.length];
+              else if (r > 0.93) farbe = pal.klippe[0];
+            }
+            walls.v(x * 2 + sx, y, z * 2 + sz, farbe);
           }
         }
       } else if (t === Tile.Crate) {
@@ -189,7 +216,7 @@ export function buildArenaView(a: Arena): ArenaView {
       }
     }
   }
-  const wg = buildVoxels(walls.list(), 0.5, { jitter: 0.06, seed: 7, skipBottom: true });
+  const wg = buildVoxels(walls.list(), 0.5, { jitter: LOOK.neu ? 0.1 : 0.06, seed: 7, skipBottom: true });
   if (wg.solid) { const m = new THREE.Mesh(wg.solid, solidMaterial); m.castShadow = m.receiveShadow = true; group.add(m); }
   const crg = buildVoxels(crates.list(), 0.25, { jitter: 0.08, seed: 9, skipBottom: true });
   if (crg.solid) { const m = new THREE.Mesh(crg.solid, solidMaterial); m.castShadow = m.receiveShadow = true; group.add(m); }

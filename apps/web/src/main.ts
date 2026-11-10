@@ -1,7 +1,7 @@
 import './fonts.css';
 import { World, DT, DASH_COOLDOWN, NO_INPUT, MetaTracker, istSpielstand, ladeLauf, wellenStartStand, istPlatz, PLATZ_ANZAHL, speicherCode, speicherAusCode, boomDateiname, type Speicherplatz, type Spielstand, heldenFrei, inselFrei, ladeProfil, profilAusCode, spawnEnemy, type Command, type InputState, type SimEvent } from '@overboom/core';
 import { t, istSprache, type Sprache, ladeWoerterbuch, lokalisiereDaten, setzeWoerterbuch, spracheAus, GEGNER_INDEX, BOSS_LORE, ELEMENT_INFO, ERFOLGE, GEGNER, GEGNER_BY_ID, HELD_BY_ID, INSELN, INSEL_BY_ID, INSEL_LORE, KARTE_BY_ID, LEVEL, REISE, SELTENHEIT, SYNERGIEN, WELLEN, WELLEN_SPRUECHE, waffeById, waehle } from '@overboom/data';
-import { CardArt, FX, GameRenderer, type PlayerPose } from '@overboom/render';
+import { CardArt, FX, GameRenderer, LOOK, type PlayerPose } from '@overboom/render';
 import { AudioEngine, renderMusik } from '@overboom/audio';
 import { sprachwahl, Controls, DamageNumbers, DebugMenu, Hud, MenuNav, Menus, NameTags, karteAlsBild, ladeEinstellungen, screenToWorld, type CoopAktion, type CoopAnsicht, type Einstellungen } from '@overboom/ui';
 import { ClientSession, HostSession, LocalTransport, createTrysteroTransport, makeRoomCode, normalizeRoomCode, type LobbySpieler, type Transport } from '@overboom/net';
@@ -11,7 +11,7 @@ const root = document.getElementById('game')!;
 let platform: Platform;
 const params = new URLSearchParams(location.search);
 const num = (key: string, def: number) => (params.has(key) && Number.isFinite(Number(params.get(key))) ? Number(params.get(key)) : def);
-const internalShort = Math.max(144, Math.min(720, num('res', 270)));
+const internalShort = Math.max(144, Math.min(1080, num('res', 270)));
 const seed = num('seed', 1337) || 1337;
 /** ?netz=lokal: Koop zwischen Tabs desselben Browsers (Test/Entwicklung) statt WebRTC */
 const lokalNetz = params.get('netz') === 'lokal';
@@ -63,6 +63,8 @@ async function start() {
 
   // Einstellungen (URL-Parameter überschreiben sie für Tests)
   const einst: Einstellungen = ladeEinstellungen(await platform.storage.get('einstellungen'));
+  // Grafik-Look zum Vergleich: ?look=neu (volle Auflösung, weiche Schatten, Leuchten, Himmel)
+  LOOK.neu = params.get('look') === 'neu';
   if (params.has('shake')) einst.shake = Math.max(0, Math.min(2, num('shake', 1)));
   if (params.get('zahlen') === '0') einst.zahlen = false;
   const audio = new AudioEngine();

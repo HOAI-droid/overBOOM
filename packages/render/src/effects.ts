@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { hash2 } from '@overboom/core';
 import { haloTexture } from './arenaView.ts';
 import { VoxelExplosions } from './voxelExplosion.ts';
+import { LOOK } from './atmosphaere.ts';
 
 /** Größe der Explosionsgrafik relativ zum Wirkungsradius */
 const EXPLOSION_GRAFIK = 0.8;
@@ -602,7 +603,8 @@ export class Effects {
     // die stärkste laufende Lichtquelle nicht überschreiben
     let l = this.lights[this.lightIdx++ % this.lights.length];
     for (const o of this.lights) if (o.t <= 0) { l = o; break; }
-    l.t = time; l.max = time; l.power = power;
+    l.t = time; l.max = time; l.power = power * (LOOK.neu ? 4 : 1);
+    l.light.distance = LOOK.neu ? 14 : 8;
     l.light.color.set(color);
     l.light.position.set(x, 1.2, z);
   }

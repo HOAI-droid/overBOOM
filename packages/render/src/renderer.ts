@@ -9,6 +9,14 @@ import { Effects, FX } from './effects.ts';
 import { CombatView } from './combatView.ts';
 import { ENEMY_DEBRIS, shotColor } from './models.ts';
 import { WorldMapView, type MapState } from './worldMap.ts';
+import { Atmosphaere, LOOK } from './atmosphaere.ts';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/examples/jsm/postprocessing/GTAOPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { GodrayPass } from './godrays.ts';
 
 export interface RenderOptions {
   /** Pixel auf der kurzen Bildschirmseite (Low-Res-Look). 270 = Standard */
@@ -74,6 +82,13 @@ export class GameRenderer {
   private ndc = { x: 0, y: 0 };
 
   private world: World;
+  /** neuer Look: Nachbearbeitung (Umgebungsverdeckung, Leuchten, Farbe) und Atmosphäre */
+  private composer: EffectComposer | null = null;
+  private gtao: GTAOPass | null = null;
+  private bloom: UnrealBloomPass | null = null;
+  private grade: ShaderPass | null = null;
+  private godrays: GodrayPass | null = null;
+  private atmo: Atmosphaere | null = null;
 
   constructor(canvas: HTMLCanvasElement, world: World, opt: RenderOptions = {}) {
     this.world = world;
@@ -82,8 +97,12 @@ export class GameRenderer {
     this.combat = new CombatView(world, this.effects);
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
     this.renderer.shadowMap.enabled = this.opt.shadows;
-    this.renderer.shadowMap.type = THREE.PCFShadowMap;
+    this.renderer.shadowMap.type = LOOK.neu ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
     this.renderer.setClearColor('#0b0814');
+    if (LOOK.neu) {
+      this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      this.renderer.toneMappingExposure = 1.05;
+    }
 
     this.rt = new THREE.WebGLRenderTarget(4, 4, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, depthBuffer: true, stencilBuffer: true });
     this.rt.texture.colorSpace = THREE.SRGBColorSpace;
@@ -124,7 +143,8 @@ export class GameRenderer {
     this.scene.add(this.hemi);
     this.sun = new THREE.DirectionalLight('#ffe6c8', 3.2);
     this.sun.castShadow = this.opt.shadows;
-    this.sun.shadow.mapSize.set(1024, 1024);
+    this.sun.shadow.mapSize.set(LOOK.neu ? 2048 : 1024, LOOK.neu ? 2048 : 1024);
+
     const sc = this.sun.shadow.camera;
     sc.left = -13; sc.right = 13; sc.top = 13; sc.bottom = -13; sc.near = 0.5; sc.far = 60;
     // Ebene 1: unsichtbare Schatten-Stellvertreter (kleine Modelle für die feinen Gegner)
@@ -135,11 +155,61 @@ export class GameRenderer {
     this.front = new THREE.DirectionalLight('#fff4e8', 0.95);
     this.front.castShadow = false;
     this.scene.add(this.front, this.front.target);
+    if (LOOK.neu) {
+      // weiche, nicht ganz schwarze Schatten
+      this.sun.shadow.radius = 6; this.sun.shadow.intensity = 0.8; this.sun.intensity = 3.4;
+      this.hemi.intensity = 1.5; this.front.intensity = 0.4;
+      this.atmo = new Atmosphaere();
+      this.scene.add(this.atmo.group);
+      this.composer = new EffectComposer(this.renderer);
+      this.composer.addPass(new RenderPass(this.scene, this.camera));
+      this.gtao = new GTAOPass(this.scene, this.camera, 4, 4);
+      this.gtao.blendIntensity = 0.85;
+      this.gtao.updateGtaoMaterial({ radius: 0.9, distanceExponent: 1, thickness: 1, scale: 1.2, samples: 12, distanceFallOff: 1, screenSpaceRadius: false });
+      const q = new URLSearchParams(location.search);
+      this.gtao.enabled = q.get('gtao') !== '0';
+      this.composer.addPass(this.gtao);
+      if (q.get('tm') === '0') this.renderer.toneMapping = THREE.NoToneMapping;
+      this.godrays = new GodrayPass(this.camera, this.sun);
+      this.godrays.enabled = q.get('rays') !== '0';
+      this.composer.addPass(this.godrays);
+      this.bloom = new UnrealBloomPass(new THREE.Vector2(4, 4), 0.45, 0.5, 0.92);
+      this.bloom.enabled = q.get('bloom') !== '0';
+      this.composer.addPass(this.bloom);
+      this.grade = new ShaderPass(new THREE.ShaderMaterial({
+        uniforms: { tDiffuse: { value: null }, uTint: { value: new THREE.Color('#ffd9a8') }, uRes: { value: new THREE.Vector2(1, 1) } },
+        vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+        fragmentShader: `
+          uniform sampler2D tDiffuse; uniform vec3 uTint; uniform vec2 uRes; varying vec2 vUv;
+          void main(){
+            // Tilt-Shift: oben und unten leicht unscharf (Miniatur-Gefühl)
+            float d = abs(vUv.y - 0.5) * 2.0;
+            float r = smoothstep(0.45, 1.0, d) * 2.2;
+            vec2 px = r / uRes;
+            vec3 c = texture2D(tDiffuse, vUv).rgb * 0.4;
+            c += texture2D(tDiffuse, vUv + vec2(px.x, 0.0)).rgb * 0.15;
+            c += texture2D(tDiffuse, vUv - vec2(px.x, 0.0)).rgb * 0.15;
+            c += texture2D(tDiffuse, vUv + vec2(0.0, px.y)).rgb * 0.15;
+            c += texture2D(tDiffuse, vUv - vec2(0.0, px.y)).rgb * 0.15;
+            // warme Lichter, kühle Schatten, Vignette
+            float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+            c = mix(c, c * uTint, smoothstep(0.3, 1.0, l) * 0.35);
+            c = mix(c, c * vec3(0.85, 0.9, 1.1), (1.0 - smoothstep(0.0, 0.4, l)) * 0.3);
+            c = mix(vec3(l), c, 1.12);
+            vec2 q = vUv - 0.5;
+            c *= 1.0 - dot(q, q) * 0.55;
+            gl_FragColor = vec4(c, 1.0);
+          }`
+      }));
+      this.composer.addPass(this.grade);
+      this.composer.addPass(new OutputPass());
+    }
 
     this.arenaSrc = world.arena;
     this.arena = buildArenaView(world.arena);
     this.scene.add(this.arena.group, this.effects.group, this.combat.group);
     this.applyPalette();
+    this.atmo?.build(world.arena, paletteOf(world.arena));
     for (const p of world.players) this.addHero(p);
 
     const sp = world.players[0] ?? { x: world.arena.spawn.x, z: world.arena.spawn.z };
@@ -161,6 +231,12 @@ export class GameRenderer {
     this.hemi.color.set(pal.himmel);
     this.sun.color.set(pal.sonne);
     this.renderer.setClearColor(pal.nebel);
+    if (LOOK.neu) {
+      // Himmel als Verlauf hinter allem, Bodenlicht warm von unten
+      this.hemi.groundColor.set(new THREE.Color(pal.nebel).lerp(new THREE.Color(pal.sonne), 0.35));
+      this.scene.background = himmelTextur(pal.himmel, pal.nebel);
+      this.godrays?.setSonne(new THREE.Color(pal.sonne));
+    }
   }
 
   /** Andere Welt anzeigen (Koop-Start, Spiegelwelt) */
@@ -185,6 +261,7 @@ export class GameRenderer {
     this.arenaSrc = this.world.arena;
     this.scene.add(this.arena.group);
     this.applyPalette();
+    this.atmo?.build(this.world.arena, paletteOf(this.world.arena));
   }
 
   private rnd = () => {
@@ -203,6 +280,15 @@ export class GameRenderer {
     if (aspect >= 1) { this.ih = s; this.iw = Math.round(s * aspect); }
     else { this.iw = s; this.ih = Math.round(s / aspect); }
     this.rt.setSize(this.iw + 2, this.ih + 2);
+    if (this.composer) {
+      const pr = Math.min(2, dpr);
+      this.composer.setSize(width, height);
+      this.composer.setPixelRatio(pr);
+      this.gtao?.setSize(width * pr, height * pr);
+      this.godrays?.setSize(width * pr, height * pr);
+      this.bloom?.setSize(width * pr, height * pr);
+      this.grade?.uniforms.uRes.value.set(width * pr, height * pr);
+    }
     this.post.mat.uniforms.uInner.value.set(this.iw, this.ih);
     this.post.mat.uniforms.uFull.value.set(this.iw + 2, this.ih + 2);
     this.applyFrustum();
@@ -445,9 +531,30 @@ export class GameRenderer {
     this.combat.update(alpha, time, dt, this.heroPos);
     this.effects.update(dt);
 
+    if (this.composer) {
+      // neuer Look: volle Auflösung direkt auf den Bildschirm, Nachbearbeitung im Composer
+      this.atmo?.update(time);
+      this.godrays?.setZeit(time);
+      this.composer.render();
+      return;
+    }
     this.renderer.setRenderTarget(this.rt);
     this.renderer.render(this.scene, this.camera);
     this.renderer.setRenderTarget(null);
     this.renderer.render(this.post.scene, this.post.cam);
   }
+}
+
+/** Himmel-Verlauf (Bildhintergrund): oben Himmelsfarbe, unten Dunst */
+function himmelTextur(oben: string, unten: string): THREE.Texture {
+  const c = document.createElement('canvas');
+  c.width = 4; c.height = 256;
+  const g = c.getContext('2d')!;
+  const gr = g.createLinearGradient(0, 0, 0, 256);
+  const o = new THREE.Color(oben), u = new THREE.Color(unten), m = o.clone().lerp(new THREE.Color('#ffd9a8'), 0.45);
+  gr.addColorStop(0, o.getStyle()); gr.addColorStop(0.55, m.getStyle()); gr.addColorStop(1, u.getStyle());
+  g.fillStyle = gr; g.fillRect(0, 0, 4, 256);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
 }
