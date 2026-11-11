@@ -1141,6 +1141,7 @@ export class Menus {
       case 'setzu': this.closeEinstellungen(); return;
       case 'setsprache': if (el.dataset.l) this.onSprache(el.dataset.l); return;
       case 'setmusik': this.einstellungen = { ...this.einstellungen, musikStil: el.dataset.m as Einstellungen['musikStil'] }; this.onEinstellungen(this.einstellungen); this.renderEinstellungen(); return;
+      case 'settilt': this.einstellungen = { ...this.einstellungen, tilt: Number(el.dataset.v) || 0 }; this.onEinstellungen(this.einstellungen); this.renderEinstellungen(); return;
       case 'setq': this.einstellungen = { ...this.einstellungen, qualitaet: el.dataset.q as Einstellungen['qualitaet'] }; this.onEinstellungen(this.einstellungen); this.renderEinstellungen(); return;
       case 'settoggle': {
         const k = el.dataset.key as 'zahlen' | 'vibration' | 'farbenblind';

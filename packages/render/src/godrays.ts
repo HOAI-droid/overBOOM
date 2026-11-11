@@ -16,7 +16,7 @@ export class GodrayPass extends Pass {
   private rt: THREE.WebGLRenderTarget;
   /** Stärke der Strahlen (0 = aus) */
   /** Grundstärke; die Strahlen kommen nur zeitweise (siehe setZeit) */
-  staerke = 0.3;
+  staerke = 0.15;
   private phase = 0;
 
   constructor(private camera: THREE.OrthographicCamera, private sonne: THREE.DirectionalLight) {

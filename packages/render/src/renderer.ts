@@ -17,6 +17,7 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { GodrayPass } from './godrays.ts';
+import { LavaBecken } from './lava.ts';
 
 export interface RenderOptions {
   /** Pixel auf der kurzen Bildschirmseite (Low-Res-Look). 270 = Standard */
@@ -91,6 +92,9 @@ export class GameRenderer {
   private tiltH: ShaderPass | null = null;
   private tiltV: ShaderPass | null = null;
   private atmo: Atmosphaere | null = null;
+  private lava: LavaBecken | null = null;
+  /** Tilt-Shift-Stärke (0 = aus, 0,35, 0,7 = sanft) */
+  private tilt = 0.7;
 
   constructor(canvas: HTMLCanvasElement, world: World, opt: RenderOptions = {}) {
     this.world = world;
@@ -162,13 +166,16 @@ export class GameRenderer {
     this.scene.add(this.front, this.front.target);
     if (LOOK.neu) {
       // kräftige Schatten mit weichem Rand (VSM: Radius = Weichheit)
-      this.sun.shadow.radius = Number(new URLSearchParams(location.search).get('smr')) || 7; this.sun.shadow.blurSamples = 12; this.sun.shadow.bias = -0.0006; this.sun.shadow.normalBias = 0.02;
-      this.sun.shadow.intensity = 1; this.sun.intensity = 3.6;
+      this.sun.shadow.radius = Number(new URLSearchParams(location.search).get('smr')) || 10; this.sun.shadow.blurSamples = 12; this.sun.shadow.bias = -0.0006; this.sun.shadow.normalBias = 0.02;
+      // Schatten erkennbar, aber nicht schwarz; breit auslaufender Rand (wie Studiolicht)
+      this.sun.shadow.intensity = 0.72; this.sun.intensity = 3.4;
       const qq = new URLSearchParams(location.search);
       this.hemi.intensity = Number(qq.get('hemi')) || 0.9; this.front.intensity = Number(qq.get('front')) || 0.35;
       if (qq.get('exp')) this.renderer.toneMappingExposure = Number(qq.get('exp'));
       this.atmo = new Atmosphaere();
       this.scene.add(this.atmo.group);
+      this.lava = new LavaBecken();
+      this.scene.add(this.lava.group);
       this.composer = new EffectComposer(this.renderer);
       this.composer.addPass(new RenderPass(this.scene, this.camera));
       this.gtao = new GTAOPass(this.scene, this.camera, 4, 4);
@@ -176,12 +183,25 @@ export class GameRenderer {
       this.gtao.updateGtaoMaterial({ radius: 0.9, distanceExponent: 1, thickness: 1, scale: 1.2, samples: 12, distanceFallOff: 1, screenSpaceRadius: false });
       const q = new URLSearchParams(location.search);
       this.gtao.enabled = q.get('gtao') !== '0';
+      // Durchsichtiges (Leuchthöfe, Partikel, Strahlen) darf keine Verdeckung werfen: kurz ausblenden
+      const versteckt: THREE.Object3D[] = [];
+      const gtaoRender = this.gtao.render.bind(this.gtao);
+      this.gtao.render = (r, w, rb, dt, mask) => {
+        versteckt.length = 0;
+        this.scene.traverseVisible((o) => {
+          const m = (o as THREE.Mesh).material as THREE.Material | undefined;
+          if (m && !Array.isArray(m) && (m.transparent || (o as THREE.Points).isPoints || (o as THREE.Sprite).isSprite)) versteckt.push(o);
+        });
+        for (const o of versteckt) o.visible = false;
+        gtaoRender(r, w, rb, dt, mask);
+        for (const o of versteckt) o.visible = true;
+      };
       this.composer.addPass(this.gtao);
       if (q.get('tm') === '0') this.renderer.toneMapping = THREE.NoToneMapping;
       this.godrays = new GodrayPass(this.camera, this.sun);
       this.godrays.enabled = q.get('rays') !== '0';
       this.composer.addPass(this.godrays);
-      this.bloom = new UnrealBloomPass(new THREE.Vector2(4, 4), 0.45, 0.5, 0.92);
+      this.bloom = new UnrealBloomPass(new THREE.Vector2(4, 4), 0.32, 0.35, 0.95);
       this.bloom.enabled = q.get('bloom') !== '0';
       this.composer.addPass(this.bloom);
       this.grade = new ShaderPass(new THREE.ShaderMaterial({
@@ -210,8 +230,8 @@ export class GameRenderer {
           uniform sampler2D tDiffuse; uniform vec2 uRes, uDir; uniform float uStaerke; varying vec2 vUv;
           void main(){
             float d = abs(vUv.y - 0.5) * 2.0;
-            // ab 35 % vom Zentrum beginnt die Unschärfe, am Rand bis zu 7 Pixel (bei 900p)
-            float r = smoothstep(0.35, 1.0, d) * uStaerke * uRes.y / 130.0;
+            // ab 45 % vom Zentrum beginnt die Unschärfe; Stärke 0,7 = am Rand ca. 3 Pixel (bei 900p)
+            float r = smoothstep(0.45, 1.0, d) * uStaerke * uRes.y / 300.0;
             vec2 step = uDir * r / uRes;
             vec3 c = vec3(0.0); float ws = 0.0;
             for (int i = -4; i <= 4; i++) {
@@ -223,7 +243,8 @@ export class GameRenderer {
       }));
       this.tiltH = tilt([1, 0]); this.tiltV = tilt([0, 1]);
       const ts = q.get('tilt');
-      for (const t of [this.tiltH, this.tiltV]) { t.enabled = ts !== '0'; if (ts) t.uniforms.uStaerke.value = Number(ts) || 1; }
+      if (ts !== null) this.tilt = Number(ts) || 0;
+      this.setTilt(this.tilt);
       this.composer.addPass(this.tiltH);
       this.composer.addPass(this.tiltV);
       this.composer.addPass(new OutputPass());
@@ -234,6 +255,7 @@ export class GameRenderer {
     this.scene.add(this.arena.group, this.effects.group, this.combat.group);
     this.applyPalette();
     this.atmo?.build(world.arena, paletteOf(world.arena));
+    this.lava?.build(world.arena);
     for (const p of world.players) this.addHero(p);
 
     const sp = world.players[0] ?? { x: world.arena.spawn.x, z: world.arena.spawn.z };
@@ -286,6 +308,7 @@ export class GameRenderer {
     this.scene.add(this.arena.group);
     this.applyPalette();
     this.atmo?.build(this.world.arena, paletteOf(this.world.arena));
+    this.lava?.build(this.world.arena);
   }
 
   private rnd = () => {
@@ -338,6 +361,11 @@ export class GameRenderer {
     this.sun.castShadow = on;
     // Materialien müssen neu übersetzt werden
     this.scene.traverse((o) => { const m = (o as THREE.Mesh).material as THREE.Material | undefined; if (m) m.needsUpdate = true; });
+  }
+  /** Tilt-Shift (nur neuer Look): 0 = aus, sonst Stärke (0,35 leicht, 0,7 sanft) */
+  setTilt(v: number): void {
+    this.tilt = Math.max(0, Math.min(1.5, v));
+    for (const t of [this.tiltH, this.tiltV]) if (t) { t.enabled = this.tilt > 0; t.uniforms.uStaerke.value = this.tilt; }
   }
   /** Render-Auflösung (kurze Bildseite in Pixeln) */
   setResolution(short: number): void {
@@ -561,6 +589,7 @@ export class GameRenderer {
     if (this.composer) {
       // neuer Look: volle Auflösung direkt auf den Bildschirm, Nachbearbeitung im Composer
       this.atmo?.update(time);
+      this.lava?.update(time, dt);
       this.godrays?.setZeit(time);
       this.composer.render();
       return;

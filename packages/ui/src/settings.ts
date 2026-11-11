@@ -11,6 +11,8 @@ export interface Einstellungen {
   blitze: number;
   /** Partikeldichte 0–2 (1 = Standard) */
   partikel: number;
+  /** Tilt-Shift (Miniatur-Unschärfe oben/unten): 0 = aus, 0,35 leicht, 0,7 sanft */
+  tilt: number;
   /** Version der Effekt-Skala (2 ab v0.13.1; ältere Werte werden umgerechnet) */
   skala: number;
   zahlen: boolean;
@@ -23,7 +25,7 @@ export interface Einstellungen {
 }
 
 export const STANDARD: Einstellungen = {
-  gesamt: 0.8, effekte: 0.8, musik: 0.5, shake: 1, blitze: 1, partikel: 1, skala: 2,
+  gesamt: 0.8, effekte: 0.8, musik: 0.5, shake: 1, blitze: 1, partikel: 1, skala: 2, tilt: 0.7,
   zahlen: true, vibration: true, farbenblind: false, qualitaet: 'auto', musikStil: 'rock'
 };
 
@@ -86,6 +88,9 @@ export function einstellungenHtml(e: Einstellungen, info: string): string {
       <div class="ob-tabs">${stile}</div>
       <h3 class="ob-h3">${t('Grafik')} <small>${info}</small></h3>
       <div class="ob-tabs">${q}</div>
+      <h3 class="ob-h3">${t('Tilt-Shift')} <small>${t('Miniatur-Unschärfe oben und unten')}</small></h3>
+      <div class="ob-tabs">${([[0, t('Aus')], [0.35, t('Leicht')], [0.7, t('Sanft')]] as const).map(([v, n]) =>
+        `<button type="button" class="ob-tab ${Math.abs(e.tilt - v) < 0.01 ? 'on' : ''}" data-act="settilt" data-v="${v}" data-focus="settilt-${v}">${n}</button>`).join('')}</div>
       <h3 class="ob-h3">${t('Barrierefreiheit')}</h3>
       <div class="ob-setgrid">
         ${slider('shake', t('Bildschirm-Wackeln'), e.shake, 0, 2, 0.1)}

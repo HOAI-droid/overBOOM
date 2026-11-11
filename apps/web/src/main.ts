@@ -63,8 +63,8 @@ async function start() {
 
   // Einstellungen (URL-Parameter überschreiben sie für Tests)
   const einst: Einstellungen = ladeEinstellungen(await platform.storage.get('einstellungen'));
-  // Grafik-Look zum Vergleich: ?look=neu (volle Auflösung, weiche Schatten, Leuchten, Himmel)
-  LOOK.neu = params.get('look') === 'neu';
+  // Grafik-Look: neu ist Standard in diesem Zweig; ?look=alt zeigt den bisherigen zum Vergleich
+  LOOK.neu = params.get('look') !== 'alt';
   if (params.has('shake')) einst.shake = Math.max(0, Math.min(2, num('shake', 1)));
   if (params.get('zahlen') === '0') einst.zahlen = false;
   const audio = new AudioEngine();
@@ -223,6 +223,7 @@ async function start() {
     audio.setMusikStil(einst.musikStil);
     // Effekt-Regler: 100 % = halbe Stärke, 200 % = volle Stärke
     renderer.setShake(einst.shake * 0.5);
+    renderer.setTilt(einst.tilt);
     const q = QUALI[qualiStufe()];
     FX.blitze = einst.blitze * 0.5;
     FX.dichte = Math.min(einst.partikel * 0.5, q.partikel);

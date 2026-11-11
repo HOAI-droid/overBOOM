@@ -4,6 +4,22 @@
   "quelle": "packages/ui/src/settings.ts"
  },
  {
+  "de": "Tilt-Shift",
+  "quelle": "packages/ui/src/settings.ts"
+ },
+ {
+  "de": "Miniatur-Unschärfe oben und unten",
+  "quelle": "packages/ui/src/settings.ts"
+ },
+ {
+  "de": "Leicht",
+  "quelle": "packages/ui/src/settings.ts"
+ },
+ {
+  "de": "Sanft",
+  "quelle": "packages/ui/src/settings.ts"
+ },
+ {
   "de": "Barrierefreiheit",
   "quelle": "packages/ui/src/settings.ts"
  },

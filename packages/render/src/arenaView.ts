@@ -68,6 +68,11 @@ function floorTextures(a: Arena) {
             if (hash2(gx, gy, 5) > 0.82) c = base;
             // neuer Look: Moosfleck mit weichem Rand statt harter Kachelkante, Stein schimmert durch
             if (LOOK.neu && weich(gx + 1000, gy, 9, 35) < 0.3 + hash2(tx, tz, 36) * 0.2) c = base;
+          } else if (t === Tile.Lava && LOOK.neu) {
+            // neuer Look: Loch im Boden, das Lavabecken (lava.ts) liegt darunter
+            ci.data[i] = ci.data[i + 1] = ci.data[i + 2] = 0; ci.data[i + 3] = 0;
+            gi.data[i] = gi.data[i + 1] = gi.data[i + 2] = 0; gi.data[i + 3] = 255;
+            continue;
           } else if (t === Tile.Lava) {
             const w = Math.sin(gx * 0.55 + gy * 0.35) + Math.sin(gx * 0.21 - gy * 0.6);
             c = lava[Math.max(0, Math.min(3, Math.floor((w + 2) * 0.9 + n * 0.6)))];
@@ -156,7 +161,7 @@ export function buildArenaView(a: Arena): ArenaView {
 
   // Boden
   const tex = floorTextures(a);
-  const lavaMaterial = new THREE.MeshLambertMaterial({ map: tex.map, emissiveMap: tex.emissiveMap, emissive: new THREE.Color('#ffffff'), emissiveIntensity: 0.6 });
+  const lavaMaterial = new THREE.MeshLambertMaterial({ map: tex.map, emissiveMap: tex.emissiveMap, emissive: new THREE.Color('#ffffff'), emissiveIntensity: 0.6, alphaTest: LOOK.neu ? 0.5 : 0 });
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(S, S), lavaMaterial);
   floor.rotation.x = -Math.PI / 2;
   floor.position.set(S / 2, 0, S / 2);
