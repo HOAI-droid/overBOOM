@@ -17,6 +17,7 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(req.url);
   const font = url.host === 'fonts.googleapis.com' || url.host === 'fonts.gstatic.com';
   if (url.origin !== self.location.origin && !font) return; // Koop-Signaling usw. nie cachen
+  if (url.pathname.includes('/grafik/')) return; // Grafik-Testversion im Unterordner: nicht anfassen
   if (req.mode === 'navigate') {
     e.respondWith(fetch(req).then((r) => { const copy = r.clone(); caches.open(CACHE).then((c) => c.put('./index.html', copy)); return r; })
       .catch(() => caches.match('./index.html').then((r) => r || caches.match('./'))));

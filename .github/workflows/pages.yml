@@ -29,6 +29,16 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build:web
+      # Grafik-Testversion aus dem Zweig „grafik“ zusätzlich unter /grafik/ (falls vorhanden)
+      - name: Grafik-Testversion bauen
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --heads origin grafik >/dev/null; then
+            git clone --depth 1 --branch grafik "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" grafik-src
+            (cd grafik-src && npm ci && npm run build:web)
+            mkdir -p dist/grafik
+            cp -r grafik-src/dist/. dist/grafik/
+          fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
