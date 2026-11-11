@@ -8,6 +8,18 @@ import { ClientSession, HostSession, LocalTransport, createTrysteroTransport, ma
 import { createPlatform, type Platform } from '@overboom/platform';
 
 const root = document.getElementById('game')!;
+// Testversion: Fehler sichtbar machen (in eingebetteten Vorschauen fehlt sonst jede Meldung)
+addEventListener('error', (ev) => {
+  const box = document.getElementById('overboom-fehler') ?? Object.assign(document.body.appendChild(document.createElement('div')), { id: 'overboom-fehler' });
+  box.style.cssText = 'position:fixed;left:6px;top:6px;max-width:80vw;z-index:99;font:10px monospace;color:#ff3d6a;background:rgba(7,4,14,.85);padding:4px 6px;pointer-events:none;white-space:pre-wrap';
+  const err = (ev as ErrorEvent).error as Error | undefined;
+  box.textContent += `${err?.stack?.split('\n').slice(0, 3).join(' | ') ?? (ev as ErrorEvent).message}\n`;
+});
+addEventListener('unhandledrejection', (ev) => {
+  const box = document.getElementById('overboom-fehler') ?? Object.assign(document.body.appendChild(document.createElement('div')), { id: 'overboom-fehler' });
+  box.style.cssText = 'position:fixed;left:6px;top:6px;max-width:80vw;z-index:99;font:10px monospace;color:#ff3d6a;background:rgba(7,4,14,.85);padding:4px 6px;pointer-events:none;white-space:pre-wrap';
+  box.textContent += `Promise: ${String((ev as PromiseRejectionEvent).reason)}\n`;
+});
 let platform: Platform;
 const params = new URLSearchParams(location.search);
 const num = (key: string, def: number) => (params.has(key) && Number.isFinite(Number(params.get(key))) ? Number(params.get(key)) : def);
@@ -766,7 +778,7 @@ async function start() {
     (globalThis as Record<string, unknown>).__overboom = { get world() { return world; }, get me() { return me; }, get modus() { return modus; }, get renderer() { return renderer; }, renderMusik };
   }
 
-  const frame = (now: number) => {
+  const frameInnen = (now: number) => {
     const rawDt = Math.max(0, (now - last) / 1000);
     const dt = Math.min(0.1, rawDt);
     last = now;
@@ -909,6 +921,14 @@ async function start() {
     root.classList.toggle('on-map', !!mapState);
     root.classList.toggle('on-title', menus.screen === 'titel' || menus.screen === 'lobby');
     requestAnimationFrame(frame);
+  };
+  // ein Fehler in einem Bild darf die Schleife nicht anhalten: melden und weiterlaufen
+  let fehlerZahl = 0;
+  const frame = (now: number) => {
+    try { frameInnen(now); } catch (e) {
+      if (fehlerZahl++ < 5) dispatchEvent(new ErrorEvent('error', { error: e, message: String(e) }));
+      requestAnimationFrame(frame);
+    }
   };
   requestAnimationFrame(frame);
 }

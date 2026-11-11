@@ -166,90 +166,96 @@ export class GameRenderer {
     this.front.castShadow = false;
     this.scene.add(this.front, this.front.target);
     if (LOOK.neu) {
-      // kräftige Schatten mit weichem Rand (VSM: Radius = Weichheit)
-      this.sun.shadow.radius = Number(new URLSearchParams(location.search).get('smr')) || 10; this.sun.shadow.blurSamples = 12; this.sun.shadow.bias = -0.0006; this.sun.shadow.normalBias = 0.02;
-      // Schatten erkennbar, aber nicht schwarz; breit auslaufender Rand (wie Studiolicht)
-      this.sun.shadow.intensity = 0.72; this.sun.intensity = 3.4;
-      const qq = new URLSearchParams(location.search);
-      this.hemi.intensity = Number(qq.get('hemi')) || 1.25; this.front.intensity = Number(qq.get('front')) || 0.55;
-      if (qq.get('exp')) this.renderer.toneMappingExposure = Number(qq.get('exp'));
-      this.atmo = new Atmosphaere();
-      this.scene.add(this.atmo.group);
-      this.lava = new LavaBecken('lava');
-      this.gift = new LavaBecken('gift');
-      this.scene.add(this.lava.group, this.gift.group);
-      this.composer = new EffectComposer(this.renderer);
-      this.composer.addPass(new RenderPass(this.scene, this.camera));
-      this.gtao = new GTAOPass(this.scene, this.camera, 4, 4);
-      this.gtao.blendIntensity = 1.0;
-      this.gtao.updateGtaoMaterial({ radius: 0.9, distanceExponent: 1, thickness: 1, scale: 1.2, samples: 12, distanceFallOff: 1, screenSpaceRadius: false });
-      const q = new URLSearchParams(location.search);
-      this.gtao.enabled = q.get('gtao') !== '0';
-      // Durchsichtiges (Leuchthöfe, Partikel, Strahlen) darf keine Verdeckung werfen: kurz ausblenden
-      const versteckt: THREE.Object3D[] = [];
-      const gtaoRender = this.gtao.render.bind(this.gtao);
-      this.gtao.render = (r, w, rb, dt, mask) => {
-        versteckt.length = 0;
-        this.scene.traverseVisible((o) => {
-          const m = (o as THREE.Mesh).material as THREE.Material | undefined;
-          if (m && !Array.isArray(m) && (m.transparent || (o as THREE.Points).isPoints || (o as THREE.Sprite).isSprite)) versteckt.push(o);
-        });
-        for (const o of versteckt) o.visible = false;
-        gtaoRender(r, w, rb, dt, mask);
-        for (const o of versteckt) o.visible = true;
-      };
-      this.composer.addPass(this.gtao);
-      if (q.get('tm') === '0') this.renderer.toneMapping = THREE.NoToneMapping;
-      this.godrays = new GodrayPass(this.camera, this.sun);
-      this.godrays.enabled = q.get('rays') !== '0';
-      this.composer.addPass(this.godrays);
-      this.bloom = new UnrealBloomPass(new THREE.Vector2(4, 4), 0.32, 0.35, 0.95);
-      this.bloom.enabled = q.get('bloom') !== '0';
-      this.composer.addPass(this.bloom);
-      this.grade = new ShaderPass(new THREE.ShaderMaterial({
-        uniforms: { tDiffuse: { value: null }, uTint: { value: new THREE.Color('#ffd9a8') }, uRes: { value: new THREE.Vector2(1, 1) } },
-        vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-        fragmentShader: `
-          uniform sampler2D tDiffuse; uniform vec3 uTint; uniform vec2 uRes; varying vec2 vUv;
-          void main(){
-            vec3 c = texture2D(tDiffuse, vUv).rgb;
-            // warme Lichter, kühle Schatten, Vignette
-            float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
-            c = mix(c, c * uTint, smoothstep(0.3, 1.0, l) * 0.35);
-            c = mix(c, c * vec3(0.85, 0.9, 1.1), (1.0 - smoothstep(0.0, 0.4, l)) * 0.3);
-            c = mix(vec3(l), c, 1.12);
-            vec2 q = vUv - 0.5;
-            c *= 1.0 - dot(q, q) * 0.55;
-            gl_FragColor = vec4(c, 1.0);
-          }`
-      }));
-      this.composer.addPass(this.grade);
-      // Tilt-Shift: Schärfe nur in einem Band um die Bildmitte, oben und unten weich (zwei Richtungen)
-      const tilt = (richtung: [number, number]) => new ShaderPass(new THREE.ShaderMaterial({
-        uniforms: { tDiffuse: { value: null }, uRes: { value: new THREE.Vector2(1, 1) }, uDir: { value: new THREE.Vector2(...richtung) }, uStaerke: { value: 1 } },
-        vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-        fragmentShader: `
-          uniform sampler2D tDiffuse; uniform vec2 uRes, uDir; uniform float uStaerke; varying vec2 vUv;
-          void main(){
-            float d = abs(vUv.y - 0.5) * 2.0;
-            // ab 45 % vom Zentrum beginnt die Unschärfe; Stärke 0,7 = am Rand ca. 3 Pixel (bei 900p)
-            float r = smoothstep(0.45, 1.0, d) * uStaerke * uRes.y / 300.0;
-            vec2 step = uDir * r / uRes;
-            vec3 c = vec3(0.0); float ws = 0.0;
-            for (int i = -4; i <= 4; i++) {
-              float w = exp(-float(i * i) / 6.0);
-              c += texture2D(tDiffuse, vUv + step * float(i)).rgb * w; ws += w;
-            }
-            gl_FragColor = vec4(c / ws, 1.0);
-          }`
-      }));
-      this.tiltH = tilt([1, 0]); this.tiltV = tilt([0, 1]);
-      const ts = q.get('tilt');
-      if (ts !== null) this.tilt = Number(ts) || 0;
-      this.setTilt(this.tilt);
-      this.composer.addPass(this.tiltH);
-      this.composer.addPass(this.tiltV);
-      this.composer.addPass(new OutputPass());
+      try {
+        // kräftige Schatten mit weichem Rand (VSM: Radius = Weichheit)
+        this.sun.shadow.radius = Number(new URLSearchParams(location.search).get('smr')) || 10; this.sun.shadow.blurSamples = 12; this.sun.shadow.bias = -0.0006; this.sun.shadow.normalBias = 0.02;
+        // Schatten erkennbar, aber nicht schwarz; breit auslaufender Rand (wie Studiolicht)
+        this.sun.shadow.intensity = 0.72; this.sun.intensity = 3.4;
+        const qq = new URLSearchParams(location.search);
+        this.hemi.intensity = Number(qq.get('hemi')) || 1.25; this.front.intensity = Number(qq.get('front')) || 0.55;
+        if (qq.get('exp')) this.renderer.toneMappingExposure = Number(qq.get('exp'));
+        this.atmo = new Atmosphaere();
+        this.scene.add(this.atmo.group);
+        this.lava = new LavaBecken('lava');
+        this.gift = new LavaBecken('gift');
+        this.scene.add(this.lava.group, this.gift.group);
+        this.composer = new EffectComposer(this.renderer);
+        this.composer.addPass(new RenderPass(this.scene, this.camera));
+        this.gtao = new GTAOPass(this.scene, this.camera, 4, 4);
+        this.gtao.blendIntensity = 1.0;
+        this.gtao.updateGtaoMaterial({ radius: 0.9, distanceExponent: 1, thickness: 1, scale: 1.2, samples: 12, distanceFallOff: 1, screenSpaceRadius: false });
+        const q = new URLSearchParams(location.search);
+        this.gtao.enabled = q.get('gtao') !== '0';
+        // Durchsichtiges (Leuchthöfe, Partikel, Strahlen) darf keine Verdeckung werfen: kurz ausblenden
+        const versteckt: THREE.Object3D[] = [];
+        const gtaoRender = this.gtao.render.bind(this.gtao);
+        this.gtao.render = (r, w, rb, dt, mask) => {
+          versteckt.length = 0;
+          this.scene.traverseVisible((o) => {
+            const m = (o as THREE.Mesh).material as THREE.Material | undefined;
+            if (m && !Array.isArray(m) && (m.transparent || (o as THREE.Points).isPoints || (o as THREE.Sprite).isSprite)) versteckt.push(o);
+          });
+          for (const o of versteckt) o.visible = false;
+          gtaoRender(r, w, rb, dt, mask);
+          for (const o of versteckt) o.visible = true;
+        };
+        this.composer.addPass(this.gtao);
+        if (q.get('tm') === '0') this.renderer.toneMapping = THREE.NoToneMapping;
+        this.godrays = new GodrayPass(this.camera, this.sun);
+        this.godrays.enabled = q.get('rays') !== '0';
+        this.composer.addPass(this.godrays);
+        this.bloom = new UnrealBloomPass(new THREE.Vector2(4, 4), 0.32, 0.35, 0.95);
+        this.bloom.enabled = q.get('bloom') !== '0';
+        this.composer.addPass(this.bloom);
+        this.grade = new ShaderPass(new THREE.ShaderMaterial({
+          uniforms: { tDiffuse: { value: null }, uTint: { value: new THREE.Color('#ffd9a8') }, uRes: { value: new THREE.Vector2(1, 1) } },
+          vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+          fragmentShader: `
+            uniform sampler2D tDiffuse; uniform vec3 uTint; uniform vec2 uRes; varying vec2 vUv;
+            void main(){
+              vec3 c = texture2D(tDiffuse, vUv).rgb;
+              // warme Lichter, kühle Schatten, Vignette
+              float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+              c = mix(c, c * uTint, smoothstep(0.3, 1.0, l) * 0.35);
+              c = mix(c, c * vec3(0.85, 0.9, 1.1), (1.0 - smoothstep(0.0, 0.4, l)) * 0.3);
+              c = mix(vec3(l), c, 1.12);
+              vec2 q = vUv - 0.5;
+              c *= 1.0 - dot(q, q) * 0.55;
+              gl_FragColor = vec4(c, 1.0);
+            }`
+        }));
+        this.composer.addPass(this.grade);
+        // Tilt-Shift: Schärfe nur in einem Band um die Bildmitte, oben und unten weich (zwei Richtungen)
+        const tilt = (richtung: [number, number]) => new ShaderPass(new THREE.ShaderMaterial({
+          uniforms: { tDiffuse: { value: null }, uRes: { value: new THREE.Vector2(1, 1) }, uDir: { value: new THREE.Vector2(...richtung) }, uStaerke: { value: 1 } },
+          vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+          fragmentShader: `
+            uniform sampler2D tDiffuse; uniform vec2 uRes, uDir; uniform float uStaerke; varying vec2 vUv;
+            void main(){
+              float d = abs(vUv.y - 0.5) * 2.0;
+              // ab 45 % vom Zentrum beginnt die Unschärfe; Stärke 0,7 = am Rand ca. 3 Pixel (bei 900p)
+              float r = smoothstep(0.45, 1.0, d) * uStaerke * uRes.y / 300.0;
+              vec2 step = uDir * r / uRes;
+              vec3 c = vec3(0.0); float ws = 0.0;
+              for (int i = -4; i <= 4; i++) {
+                float w = exp(-float(i * i) / 6.0);
+                c += texture2D(tDiffuse, vUv + step * float(i)).rgb * w; ws += w;
+              }
+              gl_FragColor = vec4(c / ws, 1.0);
+            }`
+        }));
+        this.tiltH = tilt([1, 0]); this.tiltV = tilt([0, 1]);
+        const ts = q.get('tilt');
+        if (ts !== null) this.tilt = Number(ts) || 0;
+        this.setTilt(this.tilt);
+        this.composer.addPass(this.tiltH);
+        this.composer.addPass(this.tiltV);
+        this.composer.addPass(new OutputPass());
+      } catch (e) {
+        // Nachbearbeitung nicht verfügbar: klassisch zeichnen, Atmosphäre bleibt
+        this.composer = null;
+        this.effektFehler(e);
+      }
     }
 
     this.arenaSrc = world.arena;
@@ -365,6 +371,23 @@ export class GameRenderer {
     this.sun.castShadow = on;
     // Materialien müssen neu übersetzt werden
     this.scene.traverse((o) => { const m = (o as THREE.Mesh).material as THREE.Material | undefined; if (m) m.needsUpdate = true; });
+  }
+  private fehlerBox: HTMLDivElement | null = null;
+  /** Nachbearbeitung ist fehlgeschlagen: teuerste Effekte der Reihe nach abschalten, zuletzt ganz auf klassisch */
+  private effektFehler(e: unknown): void {
+    const text = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+    const kette = [this.gtao, this.godrays, this.bloom, this.tiltH, this.tiltV, this.grade];
+    const naechster = kette.find((p) => p && p.enabled);
+    if (naechster) naechster.enabled = false;
+    else this.composer = null;
+    try {
+      if (!this.fehlerBox) {
+        this.fehlerBox = document.createElement('div');
+        this.fehlerBox.style.cssText = 'position:fixed;left:6px;bottom:6px;max-width:70vw;z-index:99;font:10px monospace;color:#ffd23f;background:rgba(7,4,14,.8);padding:4px 6px;pointer-events:none;white-space:pre-wrap';
+        document.body.appendChild(this.fehlerBox);
+      }
+      this.fehlerBox.textContent += `Grafik-Effekt aus (${naechster ? naechster.constructor.name : 'alle'}): ${text}\n`;
+    } catch { /* ohne DOM */ }
   }
   /** Tilt-Shift (nur neuer Look): 0 = aus, sonst Stärke (0,35 leicht, 0,7 sanft) */
   setTilt(v: number): void {
@@ -598,8 +621,13 @@ export class GameRenderer {
       this.lava?.update(time, dt);
       this.gift?.update(time, dt);
       this.godrays?.setZeit(time);
-      this.composer.render();
-      return;
+      try {
+        this.composer.render();
+        return;
+      } catch (e) {
+        // Gerät kann einen Effekt nicht: diesen abschalten, Meldung anzeigen, klassisch weiterzeichnen
+        this.effektFehler(e);
+      }
     }
     this.renderer.setRenderTarget(this.rt);
     this.renderer.render(this.scene, this.camera);
