@@ -72,7 +72,7 @@ function floorTextures(a: Arena) {
             if (hash2(gx, gy, 5) > 0.82) c = base;
             // neuer Look: Moosfleck mit weichem Rand statt harter Kachelkante, Stein schimmert durch
             if (LOOK.neu && weich(gx + 1000, gy, 9, 35) < 0.3 + hash2(tx, tz, 36) * 0.2) c = base;
-          } else if (t === Tile.Lava && LOOK.neu) {
+          } else if ((t === Tile.Lava || t === Tile.Poison) && LOOK.neu) {
             // neuer Look: Loch im Boden, das Lavabecken (lava.ts) liegt darunter
             ci.data[i] = ci.data[i + 1] = ci.data[i + 2] = 0; ci.data[i + 3] = 0;
             gi.data[i] = gi.data[i + 1] = gi.data[i + 2] = 0; gi.data[i + 3] = 255;

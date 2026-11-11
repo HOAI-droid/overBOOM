@@ -1,9 +1,25 @@
 import * as THREE from 'three';
 import { Tile, type Arena } from '@overboom/core';
 
-/** Tiefe der Lavabecken unter dem Boden */
-const TIEFE = 0.22;
 const BLASEN = 28;
+
+/** Farben und Maße je Beckenart (Lava: tief und glühend; Gift: flacher, grün brodelnd, begehbar) */
+const ARTEN = {
+  lava: {
+    tile: Tile.Lava, tiefe: 0.22, tempo: 1,
+    kruste: [[0.07, 0.02, 0.015], [0.22, 0.05, 0.02]], krusteRand: [0.35, 0.06, 0.0], grund: [0.25, 0.05, 0.0],
+    glut: [[0.75, 0.10, 0.02], [1.0, 0.38, 0.05], [1.0, 0.72, 0.22], [1.0, 0.95, 0.75]], hell: 2.6,
+    fels: [[0.16, 0.10, 0.08], [0.24, 0.15, 0.11]], schein: [1.0, 0.38, 0.08], licht: '#ff6a1a', blase: [1.0, 0.42, 0.08]
+  },
+  gift: {
+    tile: Tile.Poison, tiefe: 0.1, tempo: 0.7,
+    kruste: [[0.03, 0.10, 0.03], [0.09, 0.22, 0.06]], krusteRand: [0.10, 0.35, 0.05], grund: [0.04, 0.16, 0.02],
+    glut: [[0.15, 0.55, 0.10], [0.35, 0.85, 0.15], [0.62, 1.0, 0.32], [0.90, 1.0, 0.75]], hell: 1.9,
+    fels: [[0.14, 0.11, 0.18], [0.20, 0.16, 0.25]], schein: [0.35, 1.0, 0.25], licht: '#7dff5a', blase: [0.45, 1.0, 0.3]
+  }
+} as const;
+export type BeckenArt = keyof typeof ARTEN;
+const v3 = (a: readonly number[]) => `vec3(${a.map((x) => x.toFixed(3)).join(', ')})`;
 
 /**
  * Lavabecken für den neuen Look: abgesenkte Fläche mit fließender, pixeliger Lava
@@ -11,6 +27,7 @@ const BLASEN = 28;
  * aufsteigende Blasen, die platzen. Alles in einem Shader plus einem kleinen Instanz-Pool.
  */
 export class LavaBecken {
+  private cfg: (typeof ARTEN)[BeckenArt];
   readonly group = new THREE.Group();
   private mat: THREE.ShaderMaterial;
   private randMat: THREE.ShaderMaterial;
@@ -19,7 +36,10 @@ export class LavaBecken {
   private zustand: { x: number; z: number; t: number; dauer: number; groesse: number }[] = [];
   private m = new THREE.Matrix4();
 
-  constructor() {
+  constructor(art: BeckenArt = 'lava') {
+    const C = ARTEN[art];
+    this.cfg = C;
+    const TIEFE = C.tiefe;
     const zeit = { value: 0 };
     this.mat = new THREE.ShaderMaterial({
       uniforms: { uZeit: zeit },
@@ -45,7 +65,7 @@ export class LavaBecken {
         void main(){
           // auf 16 Pixel pro Kachel rastern: passt zum Voxel-Look des Bodens
           vec2 p = floor(vW.xz * 16.0) / 16.0;
-          float t = uZeit;
+          float t = uZeit * ${C.tempo.toFixed(2)};
           // Strömung: Koordinaten langsam verzerren
           vec2 q = p * 0.9 + vec2(fbm(p * 0.6 + t * 0.06), fbm(p * 0.6 - t * 0.05 + 3.7)) * 1.4;
           float riss = zellen(q * 1.3, t);
@@ -60,14 +80,14 @@ export class LavaBecken {
           hitze = clamp(hitze, 0.0, 1.0);
           // Kruste: dunkle Schollen, am Rand rot angeglüht
           float rand = smoothstep(0.7, 0.2, riss);
-          vec3 kruste = mix(vec3(0.07, 0.02, 0.015), vec3(0.22, 0.05, 0.02), fbm(q * 4.0));
-          kruste += vec3(0.35, 0.06, 0.0) * rand * 0.6;
+          vec3 kruste = mix(${v3(C.kruste[0])}, ${v3(C.kruste[1])}, fbm(q * 4.0));
+          kruste += ${v3(C.krusteRand)} * rand * 0.6;
           // Glut: tiefrot → orange → gelb, nur ganz heiße Stellen fast weiß
-          vec3 glut = mix(vec3(0.75, 0.10, 0.02), vec3(1.0, 0.38, 0.05), smoothstep(0.25, 0.65, hitze));
-          glut = mix(glut, vec3(1.0, 0.72, 0.22), smoothstep(0.72, 0.95, hitze));
-          glut = mix(glut, vec3(1.0, 0.95, 0.75), smoothstep(0.97, 1.0, hitze));
-          vec3 c = mix(kruste * 1.6, glut * 2.6, smoothstep(0.12, 0.45, hitze));
-          c += vec3(0.25, 0.05, 0.0);  // Grundglühen auch auf der Kruste
+          vec3 glut = mix(${v3(C.glut[0])}, ${v3(C.glut[1])}, smoothstep(0.25, 0.65, hitze));
+          glut = mix(glut, ${v3(C.glut[2])}, smoothstep(0.72, 0.95, hitze));
+          glut = mix(glut, ${v3(C.glut[3])}, smoothstep(0.97, 1.0, hitze));
+          vec3 c = mix(kruste * 1.6, glut * ${C.hell.toFixed(2)}, smoothstep(0.12, 0.45, hitze));
+          c += ${v3(C.grund)};  // Grundglühen auch auf der Kruste
           gl_FragColor = vec4(c, 1.0);
         }`
     });
@@ -82,8 +102,8 @@ export class LavaBecken {
           vec2 px = floor(vec2(vW.x + vW.z, vW.y) * 16.0);
           float n = h1(px);
           float tief = clamp(-vW.y / ${TIEFE.toFixed(2)}, 0.0, 1.0);
-          vec3 fels = mix(vec3(0.16, 0.10, 0.08), vec3(0.24, 0.15, 0.11), n);
-          vec3 schein = vec3(1.0, 0.38, 0.08) * pow(tief, 1.5) * (2.6 + 0.4 * sin(uZeit * 2.0 + vW.x));
+          vec3 fels = mix(${v3(C.fels[0])}, ${v3(C.fels[1])}, n);
+          vec3 schein = ${v3(C.schein)} * pow(tief, 1.5) * (2.6 + 0.4 * sin(uZeit * 2.0 + vW.x));
           gl_FragColor = vec4(fels + schein, 1.0);
         }`
     });
@@ -94,7 +114,8 @@ export class LavaBecken {
     this.group.clear();
     this.orte = [];
     const S = a.size;
-    const lava = (x: number, z: number) => x >= 0 && z >= 0 && x < S && z < S && a.tile(x, z) === Tile.Lava;
+    const C = this.cfg, TIEFE = C.tiefe;
+    const lava = (x: number, z: number) => x >= 0 && z >= 0 && x < S && z < S && a.tile(x, z) === C.tile;
     const flaeche: number[] = [], rand: number[] = [];
     const y = -TIEFE;
     for (let z = 0; z < S; z++) for (let x = 0; x < S; x++) {
@@ -123,13 +144,13 @@ export class LavaBecken {
     const schritt = Math.max(1, Math.floor(this.orte.length / 6));
     for (let i = 0; i < this.orte.length; i += schritt) {
       const [lx, lz] = this.orte[i];
-      const l = new THREE.PointLight('#ff6a1a', 7, 5.5, 1.6);
+      const l = new THREE.PointLight(C.licht, C.tile === Tile.Lava ? 7 : 4, 5.5, 1.6);
       l.position.set(lx + 0.5, 0.6, lz + 0.5);
       this.group.add(l);
     }
     // Blasen: kleine glühende Würfel, die aufsteigen, wachsen und platzen
     const bg = new THREE.BoxGeometry(1, 1, 1);
-    const bm = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 0.42, 0.08).multiplyScalar(2.6), toneMapped: false });
+    const bm = new THREE.MeshBasicMaterial({ color: new THREE.Color(...C.blase).multiplyScalar(C.hell), toneMapped: false });
     this.blasen = new THREE.InstancedMesh(bg, bm, BLASEN);
     this.blasen.frustumCulled = false;
     this.group.add(this.blasen);
@@ -152,7 +173,7 @@ export class LavaBecken {
       const k = Math.max(0, b.t) / b.dauer;
       // wächst langsam, steigt kaum, platzt am Ende schnell
       const s = b.t < 0 ? 0 : b.groesse * (k < 0.85 ? 0.4 + k * 0.8 : (1 - k) / 0.15 * 1.08);
-      this.m.makeScale(s, s * 0.8, s).setPosition(b.x, -TIEFE + s * 0.3, b.z);
+      this.m.makeScale(s, s * 0.8, s).setPosition(b.x, -this.cfg.tiefe + s * 0.3, b.z);
       this.blasen.setMatrixAt(i, this.m);
     }
     this.blasen.instanceMatrix.needsUpdate = true;

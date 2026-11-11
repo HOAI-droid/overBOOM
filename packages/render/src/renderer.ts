@@ -93,6 +93,7 @@ export class GameRenderer {
   private tiltV: ShaderPass | null = null;
   private atmo: Atmosphaere | null = null;
   private lava: LavaBecken | null = null;
+  private gift: LavaBecken | null = null;
   /** Tilt-Shift-Stärke (0 = aus, 0,35, 0,7 = sanft) */
   private tilt = 0.7;
 
@@ -174,8 +175,9 @@ export class GameRenderer {
       if (qq.get('exp')) this.renderer.toneMappingExposure = Number(qq.get('exp'));
       this.atmo = new Atmosphaere();
       this.scene.add(this.atmo.group);
-      this.lava = new LavaBecken();
-      this.scene.add(this.lava.group);
+      this.lava = new LavaBecken('lava');
+      this.gift = new LavaBecken('gift');
+      this.scene.add(this.lava.group, this.gift.group);
       this.composer = new EffectComposer(this.renderer);
       this.composer.addPass(new RenderPass(this.scene, this.camera));
       this.gtao = new GTAOPass(this.scene, this.camera, 4, 4);
@@ -256,6 +258,7 @@ export class GameRenderer {
     this.applyPalette();
     this.atmo?.build(world.arena, paletteOf(world.arena));
     this.lava?.build(world.arena);
+    this.gift?.build(world.arena);
     for (const p of world.players) this.addHero(p);
 
     const sp = world.players[0] ?? { x: world.arena.spawn.x, z: world.arena.spawn.z };
@@ -309,6 +312,7 @@ export class GameRenderer {
     this.applyPalette();
     this.atmo?.build(this.world.arena, paletteOf(this.world.arena));
     this.lava?.build(this.world.arena);
+    this.gift?.build(this.world.arena);
   }
 
   private rnd = () => {
@@ -592,6 +596,7 @@ export class GameRenderer {
       // neuer Look: volle Auflösung direkt auf den Bildschirm, Nachbearbeitung im Composer
       this.atmo?.update(time);
       this.lava?.update(time, dt);
+      this.gift?.update(time, dt);
       this.godrays?.setZeit(time);
       this.composer.render();
       return;
