@@ -1,0 +1,66 @@
+# Testversion des Grafik-Zweigs: Jeder Push auf „grafik“ baut die Android-APK und die
+# Browser-Version als eine HTML-Datei und legt beides als Vorab-Release „grafik-test“ ab.
+# Das offizielle Release (latest) und die Download-Links im README bleiben unberührt.
+name: Grafik-Testversion
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [grafik]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: grafik-test
+  cancel-in-progress: true
+
+jobs:
+  mobile:
+    uses: ./.github/workflows/mobile.yml
+    secrets: inherit
+
+  browser:
+    name: Browser (eine HTML-Datei)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:single
+      - uses: actions/upload-artifact@v5
+        with:
+          name: OVERBOOM-Browser
+          path: dist-single/index.html
+          if-no-files-found: error
+
+  release:
+    name: Testversion veröffentlichen
+    needs: [mobile, browser]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          path: art
+      - name: Dateien mit festen Namen
+        run: |
+          set -euo pipefail
+          mkdir rel
+          cp "$(find art/OVERBOOM-Android -name '*.apk' | head -n 1)" rel/OVERBOOM-Grafik-Test.apk
+          cp art/OVERBOOM-Browser/index.html rel/OVERBOOM-Grafik-Test.html
+          ls -la rel
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: grafik-test
+          name: OVERBOOM Grafik-Test (Vorabversion)
+          target_commitish: ${{ github.sha }}
+          prerelease: true
+          make_latest: false
+          body: |
+            Testversion des neuen Grafik-Looks aus dem Zweig „grafik“ (nicht die offizielle Version).
+            - Android: OVERBOOM-Grafik-Test.apk herunterladen und installieren
+            - Browser: OVERBOOM-Grafik-Test.html herunterladen und öffnen
+          files: rel/*
