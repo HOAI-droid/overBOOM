@@ -49,8 +49,12 @@ export const WELLEN = {
    * Masse-Faktor (ab v0.14): später weniger, aber härtere Gegner. Spawnrate × masse,
    * Leben und Kristalle ÷ masse (gleiche Gesamtmenge), Schaden ÷ √masse.
    */
-  masse: (w: number) => (w <= 6 ? 1 : Math.max(0.45, 1 - 0.045 * (w - 6))),
+  masse: (w: number) => (w <= 3 ? 1 : Math.max(0.45, 1 - 0.05 * (w - 3))),
   maxGegner: 60,
+  /** gleichzeitig höchstens so viele Gegner (wächst mit der Welle; Bosswellen deutlich leerer) */
+  /** Ausgleich für die Obergrenze: weniger Gegner, dafür mehr Kristalle (und Erfahrung) je Gegner */
+  kristallBonus: (w: number) => Math.min(1.5, 1 + 0.07 * Math.max(0, w - 3)),
+  maxGleichzeitig: (w: number, boss: boolean) => (boss ? 14 : Math.min(60, Math.round(8 + 2.5 * w))),
   /** kurze Pause nach der Welle (alles explodiert, Kristalle fliegen ein), dann Shop */
   pause: 2.5,
   /** Vorwarnzeit (rotes Kreuz) vor dem Spawn */
@@ -215,7 +219,7 @@ export const BOSS = {
   hpFaktor: (w: number, rang: 'boss' | 'baron' | 'finale' = 'boss') => WELLEN.hpFaktor(w) * BOSS.rangLeben[rang] * (w < 10 ? 0.6 + 0.04 * w : 1),
   rangLeben: { boss: 2.2, baron: 2.6, finale: 3 } as Record<'boss' | 'baron' | 'finale', number>,
   /** Spawnrate normaler Gegner in Boss-Wellen */
-  spawnAnteil: 0.4,
+  spawnAnteil: 0.25,
   bombenSchaden: 16,
   bombenRadius: 1.8,
   flugzeit: 1.1,

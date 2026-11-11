@@ -921,7 +921,7 @@ export class World {
     this.stats.kills++;
     this.events.push({ type: 'kill', id: e.id, enemy: e.def.id, x: e.x, z: e.z, doomed: e.doom >= 0 });
     if (src && e.doom < 0) creditKill(this, src);
-    const n = Math.max(e.doom < 0 ? 1 : 0, Math.round(e.def.kristalle * (e.elite ? 6 : 1) * (e.lucky ? 2 : 1) * this.gw.kristalle / (e.def.verhalten === 'boss' ? 1 : WELLEN.masse(this.wave))));
+    const n = Math.max(e.doom < 0 ? 1 : 0, Math.round(e.def.kristalle * (e.elite ? 6 : 1) * (e.lucky ? 2 : 1) * this.gw.kristalle * (e.def.verhalten === 'boss' ? 1 : WELLEN.kristallBonus(this.wave) / WELLEN.masse(this.wave))));
     // Gefahr 10: Gegner explodieren beim Tod – auch in Richtung Spieler
     if (this.gw.todesBumm && e.doom < 0 && e.def.verhalten !== 'kamikaze' && e.def.verhalten !== 'boss' && this.phase === 'welle') {
       this.queueBlast(e.x, e.z, 1.2, 6 * e.dmgMul, 0.25, 0, this.newGroup(), true, 'kroete');

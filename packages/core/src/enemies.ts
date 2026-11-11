@@ -86,7 +86,7 @@ function warn(w: World, type: number, x: number, z: number, elite = false): void
 }
 
 function trySpawn(w: World): void {
-  if (w.enemyCount + pendingWarnings(w) >= WELLEN.maxGegner) return;
+  if (w.enemyCount + pendingWarnings(w) >= Math.min(WELLEN.maxGegner, WELLEN.maxGleichzeitig(w.wave, w.isBossWave))) return;
   const type = pickType(w);
   const size = w.arena.size;
   const p = w.nearestPlayer(size / 2, size / 2);
