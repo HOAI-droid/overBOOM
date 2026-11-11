@@ -38,7 +38,10 @@ function floorTextures(a: Arena) {
   const cg = color.getContext('2d')!, gg = glow.getContext('2d')!;
   const ci = cg.createImageData(S, S), gi = gg.createImageData(S, S);
   const stone = pal.boden.map(rgb);
-  const moss = pal.fleck.map(rgb);
+  const stoneAvg = pal.boden.map(rgb).reduce((a, c) => [a[0] + c[0] / pal.boden.length, a[1] + c[1] / pal.boden.length, a[2] + c[2] / pal.boden.length], [0, 0, 0]);
+  const moss = pal.fleck.map(rgb).map((c): [number, number, number] => LOOK.neu
+    ? [c[0] * 0.45 + stoneAvg[0] * 0.55, c[1] * 0.45 + stoneAvg[1] * 0.55, c[2] * 0.45 + stoneAvg[2] * 0.55]
+    : c);
   const lava = ['#c2300a', '#ff5a0a', '#ff7a1a', '#ffb02e'].map(rgb);
   const ice = ['#a8e8ff', '#c8f4ff', '#88c8e8', '#e8fcff'].map(rgb);
   const poison = ['#3d8a2a', '#5dbb3a', '#2e6a20', '#7dff5a'].map(rgb);
@@ -90,7 +93,7 @@ function floorTextures(a: Arena) {
             // Metallplatte mit Leiterbahnen (leuchten beim Aufladen extra, siehe shockPlates)
             const line = px === 3 || py === 3 || (px + py) % 7 === 0;
             c = line ? cyan : plate[(px * 3 + py) % plate.length];
-            f = line ? 0.7 : 1; glowV = line ? 80 : 0;
+            f = line ? 0.7 : 1; glowV = line ? (LOOK.neu ? 230 : 80) : 0;
           } else if (hash2(gx, gy, 11) > 0.985) {
             f *= 1.35; // kleine Kiesel
           }

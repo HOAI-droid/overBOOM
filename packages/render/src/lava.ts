@@ -66,7 +66,8 @@ export class LavaBecken {
           vec3 glut = mix(vec3(0.75, 0.10, 0.02), vec3(1.0, 0.38, 0.05), smoothstep(0.25, 0.65, hitze));
           glut = mix(glut, vec3(1.0, 0.72, 0.22), smoothstep(0.72, 0.95, hitze));
           glut = mix(glut, vec3(1.0, 0.95, 0.75), smoothstep(0.97, 1.0, hitze));
-          vec3 c = mix(kruste, glut * 1.5, smoothstep(0.12, 0.45, hitze));
+          vec3 c = mix(kruste * 1.6, glut * 2.6, smoothstep(0.12, 0.45, hitze));
+          c += vec3(0.25, 0.05, 0.0);  // Grundglühen auch auf der Kruste
           gl_FragColor = vec4(c, 1.0);
         }`
     });
@@ -82,7 +83,7 @@ export class LavaBecken {
           float n = h1(px);
           float tief = clamp(-vW.y / ${TIEFE.toFixed(2)}, 0.0, 1.0);
           vec3 fels = mix(vec3(0.16, 0.10, 0.08), vec3(0.24, 0.15, 0.11), n);
-          vec3 schein = vec3(1.0, 0.35, 0.08) * pow(tief, 2.0) * (1.6 + 0.3 * sin(uZeit * 2.0 + vW.x));
+          vec3 schein = vec3(1.0, 0.38, 0.08) * pow(tief, 1.5) * (2.6 + 0.4 * sin(uZeit * 2.0 + vW.x));
           gl_FragColor = vec4(fels + schein, 1.0);
         }`
     });
@@ -118,9 +119,17 @@ export class LavaBecken {
     this.randMat.side = THREE.DoubleSide;
     this.group.add(randMesh);
 
+    // warmes Licht über den Becken: höchstens 6, verteilt über die Lavafelder
+    const schritt = Math.max(1, Math.floor(this.orte.length / 6));
+    for (let i = 0; i < this.orte.length; i += schritt) {
+      const [lx, lz] = this.orte[i];
+      const l = new THREE.PointLight('#ff6a1a', 7, 5.5, 1.6);
+      l.position.set(lx + 0.5, 0.6, lz + 0.5);
+      this.group.add(l);
+    }
     // Blasen: kleine glühende Würfel, die aufsteigen, wachsen und platzen
     const bg = new THREE.BoxGeometry(1, 1, 1);
-    const bm = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 0.42, 0.08).multiplyScalar(1.8), toneMapped: false });
+    const bm = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 0.42, 0.08).multiplyScalar(2.6), toneMapped: false });
     this.blasen = new THREE.InstancedMesh(bg, bm, BLASEN);
     this.blasen.frustumCulled = false;
     this.group.add(this.blasen);

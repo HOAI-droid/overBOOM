@@ -576,11 +576,13 @@ export class GameRenderer {
     for (const t of this.arena.torches) t.light.intensity = 5 + Math.sin(time * 11 + t.seed) * 0.8 + Math.sin(time * 23 + t.seed * 3) * 0.6;
     for (const c of this.arena.crystals) { c.light.intensity = 4.5 + Math.sin(time * 2 + c.seed) * 1.2; c.group.position.y = Math.sin(time * 1.6 + c.seed) * 0.03; }
     for (const h of this.arena.halos) (h.material as THREE.SpriteMaterial).opacity = 0.45 + Math.sin(time * 9 + h.id) * 0.08;
-    this.arena.lavaMaterial.emissiveIntensity = 0.55 + Math.sin(time * 2.2) * 0.12;
+    // Leuchtendes im Boden (Tesla-Bahnen, Gift; im alten Look auch Lava) pulsiert leicht
+    this.arena.lavaMaterial.emissiveIntensity = (LOOK.neu ? 2.2 : 0.55) + Math.sin(time * 2.2) * (LOOK.neu ? 0.35 : 0.12);
     if (this.arena.shock) {
       // Tesla-Platten: flackern beim Aufladen, gleißen beim Entladen
       const t = this.world.shockT;
-      this.arena.shock.opacity = t >= 4.6 ? 0.9 : t >= 3.5 ? 0.25 + 0.35 * Math.abs(Math.sin(time * 30)) : 0.05;
+      const ruhe = LOOK.neu ? 0.16 + 0.05 * Math.sin(time * 3) : 0.05;
+      this.arena.shock.opacity = t >= 4.6 ? 0.9 : t >= 3.5 ? 0.25 + 0.35 * Math.abs(Math.sin(time * 30)) : ruhe;
     }
     for (const b of this.arena.barrels) b.group.visible = !b.prop.broken;
     this.combat.update(alpha, time, dt, this.heroPos);
