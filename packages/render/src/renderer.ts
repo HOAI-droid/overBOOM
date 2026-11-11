@@ -109,7 +109,7 @@ export class GameRenderer {
     this.renderer.setClearColor('#0b0814');
     if (LOOK.neu) {
       this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      this.renderer.toneMappingExposure = 1.05;
+      this.renderer.toneMappingExposure = 1.2;
     }
 
     this.rt = new THREE.WebGLRenderTarget(4, 4, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, depthBuffer: true, stencilBuffer: true });
@@ -170,7 +170,7 @@ export class GameRenderer {
       // Schatten erkennbar, aber nicht schwarz; breit auslaufender Rand (wie Studiolicht)
       this.sun.shadow.intensity = 0.72; this.sun.intensity = 3.4;
       const qq = new URLSearchParams(location.search);
-      this.hemi.intensity = Number(qq.get('hemi')) || 0.9; this.front.intensity = Number(qq.get('front')) || 0.35;
+      this.hemi.intensity = Number(qq.get('hemi')) || 1.25; this.front.intensity = Number(qq.get('front')) || 0.55;
       if (qq.get('exp')) this.renderer.toneMappingExposure = Number(qq.get('exp'));
       this.atmo = new Atmosphaere();
       this.scene.add(this.atmo.group);

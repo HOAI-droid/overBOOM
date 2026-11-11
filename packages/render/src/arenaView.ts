@@ -59,7 +59,8 @@ function floorTextures(a: Arena) {
           if (LOOK.neu) {
             // großflächige Verfärbung und feine Abnutzung, Risse entlang der Fugen, einzelne helle Kiesel
             const w1 = weich(gx, gy, 23, 31), w2 = weich(gx, gy, 6, 32);
-            f *= 0.82 + w1 * 0.3 + (w2 - 0.5) * 0.14;
+            // heller als der klassische Boden, damit Figuren sich gut abheben
+            f *= 1.12 + w1 * 0.24 + (w2 - 0.5) * 0.12;
             if (!edge && w2 > 0.83 && hash2(gx, gy, 33) > 0.6) f *= 0.72; // Riss / Kerbe
             if (edge) f *= 0.9 + hash2(gx, gy, 34) * 0.2; // Fugen nicht überall gleich tief
           }
