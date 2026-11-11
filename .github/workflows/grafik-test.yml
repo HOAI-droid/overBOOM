@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: grafik-test
@@ -62,5 +63,15 @@ jobs:
           body: |
             Testversion des neuen Grafik-Looks aus dem Zweig „grafik“ (nicht die offizielle Version).
             - Android: OVERBOOM-Grafik-Test.apk herunterladen und installieren
-            - Browser: OVERBOOM-Grafik-Test.html herunterladen und öffnen
+            - Direkt im Browser spielen: https://hoai-droid.github.io/overBOOM/grafik/
+            - Browser-Datei: OVERBOOM-Grafik-Test.html herunterladen und öffnen
           files: rel/*
+
+  # Browser-Version auf GitHub Pages neu bauen (enthält die Testversion unter /grafik/)
+  pages:
+    name: Spielbare Testversion auf GitHub Pages
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh workflow run pages.yml --ref main --repo "${{ github.repository }}"
+        env:
+          GH_TOKEN: ${{ github.token }}

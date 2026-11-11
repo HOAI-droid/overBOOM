@@ -119,6 +119,8 @@ export function createWebPlatform(): Platform {
         if (!('serviceWorker' in navigator) || !location.protocol.startsWith('http')) return;
         // Einzeldatei-Build (Artefakt) hat keinen Service Worker
         if (document.querySelector('meta[name="overboom-single"]')) return;
+        // Grafik-Testversion unter /grafik/: kein eigener Service Worker (stört sonst die Hauptversion)
+        if (location.pathname.includes('/grafik/')) return;
         void navigator.serviceWorker.register('./sw.js').catch(() => {});
       } catch { /* nicht unterstützt */ }
     },
