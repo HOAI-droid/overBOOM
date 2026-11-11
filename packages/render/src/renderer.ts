@@ -617,10 +617,12 @@ export class GameRenderer {
 
     if (this.composer) {
       // neuer Look: volle Auflösung direkt auf den Bildschirm, Nachbearbeitung im Composer
-      this.atmo?.update(time);
-      this.lava?.update(time, dt);
-      this.gift?.update(time, dt);
-      this.godrays?.setZeit(time);
+      try {
+        this.atmo?.update(time);
+        this.lava?.update(time, dt);
+        this.gift?.update(time, dt);
+        this.godrays?.setZeit(time);
+      } catch (e) { this.effektFehler(e); }
       try {
         this.composer.render();
         return;

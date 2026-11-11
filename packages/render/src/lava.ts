@@ -113,6 +113,10 @@ export class LavaBecken {
   build(a: Arena): boolean {
     this.group.clear();
     this.orte = [];
+    // Blasen der vorigen Arena verwerfen (sonst suchen sie Becken, die es nicht mehr gibt)
+    this.blasen?.geometry.dispose();
+    this.blasen = null;
+    this.zustand = [];
     const S = a.size;
     const C = this.cfg, TIEFE = C.tiefe;
     const lava = (x: number, z: number) => x >= 0 && z >= 0 && x < S && z < S && a.tile(x, z) === C.tile;
@@ -165,7 +169,7 @@ export class LavaBecken {
 
   update(time: number, dt: number): void {
     this.mat.uniforms.uZeit.value = time;
-    if (!this.blasen) return;
+    if (!this.blasen || !this.orte.length) return;
     for (let i = 0; i < this.zustand.length; i++) {
       const b = this.zustand[i];
       b.t += dt;
